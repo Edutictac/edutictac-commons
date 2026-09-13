@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="ca">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>EduTicTac Commons Demo</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">EduTicTac Commons</p>
+        <h1>Demo local</h1>
+      </div>
+      <span id="apiStatus" class="status">Comprovant API...</span>
+    </header>
+
+    <main class="layout">
+      <section class="panel">
+        <div class="panel-heading">
+          <p class="eyebrow">Professorat</p>
+          <h2>Generar aula pseudònima</h2>
+        </div>
+
+        <label>
+          Token docent
+          <input id="teacherToken" type="password" autocomplete="off" value="dev-teacher">
+        </label>
+
+        <div class="actions">
+          <button id="teacherLogin" type="button">Entrar</button>
+          <button id="teacherSummary" type="button" class="secondary">Resum</button>
+        </div>
+
+        <div class="grid-fields">
+          <label>
+            Nom intern demo
+            <input id="tenantId" type="text" value="demo-centre">
+          </label>
+          <label>
+            Alumnat
+            <input id="identityCount" type="number" min="1" max="30" value="6">
+          </label>
+        </div>
+
+        <div class="actions">
+          <button id="createBatch" type="button">Generar credencials</button>
+          <button id="createAssignment" type="button" class="secondary">Assignar activitat demo</button>
+        </div>
+
+        <div id="teacherOutput" class="output empty">Encara no hi ha credencials generades.</div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-heading">
+          <p class="eyebrow">Alumnat</p>
+          <h2>Entrar amb codi + PIN</h2>
+        </div>
+
+        <div class="grid-fields">
+          <label>
+            Codi públic
+            <input id="studentCode" type="text" maxlength="3" placeholder="K7P">
+          </label>
+          <label>
+            PIN
+            <input id="studentPin" type="text" inputmode="numeric" maxlength="6" placeholder="1234">
+          </label>
+        </div>
+
+        <div class="actions">
+          <button id="studentLogin" type="button">Entrar com a alumne</button>
+          <button id="sendScore" type="button" class="secondary">Completar activitat</button>
+        </div>
+
+        <div id="studentOutput" class="output empty">Usa una credencial generada pel docent.</div>
+      </section>
+    </main>
+
+    <section class="panel results-panel">
+      <div class="panel-heading">
+        <p class="eyebrow">Resultats</p>
+        <h2>Activitat demo</h2>
+      </div>
+      <div class="actions">
+        <button id="loadResults" type="button">Veure resultats</button>
+        <button id="loadRanking" type="button" class="secondary">Veure rànquing</button>
+      </div>
+      <div id="resultsOutput" class="output empty">Els resultats apareixeran ací.</div>
+    </section>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
