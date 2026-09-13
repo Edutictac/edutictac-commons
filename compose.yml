@@ -1,5 +1,6 @@
 services:
   id-api:
+    image: ${IMAGE_REGISTRY:-edutictac}/commons-id-api:${IMAGE_TAG:-0.1.0-alpha}
     build:
       context: ./services/id-api
     environment:
@@ -19,6 +20,7 @@ services:
       retries: 5
 
   portal:
+    image: ${IMAGE_REGISTRY:-edutictac}/commons-portal:${IMAGE_TAG:-0.1.0-alpha}
     build:
       context: ./services/portal
     depends_on:

@@ -414,6 +414,12 @@ def teacher_login(payload: TeacherLoginIn, request: Request, response: Response)
     return {"ok": True}
 
 
+@app.post("/api/teacher/logout")
+def teacher_logout(response: Response) -> dict[str, bool]:
+    response.delete_cookie(TEACHER_COOKIE, **delete_cookie_kwargs())
+    return {"ok": True}
+
+
 @app.post("/api/groups", status_code=201)
 def create_group(payload: GroupIn, request: Request) -> dict[str, Any]:
     teacher_id = require_teacher(request)

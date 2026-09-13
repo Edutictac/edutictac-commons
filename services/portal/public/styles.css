@@ -49,6 +49,12 @@ h2 {
   line-height: 1.2;
 }
 
+h3 {
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.25;
+}
+
 .eyebrow {
   color: var(--accent-dark);
   font-size: 12px;
@@ -109,6 +115,47 @@ label {
   font-size: 14px;
 }
 
+.activity {
+  display: grid;
+  gap: 12px;
+  margin: 4px 0 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+.activity .panel-heading {
+  margin-bottom: 0;
+}
+
+.question {
+  min-width: 0;
+  margin: 0;
+  border: 0;
+  padding: 0;
+}
+
+.question legend {
+  margin-bottom: 8px;
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.choice {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  align-items: start;
+  gap: 8px;
+  margin: 6px 0;
+  color: var(--ink);
+}
+
+.choice input {
+  width: 18px;
+  min-height: 18px;
+  margin: 2px 0 0;
+  padding: 0;
+}
+
 input {
   width: 100%;
   min-height: 42px;
@@ -138,15 +185,47 @@ button {
   cursor: pointer;
 }
 
+button,
+.button-link {
+  text-decoration: none;
+}
+
+.button-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  padding: 9px 14px;
+  background: var(--accent);
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+}
+
 button.secondary {
   background: #fff;
   color: var(--accent-dark);
 }
 
-button:hover {
+.button-link.secondary {
+  background: #fff;
+  color: var(--accent-dark);
+}
+
+button:hover,
+.button-link:hover {
   border-color: var(--accent-dark);
   background: var(--accent-dark);
   color: #fff;
+}
+
+button:disabled {
+  border-color: var(--line);
+  background: #eef1ed;
+  color: var(--muted);
+  cursor: not-allowed;
 }
 
 .output {
@@ -179,6 +258,17 @@ button:hover {
 .credential strong {
   display: block;
   font-size: 22px;
+}
+
+.credential small {
+  display: block;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.credential:hover small {
+  color: #fff;
 }
 
 table {

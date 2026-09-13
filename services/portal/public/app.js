@@ -1,7 +1,10 @@
 const DEMO_APP = "commons-demo";
 const DEMO_ACTIVITY = "primera-activitat";
+const ACTIVITY_QUESTIONS = 3;
+const STORAGE_KEY = "edutictac-commons-demo-state";
 
 const state = {
+  teacher: false,
   group: null,
   identities: [],
   assignment: null,
@@ -9,6 +12,26 @@ const state = {
 };
 
 const $ = (id) => document.getElementById(id);
+
+function saveState() {
+  localStorage.setItem(
+    STORAGE_KEY,
+    JSON.stringify({
+      group: state.group,
+      assignment: state.assignment,
+    }),
+  );
+}
+
+function restoreState() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+    state.group = saved.group || null;
+    state.assignment = saved.assignment || null;
+  } catch (error) {
+    localStorage.removeItem(STORAGE_KEY);
+  }
+}
 
 function setOutput(node, content) {
   node.classList.remove("empty");
@@ -18,6 +41,13 @@ function setOutput(node, content) {
 function setEmpty(node, content) {
   node.classList.add("empty");
   node.textContent = content;
+}
+
+function setTeacherSession(active) {
+  state.teacher = active;
+  ["teacherSummary", "createBatch", "createAssignment", "teacherLogout"].forEach((id) => {
+    $(id).disabled = !active;
+  });
 }
 
 async function api(path, options = {}) {
@@ -55,10 +85,21 @@ function credentialCards(identities) {
             <button class="credential" type="button" data-code="${escapeHtml(item.public_code)}" data-pin="${escapeHtml(item.pin)}">
               <strong>${escapeHtml(item.public_code)}</strong>
               <span>PIN ${escapeHtml(item.pin)}</span>
+              <small>Usar en alumnat</small>
             </button>
           `,
         )
         .join("")}
+    </div>
+  `;
+}
+
+function groupLinks(group) {
+  if (!group) return "";
+  return `
+    <div class="actions">
+      <a class="button-link" href="/api/groups/${encodeURIComponent(group.id)}/cards" target="_blank" rel="noopener">Targetes</a>
+      <a class="button-link secondary" href="/api/groups/${encodeURIComponent(group.id)}/csv" target="_blank" rel="noopener">CSV codis</a>
     </div>
   `;
 }
@@ -87,6 +128,19 @@ function table(rows, columns) {
   `;
 }
 
+function activityScore() {
+  const answers = Array.from(document.querySelectorAll("#activityForm input[type='radio']:checked"));
+  if (answers.length !== ACTIVITY_QUESTIONS) {
+    throw new Error("Respon les tres preguntes abans d'enviar l'activitat.");
+  }
+  const correct = answers.reduce((total, answer) => total + Number(answer.value), 0);
+  return {
+    correct,
+    total: ACTIVITY_QUESTIONS,
+    score: Math.round((correct / ACTIVITY_QUESTIONS) * 100),
+  };
+}
+
 async function checkHealth() {
   try {
     await api("/api/health", { method: "GET" });
@@ -98,13 +152,39 @@ async function checkHealth() {
   }
 }
 
+async function refreshTeacherSession() {
+  try {
+    await api("/api/teacher/summary", { method: "GET" });
+    setTeacherSession(true);
+  } catch (error) {
+    setTeacherSession(false);
+  }
+}
+
 async function teacherLogin() {
   const token = $("teacherToken").value.trim();
   await api("/api/teacher/login", {
     method: "POST",
     body: JSON.stringify({ token }),
   });
-  setOutput($("teacherOutput"), "<p>Sessió docent iniciada.</p>");
+  setTeacherSession(true);
+  setOutput(
+    $("teacherOutput"),
+    state.group
+      ? `<p>Sessió docent iniciada. Grup recuperat: <strong>${escapeHtml(state.group.group_code)}</strong>.</p>${groupLinks(state.group)}`
+      : "<p>Sessió docent iniciada.</p>",
+  );
+}
+
+async function teacherLogout() {
+  await api("/api/teacher/logout", { method: "POST" });
+  setTeacherSession(false);
+  state.group = null;
+  state.identities = [];
+  state.assignment = null;
+  saveState();
+  setEmpty($("teacherOutput"), "Sessió docent tancada. Entra de nou per generar credencials.");
+  setEmpty($("resultsOutput"), "Els resultats apareixeran ací.");
 }
 
 async function teacherSummary() {
@@ -123,6 +203,9 @@ async function teacherSummary() {
 }
 
 async function createBatch() {
+  if (!state.teacher) {
+    throw new Error("Entra primer com a docent.");
+  }
   const tenantId = $("tenantId").value.trim() || "demo-centre";
   const count = Number($("identityCount").value || 6);
   const batch = await api("/api/identities/batch", {
@@ -131,17 +214,23 @@ async function createBatch() {
   });
   state.group = batch.group;
   state.identities = batch.identities;
+  state.assignment = null;
+  saveState();
   setOutput(
     $("teacherOutput"),
     `
       <p>Grup generat: <strong>${escapeHtml(batch.group.group_code)}</strong></p>
-      <p>Tria una targeta per omplir l'accés de l'alumne.</p>
+      <p>Tria una targeta d'ací baix per omplir l'accés de l'alumne. Els PINs només es mostren en aquest moment; el CSV no els inclou.</p>
+      ${groupLinks(batch.group)}
       ${credentialCards(batch.identities)}
     `,
   );
 }
 
 async function createAssignment() {
+  if (!state.teacher) {
+    throw new Error("Entra primer com a docent.");
+  }
   if (!state.group) {
     throw new Error("Genera primer un grup.");
   }
@@ -155,6 +244,7 @@ async function createAssignment() {
     }),
   });
   state.assignment = created.assignment;
+  saveState();
   setOutput(
     $("resultsOutput"),
     `<p>Activitat assignada al grup <strong>${escapeHtml(state.group.group_code)}</strong>.</p>`,
@@ -171,7 +261,7 @@ async function studentLogin() {
   state.student = login.identity;
   setOutput(
     $("studentOutput"),
-    `<p>Hola, <strong>${escapeHtml(login.identity.public_code)}</strong>. Ja tens sessió pseudònima.</p>`,
+    `<p>Hola, <strong>${escapeHtml(login.identity.public_code)}</strong>. Ja tens sessió pseudònima. Pots completar el repte.</p>`,
   );
 }
 
@@ -179,20 +269,20 @@ async function sendScore() {
   if (!state.student) {
     throw new Error("Entra primer com a alumne.");
   }
-  const score = Math.floor(60 + Math.random() * 41);
+  const result = activityScore();
   const saved = await api("/api/scores", {
     method: "POST",
     body: JSON.stringify({
       app_id: DEMO_APP,
       activity_id: DEMO_ACTIVITY,
       assignment_id: state.assignment ? state.assignment.id : "",
-      score,
-      metadata: { demo: true },
+      score: result.score,
+      metadata: { demo: true, correct: result.correct, total: result.total },
     }),
   });
   setOutput(
     $("studentOutput"),
-    `<p>Activitat completada per <strong>${escapeHtml(saved.public_code)}</strong> amb puntuació <strong>${saved.score}</strong>.</p>`,
+    `<p>Activitat completada per <strong>${escapeHtml(saved.public_code)}</strong>: ${result.correct}/${result.total} encerts, puntuació <strong>${saved.score}</strong>.</p>`,
   );
 }
 
@@ -224,12 +314,12 @@ async function loadRanking() {
   );
 }
 
-function bind(id, fn) {
+function bind(id, fn, outputId = "resultsOutput") {
   $(id).addEventListener("click", async () => {
     try {
       await fn();
     } catch (error) {
-      setOutput($("resultsOutput"), `<p><strong>Error:</strong> ${escapeHtml(error.message)}</p>`);
+      setOutput($(outputId), `<p><strong>Error:</strong> ${escapeHtml(error.message)}</p>`);
     }
   });
 }
@@ -242,13 +332,29 @@ document.addEventListener("click", (event) => {
   setOutput($("studentOutput"), `<p>Credencial carregada. Ja pots entrar com a alumne.</p>`);
 });
 
-bind("teacherLogin", teacherLogin);
-bind("teacherSummary", teacherSummary);
-bind("createBatch", createBatch);
-bind("createAssignment", createAssignment);
-bind("studentLogin", studentLogin);
-bind("sendScore", sendScore);
+bind("teacherLogin", teacherLogin, "teacherOutput");
+bind("teacherLogout", teacherLogout, "teacherOutput");
+bind("teacherSummary", teacherSummary, "teacherOutput");
+bind("createBatch", createBatch, "teacherOutput");
+bind("createAssignment", createAssignment, "resultsOutput");
+bind("studentLogin", studentLogin, "studentOutput");
+bind("sendScore", sendScore, "studentOutput");
 bind("loadResults", loadResults);
 bind("loadRanking", loadRanking);
 
+restoreState();
+setTeacherSession(false);
+if (state.group) {
+  setOutput(
+    $("teacherOutput"),
+    `<p>Grup demo recuperat: <strong>${escapeHtml(state.group.group_code)}</strong>. Entra com a docent per obrir targetes, CSV o consultar resultats.</p>${groupLinks(state.group)}`,
+  );
+}
+if (state.assignment) {
+  setOutput(
+    $("resultsOutput"),
+    `<p>Activitat demo recuperada: <strong>${escapeHtml(state.assignment.title || state.assignment.activity_id)}</strong>.</p>`,
+  );
+}
 checkHealth();
+refreshTeacherSession();
