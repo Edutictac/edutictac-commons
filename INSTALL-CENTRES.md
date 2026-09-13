@@ -93,7 +93,28 @@ make up
 make test-flow
 ```
 
-## Funcionament sense Docker Hub
+## Ús d'imatges ja publicades (registre propi)
+
+EduTicTac publica les imatges a un registre OCI propi,
+`registry.edutictac.es`, de lectura pública. Un centre no necessita
+credencials ni construir res des del codi font: només cal apuntar el `.env`
+al registre i descarregar les imatges ja construïdes.
+
+Al `.env` del centre:
+
+```bash
+IMAGE_REGISTRY=registry.edutictac.es/edutictac
+IMAGE_TAG=0.1.0-alpha
+```
+
+I després:
+
+```bash
+docker compose --env-file .env -f compose.yml pull
+make up
+```
+
+## Funcionament sense accés al registre
 
 En una màquina amb internet:
 
@@ -114,13 +135,14 @@ make load-images ARCHIVE=dist/edutictac-commons-images-0.1.0-alpha.tar
 make up
 ```
 
-## Publicació en Docker Hub
+## Publicació en el registre propi
 
-Quan hi haja una versió estable:
+Quan hi haja una versió estable, des de l'equip d'EduTicTac (cal login previ
+amb `docker login registry.edutictac.es` amb l'usuari de publicació):
 
 ```bash
-IMAGE_REGISTRY=edutictac
-IMAGE_TAG=0.1.0
+IMAGE_REGISTRY=registry.edutictac.es/edutictac
+IMAGE_TAG=0.1.0-alpha
 make push-images
 ```
 
