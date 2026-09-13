@@ -236,5 +236,5 @@ make up
 - És una demo tècnica inicial.
 - El professorat entra amb token local, no amb SSO.
 - No hi ha Authentik encara.
-- No s'han integrat encara EduHoot, Banc de recursos ni Robotics.
+- EduHoot ja es pot activar com a mòdul opcional (`COMPOSE_PROFILES=eduhoot`, veure README); Banc de recursos i Robotics encara no estan integrats.
 - No s'han de carregar dades reals d'alumnat.

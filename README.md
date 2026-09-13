@@ -5,7 +5,6 @@ Primer stack Docker per desenvolupar i ensenyar el producte EduTicTac Commons en
 ## Ús ràpid
 
 ```bash
-cd stack
 cp .env.example .env
 make doctor
 make up
@@ -31,6 +30,8 @@ El token docent de demo és el valor de `EDUTICTAC_ID_TEACHER_TOKEN` en `.env` (
 |---|---:|---|
 | `portal` | 80 | Portal demo i proxy `/api/` |
 | `id-api` | 8005 | Credencial pseudònima d'alumnat |
+| `eduhoot` | 3000 | Activitat quiz (opcional, `COMPOSE_PROFILES=eduhoot`) |
+| `eduhoot-mongo` | 27017 | Base de dades d'EduHoot (opcional) |
 
 ## Reutilització del treball existent
 
@@ -46,12 +47,23 @@ Aquest stack no comença de zero: reutilitza l'API d'identitat pseudònima desen
 6. Registra una puntuació.
 7. Torna al tauler docent i consulta resultats.
 
+## Mòdul opcional: EduHoot
+
+EduHoot (`~/github/web/EduHoot`, imatge pròpia publicada a `registry.edutictac.es`) és la primera activitat integrada de la Fase 4. Per activar-lo:
+
+```bash
+echo "COMPOSE_PROFILES=eduhoot" >> .env
+make up
+```
+
+Obri `http://localhost:8090`. El professorat pot crear i allotjar una partida sense compte. Amb `EDUHOOT_ID_AUTH_REQUIRED=1` (per defecte), l'alumnat només pot unir-se amb un codi + PIN generat des del portal, la mateixa identitat pseudònima que la resta del stack — no es necessita cap compte de Google. Les dades (base Mongo, imatges pujades, informes de sessió) persisteixen en `./data/eduhoot-*`.
+
 ## Dades locals
 
 La base SQLite viu en:
 
 ```text
-stack/data/id.db
+data/id.db
 ```
 
 No es versiona. Per reiniciar la demo des de zero:

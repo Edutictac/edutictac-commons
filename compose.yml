@@ -28,3 +28,29 @@ services:
         condition: service_healthy
     ports:
       - "${PORTAL_PORT:-8082}:80"
+
+  eduhoot-mongo:
+    image: mongo:7
+    profiles: ["eduhoot"]
+    volumes:
+      - ./data/eduhoot-mongo:/data/db
+    expose:
+      - "27017"
+
+  eduhoot:
+    image: ${IMAGE_REGISTRY:-edutictac}/eduhoot:${EDUHOOT_TAG:-0.1.0}
+    profiles: ["eduhoot"]
+    depends_on:
+      - eduhoot-mongo
+    environment:
+      PORT: 3000
+      HOST: 0.0.0.0
+      MONGO_URL: mongodb://eduhoot-mongo:27017/eduhoot
+      EDUTICTAC_ID_API_URL: http://id-api:8005
+      EDUTICTAC_ID_AUTH_REQUIRED: ${EDUHOOT_ID_AUTH_REQUIRED:-1}
+      PUBLIC_BASE_URL: http://localhost:${EDUHOOT_PORT:-8090}
+    volumes:
+      - ./data/eduhoot-uploads:/app/public/uploads
+      - ./data/eduhoot-logs:/app/logs
+    ports:
+      - "${EDUHOOT_PORT:-8090}:3000"
