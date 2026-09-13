@@ -111,8 +111,12 @@ I després:
 
 ```bash
 docker compose --env-file .env -f compose.yml pull
-make up
+make up-pulled
 ```
+
+`make up-pulled` alça els contenidors sense reconstruir res des del codi
+font (a diferència de `make up`, pensat per a desenvolupament local, que
+sempre reconstrueix la imatge).
 
 ## Funcionament sense accés al registre
 
