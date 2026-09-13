@@ -58,6 +58,8 @@ make up
 
 Obri `http://localhost:8090`. El professorat pot crear i allotjar una partida sense compte. Amb `EDUHOOT_ID_AUTH_REQUIRED=1` (per defecte), l'alumnat només pot unir-se amb un codi + PIN generat des del portal, la mateixa identitat pseudònima que la resta del stack — no es necessita cap compte de Google. Les dades (base Mongo, imatges pujades, informes de sessió) persisteixen en `./data/eduhoot-*`.
 
+Si aquesta instància no té encara cap activitat de prova, un usuari `admin` (crea'l amb `/api/auth/bootstrap` si no n'hi ha cap) pot fer servir el botó "Importar activitats públiques" del panell d'admin per descarregar totes les activitats públiques de `eduhoot.edutictac.es` (configurable amb `EDUHOOT_PUBLIC_IMPORT_SOURCE`, buit per desactivar-lo).
+
 ## Dades locals
 
 La base SQLite viu en:

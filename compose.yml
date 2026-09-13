@@ -49,6 +49,7 @@ services:
       EDUTICTAC_ID_API_URL: http://id-api:8005
       EDUTICTAC_ID_AUTH_REQUIRED: ${EDUHOOT_ID_AUTH_REQUIRED:-1}
       PUBLIC_BASE_URL: http://localhost:${EDUHOOT_PORT:-8090}
+      PUBLIC_IMPORT_SOURCE_URL: ${EDUHOOT_PUBLIC_IMPORT_SOURCE:-https://eduhoot.edutictac.es}
     volumes:
       - ./data/eduhoot-uploads:/app/public/uploads
       - ./data/eduhoot-logs:/app/logs
