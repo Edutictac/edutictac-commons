@@ -1,0 +1,14 @@
+# Local Docker stack
+.env
+data/*
+!data/.gitkeep
+backups/*
+!backups/.gitkeep
+dist/*
+!dist/.gitkeep
+*.sqlite
+*.sqlite-*
+*.db
+*.db-*
+__pycache__/
+*.pyc
