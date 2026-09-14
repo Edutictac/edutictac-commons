@@ -66,8 +66,8 @@ intern de l'ecosistema EduTicTac:
 - [x] Flux demo automàtic docent -> credencials -> alumne -> puntuació ->
   resultats.
 - [x] Artefactes locals ignorats i comprovats pel `release-check`.
-- [ ] Documentació tècnica pròpia en `docs/`.
-- [ ] Inventari curt de serveis, ports, dades persistents i scripts.
+- [x] Documentació tècnica pròpia en `docs/`.
+- [x] Inventari curt de serveis, ports, dades persistents i scripts.
 
 ### Fita 2 — Tauler docent i alumnat v1
 

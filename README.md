@@ -128,4 +128,4 @@ La primera versió tancada queda documentada en `RELEASE-0.1.0-alpha.md`.
 
 ## Desenvolupament
 
-El roadmap operatiu d'aquest repo viu en `docs/ROADMAP.md`. El dossier 4D complet continua en el repositori `edutictac-4d-solicitud`; aquest repo se centra en la Pista B: stack Docker replicable, credencial pseudònima, portal/taulers i instal·lador v1.
+El roadmap operatiu d'aquest repo viu en `docs/ROADMAP.md` i l'inventari tècnic en `docs/INVENTARI.md`. El dossier 4D complet continua en el repositori `edutictac-4d-solicitud`; aquest repo se centra en la Pista B: stack Docker replicable, credencial pseudònima, portal/taulers i instal·lador v1.
