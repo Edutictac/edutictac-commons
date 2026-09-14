@@ -92,8 +92,8 @@ make ps          # estat dels serveis
 make test-flow   # prova docent -> alumne -> resultats
 make bootstrap-demo # crea grup, activitat i TSV de credencials en dist/
 make release-check # comprovacio abans d'entrega/exportacio
-make backup      # copia SQLite en backups/
-make restore BACKUP=backups/id-YYYYmmddTHHMMSSZ.db
+make backup      # crea backups/commons-<stamp>/ amb manifest.json i id-api/id.db
+make restore BACKUP=backups/commons-YYYYmmddTHHMMSSZ/
 make export-images
 make load-images ARCHIVE=dist/edutictac-commons-images-0.1.0-alpha.tar
 ```

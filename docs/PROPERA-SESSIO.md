@@ -19,40 +19,39 @@ Principis acordats:
 
 ## Ordre recomanat
 
-### 1. Definir format de backup
+### 1. Definir format de backup — ✅ fet (2026-09-14)
 
-Proposta inicial:
+Format implementat en `scripts/backup.sh`:
 
 ```text
 backups/commons-YYYYmmddTHHMMSSZ/
   manifest.json
   id-api/id.db
+```
+
+El `manifest.json` inclou: `manifest_version`, `created_at`, `stack_version`
+(de `VERSION`), `services[]` (nom, estat, rutes i checksum `sha256` per
+servei) i `warnings[]`. `scripts/restore.sh` ja llig aquest format (valida
+manifest + `id-api/id.db`, avisa si la versió no coincideix).
+
+Pendent per a properes carpetes de backup, quan s'afegisquen més serveis:
+
+```text
   eduhoot/mongo.archive
   eduhoot/uploads/
   eduhoot/logs/
 ```
 
-El `manifest.json` hauria d'incloure:
-
-- data de creació;
-- versió del stack;
-- serveis inclosos;
-- rutes copiades;
-- checksums;
-- resultat de cada pas;
-- avisos de serveis no coberts.
-
 ### 2. Ampliar `make backup`
 
-Objectiu: deixar de copiar només `data/id.db`.
+Estat: **`id-api` cobert**. Si `COMPOSE_PROFILES=eduhoot` està actiu, el
+manifest ja inclou un avís explícit que EduHoot no té cobertura encara.
 
-Ha de cobrir:
+Queda per cobrir:
 
-- SQLite de `id-api`;
 - EduHoot/Mongo si `COMPOSE_PROFILES=eduhoot`;
 - `data/eduhoot-uploads/`;
-- logs o informes d'EduHoot que decidim conservar;
-- manifest amb cobertura i avisos.
+- logs o informes d'EduHoot que decidim conservar.
 
 ### 3. Afegir `make backup-check`
 
@@ -124,6 +123,10 @@ Quan backups estiguen sòlids:
 
 ## Primer canvi concret
 
-Començar per crear el format de `manifest.json` i modificar `scripts/backup.sh`
-per generar una carpeta de backup amb manifest, encara que inicialment només
-incloga `id-api`.
+Fet (2026-09-14): `scripts/backup.sh` genera `backups/commons-<stamp>/` amb
+`manifest.json` i `id-api/id.db`, i `scripts/restore.sh` restaura des
+d'aquest format. `README.md`, `INSTALL-CENTRES.md` i `docs/INVENTARI.md`
+actualitzats al nou format.
+
+Següent pas: `make backup-check` (punt 3) o ampliar cobertura a EduHoot dins
+del punt 2, segons prioritat.

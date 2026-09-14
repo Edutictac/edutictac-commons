@@ -45,7 +45,7 @@ backup:
 	./scripts/backup.sh
 
 restore:
-	@test -n "$(BACKUP)" || (echo "Usa: make restore BACKUP=backups/id-YYYYmmddTHHMMSSZ.db" && exit 1)
+	@test -n "$(BACKUP)" || (echo "Usa: make restore BACKUP=backups/commons-YYYYmmddTHHMMSSZ/" && exit 1)
 	./scripts/restore.sh "$(BACKUP)"
 
 reset:

@@ -38,7 +38,7 @@ de Compose.
 | `data/eduhoot-mongo/` | contenidor MongoDB | base Mongo d'EduHoot | No |
 | `data/eduhoot-uploads/` | contenidor `eduhoot` | imatges pujades a EduHoot | No |
 | `data/eduhoot-logs/` | contenidor `eduhoot` | informes i logs locals d'EduHoot | No |
-| `backups/` | host | còpies SQLite generades per `make backup` | No, excepte `.gitkeep` |
+| `backups/` | host | carpetes `commons-<stamp>/` amb `manifest.json` i dades per servei, generades per `make backup` | No, excepte `.gitkeep` |
 | `dist/` | host | paquets exportats i credencials demo | No, excepte `.gitkeep` |
 
 Cap d'aquestes dades ha d'entrar al repositori. Només es versionen els
@@ -60,7 +60,7 @@ Estat actual:
 
 | Dades | Cobertura actual | Objectiu |
 |---|---|---|
-| `data/id.db` | `make backup` / `make restore` | mantindre i verificar amb prova automàtica segura |
+| `data/id.db` | `make backup` / `make restore`, amb `manifest.json` i checksum | mantindre i verificar amb prova automàtica segura |
 | `data/eduhoot-mongo/` | pendent | `mongodump`/restore o equivalent dins de la política comuna |
 | `data/eduhoot-uploads/` | pendent | còpia de fitxers amb restauració documentada |
 | `data/eduhoot-logs/` | pendent | decidir quins logs/informes són dades a conservar |
@@ -106,8 +106,8 @@ En qualsevol entorn que no siga demo local cal canviar
 | `make logs` | mostra logs del stack |
 | `make test-flow` | prova docent -> credencials -> alumne -> puntuació -> resultats |
 | `make bootstrap-demo` | crea grup, activitat i TSV de credencials demo |
-| `make backup` | copia `data/id.db` a `backups/` |
-| `make restore BACKUP=...` | restaura una còpia SQLite |
+| `make backup` | crea `backups/commons-<stamp>/` amb `manifest.json` i `id-api/id.db` |
+| `make restore BACKUP=backups/commons-<stamp>/` | restaura una carpeta de backup validant el manifest |
 | `make reset` | reinicia les dades locals de la demo |
 | `make export-images` | genera un arxiu `.tar` amb imatges pròpies |
 | `make load-images ARCHIVE=...` | carrega imatges des d'un `.tar` |

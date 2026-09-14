@@ -70,7 +70,7 @@ Abans d'usar el prototip amb professorat o alumnat real, revisa `../FITXA-PRIVAC
 make ps          # estat dels serveis
 make logs        # logs del stack
 make test-flow   # prova automàtica del flux principal
-make backup      # còpia de la base SQLite
+make backup      # crea backups/commons-<stamp>/ amb manifest.json i id-api/id.db
 make down        # atura contenidors sense esborrar dades
 make up          # arranca o actualitza contenidors
 ```
@@ -176,7 +176,7 @@ make backup
 Restaurar:
 
 ```bash
-make restore BACKUP=backups/id-YYYYmmddTHHMMSSZ.db
+make restore BACKUP=backups/commons-YYYYmmddTHHMMSSZ/
 ```
 
 ## Solució de problemes
