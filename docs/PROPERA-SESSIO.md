@@ -176,8 +176,8 @@ Escriptura (allowlist tancada, cap dada de la petició arriba a un shell):
   ("Desactivar backups automàtics").
 
 Frontend propi a `admin/public/` (mateix patró UX que
-`services/portal/public/teacher.html`: token + `Bearer`, guardat en
-`localStorage`).
+`services/portal/public/teacher.html`: token + `Bearer`, guardat només en
+`sessionStorage` i eliminat en tancar la sessió del navegador).
 
 El timer encara no s'ha instal·lat en cap màquina real: queda pendent de
 prémer el botó la primera vegada que es faça servir el stack fora d'aquesta
