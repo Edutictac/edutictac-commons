@@ -94,17 +94,25 @@ Punt de represa detallat: `docs/PROPERA-SESSIO.md`.
 Principi: **cap dada persistent sense backup** i **cap actualització sense
 backup recent i verificable**.
 
-- [ ] Documentar política de backup per servei: `id-api`, EduHoot/Mongo,
-  uploads, logs rellevants, configuració local i futurs mòduls.
+- [x] Documentar política inicial de backup per servei i marcar pendents:
+  `id-api`, EduHoot/Mongo, uploads, logs rellevants, configuració local i
+  futurs mòduls.
+- [x] Ampliar `make backup` perquè cobrisca `id-api` amb manifest i checksum.
 - [ ] Ampliar `make backup` perquè cobrisca tots els serveis amb dades
-  persistents activats.
-- [ ] Ampliar `make restore` i documentar restauració pas a pas per servei.
-- [ ] Afegir verificació mínima de backup/restauració en entorn local segur.
+  persistents activats (pendent EduHoot/Mongo, uploads i decisió sobre logs).
+- [x] Ampliar `make restore` per a `id-api` i documentar el flux base.
+- [ ] Ampliar `make restore` i documentar restauració pas a pas per a tots els
+  serveis persistents (pendent EduHoot).
+- [x] Afegir verificació mínima de backup/restauració en entorn local segur
+  per a `id-api`.
+- [ ] Afegir verificació de backup/restauració amb `COMPOSE_PROFILES=eduhoot`.
 - [x] Crear panell `/admin` només per administració tècnica.
 - [x] Mostrar en `/admin` estat de serveis, versió instal·lada i últim backup.
 - [x] Permetre crear backup manual des del panell.
 - [x] Permetre restaurar backup seleccionat des del panell amb confirmació.
 - [x] Llistar backups disponibles i avisar si algun servei no està cobert.
+- [x] Versionar la imatge pròpia `commons-admin` i incloure-la en
+  `export-images`/`push-images`.
 - [ ] Consultar `IMAGE_REGISTRY` i detectar si hi ha una versió nova
   disponible.
 - [ ] Oferir actualització guiada d'imatges: backup previ obligatori,

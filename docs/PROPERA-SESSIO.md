@@ -1,6 +1,8 @@
 # Propera sessió de treball
 
-> Estat: punt de represa després de tancar la Fita 2 i prioritzar la Fita 3.  
+> Estat: Fita 3 avançada; backup/restore d'`id-api`, backups automàtics i
+> panell `/admin` operatius. Pendent principal: cobertura completa d'EduHoot i
+> actualitzacions Docker/OCI.
 > Data: 2026-09-14
 
 ## Objectiu immediat
@@ -224,5 +226,15 @@ lectura de l'estat operatiu i quatre accions d'escriptura per allowlist (crear
 backup, restaurar backup seleccionat, activar/desactivar el timer automàtic)
 — cap pas de terminal addicional a `make up`.
 
-Següent pas: ampliar cobertura a EduHoot dins del punt 2, o punt 7
-(actualitzacions Docker/OCI).
+Fet (2026-09-14): restauració real provada des del panell `/admin` contra un
+backup local (`commons-20260914T142231Z`). El primer disseny síncron tallava la
+connexió perquè `restore.sh` para també el contenidor `admin`; queda corregit
+amb llançament asíncron via `systemd-run --user` i verificat amb serveis de nou
+amunt, salut del portal i `test-flow` correcte.
+
+Fet (2026-09-14): imatge pròpia `commons-admin:${IMAGE_TAG}` versionada i
+inclosa en `make export-images` i `make push-images` junt amb `commons-id-api`
+i `commons-portal`.
+
+Següent pas recomanat: ampliar cobertura a EduHoot dins del punt 2. Després,
+punt 7 (actualitzacions Docker/OCI).
