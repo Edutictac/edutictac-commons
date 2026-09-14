@@ -1,13 +1,32 @@
 # Propera sessió de treball
 
-> Estat: Fita 3 quasi tancada; backup/restore d'`id-api` i EduHoot (mongo,
-> uploads, informes de sessió), backups automàtics i panell `/admin`
-> operatius. Pendent principal: punt 7 (actualitzacions Docker/OCI).
+> Estat: Fita 3 tancada excepte rollback assistit; Fita 4 avançada amb
+> EduHoot integrat, assignacions des del portal i puntuacions enviades a
+> Commons. Pendent principal: prova funcional portal + identitat + EduHoot i
+> kit de privacitat per a centres.
 > Data: 2026-09-14
 
-## Objectiu immediat
+## Objectiu immediat actual
 
-Començar la **Fita 3 — Administració operativa: backups i actualitzacions**.
+Tancar la **Fita 4 — EduHoot com a primera activitat integrada**.
+
+El flux manual ja funciona:
+
+1. `COMPOSE_PROFILES=eduhoot`.
+2. Portal a `PORTAL_PORT` i EduHoot a `EDUHOOT_PORT`.
+3. Professorat crea grup i assignació EduHoot per ID de quiz.
+4. Alumnat entra a EduHoot amb codi + PIN Commons, sense posar nom.
+5. EduHoot envia la puntuació final a Commons via
+   `/api/apps/eduhoot/scores`.
+6. El tauler docent consulta resultats/rànquing des de Commons.
+
+Queda convertir això en comprovació reproduïble, idealment un script de test
+que valide almenys l'endpoint de configuració, autenticació d'alumnat, registre
+de puntuació i lectura de resultats.
+
+## Històric de Fita 3
+
+La Fita 3 va començar amb aquest objectiu:
 
 La idea central és que EduTicTac Commons no pot considerar-se instal·lable en
 centres si no pot copiar, restaurar i actualitzar el stack de manera segura.
@@ -273,9 +292,5 @@ Fet (2026-09-14): cobertura completa d'EduHoot en `make backup`/`make
 restore`/`make backup-check` (mongo `kahootDB`, uploads, informes de sessió),
 amb healthcheck nou per `eduhoot-mongo` en `compose.yml`. Provat en real amb
 un cicle complet backup -> restore contra el stack local amb dades reals.
-Fita 3 pràcticament tancada.
-
-Següent pas recomanat: punt 7 (actualitzacions Docker/OCI) — detectar versió
-disponible a `IMAGE_REGISTRY`, exigir backup recent i verificable abans
-d'actualitzar, descarregar imatges, reiniciar, healthchecks i rollback
-documentat.
+Fita 3 queda tancada en codi excepte el rollback assistit des del panell:
+actualment el rollback és manual i està documentat en `docs/INVENTARI.md`.

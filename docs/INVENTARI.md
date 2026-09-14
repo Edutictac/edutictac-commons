@@ -82,8 +82,8 @@ llegir/sobreescriure eixos directoris sense dependre de permisos de l'host.
 El panell `/admin` (servei `admin`, vegeu secció pròpia) ja mostra l'estat de
 l'últim backup, permet crear-ne un manualment, llista còpies disponibles,
 permet restaurar una còpia seleccionada (amb confirmació forta) i avisa de
-serveis no coberts. Bloquejar actualitzacions si no hi ha un backup recent i
-verificable queda pendent del punt 7 (actualitzacions Docker/OCI).
+serveis no coberts. El flux d'actualització d'imatges ja exigeix un backup
+recent i verificable abans de descarregar i reiniciar serveis.
 
 ## Configuració
 
@@ -105,6 +105,10 @@ Variables principals:
 - `EDUTICTAC_ID_APP_TOKEN`: token intern perquè apps integrades (ara EduHoot)
   registren puntuacions en Commons.
 - `COMPOSE_PROFILES`: activa mòduls opcionals, ara `eduhoot`.
+- `EDUHOOT_PORT`: port públic d'EduHoot (`8090` per defecte).
+- `EDUHOOT_TAG`: versió de la imatge `eduhoot`.
+- `EDUHOOT_ID_AUTH_REQUIRED`: si val `0`, EduHoot accepta nom curt o codi +
+  PIN Commons; si val `1`, exigeix codi + PIN Commons.
 - `EDUHOOT_PUBLIC_IMPORT_SOURCE`: font d'importació d'activitats públiques
   d'EduHoot; buit desactiva la funció.
 - `EDUTICTAC_ADMIN_TOKEN`: token d'accés al panell `/admin`.
@@ -163,6 +167,18 @@ El contenidor `id-api` també té un healthcheck intern contra:
 ```text
 http://127.0.0.1:8005/api/health
 ```
+
+Amb EduHoot actiu, la seua configuració d'identitat es pot comprovar amb:
+
+```bash
+curl http://127.0.0.1:8090/api/player-auth/config
+```
+
+El mode mixt esperat torna `{"enabled":true,"required":false}`. Això significa
+que l'alumnat pot entrar amb nom curt o amb codi + PIN Commons. Si usa codi +
+PIN, EduHoot valida contra `id-api`, no demana cap nom addicional i envia la
+puntuació final a Commons per `/api/apps/eduhoot/scores` amb
+`EDUTICTAC_ID_APP_TOKEN`.
 
 El panell `/admin` (`http://127.0.0.1:8091/`) mostra l'estat agregat: versió
 instal·lada, serveis actius, últim backup, cobertura i estat del timer de

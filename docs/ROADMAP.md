@@ -132,7 +132,7 @@ backup recent i verificable**.
 **Resultat:** el professorat pot crear o seleccionar una activitat EduHoot i
 l'alumnat pot completar-la amb la mateixa identitat pseudònima.
 
-- [ ] Documentar exactament què espera EduHoot del servei d'identitat.
+- [x] Documentar exactament què espera EduHoot del servei d'identitat.
 - [x] Validar el flux amb `COMPOSE_PROFILES=eduhoot`.
 - [ ] Crear una prova funcional que cobrisca portal + identitat + EduHoot.
 - [x] Evitar que l'alumnat necessite cap compte personal.
@@ -140,6 +140,8 @@ l'alumnat pot completar-la amb la mateixa identitat pseudònima.
   seguretat.
 - [x] Permetre assignar una activitat EduHoot des del tauler docent (per ID de
   quiz) i registrar puntuacions de partida en Commons via token intern.
+- [x] Permetre mode mixt en EduHoot: entrada amb nom curt o amb codi + PIN
+  Commons sense demanar nom addicional.
 
 ### Fita 5 — Privacitat per a centres
 

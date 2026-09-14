@@ -69,7 +69,9 @@ echo "COMPOSE_PROFILES=eduhoot" >> .env
 make up
 ```
 
-Obri `http://localhost:8090`. El professorat pot crear i allotjar una partida sense compte. Amb `EDUHOOT_ID_AUTH_REQUIRED=1` (per defecte), l'alumnat només pot unir-se amb un codi + PIN generat des del portal, la mateixa identitat pseudònima que la resta del stack — no es necessita cap compte de Google. Les dades (base Mongo, imatges pujades, informes de sessió) persisteixen en `./data/eduhoot-*`.
+Obri `http://localhost:8090`. El professorat pot crear i allotjar una partida sense compte. Per defecte, `EDUHOOT_ID_AUTH_REQUIRED=0`: l'alumnat pot entrar amb un nom curt o amb codi + PIN Commons. Si el centre vol forçar identitat pseudònima en totes les partides, posa `EDUHOOT_ID_AUTH_REQUIRED=1`. En tots dos casos no es necessita cap compte de Google.
+
+Quan l'alumnat entra amb codi + PIN Commons, EduHoot no demana nom addicional: usa el codi públic com a àlies curt i envia la puntuació final a Commons amb el token intern `EDUTICTAC_ID_APP_TOKEN`. El tauler docent pot crear assignacions EduHoot per ID de quiz i veure resultats associats al grup; si no hi ha assignació explícita però el grup està actiu, Commons pot associar la puntuació a l'activitat corresponent. Les dades (base Mongo, imatges pujades, informes de sessió) persisteixen en `./data/eduhoot-*`.
 
 Si aquesta instància no té encara cap activitat de prova, un usuari `admin` (crea'l amb `/api/auth/bootstrap` si no n'hi ha cap) pot fer servir el botó "Importar activitats públiques" del panell d'admin per descarregar totes les activitats públiques de `eduhoot.edutictac.es` (configurable amb `EDUHOOT_PUBLIC_IMPORT_SOURCE`, buit per desactivar-lo).
 

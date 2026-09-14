@@ -58,9 +58,12 @@ Edita `.env` abans d'usar la demo amb professorat real:
 PORTAL_PORT=8082
 EDUTICTAC_ID_SECRET=canvia-aquest-secret
 EDUTICTAC_ID_TEACHER_TOKEN=canvia-aquest-token-docent
+EDUTICTAC_ID_APP_TOKEN=canvia-aquest-token-intern
+EDUTICTAC_ADMIN_TOKEN=canvia-aquest-token-admin
 ```
 
-No uses els valors `change-this-local-secret` ni `dev-teacher` fora d'una demo local.
+No uses els valors `change-this-local-secret`, `dev-teacher`,
+`dev-app-token` ni `change-this-admin-token` fora d'una demo local.
 
 Abans d'usar el prototip amb professorat o alumnat real, revisa `../FITXA-PRIVACITAT-PROTOTIP.md`.
 
@@ -70,7 +73,7 @@ Abans d'usar el prototip amb professorat o alumnat real, revisa `../FITXA-PRIVAC
 make ps          # estat dels serveis
 make logs        # logs del stack
 make test-flow   # prova automàtica del flux principal
-make backup      # crea backups/commons-<stamp>/ amb manifest.json i id-api/id.db
+make backup      # crea backups/commons-<stamp>/ amb manifest.json i dades persistents
 make down        # atura contenidors sense esborrar dades
 make up          # arranca o actualitza contenidors
 ```
@@ -92,6 +95,35 @@ Després d'actualitzar els fitxers del stack:
 make up
 make test-flow
 ```
+
+Per a imatges publicades al registre, el flux recomanat és:
+
+```bash
+make check-updates
+make update-images
+```
+
+`make update-images` crea i verifica un backup abans de canviar tags, descarrega
+imatges, reinicia serveis i executa `make test-flow`.
+
+## Activar EduHoot
+
+EduHoot és opcional. Per activar-lo:
+
+```env
+COMPOSE_PROFILES=eduhoot
+EDUHOOT_PORT=8090
+EDUHOOT_ID_AUTH_REQUIRED=0
+```
+
+Amb `EDUHOOT_ID_AUTH_REQUIRED=0`, l'alumnat pot entrar amb un nom curt o amb
+codi + PIN Commons. Si usa codi + PIN, EduHoot no demana nom addicional i la
+puntuació final queda registrada en Commons. Si el centre vol obligar sempre
+identitat pseudònima, posa `EDUHOOT_ID_AUTH_REQUIRED=1`.
+
+EduHoot guarda dades en `data/eduhoot-mongo/`, `data/eduhoot-uploads/` i
+`data/eduhoot-logs/`. `make backup` i `make restore` les cobreixen quan el
+perfil està actiu.
 
 ## Ús d'imatges ja publicades (registre propi)
 
@@ -168,6 +200,14 @@ La base de dades SQLite queda en:
 
 ```text
 data/id.db
+```
+
+Si EduHoot està actiu, també hi ha dades persistents en:
+
+```text
+data/eduhoot-mongo/
+data/eduhoot-uploads/
+data/eduhoot-logs/
 ```
 
 Crear una còpia:
