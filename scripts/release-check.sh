@@ -5,25 +5,25 @@ cd "$(dirname "$0")/.."
 
 repo_root="$(git rev-parse --show-toplevel)"
 version="$(cat VERSION)"
-image_archive="stack/dist/edutictac-commons-images-${version}.tar"
+image_archive="dist/edutictac-commons-images-${version}.tar"
 
 ignored_required="
-stack/.env
-stack/data/id.db
-stack/data/id.db-wal
-stack/data/id.db-shm
-stack/backups/demo.db
-stack/dist/demo-credentials.tsv
+.env
+data/id.db
+data/id.db-wal
+data/id.db-shm
+backups/demo.db
+dist/demo-credentials.tsv
 $image_archive
 "
 
 tracked_forbidden="
-stack/.env
-stack/data/id.db
-stack/data/id.db-wal
-stack/data/id.db-shm
-stack/backups/demo.db
-stack/dist/demo-credentials.tsv
+.env
+data/id.db
+data/id.db-wal
+data/id.db-shm
+backups/demo.db
+dist/demo-credentials.tsv
 $image_archive
 "
 

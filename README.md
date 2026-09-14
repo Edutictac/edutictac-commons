@@ -125,3 +125,7 @@ Si no pots entrar com a alumne, usa una targeta acabada de generar en el portal:
 Consulta `INSTALL-CENTRES.md` per provar el stack en un centre educatiu, exportar imatges sense Docker Hub o preparar una publicació futura. Abans de compartir el paquet, revisa `CHECKLIST-ENTREGA.md` i executa `make release-check`.
 
 La primera versió tancada queda documentada en `RELEASE-0.1.0-alpha.md`.
+
+## Desenvolupament
+
+El roadmap operatiu d'aquest repo viu en `docs/ROADMAP.md`. El dossier 4D complet continua en el repositori `edutictac-4d-solicitud`; aquest repo se centra en la Pista B: stack Docker replicable, credencial pseudònima, portal/taulers i instal·lador v1.
