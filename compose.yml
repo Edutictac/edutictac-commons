@@ -3,6 +3,7 @@ services:
     image: ${IMAGE_REGISTRY:-edutictac}/commons-id-api:${IMAGE_TAG:-0.1.0-alpha}
     build:
       context: ./services/id-api
+    user: "${PUID:-1000}:${PGID:-1000}"
     environment:
       EDUTICTAC_ID_DB: ${EDUTICTAC_ID_DB:-/data/id.db}
       EDUTICTAC_ID_SECRET: ${EDUTICTAC_ID_SECRET:-change-this-local-secret}

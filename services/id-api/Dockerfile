@@ -17,7 +17,8 @@ COPY vendor/edutictac_community ./edutictac_community
 COPY main.py .
 COPY entrypoint.sh /entrypoint.sh
 
-RUN useradd --system --create-home --home-dir /home/app app \
+RUN groupadd --gid 1000 app \
+    && useradd --uid 1000 --gid app --create-home --home-dir /home/app app \
     && mkdir -p /data \
     && chown -R app:app /app /data \
     && chmod +x /entrypoint.sh

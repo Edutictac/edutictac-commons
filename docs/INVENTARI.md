@@ -166,6 +166,11 @@ amb versions disponibles, mostrar el canal actiu (`stable`, `testing` o
   vol conservar l'estat.
 - En un centre no s'han d'usar els valors demo `change-this-local-secret` ni
   `dev-teacher`.
+- `id-api` arranca amb l'UID/GID de `PUID`/`PGID` (per defecte `1000:1000`)
+  perque `data/id.db` quede a nom de l'usuari del sistema, no d'un UID intern
+  fix; si el host on s'instal·la té un usuari amb un altre UID, cal ajustar
+  `PUID`/`PGID` a `.env` abans de `make up` per evitar errors de permisos en
+  `make restore`.
 
 ## Fitxers que no s'han de versionar
 

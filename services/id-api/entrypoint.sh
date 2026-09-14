@@ -2,6 +2,10 @@
 set -eu
 
 mkdir -p /data
-chown app:app /data
 
-exec su -s /bin/sh app -c "$*"
+if [ "$(id -u)" = "0" ]; then
+  chown app:app /data
+  exec su -s /bin/sh app -c "$*"
+fi
+
+exec "$@"
