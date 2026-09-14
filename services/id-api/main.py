@@ -524,6 +524,45 @@ def me(request: Request) -> dict[str, Any]:
     return {"identity": identity}
 
 
+@app.get("/api/student/dashboard")
+def student_dashboard(request: Request) -> dict[str, Any]:
+    identity = current_identity(request)
+    if not identity:
+        raise HTTPException(status_code=401, detail="not authenticated")
+    with get_conn() as conn:
+        rows = conn.execute(
+            """
+            SELECT
+                a.*,
+                COUNT(s.id) AS attempts,
+                MAX(s.score) AS best_score,
+                MAX(s.created_at) AS last_score_at
+            FROM activity_assignments a
+            LEFT JOIN scores s
+                ON s.assignment_id = a.id
+               AND s.identity_id = ?
+            WHERE a.group_id = ?
+              AND a.active = 1
+            GROUP BY a.id
+            ORDER BY a.created_at DESC, a.title, a.app_id, a.activity_id
+            """,
+            (identity["id"], identity["group_id"]),
+        ).fetchall()
+    return {
+        "identity": identity,
+        "assignments": [
+            {
+                **public_assignment(row),
+                "attempts": int(row["attempts"] or 0),
+                "best_score": row["best_score"],
+                "last_score_at": row["last_score_at"],
+                "completed": int(row["attempts"] or 0) > 0,
+            }
+            for row in rows
+        ],
+    }
+
+
 @app.post("/api/auth/logout")
 def logout(request: Request, response: Response) -> dict[str, bool]:
     cookie = parse_cookie(request.cookies.get(SESSION_COOKIE))

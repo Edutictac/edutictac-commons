@@ -79,7 +79,7 @@ tauler Commons.
   `localStorage`.
 - [x] Permetre regenerar PIN i revocar identitats des del tauler.
 - [x] Afegir exportació docent clara: targetes, CSV de codis i estadístiques.
-- [ ] Afegir una vista d'alumnat amb recorregut i progrés bàsic.
+- [x] Afegir una vista d'alumnat amb recorregut i progrés bàsic.
 
 ### Fita 3 — EduHoot com a primera activitat integrada
 

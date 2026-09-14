@@ -49,6 +49,16 @@ curl -fsS -c "$student_cookie" -b "$student_cookie" \
   -d "{\"public_code\":\"${code}\",\"pin\":\"${pin}\"}" \
   "$base/api/auth/student" >/dev/null
 
+student_dashboard="$(curl -fsS -c "$student_cookie" -b "$student_cookie" \
+  "$base/api/student/dashboard")"
+
+student_assignment_id="$(printf '%s' "$student_dashboard" | jq -r '.assignments[0].id')"
+if [ "$student_assignment_id" != "$assignment_id" ]; then
+  echo "El recorregut de l'alumne no inclou l'assignacio esperada"
+  printf '%s\n' "$student_dashboard"
+  exit 1
+fi
+
 curl -fsS -c "$student_cookie" -b "$student_cookie" \
   -H 'Content-Type: application/json' \
   -d "{\"app_id\":\"commons-demo\",\"activity_id\":\"primera-activitat\",\"assignment_id\":\"${assignment_id}\",\"score\":88,\"metadata\":{\"demo\":true}}" \

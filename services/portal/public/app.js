@@ -11,6 +11,7 @@ const state = {
   assignment: null,
   assignments: [],
   student: null,
+  studentAssignments: [],
 };
 
 const $ = (id) => document.getElementById(id);
@@ -216,6 +217,32 @@ function teacherDashboard(summary, assignments) {
   `;
 }
 
+function studentDashboard(assignments) {
+  const completed = assignments.filter((assignment) => assignment.completed).length;
+  const total = assignments.length;
+  const rows = assignments.map((assignment) => ({
+    ...assignment,
+    title: assignment.title || assignment.activity_id,
+    status: assignment.completed ? "Feta" : "Pendent",
+    best_score: assignment.best_score ?? "",
+    last_score_at: assignment.last_score_at || "",
+    action:
+      assignment.app_id === DEMO_APP && assignment.activity_id === DEMO_ACTIVITY
+        ? `<button class="compact secondary" type="button" data-use-student-assignment="${escapeHtml(assignment.id)}">Usar en el repte</button>`
+        : "",
+  }));
+  return `
+    <p>Recorregut: <strong>${completed}/${total}</strong> activitats completades.</p>
+    ${table(rows, [
+      { key: "title", label: "Activitat" },
+      { key: "status", label: "Estat" },
+      { key: "best_score", label: "Millor puntuació" },
+      { key: "last_score_at", label: "Última vegada" },
+      { key: "action", label: "", html: true },
+    ])}
+  `;
+}
+
 function activityScore() {
   const answers = Array.from(document.querySelectorAll("#activityForm input[type='radio']:checked"));
   if (answers.length !== ACTIVITY_QUESTIONS) {
@@ -414,9 +441,30 @@ async function studentLogin() {
     body: JSON.stringify({ public_code: publicCode, pin }),
   });
   state.student = login.identity;
+  await loadStudentDashboard();
+}
+
+async function loadStudentDashboard(message = "") {
+  if (!state.student) {
+    throw new Error("Entra primer com a alumne.");
+  }
+  const data = await api("/api/student/dashboard", { method: "GET" });
+  state.student = data.identity;
+  state.studentAssignments = data.assignments || [];
+  const demoAssignment = state.studentAssignments.find(
+    (assignment) => assignment.app_id === DEMO_APP && assignment.activity_id === DEMO_ACTIVITY,
+  );
+  if (demoAssignment) {
+    state.assignment = demoAssignment;
+    saveState();
+  }
   setOutput(
     $("studentOutput"),
-    `<p>Hola, <strong>${escapeHtml(login.identity.public_code)}</strong>. Ja tens sessió pseudònima. Pots completar el repte.</p>`,
+    `
+      ${message}
+      <p>Hola, <strong>${escapeHtml(state.student.public_code)}</strong>. Ja tens sessió pseudònima.</p>
+      ${studentDashboard(state.studentAssignments)}
+    `,
   );
 }
 
@@ -435,8 +483,7 @@ async function sendScore() {
       metadata: { demo: true, correct: result.correct, total: result.total },
     }),
   });
-  setOutput(
-    $("studentOutput"),
+  await loadStudentDashboard(
     `<p>Activitat completada per <strong>${escapeHtml(saved.public_code)}</strong>: ${result.correct}/${result.total} encerts, puntuació <strong>${saved.score}</strong>.</p>`,
   );
 }
@@ -531,6 +578,22 @@ document.addEventListener("click", (event) => {
     revokeIdentity(revokeButton.dataset.revokeIdentity).catch((error) => {
       setOutput($("teacherOutput"), `<p><strong>Error:</strong> ${escapeHtml(error.message)}</p>`);
     });
+    return;
+  }
+
+  const studentAssignmentButton = event.target.closest("[data-use-student-assignment]");
+  if (studentAssignmentButton) {
+    const assignment = state.studentAssignments.find((item) => item.id === studentAssignmentButton.dataset.useStudentAssignment);
+    if (!assignment) return;
+    state.assignment = assignment;
+    saveState();
+    setOutput(
+      $("studentOutput"),
+      `
+        <p>Activitat seleccionada: <strong>${escapeHtml(assignment.title || assignment.activity_id)}</strong>. Pots completar el repte.</p>
+        ${studentDashboard(state.studentAssignments)}
+      `,
+    );
   }
 });
 
