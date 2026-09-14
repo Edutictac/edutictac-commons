@@ -43,12 +43,17 @@ if [ ! -f "$env_file" ]; then
   env_file=".env.example"
 fi
 
-if [ "$eduhoot_in_backup" = "1" ]; then
+if [ -n "${COMPOSE_PROFILES+x}" ]; then
+  profiles="$COMPOSE_PROFILES"
+else
   profiles="$(grep -E '^COMPOSE_PROFILES=' "$env_file" 2>/dev/null | cut -d= -f2- || true)"
+fi
+
+if [ "$eduhoot_in_backup" = "1" ]; then
   case ",${profiles}," in
     *,eduhoot,*) ;;
     *)
-      echo "El backup inclou dades d'eduhoot pero COMPOSE_PROFILES no te 'eduhoot' actiu en ${env_file}."
+      echo "El backup inclou dades d'eduhoot pero COMPOSE_PROFILES no te 'eduhoot' actiu."
       exit 1
       ;;
   esac
@@ -121,7 +126,11 @@ fi
 
 echo
 echo "Comprovant salut dels serveis..."
-portal_port="$(grep -E '^PORTAL_PORT=' "$env_file" 2>/dev/null | tail -n1 | cut -d= -f2)"
+if [ -n "${PORTAL_PORT+x}" ]; then
+  portal_port="$PORTAL_PORT"
+else
+  portal_port="$(grep -E '^PORTAL_PORT=' "$env_file" 2>/dev/null | tail -n1 | cut -d= -f2)"
+fi
 portal_port="${portal_port:-8082}"
 curl -fsS "http://127.0.0.1:${portal_port}/api/health" >/dev/null
 echo "OK portal saludable"
