@@ -1,0 +1,8 @@
+[Unit]
+Description=EduTicTac Commons - backup automatic
+After=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=__REPO_DIR__
+ExecStart=__REPO_DIR__/scripts/backup-auto.sh

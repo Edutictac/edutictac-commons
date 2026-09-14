@@ -3,7 +3,7 @@ ENV_FILE = $(shell test -f .env && echo .env || echo .env.example)
 COMPOSE = $(DOCKER) compose --env-file $(ENV_FILE) -f compose.yml
 COMPOSE_EXAMPLE = $(DOCKER) compose --env-file .env.example -f compose.yml
 
-.PHONY: init doctor up up-pulled up-example down build logs ps test-flow bootstrap-demo release-check backup backup-check restore reset images export-images load-images push-images
+.PHONY: init doctor up up-pulled up-example down build logs ps test-flow bootstrap-demo release-check backup backup-check backup-auto backup-prune backup-timer-install backup-timer-status backup-timer-uninstall restore reset images export-images load-images push-images
 
 init:
 	@test -f .env || cp .env.example .env
@@ -46,6 +46,22 @@ backup:
 
 backup-check:
 	./scripts/backup-check.sh
+
+backup-auto:
+	./scripts/backup-auto.sh
+
+backup-prune:
+	./scripts/backup-prune.sh
+
+backup-timer-install:
+	./scripts/install-backup-timer.sh
+
+backup-timer-status:
+	systemctl --user list-timers edutictac-commons-backup.timer
+	systemctl --user status edutictac-commons-backup.service --no-pager -l || true
+
+backup-timer-uninstall:
+	./scripts/uninstall-backup-timer.sh
 
 restore:
 	@test -n "$(BACKUP)" || (echo "Usa: make restore BACKUP=backups/commons-YYYYmmddTHHMMSSZ/" && exit 1)

@@ -38,7 +38,7 @@ de Compose.
 | `data/eduhoot-mongo/` | contenidor MongoDB | base Mongo d'EduHoot | No |
 | `data/eduhoot-uploads/` | contenidor `eduhoot` | imatges pujades a EduHoot | No |
 | `data/eduhoot-logs/` | contenidor `eduhoot` | informes i logs locals d'EduHoot | No |
-| `backups/` | host | carpetes `commons-<stamp>/` amb `manifest.json` i dades per servei, generades per `make backup` | No, excepte `.gitkeep` |
+| `backups/` | host | carpetes `commons-<stamp>/` amb `manifest.json` i dades per servei, generades per `make backup` (manual) o `make backup-auto` (timer diari), amb retenció via `make backup-prune` | No, excepte `.gitkeep` |
 | `dist/` | host | paquets exportats i credencials demo | No, excepte `.gitkeep` |
 
 Cap d'aquestes dades ha d'entrar al repositori. Només es versionen els
@@ -108,6 +108,11 @@ En qualsevol entorn que no siga demo local cal canviar
 | `make bootstrap-demo` | crea grup, activitat i TSV de credencials demo |
 | `make backup` | crea `backups/commons-<stamp>/` amb `manifest.json` i `id-api/id.db` |
 | `make backup-check` | comprova sense tocar dades que hi ha un backup recent, amb manifest i checksums vàlids i cobertura de tots els serveis actius |
+| `make backup-auto` | encadena `backup` + `backup-check` + `backup-prune`; és el que executa el timer automàtic |
+| `make backup-prune` | aplica retenció (per defecte 7 diaris / 4 setmanals / 6 mensuals) sobre `backups/commons-*` |
+| `make backup-timer-install` | instal·la un timer d'usuari de systemd que executa `backup-auto` cada dia a les 03:15 |
+| `make backup-timer-status` | mostra la pròxima execució i l'últim resultat del timer |
+| `make backup-timer-uninstall` | desinstal·la el timer d'usuari de systemd |
 | `make restore BACKUP=backups/commons-<stamp>/` | restaura una carpeta de backup, arranca els serveis, comprova la salut del portal i executa `test-flow` |
 | `make reset` | reinicia les dades locals de la demo |
 | `make export-images` | genera un arxiu `.tar` amb imatges pròpies |
@@ -172,6 +177,10 @@ amb versions disponibles, mostrar el canal actiu (`stable`, `testing` o
   fix; si el host on s'instal·la té un usuari amb un altre UID, cal ajustar
   `PUID`/`PGID` a `.env` abans de `make up` per evitar errors de permisos en
   `make restore`.
+- El timer automàtic de backup (`make backup-timer-install`) és un timer
+  **d'usuari** de systemd: si eixe usuari no manté sessió oberta habitualment,
+  cal `sudo loginctl enable-linger <usuari>` perque s'execute igualment a les
+  03:15.
 
 ## Fitxers que no s'han de versionar
 

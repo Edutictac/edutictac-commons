@@ -84,28 +84,48 @@ Flux implementat en `scripts/restore.sh`:
 Si qualsevol pas falla, el script s'atura (`set -eu`) i la còpia de
 seguretat prèvia queda disponible per a una restauració manual.
 
-### 5. Backups automàtics
+### 5. Backups automàtics — ✅ fet (2026-09-14)
 
-Opció preferida: **systemd timer**.
+Implementat amb **systemd timer** (opció preferida del pla):
 
-Alternativa documentada: cron.
+- `scripts/backup-auto.sh`: encadena `backup.sh` -> `backup-check.sh` ->
+  `backup-prune.sh`, amb línies de log amb marca de temps UTC. Si algun pas
+  falla, s'atura (`set -eu`) sense fer neteja, per no perdre backups en cas
+  de dubte.
+- `scripts/backup-prune.sh` (`make backup-prune`): aplica retenció tipus
+  "avi-pare-fill" sobre `backups/commons-*`: manté els N backups més
+  recents com a diaris, després 1 per setmana ISO distinta com a setmanals,
+  després 1 per mes distint com a mensuals. Per defecte `7`/`4`/`6`
+  (configurable amb `BACKUP_KEEP_DAILY`/`BACKUP_KEEP_WEEKLY`/
+  `BACKUP_KEEP_MONTHLY`), tal com demanava l'objectiu de configuració.
+- `systemd/edutictac-commons-backup.service.template` +
+  `systemd/edutictac-commons-backup.timer`: unitat `oneshot` que executa
+  `scripts/backup-auto.sh` i timer amb `OnCalendar=*-*-* 03:15:00` (+/- 10
+  min de jitter) i `Persistent=true` (recupera l'execució si la màquina
+  estava apagada a l'hora prevista).
+- `scripts/install-backup-timer.sh` (`make backup-timer-install`): genera la
+  unitat amb la ruta absoluta del repo i l'instal·la com a timer **d'usuari**
+  (`systemctl --user`), sense sudo. Avisa que cal `loginctl enable-linger`
+  si l'usuari no manté sessió oberta habitualment.
+- `scripts/uninstall-backup-timer.sh` (`make backup-timer-uninstall`) i
+  `make backup-timer-status` (`systemctl --user list-timers` + `status`) per
+  gestionar-lo.
 
-El panell `/admin` no hauria de gestionar systemd en la primera versió; primer
-ha de detectar i mostrar:
-
-- si els backups automàtics estan activats;
-- freqüència;
-- pròxima execució;
-- última execució;
-- últim resultat.
-
-Configuració objectiu futura:
+Alternativa documentada (cron), per a hosts sense systemd d'usuari
+disponible:
 
 ```text
-Freqüència: diària / setmanal
-Hora: 03:15
-Retenció: 7 diaris, 4 setmanals, 6 mensuals
+15 3 * * * cd /ruta/al/repo && ./scripts/backup-auto.sh >> /var/log/edutictac-commons-backup.log 2>&1
 ```
+
+Provat: `make backup-auto` fa les tres passes seguides correctament; la
+retenció s'ha provat amb 200 backups sintètics (un per dia) i deixa
+exactament 17 (7+4+6) distribuïts com s'esperava, del més recent cap arrere.
+
+El panell `/admin` (punt 6) podrà llegir l'estat del timer amb
+`systemctl --user list-timers`/`status` per mostrar si està activat,
+freqüència, pròxima/última execució i últim resultat — no cal que
+`/admin` gestione systemd directament, només que el llija.
 
 ### 6. Primer `/admin`
 
@@ -146,5 +166,9 @@ Fet (2026-09-14): `make restore` (punt 4) ara para els serveis, restaura les
 dades, els torna a arrancar, comprova la salut del portal i executa
 `test-flow` automàticament, sense passos manuals addicionals.
 
-Següent pas: ampliar cobertura a EduHoot dins del punt 2, o punt 5 (backups
-automàtics amb systemd timer).
+Fet (2026-09-14): backups automàtics (punt 5) amb `scripts/backup-auto.sh`
+(backup + comprovació + retenció) i un timer d'usuari de systemd instal·lable
+amb `make backup-timer-install`, alternativa cron documentada.
+
+Següent pas: ampliar cobertura a EduHoot dins del punt 2, o punt 6 (primer
+panell `/admin` de només lectura).
