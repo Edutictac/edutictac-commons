@@ -87,6 +87,8 @@ tauler Commons.
 còpies de seguretat completes, restauració provada i actualitzacions
 controlades d'imatges Docker/OCI.
 
+Punt de represa detallat: `docs/PROPERA-SESSIO.md`.
+
 Principi: **cap dada persistent sense backup** i **cap actualització sense
 backup recent i verificable**.
 
