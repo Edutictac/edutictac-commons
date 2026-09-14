@@ -32,16 +32,37 @@ if [ ! -f "$env_file" ]; then
   env_file=".env.example"
 fi
 
-${DOCKER:-docker} compose --env-file "$env_file" -f compose.yml down
+docker_cmd="${DOCKER:-docker}"
+compose="$docker_cmd compose --env-file $env_file -f compose.yml"
+
+$compose down
 
 mkdir -p data backups
 if [ -f data/id.db ]; then
   stamp="$(date -u +%Y%m%dT%H%M%SZ)"
   cp data/id.db "backups/id-before-restore-${stamp}.db"
+  echo "Copia de seguretat previa: backups/id-before-restore-${stamp}.db"
 fi
 
 cp "$backup_db" data/id.db
 rm -f data/id.db-wal data/id.db-shm
 
 echo "Base restaurada des de: $backup_dir"
-echo "Arranca amb: make up"
+
+echo
+echo "Arrancant serveis..."
+$compose up -d --wait
+
+echo
+echo "Comprovant salut dels serveis..."
+portal_port="$(grep -E '^PORTAL_PORT=' "$env_file" 2>/dev/null | tail -n1 | cut -d= -f2)"
+portal_port="${portal_port:-8082}"
+curl -fsS "http://127.0.0.1:${portal_port}/api/health" >/dev/null
+echo "OK portal saludable"
+
+echo
+echo "Executant make test-flow..."
+./scripts/test-flow.sh
+
+echo
+echo "Restauracio completa i verificada."

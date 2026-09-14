@@ -69,17 +69,20 @@ Provat manualment: sense backup, backup vàlid, backup caducat, checksum
 manipulat i EduHoot actiu sense cobertura ni avís — els cinc casos donen el
 resultat `OK`/`FAIL` esperat.
 
-### 4. Ampliar `make restore`
+### 4. Ampliar `make restore` — ✅ fet (2026-09-14)
 
-Primer objectiu: restauració documentada i segura.
+Flux implementat en `scripts/restore.sh`:
 
-Flux previst:
+- parar serveis (`docker compose down`);
+- restaurar dades (amb còpia de seguretat prèvia de `data/id.db` si ja
+  n'existia una);
+- arrancar serveis (`docker compose up -d --wait`, que ja espera l'estat
+  `healthy` de `id-api` abans de continuar);
+- comprovar salut del portal (`curl .../api/health`);
+- executar `./scripts/test-flow.sh` com a verificació funcional final.
 
-- parar serveis;
-- restaurar dades;
-- arrancar serveis;
-- executar healthchecks;
-- executar `make test-flow`.
+Si qualsevol pas falla, el script s'atura (`set -eu`) i la còpia de
+seguretat prèvia queda disponible per a una restauració manual.
 
 ### 5. Backups automàtics
 
@@ -139,5 +142,9 @@ Fet (2026-09-14): `make backup-check` (punt 3) verifica de forma no
 destructiva que hi ha un backup recent, amb manifest vàlid, checksums
 correctes i cobertura declarada de tots els serveis actius.
 
-Següent pas: ampliar cobertura a EduHoot dins del punt 2, o punt 4 (ampliar
-`make restore` amb healthchecks i `test-flow` automàtic post-restore).
+Fet (2026-09-14): `make restore` (punt 4) ara para els serveis, restaura les
+dades, els torna a arrancar, comprova la salut del portal i executa
+`test-flow` automàticament, sense passos manuals addicionals.
+
+Següent pas: ampliar cobertura a EduHoot dins del punt 2, o punt 5 (backups
+automàtics amb systemd timer).

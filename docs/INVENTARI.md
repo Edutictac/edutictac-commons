@@ -108,7 +108,7 @@ En qualsevol entorn que no siga demo local cal canviar
 | `make bootstrap-demo` | crea grup, activitat i TSV de credencials demo |
 | `make backup` | crea `backups/commons-<stamp>/` amb `manifest.json` i `id-api/id.db` |
 | `make backup-check` | comprova sense tocar dades que hi ha un backup recent, amb manifest i checksums vàlids i cobertura de tots els serveis actius |
-| `make restore BACKUP=backups/commons-<stamp>/` | restaura una carpeta de backup validant el manifest |
+| `make restore BACKUP=backups/commons-<stamp>/` | restaura una carpeta de backup, arranca els serveis, comprova la salut del portal i executa `test-flow` |
 | `make reset` | reinicia les dades locals de la demo |
 | `make export-images` | genera un arxiu `.tar` amb imatges pròpies |
 | `make load-images ARCHIVE=...` | carrega imatges des d'un `.tar` |
