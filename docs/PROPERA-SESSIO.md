@@ -217,19 +217,21 @@ Base implementada:
 - `scripts/check-images.sh` (`make check-images`): consulta amb
   `docker manifest inspect` les imatges configurades (`commons-id-api`,
   `commons-portal`, `commons-admin` i, si el perfil està actiu, `eduhoot`).
+- `scripts/check-updates.py` (`make check-updates`): consulta tags remots i
+  compara `IMAGE_TAG`/`EDUHOOT_TAG` amb el candidat del canal (`stable`,
+  `testing`, `dev`).
 - `scripts/update-images.sh` (`make update-images`): crea backup nou,
-  executa `backup-check`, comprova imatges remotes, fa `docker compose pull`,
-  reinicia amb `up -d --wait --no-build`, comprova salut del portal i executa
-  `test-flow`.
+  executa `backup-check`, aplica el candidat del canal en `.env`, comprova
+  imatges remotes, fa `docker compose pull`, reinicia amb `up -d --wait
+  --no-build`, comprova salut del portal i executa `test-flow`.
 - Panell `/admin`: botó "Actualitzar imatges", amb confirmació forta, que
-  llança `scripts/update-images.sh` en el host via `systemd-run --user`.
+  llança `scripts/update-images.sh` en el host via `systemd-run --user`, i
+  botó "Comprovar actualitzacions" via `/api/updates`.
 - Rollback manual documentat en `docs/INVENTARI.md`: restaurar el backup acabat
   de crear i tornar a fixar `IMAGE_TAG`/`EDUHOOT_TAG` al tag anterior.
 
 Queda pendent:
 
-- comparar instal·lada vs disponible de manera automàtica;
-- mostrar canal `stable`, `testing` o `dev`;
 - rollback assistit des del panell.
 
 ## Primer canvi concret

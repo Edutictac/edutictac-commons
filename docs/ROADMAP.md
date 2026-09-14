@@ -122,10 +122,10 @@ backup recent i verificable**.
 - [x] Oferir actualització guiada d'imatges: backup previ obligatori,
   descàrrega, reinici, healthchecks i verificació funcional (`make
   update-images`, també accessible des del panell `/admin`).
-- [ ] Automatitzar comparació de canal/versió disponible contra la instal·lada
-  i rollback assistit.
-- [ ] Definir canals `stable`, `testing` i `dev`; centres en `stable` per
-  defecte.
+- [x] Automatitzar comparació de canal/versió disponible contra la instal·lada
+  (`make check-updates`, endpoint `/api/updates`).
+- [x] Definir canals `stable`, `testing` i `dev`.
+- [ ] Rollback assistit des del panell.
 
 ### Fita 4 — EduHoot com a primera activitat integrada
 

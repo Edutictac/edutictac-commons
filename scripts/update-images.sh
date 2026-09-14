@@ -10,6 +10,29 @@ fi
 
 docker_cmd="${DOCKER:-docker}"
 compose="$docker_cmd compose --env-file $env_file -f compose.yml"
+previous_image_tag="$(grep -E '^IMAGE_TAG=' "$env_file" 2>/dev/null | tail -n 1 | cut -d= -f2- || true)"
+previous_eduhoot_tag="$(grep -E '^EDUHOOT_TAG=' "$env_file" 2>/dev/null | tail -n 1 | cut -d= -f2- || true)"
+tags_changed=0
+
+restore_tags() {
+  if [ "$tags_changed" = "1" ]; then
+    python3 ./scripts/apply-update-tags.py \
+      --image-tag "$previous_image_tag" \
+      --eduhoot-tag "$previous_eduhoot_tag"
+    echo "Tags restaurats en .env per error durant l'actualitzacio."
+  fi
+}
+
+cleanup_update() {
+  status="$?"
+  rm -f /tmp/edutictac-commons-updates.$$.json
+  if [ "$status" -ne 0 ]; then
+    restore_tags
+  fi
+  exit "$status"
+}
+trap cleanup_update EXIT
+trap 'exit 130' INT TERM
 
 echo "== Backup previ obligatori =="
 ./scripts/backup.sh
@@ -17,6 +40,38 @@ echo "== Backup previ obligatori =="
 echo
 echo "== Verificacio del backup =="
 ./scripts/backup-check.sh
+
+echo
+echo "== Deteccio de versions disponibles =="
+updates_json="$(python3 ./scripts/check-updates.py --json)"
+printf '%s\n' "$updates_json" > /tmp/edutictac-commons-updates.$$.json
+python3 ./scripts/check-updates.py
+
+next_image_tag="$(python3 - /tmp/edutictac-commons-updates.$$.json <<'PY'
+import json, sys
+data = json.load(open(sys.argv[1]))
+commons = data.get("commons") or {}
+print(commons.get("candidate") if commons.get("update_available") else "")
+PY
+)"
+next_eduhoot_tag="$(python3 - /tmp/edutictac-commons-updates.$$.json <<'PY'
+import json, sys
+data = json.load(open(sys.argv[1]))
+eduhoot = data.get("eduhoot") or {}
+print(eduhoot.get("candidate") if eduhoot.get("update_available") else "")
+PY
+)"
+rm -f /tmp/edutictac-commons-updates.$$.json
+
+if [ -n "$next_image_tag" ] || [ -n "$next_eduhoot_tag" ]; then
+  echo "Aplicant tags nous en .env..."
+  python3 ./scripts/apply-update-tags.py \
+    --image-tag "$next_image_tag" \
+    --eduhoot-tag "$next_eduhoot_tag"
+  tags_changed=1
+else
+  echo "No hi ha tags mes recents en el canal configurat; es refresquen les imatges actuals."
+fi
 
 echo
 echo "== Comprovacio d'imatges remotes =="
@@ -45,5 +100,7 @@ echo
 echo "== Flux funcional =="
 ./scripts/test-flow.sh
 
+tags_changed=0
+trap - EXIT INT TERM
 echo
 echo "Actualitzacio d'imatges completa i verificada."

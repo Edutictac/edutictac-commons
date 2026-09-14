@@ -85,6 +85,7 @@ function renderStatus(data) {
   const lines = [];
   lines.push(`Versió del stack: ${data.stack_version}`);
   lines.push(`Imatges: registre=${data.image_registry} tag=${data.image_tag} eduhoot=${data.eduhoot_tag}`);
+  lines.push(`Canal d'actualitzacions: ${data.update_channel || "testing"}`);
   lines.push(`Perfils actius: ${data.active_profiles.length ? data.active_profiles.join(", ") : "cap"}`);
   lines.push("");
   lines.push("Serveis:");
@@ -117,6 +118,26 @@ function renderStatus(data) {
   return lines.join("\n");
 }
 
+function renderUpdateStatus(data) {
+  const lines = [];
+  lines.push(`Registre: ${data.registry}`);
+  lines.push(`Canal: ${data.channel}`);
+  ["commons", "eduhoot"].forEach((name) => {
+    const item = data[name];
+    if (!item) return;
+    lines.push("");
+    lines.push(`${name}:`);
+    if (item.error) {
+      lines.push(`  ERROR: ${item.error}`);
+    } else {
+      lines.push(`  Instal·lada: ${item.current || "-"}`);
+      lines.push(`  Disponible: ${item.candidate || "-"}`);
+      lines.push(`  Actualització: ${item.update_available ? "sí" : "no"}`);
+    }
+  });
+  return lines.join("\n");
+}
+
 async function loadStatus() {
   try {
     const resp = await apiFetch("/api/status");
@@ -130,6 +151,17 @@ async function loadStatus() {
     setOutput(statusOutput, renderStatus(data), false);
   } catch (err) {
     setOutput(statusOutput, `Error: ${err.message}`, true);
+  }
+}
+
+async function checkUpdates() {
+  setOutput(actionOutput, "Comprovant actualitzacions...", false);
+  try {
+    const resp = await apiFetch("/api/updates");
+    const data = await resp.json();
+    setOutput(actionOutput, data.output || renderUpdateStatus(data), !resp.ok || data.ok === false);
+  } catch (err) {
+    setOutput(actionOutput, `Error: ${err.message}`, true);
   }
 }
 
@@ -214,9 +246,11 @@ document.getElementById("backupRestoreBtn").addEventListener("click", () => {
   runJsonAction("/api/backup/restore", { backup });
 });
 
+document.getElementById("imagesCheckBtn").addEventListener("click", checkUpdates);
+
 document.getElementById("imagesUpdateBtn").addEventListener("click", () => {
   const typed = window.prompt(
-    "Aquesta accio creara un backup, descarregara imatges i reiniciara el stack. Escriu ACTUALITZAR per continuar."
+    "Aquesta accio buscara el tag mes recent del canal, creara un backup, descarregara imatges i reiniciara el stack. Escriu ACTUALITZAR per continuar."
   );
   if (typed !== "ACTUALITZAR") {
     setOutput(actionOutput, "Actualitzacio cancel·lada.", false);

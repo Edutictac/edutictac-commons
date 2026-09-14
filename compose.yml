@@ -56,6 +56,7 @@ services:
       IMAGE_REGISTRY: ${IMAGE_REGISTRY:-edutictac}
       IMAGE_TAG: ${IMAGE_TAG:-0.1.0-alpha}
       EDUHOOT_TAG: ${EDUHOOT_TAG:-0.1.0}
+      UPDATE_CHANNEL: ${UPDATE_CHANNEL:-testing}
       PORTAL_HEALTH_URL: http://portal/api/health
       ID_API_HEALTH_URL: http://id-api:8005/api/health
     volumes:

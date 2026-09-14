@@ -34,6 +34,7 @@ ID_API_HEALTH_URL = os.environ.get("ID_API_HEALTH_URL", "http://id-api:8005/api/
 IMAGE_REGISTRY = os.environ.get("IMAGE_REGISTRY", "edutictac")
 IMAGE_TAG = os.environ.get("IMAGE_TAG", "unknown")
 EDUHOOT_TAG = os.environ.get("EDUHOOT_TAG", "unknown")
+UPDATE_CHANNEL = os.environ.get("UPDATE_CHANNEL", "testing")
 COMPOSE_PROFILES = os.environ.get("COMPOSE_PROFILES", "")
 ACTIVE_PROFILES = {p for p in COMPOSE_PROFILES.split(",") if p}
 
@@ -160,6 +161,7 @@ def build_status():
         "image_registry": IMAGE_REGISTRY,
         "image_tag": IMAGE_TAG,
         "eduhoot_tag": EDUHOOT_TAG,
+        "update_channel": UPDATE_CHANNEL,
         "active_profiles": sorted(ACTIVE_PROFILES),
         "services": probe_services(),
         "last_backup": last_backup,
@@ -235,6 +237,16 @@ def action_backup_restore(payload):
 
 
 ACTIONS["/api/backup/restore"] = action_backup_restore
+
+
+def get_update_status():
+    ok, output = run_script(str(APP_DIR / "scripts" / "check-updates.py"), "--json", timeout=30)
+    if not ok:
+        return False, {"ok": False, "output": output}
+    try:
+        return True, json.loads(output)
+    except json.JSONDecodeError as exc:
+        return False, {"ok": False, "output": f"Resposta d'actualitzacions no valida: {exc}\n{output}"}
 
 
 def action_update_images(payload):
@@ -325,6 +337,10 @@ class Handler(BaseHTTPRequestHandler):
                 return
             if self.path == "/api/status":
                 self._send_json(200, build_status())
+                return
+            if self.path == "/api/updates":
+                ok, payload = get_update_status()
+                self._send_json(200 if ok else 500, payload)
                 return
             self._send_json(404, {"error": "no trobat"})
             return

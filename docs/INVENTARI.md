@@ -98,6 +98,7 @@ Variables principals:
 
 - `IMAGE_REGISTRY`: registre o prefix d'imatges.
 - `IMAGE_TAG`: versió de `commons-portal` i `commons-id-api`.
+- `UPDATE_CHANNEL`: canal d'actualització (`stable`, `testing` o `dev`).
 - `PORTAL_PORT`: port públic del portal.
 - `EDUTICTAC_ID_SECRET`: secret de signatura de sessions.
 - `EDUTICTAC_ID_TEACHER_TOKEN`: token docent inicial.
@@ -133,7 +134,8 @@ En qualsevol entorn que no siga demo local cal canviar
 | `make restore BACKUP=backups/commons-<stamp>/` | restaura una carpeta de backup, arranca els serveis, comprova la salut del portal i executa `test-flow` |
 | `make reset` | reinicia les dades locals de la demo |
 | `make check-images` | comprova que les imatges configurades existeixen al registre Docker/OCI |
-| `make update-images` | crea i verifica backup, descarrega imatges, reinicia amb `--no-build`, comprova salut i executa `test-flow` |
+| `make check-updates` | consulta tags remots i compara la versió instal·lada amb el candidat del canal configurat |
+| `make update-images` | crea i verifica backup, aplica el candidat del canal en `.env`, descarrega imatges, reinicia amb `--no-build`, comprova salut i executa `test-flow` |
 | `make export-images` | genera un arxiu `.tar` amb imatges pròpies |
 | `make load-images ARCHIVE=...` | carrega imatges des d'un `.tar` |
 | `make push-images` | publica imatges al registre configurat |
@@ -172,6 +174,7 @@ El stack usa imatges Docker/OCI fixades per variables:
 - `IMAGE_REGISTRY`
 - `IMAGE_TAG`
 - `EDUHOOT_TAG`
+- `UPDATE_CHANNEL`: `stable`, `testing` o `dev`.
 
 Les imatges pròpies versionades són `commons-id-api`, `commons-portal` i
 `commons-admin`. La política objectiu és no usar `latest` en centres. El
@@ -184,18 +187,28 @@ guiada des del host amb `systemd-run --user`.
 tags inexistents o falta de permisos. Si `COMPOSE_PROFILES=eduhoot`, també
 inclou `${IMAGE_REGISTRY}/eduhoot:${EDUHOOT_TAG}`.
 
+`make check-updates` consulta tags remots i selecciona el candidat més recent
+del canal:
+
+- `stable`: només tags `X.Y.Z`;
+- `testing`: tags semver amb preversions (`0.1.0-alpha`, `0.1.0-rc1`, etc.);
+- `dev`: qualsevol tag no `latest`.
+
 `make update-images` és el flux segur actual:
 
 1. backup nou i verificable (`backup.sh` + `backup-check.sh`);
-2. descàrrega de noves imatges;
-3. reinici controlat amb `docker compose up -d --wait --no-build`;
-4. healthchecks;
-5. `test-flow` final.
+2. detecció del candidat del canal i actualització local de `IMAGE_TAG` /
+   `EDUHOOT_TAG` en `.env`;
+3. descàrrega de noves imatges;
+4. reinici controlat amb `docker compose up -d --wait --no-build`;
+5. healthchecks;
+6. `test-flow` final.
 
 Rollback manual si alguna comprovació falla: restaurar el backup acabat de
-crear amb `make restore BACKUP=backups/commons-<stamp>/` i tornar a fixar
-`IMAGE_TAG`/`EDUHOOT_TAG` al tag anterior abans de repetir `make up-pulled`.
-La detecció automàtica de canals `stable`/`testing`/`dev` queda pendent.
+crear amb `make restore BACKUP=backups/commons-<stamp>/`. Si l'error passa
+abans de completar la verificació, `update-images.sh` restaura els tags
+anteriors en `.env`; si falla després d'un reinici parcial, revisa `.env` i
+executa `make up-pulled`.
 
 ## Riscos operatius
 
