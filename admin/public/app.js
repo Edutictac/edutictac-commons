@@ -214,6 +214,17 @@ document.getElementById("backupRestoreBtn").addEventListener("click", () => {
   runJsonAction("/api/backup/restore", { backup });
 });
 
+document.getElementById("imagesUpdateBtn").addEventListener("click", () => {
+  const typed = window.prompt(
+    "Aquesta accio creara un backup, descarregara imatges i reiniciara el stack. Escriu ACTUALITZAR per continuar."
+  );
+  if (typed !== "ACTUALITZAR") {
+    setOutput(actionOutput, "Actualitzacio cancel·lada.", false);
+    return;
+  }
+  runJsonAction("/api/images/update", {});
+});
+
 const savedToken = getToken();
 if (savedToken) {
   tokenInput.value = savedToken;

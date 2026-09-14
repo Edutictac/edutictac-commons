@@ -107,6 +107,8 @@ make bootstrap-demo # crea grup, activitat i TSV de credencials en dist/
 make release-check # comprovacio abans d'entrega/exportacio
 make backup      # crea backups/commons-<stamp>/ amb manifest.json, id-api/id.db i, si eduhoot esta actiu, eduhoot/
 make restore BACKUP=backups/commons-YYYYmmddTHHMMSSZ/
+make check-images # comprova que les imatges configurades existeixen al registre
+make update-images # backup verificat, pull, reinici, healthcheck i test-flow
 make export-images
 make load-images ARCHIVE=dist/edutictac-commons-images-0.1.0-alpha.tar
 ```
@@ -114,7 +116,9 @@ make load-images ARCHIVE=dist/edutictac-commons-images-0.1.0-alpha.tar
 L'arxiu d'imatges inclou les imatges pròpies versionades del stack:
 `commons-id-api`, `commons-portal` i `commons-admin`.
 
-Els objectius `up`, `down`, `build`, `logs`, `ps`, `reset` i `restore` accepten també `DOCKER="sudo docker"` quan cal.
+Els objectius `up`, `down`, `build`, `logs`, `ps`, `reset`, `restore`,
+`check-images` i `update-images` accepten també `DOCKER="sudo docker"` quan
+cal.
 
 ## Diagnòstic ràpid
 

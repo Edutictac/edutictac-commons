@@ -237,6 +237,31 @@ def action_backup_restore(payload):
 ACTIONS["/api/backup/restore"] = action_backup_restore
 
 
+def action_update_images(payload):
+    repo_dir = os.environ.get("REPO_DIR", str(APP_DIR))
+    update_script = str(Path(repo_dir) / "scripts" / "update-images.sh")
+
+    unit_name = f"edutictac-commons-update-{datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S')}"
+    ok, output = run_script(
+        "systemd-run",
+        "--user",
+        "--collect",
+        f"--unit={unit_name}",
+        f"--property=WorkingDirectory={repo_dir}",
+        "/bin/sh",
+        update_script,
+    )
+    if ok:
+        output += (
+            "\nActualitzacio iniciada. El proces crea i verifica un backup, "
+            "descarrega imatges, reinicia el stack i executa comprovacions."
+        )
+    return ok, output
+
+
+ACTIONS["/api/images/update"] = action_update_images
+
+
 class Handler(BaseHTTPRequestHandler):
     server_version = "EduTicTacAdmin/1.0"
 

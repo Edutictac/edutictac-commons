@@ -117,10 +117,13 @@ backup recent i verificable**.
 - [x] Llistar backups disponibles i avisar si algun servei no està cobert.
 - [x] Versionar la imatge pròpia `commons-admin` i incloure-la en
   `export-images`/`push-images`.
-- [ ] Consultar `IMAGE_REGISTRY` i detectar si hi ha una versió nova
-  disponible.
-- [ ] Oferir actualització guiada d'imatges: backup previ obligatori,
-  descàrrega, reinici, healthchecks i rollback documentat.
+- [x] Consultar `IMAGE_REGISTRY` i detectar si les imatges configurades estan
+  disponibles (`make check-images` via `docker manifest inspect`).
+- [x] Oferir actualització guiada d'imatges: backup previ obligatori,
+  descàrrega, reinici, healthchecks i verificació funcional (`make
+  update-images`, també accessible des del panell `/admin`).
+- [ ] Automatitzar comparació de canal/versió disponible contra la instal·lada
+  i rollback assistit.
 - [ ] Definir canals `stable`, `testing` i `dev`; centres en `stable` per
   defecte.
 

@@ -210,18 +210,27 @@ El timer encara no s'ha instal·lat en cap màquina real: queda pendent de
 prémer el botó la primera vegada que es faça servir el stack fora d'aquesta
 sessió de desenvolupament.
 
-### 7. Actualitzacions Docker/OCI
+### 7. Actualitzacions Docker/OCI — en marxa (2026-09-14)
 
-Quan backups estiguen sòlids:
+Base implementada:
 
-- detectar versió remota en `IMAGE_REGISTRY`;
-- comparar instal·lada vs disponible;
+- `scripts/check-images.sh` (`make check-images`): consulta amb
+  `docker manifest inspect` les imatges configurades (`commons-id-api`,
+  `commons-portal`, `commons-admin` i, si el perfil està actiu, `eduhoot`).
+- `scripts/update-images.sh` (`make update-images`): crea backup nou,
+  executa `backup-check`, comprova imatges remotes, fa `docker compose pull`,
+  reinicia amb `up -d --wait --no-build`, comprova salut del portal i executa
+  `test-flow`.
+- Panell `/admin`: botó "Actualitzar imatges", amb confirmació forta, que
+  llança `scripts/update-images.sh` en el host via `systemd-run --user`.
+- Rollback manual documentat en `docs/INVENTARI.md`: restaurar el backup acabat
+  de crear i tornar a fixar `IMAGE_TAG`/`EDUHOOT_TAG` al tag anterior.
+
+Queda pendent:
+
+- comparar instal·lada vs disponible de manera automàtica;
 - mostrar canal `stable`, `testing` o `dev`;
-- exigir backup recent i verificable;
-- descarregar imatges;
-- reiniciar;
-- executar healthchecks;
-- documentar rollback.
+- rollback assistit des del panell.
 
 ## Primer canvi concret
 

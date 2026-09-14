@@ -132,6 +132,8 @@ En qualsevol entorn que no siga demo local cal canviar
 | `make backup-timer-uninstall` | desinstal·la el timer d'usuari de systemd |
 | `make restore BACKUP=backups/commons-<stamp>/` | restaura una carpeta de backup, arranca els serveis, comprova la salut del portal i executa `test-flow` |
 | `make reset` | reinicia les dades locals de la demo |
+| `make check-images` | comprova que les imatges configurades existeixen al registre Docker/OCI |
+| `make update-images` | crea i verifica backup, descarrega imatges, reinicia amb `--no-build`, comprova salut i executa `test-flow` |
 | `make export-images` | genera un arxiu `.tar` amb imatges pròpies |
 | `make load-images ARCHIVE=...` | carrega imatges des d'un `.tar` |
 | `make push-images` | publica imatges al registre configurat |
@@ -173,16 +175,27 @@ El stack usa imatges Docker/OCI fixades per variables:
 
 Les imatges pròpies versionades són `commons-id-api`, `commons-portal` i
 `commons-admin`. La política objectiu és no usar `latest` en centres. El
-panell `/admin` ja mostra el registre i les versions d'imatge configurades
-(`IMAGE_REGISTRY`, `IMAGE_TAG`, `EDUHOOT_TAG`); consultar versions disponibles al registre,
-comparar-les amb la instal·lada i oferir una actualització guiada queda
-pendent del punt 7. Qualsevol actualització ha d'exigir:
+panell `/admin` mostra el registre i les versions d'imatge configurades
+(`IMAGE_REGISTRY`, `IMAGE_TAG`, `EDUHOOT_TAG`) i pot iniciar una actualització
+guiada des del host amb `systemd-run --user`.
 
-1. backup recent i verificable;
+`make check-images` consulta les imatges configurades al registre amb
+`docker manifest inspect`. No canvia dades ni contenidors; serveix per detectar
+tags inexistents o falta de permisos. Si `COMPOSE_PROFILES=eduhoot`, també
+inclou `${IMAGE_REGISTRY}/eduhoot:${EDUHOOT_TAG}`.
+
+`make update-images` és el flux segur actual:
+
+1. backup nou i verificable (`backup.sh` + `backup-check.sh`);
 2. descàrrega de noves imatges;
-3. reinici controlat;
+3. reinici controlat amb `docker compose up -d --wait --no-build`;
 4. healthchecks;
-5. rollback documentat si alguna comprovació falla.
+5. `test-flow` final.
+
+Rollback manual si alguna comprovació falla: restaurar el backup acabat de
+crear amb `make restore BACKUP=backups/commons-<stamp>/` i tornar a fixar
+`IMAGE_TAG`/`EDUHOOT_TAG` al tag anterior abans de repetir `make up-pulled`.
+La detecció automàtica de canals `stable`/`testing`/`dev` queda pendent.
 
 ## Riscos operatius
 

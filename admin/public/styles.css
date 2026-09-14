@@ -87,6 +87,10 @@ h1, h2, h3 {
   margin-bottom: 12px;
 }
 
+.panel-heading.compact {
+  margin-top: 18px;
+}
+
 label {
   display: block;
   margin-bottom: 12px;
