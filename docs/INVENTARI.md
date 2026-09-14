@@ -60,7 +60,7 @@ Estat actual:
 
 | Dades | Cobertura actual | Objectiu |
 |---|---|---|
-| `data/id.db` | `make backup` / `make restore`, amb `manifest.json` i checksum | mantindre i verificar amb prova automàtica segura |
+| `data/id.db` | `make backup` / `make restore` / `make backup-check`, amb `manifest.json` i checksum | mantindre |
 | `data/eduhoot-mongo/` | pendent | `mongodump`/restore o equivalent dins de la política comuna |
 | `data/eduhoot-uploads/` | pendent | còpia de fitxers amb restauració documentada |
 | `data/eduhoot-logs/` | pendent | decidir quins logs/informes són dades a conservar |
@@ -107,6 +107,7 @@ En qualsevol entorn que no siga demo local cal canviar
 | `make test-flow` | prova docent -> credencials -> alumne -> puntuació -> resultats |
 | `make bootstrap-demo` | crea grup, activitat i TSV de credencials demo |
 | `make backup` | crea `backups/commons-<stamp>/` amb `manifest.json` i `id-api/id.db` |
+| `make backup-check` | comprova sense tocar dades que hi ha un backup recent, amb manifest i checksums vàlids i cobertura de tots els serveis actius |
 | `make restore BACKUP=backups/commons-<stamp>/` | restaura una carpeta de backup validant el manifest |
 | `make reset` | reinicia les dades locals de la demo |
 | `make export-images` | genera un arxiu `.tar` amb imatges pròpies |

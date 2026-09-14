@@ -53,14 +53,21 @@ Queda per cobrir:
 - `data/eduhoot-uploads/`;
 - logs o informes d'EduHoot que decidim conservar.
 
-### 3. Afegir `make backup-check`
+### 3. Afegir `make backup-check` — ✅ fet (2026-09-14)
 
-Comprovació no destructiva:
+Comprovació no destructiva implementada en `scripts/backup-check.sh`:
 
-- existeix un backup recent;
-- el manifest és vàlid;
-- els checksums quadren;
-- tots els serveis actius tenen cobertura declarada.
+- existeix un backup recent en `backups/commons-*` (per defecte, menys de 24h,
+  configurable amb `BACKUP_MAX_AGE_HOURS`);
+- el manifest és JSON vàlid amb tots els camps obligatoris;
+- els checksums `sha256` declarats coincideixen amb els fitxers reals;
+- `id-api` sempre ha d'estar cobert;
+- si `COMPOSE_PROFILES=eduhoot` està actiu, cal que estiga cobert com a servei
+  o, com a mínim, esmentat en `warnings[]`.
+
+Provat manualment: sense backup, backup vàlid, backup caducat, checksum
+manipulat i EduHoot actiu sense cobertura ni avís — els cinc casos donen el
+resultat `OK`/`FAIL` esperat.
 
 ### 4. Ampliar `make restore`
 
@@ -128,5 +135,9 @@ Fet (2026-09-14): `scripts/backup.sh` genera `backups/commons-<stamp>/` amb
 d'aquest format. `README.md`, `INSTALL-CENTRES.md` i `docs/INVENTARI.md`
 actualitzats al nou format.
 
-Següent pas: `make backup-check` (punt 3) o ampliar cobertura a EduHoot dins
-del punt 2, segons prioritat.
+Fet (2026-09-14): `make backup-check` (punt 3) verifica de forma no
+destructiva que hi ha un backup recent, amb manifest vàlid, checksums
+correctes i cobertura declarada de tots els serveis actius.
+
+Següent pas: ampliar cobertura a EduHoot dins del punt 2, o punt 4 (ampliar
+`make restore` amb healthchecks i `test-flow` automàtic post-restore).
