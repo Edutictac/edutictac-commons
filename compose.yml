@@ -8,6 +8,7 @@ services:
       EDUTICTAC_ID_DB: ${EDUTICTAC_ID_DB:-/data/id.db}
       EDUTICTAC_ID_SECRET: ${EDUTICTAC_ID_SECRET:-change-this-local-secret}
       EDUTICTAC_ID_TEACHER_TOKEN: ${EDUTICTAC_ID_TEACHER_TOKEN:-dev-teacher}
+      EDUTICTAC_ID_APP_TOKEN: ${EDUTICTAC_ID_APP_TOKEN:-dev-app-token}
       EDUTICTAC_ID_COOKIE_SECURE: ${EDUTICTAC_ID_COOKIE_SECURE:-0}
       EDUTICTAC_ID_PIN_HASH_ITERATIONS: ${EDUTICTAC_ID_PIN_HASH_ITERATIONS:-60000}
     volumes:
@@ -101,6 +102,7 @@ services:
       HOST: 0.0.0.0
       MONGO_URL: mongodb://eduhoot-mongo:27017/eduhoot
       EDUTICTAC_ID_API_URL: http://id-api:8005
+      EDUTICTAC_ID_APP_TOKEN: ${EDUTICTAC_ID_APP_TOKEN:-dev-app-token}
       EDUTICTAC_ID_AUTH_REQUIRED: ${EDUHOOT_ID_AUTH_REQUIRED:-1}
       PUBLIC_BASE_URL: http://localhost:${EDUHOOT_PORT:-8090}
       PUBLIC_IMPORT_SOURCE_URL: ${EDUHOOT_PUBLIC_IMPORT_SOURCE:-https://eduhoot.edutictac.es}

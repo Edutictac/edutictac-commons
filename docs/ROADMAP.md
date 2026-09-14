@@ -133,11 +133,13 @@ backup recent i verificable**.
 l'alumnat pot completar-la amb la mateixa identitat pseudònima.
 
 - [ ] Documentar exactament què espera EduHoot del servei d'identitat.
-- [ ] Validar el flux amb `COMPOSE_PROFILES=eduhoot`.
+- [x] Validar el flux amb `COMPOSE_PROFILES=eduhoot`.
 - [ ] Crear una prova funcional que cobrisca portal + identitat + EduHoot.
-- [ ] Evitar que l'alumnat necessite cap compte personal.
-- [ ] Documentar persistència local d'EduHoot (`data/eduhoot-*`) i còpia de
+- [x] Evitar que l'alumnat necessite cap compte personal.
+- [x] Documentar persistència local d'EduHoot (`data/eduhoot-*`) i còpia de
   seguretat.
+- [x] Permetre assignar una activitat EduHoot des del tauler docent (per ID de
+  quiz) i registrar puntuacions de partida en Commons via token intern.
 
 ### Fita 5 — Privacitat per a centres
 

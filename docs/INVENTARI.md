@@ -102,6 +102,8 @@ Variables principals:
 - `PORTAL_PORT`: port públic del portal.
 - `EDUTICTAC_ID_SECRET`: secret de signatura de sessions.
 - `EDUTICTAC_ID_TEACHER_TOKEN`: token docent inicial.
+- `EDUTICTAC_ID_APP_TOKEN`: token intern perquè apps integrades (ara EduHoot)
+  registren puntuacions en Commons.
 - `COMPOSE_PROFILES`: activa mòduls opcionals, ara `eduhoot`.
 - `EDUHOOT_PUBLIC_IMPORT_SOURCE`: font d'importació d'activitats públiques
   d'EduHoot; buit desactiva la funció.
@@ -110,7 +112,7 @@ Variables principals:
 
 En qualsevol entorn que no siga demo local cal canviar
 `EDUTICTAC_ID_SECRET`, `EDUTICTAC_ID_TEACHER_TOKEN` i
-`EDUTICTAC_ADMIN_TOKEN`.
+`EDUTICTAC_ID_APP_TOKEN` i `EDUTICTAC_ADMIN_TOKEN`.
 
 ## Comandaments d'operació
 

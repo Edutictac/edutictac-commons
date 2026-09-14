@@ -30,6 +30,7 @@ from edutictac_community.session import SignedSession
 DB_PATH = os.environ.get("EDUTICTAC_ID_DB", "/var/lib/edutictac-id-api/id.db")
 SESSION_SECRET = os.environ.get("EDUTICTAC_ID_SECRET", "")
 TEACHER_TOKEN = os.environ.get("EDUTICTAC_ID_TEACHER_TOKEN", "")
+APP_TOKEN = os.environ.get("EDUTICTAC_ID_APP_TOKEN", "")
 COOKIE_DOMAIN = os.environ.get("EDUTICTAC_ID_COOKIE_DOMAIN", "")
 COOKIE_SECURE = os.environ.get("EDUTICTAC_ID_COOKIE_SECURE", "1") != "0"
 SESSION_COOKIE = "edutictac_id"
@@ -258,6 +259,16 @@ def require_teacher(request: Request) -> str:
     raise HTTPException(status_code=401, detail="teacher authentication required")
 
 
+def require_app_token(request: Request) -> None:
+    if not APP_TOKEN:
+        raise HTTPException(status_code=503, detail="app token not configured")
+    auth = request.headers.get("authorization", "")
+    if not auth.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="app token required")
+    if not hmac.compare_digest(auth[7:].encode(), APP_TOKEN.encode()):
+        raise HTTPException(status_code=403, detail="invalid app token")
+
+
 def is_teacher(request: Request) -> bool:
     try:
         require_teacher(request)
@@ -341,6 +352,21 @@ class StudentAuthIn(BaseModel):
 
 class ScoreIn(BaseModel):
     app_id: str
+    activity_id: str
+    assignment_id: str = ""
+    score: int
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+    @field_validator("score")
+    @classmethod
+    def _score(cls, value: int) -> int:
+        if value < 0 or value > 1_000_000:
+            raise ValueError("score out of range")
+        return value
+
+
+class AppScoreIn(BaseModel):
+    identity_id: str
     activity_id: str
     assignment_id: str = ""
     score: int
@@ -763,6 +789,81 @@ def add_score(payload: ScoreIn, request: Request) -> dict[str, Any]:
                 identity["id"],
                 assignment_id,
                 app_id,
+                activity_id,
+                payload.score,
+                json.dumps(payload.metadata),
+                ts,
+            ),
+        )
+    return {
+        "ok": True,
+        "id": score_id,
+        "public_code": identity["public_code"],
+        "assignment_id": assignment_id,
+        "score": payload.score,
+    }
+
+
+@app.post("/api/apps/{app_id}/scores", status_code=201)
+def add_app_score(app_id: str, payload: AppScoreIn, request: Request) -> dict[str, Any]:
+    require_app_token(request)
+    score_id = secrets.token_urlsafe(12)
+    ts = iso_now()
+    app_key = normalize_app_id(app_id)
+    activity_id = normalize_activity_id(payload.activity_id)
+    assignment_id = (payload.assignment_id or "").strip()
+    with get_conn() as conn:
+        identity = conn.execute(
+            """
+            SELECT i.*, g.created_by_teacher_id
+            FROM student_identities i
+            JOIN groups g ON g.id = i.group_id
+            WHERE i.id = ? AND i.active = 1
+            """,
+            (payload.identity_id,),
+        ).fetchone()
+        if not identity:
+            raise HTTPException(status_code=404, detail="identity not found")
+        if assignment_id:
+            assignment = conn.execute(
+                """
+                SELECT id, app_id, activity_id, group_id
+                FROM activity_assignments
+                WHERE id = ? AND active = 1
+                """,
+                (assignment_id,),
+            ).fetchone()
+            if not assignment:
+                raise HTTPException(status_code=404, detail="assignment not found")
+            if assignment["app_id"] != app_key or assignment["activity_id"] != activity_id:
+                raise HTTPException(status_code=400, detail="assignment does not match activity")
+            if assignment["group_id"] != identity["group_id"]:
+                raise HTTPException(status_code=403, detail="assignment is not for this group")
+        else:
+            assignment = conn.execute(
+                """
+                SELECT id
+                FROM activity_assignments
+                WHERE app_id = ?
+                  AND activity_id = ?
+                  AND group_id = ?
+                  AND active = 1
+                ORDER BY created_at DESC
+                LIMIT 1
+                """,
+                (app_key, activity_id, identity["group_id"]),
+            ).fetchone()
+            assignment_id = assignment["id"] if assignment else ""
+        conn.execute(
+            """
+            INSERT INTO scores (id, identity_id, assignment_id, app_id, activity_id, score, metadata_json, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                score_id,
+                identity["id"],
+                assignment_id,
+                app_key,
                 activity_id,
                 payload.score,
                 json.dumps(payload.metadata),

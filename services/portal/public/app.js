@@ -1,5 +1,6 @@
 const DEMO_APP = "commons-demo";
 const DEMO_ACTIVITY = "primera-activitat";
+const EDUHOOT_APP = "eduhoot";
 const ACTIVITY_QUESTIONS = 3;
 const STORAGE_KEY = "edutictac-commons-demo-state";
 
@@ -49,7 +50,7 @@ function setEmpty(node, content) {
 
 function setTeacherSession(active) {
   state.teacher = active;
-  ["teacherSummary", "refreshDashboard", "createBatch", "createAssignment", "teacherLogout"].forEach((id) => {
+  ["teacherSummary", "refreshDashboard", "createBatch", "createAssignment", "createEduhootAssignment", "teacherLogout"].forEach((id) => {
     const node = $(id);
     if (node) {
       node.disabled = !active;
@@ -401,6 +402,36 @@ async function createAssignment() {
   );
 }
 
+async function createEduhootAssignment() {
+  if (!state.teacher) {
+    throw new Error("Entra primer com a docent.");
+  }
+  if (!state.group) {
+    throw new Error("Selecciona o genera primer un grup.");
+  }
+  const activityId = $("eduhootActivityId").value.trim();
+  if (!activityId) {
+    throw new Error("Indica l'ID de l'activitat EduHoot.");
+  }
+  const title = $("eduhootActivityTitle").value.trim() || `EduHoot ${activityId}`;
+  const created = await api("/api/teacher/activity-assignments", {
+    method: "POST",
+    body: JSON.stringify({
+      group_id: state.group.id,
+      app_id: EDUHOOT_APP,
+      activity_id: activityId,
+      title,
+    }),
+  });
+  state.assignment = created.assignment;
+  state.assignments = [created.assignment, ...state.assignments.filter((item) => item.id !== created.assignment.id)];
+  saveState();
+  setOutput(
+    $("resultsOutput"),
+    `<p>EduHoot assignat al grup <strong>${escapeHtml(state.group.group_code)}</strong>: <strong>${escapeHtml(title)}</strong>.</p>`,
+  );
+}
+
 async function regeneratePin(identityId) {
   if (!state.teacher) {
     throw new Error("Entra primer com a docent.");
@@ -494,7 +525,7 @@ async function sendScore() {
 
 async function loadResults() {
   if (!state.assignment) {
-    throw new Error("Assigna primer l'activitat demo.");
+    throw new Error("Selecciona o assigna primer una activitat.");
   }
   const data = await api(`/api/teacher/activity-assignments/${state.assignment.id}/results`, { method: "GET" });
   setOutput(
@@ -509,7 +540,9 @@ async function loadResults() {
 }
 
 async function loadRanking() {
-  const ranking = await api(`/api/rankings?app_id=${DEMO_APP}&activity_id=${DEMO_ACTIVITY}&limit=20`, { method: "GET" });
+  const appId = state.assignment ? state.assignment.app_id : DEMO_APP;
+  const activityId = state.assignment ? state.assignment.activity_id : DEMO_ACTIVITY;
+  const ranking = await api(`/api/rankings?app_id=${encodeURIComponent(appId)}&activity_id=${encodeURIComponent(activityId)}&limit=20`, { method: "GET" });
   setOutput(
     $("resultsOutput"),
     table(ranking, [
@@ -622,6 +655,7 @@ bind("teacherSummary", teacherSummary, "teacherOutput");
 bind("refreshDashboard", refreshDashboard, "teacherOutput");
 bind("createBatch", createBatch, "teacherOutput");
 bind("createAssignment", createAssignment, "resultsOutput");
+bind("createEduhootAssignment", createEduhootAssignment, "resultsOutput");
 bind("studentLogin", studentLogin, "studentOutput");
 bind("sendScore", sendScore, "studentOutput");
 bind("loadResults", loadResults);
