@@ -173,6 +173,19 @@ input {
   margin: 10px 0 16px;
 }
 
+.export-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.teacher-context {
+  display: grid;
+  gap: 4px;
+  margin: 8px 0 4px;
+}
+
 button {
   min-height: 42px;
   border: 1px solid var(--accent);

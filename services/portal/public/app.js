@@ -97,11 +97,20 @@ function credentialCards(identities) {
 }
 
 function groupLinks(group) {
-  if (!group) return "";
+  const statsHref = group
+    ? `/api/teacher/stats.csv?group_id=${encodeURIComponent(group.id)}`
+    : "/api/teacher/stats.csv";
   return `
-    <div class="actions">
-      <a class="button-link" href="/api/groups/${encodeURIComponent(group.id)}/cards" target="_blank" rel="noopener">Targetes</a>
-      <a class="button-link secondary" href="/api/groups/${encodeURIComponent(group.id)}/csv" target="_blank" rel="noopener">CSV codis</a>
+    <div class="export-actions" aria-label="Exportacions docents">
+      ${
+        group
+          ? `
+            <a class="button-link" href="/api/groups/${encodeURIComponent(group.id)}/cards" target="_blank" rel="noopener">Targetes</a>
+            <a class="button-link secondary" href="/api/groups/${encodeURIComponent(group.id)}/csv" target="_blank" rel="noopener">CSV codis</a>
+          `
+          : ""
+      }
+      <a class="button-link secondary" href="${statsHref}" target="_blank" rel="noopener">Estadístiques CSV</a>
     </div>
   `;
 }
@@ -113,7 +122,13 @@ function selectedTeacherContext() {
   const assignmentText = state.assignment
     ? `Activitat seleccionada: <strong>${escapeHtml(state.assignment.title || state.assignment.activity_id)}</strong>`
     : "Cap activitat seleccionada.";
-  return `<p>${groupText}</p><p>${assignmentText}</p>${groupLinks(state.group)}`;
+  return `
+    <div class="teacher-context">
+      <p>${groupText}</p>
+      <p>${assignmentText}</p>
+      ${groupLinks(state.group)}
+    </div>
+  `;
 }
 
 function table(rows, columns) {

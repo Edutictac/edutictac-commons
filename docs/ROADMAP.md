@@ -78,7 +78,7 @@ tauler Commons.
 - [x] Llistar grups i assignacions ja creades, no només l'estat guardat en
   `localStorage`.
 - [x] Permetre regenerar PIN i revocar identitats des del tauler.
-- [ ] Afegir exportació docent clara: targetes, CSV de codis i estadístiques.
+- [x] Afegir exportació docent clara: targetes, CSV de codis i estadístiques.
 - [ ] Afegir una vista d'alumnat amb recorregut i progrés bàsic.
 
 ### Fita 3 — EduHoot com a primera activitat integrada
