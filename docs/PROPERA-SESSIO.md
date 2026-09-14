@@ -1,8 +1,8 @@
 # Propera sessió de treball
 
-> Estat: Fita 3 avançada; backup/restore d'`id-api`, backups automàtics i
-> panell `/admin` operatius. Pendent principal: cobertura completa d'EduHoot i
-> actualitzacions Docker/OCI.
+> Estat: Fita 3 quasi tancada; backup/restore d'`id-api` i EduHoot (mongo,
+> uploads, informes de sessió), backups automàtics i panell `/admin`
+> operatius. Pendent principal: punt 7 (actualitzacions Docker/OCI).
 > Data: 2026-09-14
 
 ## Objectiu immediat
@@ -29,6 +29,9 @@ Format implementat en `scripts/backup.sh`:
 backups/commons-YYYYmmddTHHMMSSZ/
   manifest.json
   id-api/id.db
+  eduhoot/mongo.archive   (si eduhoot-mongo esta en marxa)
+  eduhoot/uploads.tar
+  eduhoot/logs.tar
 ```
 
 El `manifest.json` inclou: `manifest_version`, `created_at`, `stack_version`
@@ -36,24 +39,22 @@ El `manifest.json` inclou: `manifest_version`, `created_at`, `stack_version`
 servei) i `warnings[]`. `scripts/restore.sh` ja llig aquest format (valida
 manifest + `id-api/id.db`, avisa si la versió no coincideix).
 
-Pendent per a properes carpetes de backup, quan s'afegisquen més serveis:
+### 2. Ampliar `make backup` — ✅ fet (2026-09-14)
 
-```text
-  eduhoot/mongo.archive
-  eduhoot/uploads/
-  eduhoot/logs/
-```
+Estat: **`id-api` i EduHoot coberts**. Quan `COMPOSE_PROFILES=eduhoot` esta
+actiu i el contenidor `eduhoot-mongo` esta en marxa, `scripts/backup.sh` fa:
 
-### 2. Ampliar `make backup`
+- `docker compose exec eduhoot-mongo mongodump --archive --db=kahootDB` ->
+  `eduhoot/mongo.archive` (el nom real de la base es `kahootDB`, no
+  `eduhoot`, herencia del fork Llixhoot);
+- `tar` de `data/eduhoot-uploads/` -> `eduhoot/uploads.tar`;
+- `tar` de `data/eduhoot-logs/` -> `eduhoot/logs.tar` (son informes de
+  sessio amb resultats reals de l'alumnat, no logs tecnics descartables —
+  decisio presa en revisar el contingut real del directori).
 
-Estat: **`id-api` cobert**. Si `COMPOSE_PROFILES=eduhoot` està actiu, el
-manifest ja inclou un avís explícit que EduHoot no té cobertura encara.
-
-Queda per cobrir:
-
-- EduHoot/Mongo si `COMPOSE_PROFILES=eduhoot`;
-- `data/eduhoot-uploads/`;
-- logs o informes d'EduHoot que decidim conservar.
+Si `eduhoot-mongo` no esta en marxa, el manifest declara l'avis
+corresponent en `warnings[]` (detectat per `make backup-check`) en lloc de
+fallar tot el backup.
 
 ### 3. Afegir `make backup-check` — ✅ fet (2026-09-14)
 
@@ -69,7 +70,8 @@ Comprovació no destructiva implementada en `scripts/backup-check.sh`:
 
 Provat manualment: sense backup, backup vàlid, backup caducat, checksum
 manipulat i EduHoot actiu sense cobertura ni avís — els cinc casos donen el
-resultat `OK`/`FAIL` esperat.
+resultat `OK`/`FAIL` esperat. La lògica ja era genèrica per servei, així que
+la cobertura d'EduHoot (punt 2) no ha requerit cap canvi en aquest script.
 
 ### 4. Ampliar `make restore` — ✅ fet (2026-09-14)
 
@@ -78,13 +80,33 @@ Flux implementat en `scripts/restore.sh`:
 - parar serveis (`docker compose down`);
 - restaurar dades (amb còpia de seguretat prèvia de `data/id.db` si ja
   n'existia una);
-- arrancar serveis (`docker compose up -d --wait`, que ja espera l'estat
-  `healthy` de `id-api` abans de continuar);
+- si el manifest declara `eduhoot`: comprovar que `.env` te
+  `COMPOSE_PROFILES=eduhoot` actiu (si no, avortar amb missatge clar); fer
+  còpia de seguretat prèvia i restaurar `eduhoot-uploads`/`eduhoot-logs` amb
+  tar;
+- arrancar serveis (`docker compose up -d --wait`, que ara espera l'estat
+  `healthy` d'`id-api` i, si esta actiu, d'`eduhoot-mongo` — se li va afegir
+  un healthcheck al `compose.yml` que abans no tenia);
+- si el manifest declara `eduhoot`: `mongorestore --archive --drop` contra
+  `eduhoot-mongo` (necessita el contenidor ja en marxa);
 - comprovar salut del portal (`curl .../api/health`);
 - executar `./scripts/test-flow.sh` com a verificació funcional final.
 
+Detall de disseny: els directoris `data/eduhoot-uploads`/`data/eduhoot-logs`
+son propietat de l'uid intern del contenidor `eduhoot` (no te `PUID`/`PGID`
+com `id-api`), aixi que l'usuari de l'host no sempre te permisos
+d'escriptura per netejar-los. Resolt executant `rm`+`tar` dins d'un
+contenidor `mongo:7` (ja necessari per `eduhoot-mongo`, sense pull
+addicional) com a root, que preserva l'uid/gid original en restaurar.
+
 Si qualsevol pas falla, el script s'atura (`set -eu`) i la còpia de
 seguretat prèvia queda disponible per a una restauració manual.
+
+Provat en real (2026-09-14): cicle complet backup -> backup-check -> restore
+-> backup-check amb el stack local (`COMPOSE_PROFILES=eduhoot`) incloent
+dades reals de Mongo (`kahootDB`), un informe de sessió CSV existent i
+directoris `quiz-images` buits. Ownership dels fitxers restaurats verificat
+identic a l'original.
 
 ### 5. Backups automàtics — ✅ fet (2026-09-14)
 
@@ -236,5 +258,13 @@ Fet (2026-09-14): imatge pròpia `commons-admin:${IMAGE_TAG}` versionada i
 inclosa en `make export-images` i `make push-images` junt amb `commons-id-api`
 i `commons-portal`.
 
-Següent pas recomanat: ampliar cobertura a EduHoot dins del punt 2. Després,
-punt 7 (actualitzacions Docker/OCI).
+Fet (2026-09-14): cobertura completa d'EduHoot en `make backup`/`make
+restore`/`make backup-check` (mongo `kahootDB`, uploads, informes de sessió),
+amb healthcheck nou per `eduhoot-mongo` en `compose.yml`. Provat en real amb
+un cicle complet backup -> restore contra el stack local amb dades reals.
+Fita 3 pràcticament tancada.
+
+Següent pas recomanat: punt 7 (actualitzacions Docker/OCI) — detectar versió
+disponible a `IMAGE_REGISTRY`, exigir backup recent i verificable abans
+d'actualitzar, descarregar imatges, reiniciar, healthchecks i rollback
+documentat.

@@ -83,12 +83,18 @@ services:
       - ./data/eduhoot-mongo:/data/db
     expose:
       - "27017"
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
   eduhoot:
     image: ${IMAGE_REGISTRY:-edutictac}/eduhoot:${EDUHOOT_TAG:-0.1.0}
     profiles: ["eduhoot"]
     depends_on:
-      - eduhoot-mongo
+      eduhoot-mongo:
+        condition: service_healthy
     environment:
       PORT: 3000
       HOST: 0.0.0.0

@@ -98,14 +98,18 @@ backup recent i verificable**.
   `id-api`, EduHoot/Mongo, uploads, logs rellevants, configuració local i
   futurs mòduls.
 - [x] Ampliar `make backup` perquè cobrisca `id-api` amb manifest i checksum.
-- [ ] Ampliar `make backup` perquè cobrisca tots els serveis amb dades
-  persistents activats (pendent EduHoot/Mongo, uploads i decisió sobre logs).
+- [x] Ampliar `make backup` perquè cobrisca EduHoot (Mongo `kahootDB` via
+  `mongodump`, uploads i informes de sessió via tar) quan `eduhoot-mongo`
+  estiga en marxa.
 - [x] Ampliar `make restore` per a `id-api` i documentar el flux base.
-- [ ] Ampliar `make restore` i documentar restauració pas a pas per a tots els
-  serveis persistents (pendent EduHoot).
+- [x] Ampliar `make restore` per a EduHoot (mongo/uploads/logs), incloent-hi
+  el cas dels directoris propietat de l'uid intern del contenidor (resolt
+  amb `mongo:7` com a root, sense pull addicional).
 - [x] Afegir verificació mínima de backup/restauració en entorn local segur
   per a `id-api`.
-- [ ] Afegir verificació de backup/restauració amb `COMPOSE_PROFILES=eduhoot`.
+- [x] Afegir verificació de backup/restauració amb `COMPOSE_PROFILES=eduhoot`
+  (`make backup-check` ja detectava genèricament la cobertura declarada al
+  manifest; provat en real amb un cicle backup→restore complet).
 - [x] Crear panell `/admin` només per administració tècnica.
 - [x] Mostrar en `/admin` estat de serveis, versió instal·lada i últim backup.
 - [x] Permetre crear backup manual des del panell.

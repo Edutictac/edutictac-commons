@@ -44,12 +44,24 @@ else
   profiles="$(grep -E '^COMPOSE_PROFILES=' "$env_file" 2>/dev/null | cut -d= -f2- || true)"
 fi
 
-warning=""
+eduhoot_active=0
 case ",${profiles}," in
-  *,eduhoot,*)
-    warning="eduhoot actiu (COMPOSE_PROFILES=eduhoot) pero sense cobertura de backup: data/eduhoot-mongo, data/eduhoot-uploads, data/eduhoot-logs"
-    ;;
+  *,eduhoot,*) eduhoot_active=1 ;;
 esac
+
+warning=""
+eduhoot_covered=0
+docker_cmd="${DOCKER:-docker}"
+compose="$docker_cmd compose -f compose.yml"
+
+if [ "$eduhoot_active" = "1" ]; then
+  mongo_state="$($compose ps --status running --format '{{.Service}}' 2>/dev/null | grep -x eduhoot-mongo || true)"
+  if [ -z "$mongo_state" ]; then
+    warning="eduhoot actiu (COMPOSE_PROFILES=eduhoot) pero eduhoot-mongo no esta en marxa: no s'ha pogut fer backup de data/eduhoot-mongo, data/eduhoot-uploads, data/eduhoot-logs"
+  else
+    eduhoot_covered=1
+  fi
+fi
 
 stamp="$(date -u +%Y%m%dT%H%M%SZ)"
 dest_dir="backups/commons-${stamp}"
@@ -76,36 +88,60 @@ finally:
     source.close()
 PY
 
+if [ "$eduhoot_covered" = "1" ]; then
+  mkdir -p "${tmp_dir}/eduhoot"
+  $compose exec -T eduhoot-mongo mongodump --quiet --archive --db=kahootDB > "${tmp_dir}/eduhoot/mongo.archive"
+  tar -C data -cf "${tmp_dir}/eduhoot/uploads.tar" eduhoot-uploads
+  tar -C data -cf "${tmp_dir}/eduhoot/logs.tar" eduhoot-logs
+fi
+
 stack_version="$(cat VERSION 2>/dev/null || echo unknown)"
 
-python3 - "$tmp_dir" "$stack_version" "$warning" <<'PY'
+python3 - "$tmp_dir" "$stack_version" "$warning" "$eduhoot_covered" <<'PY'
 import hashlib
 import json
 import os
 import sys
 from datetime import datetime, timezone
 
-dest_dir, stack_version, warning = sys.argv[1], sys.argv[2], sys.argv[3]
+dest_dir, stack_version, warning, eduhoot_covered = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4] == "1"
 
-db_rel = "id-api/id.db"
-db_path = os.path.join(dest_dir, db_rel)
-sha256 = hashlib.sha256()
-with open(db_path, "rb") as f:
-    for chunk in iter(lambda: f.read(65536), b""):
-        sha256.update(chunk)
+
+def checksum(rel_path):
+    full_path = os.path.join(dest_dir, rel_path)
+    sha256 = hashlib.sha256()
+    with open(full_path, "rb") as f:
+        for chunk in iter(lambda: f.read(65536), b""):
+            sha256.update(chunk)
+    return f"sha256:{sha256.hexdigest()}"
+
+
+id_api_db = "id-api/id.db"
+services = [
+    {
+        "name": "id-api",
+        "status": "ok",
+        "paths": [id_api_db],
+        "checksums": {id_api_db: checksum(id_api_db)},
+    }
+]
+
+if eduhoot_covered:
+    eduhoot_paths = ["eduhoot/mongo.archive", "eduhoot/uploads.tar", "eduhoot/logs.tar"]
+    services.append(
+        {
+            "name": "eduhoot",
+            "status": "ok",
+            "paths": eduhoot_paths,
+            "checksums": {p: checksum(p) for p in eduhoot_paths},
+        }
+    )
 
 manifest = {
     "manifest_version": 1,
     "created_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
     "stack_version": stack_version,
-    "services": [
-        {
-            "name": "id-api",
-            "status": "ok",
-            "paths": [db_rel],
-            "checksums": {db_rel: f"sha256:{sha256.hexdigest()}"},
-        }
-    ],
+    "services": services,
     "warnings": [warning] if warning else [],
 }
 

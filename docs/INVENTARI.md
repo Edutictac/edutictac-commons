@@ -65,10 +65,19 @@ Estat actual:
 | Dades | Cobertura actual | Objectiu |
 |---|---|---|
 | `data/id.db` | `make backup` / `make restore` / `make backup-check`, amb `manifest.json` i checksum | mantindre |
-| `data/eduhoot-mongo/` | pendent | `mongodump`/restore o equivalent dins de la política comuna |
-| `data/eduhoot-uploads/` | pendent | còpia de fitxers amb restauració documentada |
-| `data/eduhoot-logs/` | pendent | decidir quins logs/informes són dades a conservar |
+| `data/eduhoot-mongo/` (base `kahootDB`) | `make backup` / `make restore` / `make backup-check` via `mongodump`/`mongorestore` (`eduhoot/mongo.archive`) | mantindre |
+| `data/eduhoot-uploads/` | `make backup` / `make restore` via tar (`eduhoot/uploads.tar`) | mantindre |
+| `data/eduhoot-logs/` | `make backup` / `make restore` via tar (`eduhoot/logs.tar`) — són informes de sessió amb resultats reals de l'alumnat, no logs tècnics descartables | mantindre |
 | `.env` local | pendent | còpia segura fora del repo, mai impresa ni versionada |
+
+Cobertura d'EduHoot condicionada a que `eduhoot-mongo` estiga en marxa en el
+moment del backup (si no ho està, el `manifest.json` ho declara en
+`warnings[]` i `make backup-check` ho detecta). La restauració exigeix que
+`COMPOSE_PROFILES=eduhoot` estiga actiu en el `.env` de destí. Els directoris
+`eduhoot-uploads`/`eduhoot-logs` són propietat de l'uid intern del contenidor
+`eduhoot` (no té `PUID`/`PGID` com `id-api`); `make restore` fa servir la
+imatge `mongo:7` (ja necessària per `eduhoot-mongo`) com a root per
+llegir/sobreescriure eixos directoris sense dependre de permisos de l'host.
 
 El panell `/admin` (servei `admin`, vegeu secció pròpia) ja mostra l'estat de
 l'últim backup, permet crear-ne un manualment, llista còpies disponibles,
@@ -180,9 +189,9 @@ pendent del punt 7. Qualsevol actualització ha d'exigir:
 - `.env` conté secrets locals: no s'ha de mostrar ni versionar.
 - Els PINs només es retornen en el moment de generar o regenerar credencials.
 - El CSV exporta codis públics, no PINs.
-- Si `COMPOSE_PROFILES=eduhoot`, hi ha dades addicionals en
-  `data/eduhoot-*` que encara no entren en `make backup`; és un bloqueig de la
-  Fita 3 abans de considerar el mòdul operativament complet.
+- Si `COMPOSE_PROFILES=eduhoot`, `make backup` cobreix `data/eduhoot-*` sempre
+  que `eduhoot-mongo` estiga en marxa en fer el backup; si no ho està, el
+  manifest ho avisa i `make backup-check` ho marca com a `FAIL`.
 - `make reset` esborra dades locals de demo; cal fer `make backup` abans si es
   vol conservar l'estat.
 - En un centre no s'han d'usar els valors demo `change-this-local-secret` ni
