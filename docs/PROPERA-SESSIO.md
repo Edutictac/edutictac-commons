@@ -129,14 +129,32 @@ freqüència, pròxima/última execució i últim resultat — no cal que
 
 ### 6. Primer `/admin`
 
-Primera versió només lectura:
+Decisió (2026-09-14): l'usuari vol activar el timer de backup automàtic des
+d'un botó del panell, no manualment per CLI (`make backup-timer-install`).
+Per tant aquest primer `/admin` ja NO pot ser només de lectura: cal com a
+mínim una acció d'escriptura.
+
+Lectura:
 
 - versió instal·lada;
 - serveis actius;
 - estat de l'API;
 - últim backup;
 - serveis sense cobertura de backup;
-- canal d'actualització configurat.
+- canal d'actualització configurat;
+- estat del timer de backup automàtic (`systemctl --user list-timers` /
+  `status` d'`edutictac-commons-backup.timer`).
+
+Escriptura (mínim indispensable per a aquesta primera versió):
+
+- botó "Activar backups automàtics" que invoque
+  `scripts/install-backup-timer.sh` (equivalent a `make backup-timer-install`)
+  des del backend, i mostre el resultat;
+- botó equivalent per desactivar-lo (`scripts/uninstall-backup-timer.sh`),
+  si té sentit tindre'l ja en aquesta primera versió.
+
+El timer encara no s'ha instal·lat en cap màquina: queda pendent d'aquest
+botó.
 
 ### 7. Actualitzacions Docker/OCI
 
