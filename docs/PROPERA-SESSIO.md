@@ -127,34 +127,61 @@ El panell `/admin` (punt 6) podrà llegir l'estat del timer amb
 freqüència, pròxima/última execució i últim resultat — no cal que
 `/admin` gestione systemd directament, només que el llija.
 
-### 6. Primer `/admin`
+### 6. Primer `/admin` — ✅ fet (2026-09-14)
 
 Decisió (2026-09-14): l'usuari vol activar el timer de backup automàtic des
 d'un botó del panell, no manualment per CLI (`make backup-timer-install`).
-Per tant aquest primer `/admin` ja NO pot ser només de lectura: cal com a
-mínim una acció d'escriptura.
+A més, va aclarir un requisit més fort: **cap acció, ni tan sols la posada en
+marxa del propi panell, no pot requerir terminal.** Tot el que necessite
+privilegis del host ha de poder activar-se/desactivar-se des del panell, com
+a funcionalitat opcional per defecte apagada, però sense cap pas de CLI
+intermedi.
 
-Lectura:
+Això va descartar dues alternatives considerades abans de la decisió final:
 
-- versió instal·lada;
-- serveis actius;
+- Servei natiu del host instal·lat a mà (`make admin-install`): requeria un
+  pas de terminal, encara que fóra puntual.
+- Donar accés al bus de systemd directament a `id-api`: barrejaria un
+  privilegi nou de host amb el servei més exposat (tràfic docent/alumnat).
+
+Disseny final implementat: un **contenidor nou i separat, `admin`** (servei
+Compose), que arranca sempre amb `make up`/`make up-pulled` sense cap pas
+addicional, amb accés acotat (mateix UID que `id-api` via `PUID`/`PGID`,
+mai root) al `systemd --user` del host només per a gestionar la unitat
+`edutictac-commons-backup.*` (bus de sessió + directori d'unitats muntats,
+sense `docker.sock`). Detalls tècnics i el risc que això implica són a
+`docs/INVENTARI.md` (seccions "Serveis", "Comprovacions de salut" i
+"Riscos operatius").
+
+Lectura (`GET /api/status`, `admin/server.py`):
+
+- versió instal·lada (`VERSION`);
+- serveis actius (sondeig de xarxa directe a `id-api`/`portal`/`eduhoot`/
+  `eduhoot-mongo`, sense `docker compose ps`);
 - estat de l'API;
-- últim backup;
-- serveis sense cobertura de backup;
-- canal d'actualització configurat;
-- estat del timer de backup automàtic (`systemctl --user list-timers` /
-  `status` d'`edutictac-commons-backup.timer`).
+- últim backup i llista de backups disponibles;
+- serveis sense cobertura de backup (avisos del manifest);
+- canal/versió d'imatge configurada (`IMAGE_REGISTRY`, `IMAGE_TAG`,
+  `EDUHOOT_TAG`);
+- estat del timer de backup automàtic (`systemctl --user show` amb
+  propietats estructurades, no screen-scraping de `list-timers`).
 
-Escriptura (mínim indispensable per a aquesta primera versió):
+Escriptura (allowlist tancada, cap dada de la petició arriba a un shell):
 
-- botó "Activar backups automàtics" que invoque
-  `scripts/install-backup-timer.sh` (equivalent a `make backup-timer-install`)
-  des del backend, i mostre el resultat;
-- botó equivalent per desactivar-lo (`scripts/uninstall-backup-timer.sh`),
-  si té sentit tindre'l ja en aquesta primera versió.
+- `POST /api/backup/create` -> `scripts/backup.sh` + `scripts/backup-check.sh`
+  ("Crear backup ara" al panell);
+- `POST /api/backup-timer/install` -> `scripts/install-backup-timer.sh`
+  ("Activar backups automàtics");
+- `POST /api/backup-timer/uninstall` -> `scripts/uninstall-backup-timer.sh`
+  ("Desactivar backups automàtics").
 
-El timer encara no s'ha instal·lat en cap màquina: queda pendent d'aquest
-botó.
+Frontend propi a `admin/public/` (mateix patró UX que
+`services/portal/public/teacher.html`: token + `Bearer`, guardat en
+`localStorage`).
+
+El timer encara no s'ha instal·lat en cap màquina real: queda pendent de
+prémer el botó la primera vegada que es faça servir el stack fora d'aquesta
+sessió de desenvolupament.
 
 ### 7. Actualitzacions Docker/OCI
 
@@ -188,5 +215,11 @@ Fet (2026-09-14): backups automàtics (punt 5) amb `scripts/backup-auto.sh`
 (backup + comprovació + retenció) i un timer d'usuari de systemd instal·lable
 amb `make backup-timer-install`, alternativa cron documentada.
 
-Següent pas: ampliar cobertura a EduHoot dins del punt 2, o punt 6 (primer
-panell `/admin` de només lectura).
+Fet (2026-09-14): primer panell `/admin` (punt 6), com a contenidor Compose
+nou `admin` (`admin/Dockerfile`, `admin/server.py`, `admin/public/`), amb
+lectura de l'estat operatiu i tres accions d'escriptura per allowlist (crear
+backup, activar/desactivar el timer automàtic) — cap pas de terminal
+addicional a `make up`.
+
+Següent pas: ampliar cobertura a EduHoot dins del punt 2, o punt 7
+(actualitzacions Docker/OCI).

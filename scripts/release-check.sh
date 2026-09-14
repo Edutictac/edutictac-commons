@@ -40,6 +40,17 @@ else
 fi
 
 echo
+echo "== Sintaxi del panell admin =="
+python3 -m py_compile admin/server.py
+echo "OK Python"
+if command -v node >/dev/null 2>&1; then
+  node --check admin/public/app.js
+  echo "OK JavaScript"
+else
+  echo "AVIS: node no disponible; s'omet la comprovacio de JavaScript"
+fi
+
+echo
 echo "== Artefactes locals ignorats =="
 for path in $ignored_required; do
   if git -C "$repo_root" check-ignore -q "$path"; then

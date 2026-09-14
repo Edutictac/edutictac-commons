@@ -35,6 +35,8 @@ La versió `0.1.0-alpha` ja conté:
 - integració opcional d'EduHoot via perfil Docker Compose;
 - scripts d'operació local: `doctor`, `up`, `test-flow`, `bootstrap-demo`,
   `backup`, `restore`, `export-images`, `load-images` i `release-check`;
+- backups automàtics amb timer d'usuari de systemd i panell `/admin`
+  (contenidor `admin`) per gestionar-los sense terminal;
 - documentació d'instal·lació en centres i checklist d'entrega.
 
 El criteri d'estabilitat actual és:
@@ -98,10 +100,10 @@ backup recent i verificable**.
   persistents activats.
 - [ ] Ampliar `make restore` i documentar restauració pas a pas per servei.
 - [ ] Afegir verificació mínima de backup/restauració en entorn local segur.
-- [ ] Crear panell `/admin` només per administració tècnica.
-- [ ] Mostrar en `/admin` estat de serveis, versió instal·lada i últim backup.
-- [ ] Permetre crear backup manual des del panell.
-- [ ] Llistar backups disponibles i avisar si algun servei no està cobert.
+- [x] Crear panell `/admin` només per administració tècnica.
+- [x] Mostrar en `/admin` estat de serveis, versió instal·lada i últim backup.
+- [x] Permetre crear backup manual des del panell.
+- [x] Llistar backups disponibles i avisar si algun servei no està cobert.
 - [ ] Consultar `IMAGE_REGISTRY` i detectar si hi ha una versió nova
   disponible.
 - [ ] Oferir actualització guiada d'imatges: backup previ obligatori,

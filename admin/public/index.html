@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="ca">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Panell d'administració — EduTicTac Commons</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">EduTicTac Commons</p>
+        <h1>Panell d'administració</h1>
+      </div>
+      <span id="apiStatus" class="status">Comprovant token...</span>
+    </header>
+
+    <main class="single-layout">
+      <section class="panel" aria-labelledby="loginTitle">
+        <div class="panel-heading">
+          <p class="eyebrow">Accés</p>
+          <h2 id="loginTitle">Token d'administració</h2>
+        </div>
+        <label>
+          Token
+          <input id="adminToken" type="password" autocomplete="off">
+        </label>
+        <div class="actions">
+          <button id="loginBtn" type="button">Entrar</button>
+          <button id="logoutBtn" type="button" class="secondary">Eixir</button>
+          <button id="refreshBtn" type="button" class="secondary">Actualitzar</button>
+        </div>
+      </section>
+
+      <section class="panel" aria-labelledby="statusTitle">
+        <div class="panel-heading">
+          <p class="eyebrow">Estat</p>
+          <h2 id="statusTitle">Estat operatiu del stack</h2>
+        </div>
+        <div id="statusOutput" class="output empty">Entra amb el token per veure l'estat.</div>
+      </section>
+
+      <section class="panel" aria-labelledby="actionsTitle">
+        <div class="panel-heading">
+          <p class="eyebrow">Accions</p>
+          <h2 id="actionsTitle">Backups</h2>
+        </div>
+        <div class="actions">
+          <button id="backupCreateBtn" type="button">Crear backup ara</button>
+          <button id="timerInstallBtn" type="button">Activar backups automàtics</button>
+          <button id="timerUninstallBtn" type="button" class="secondary">Desactivar backups automàtics</button>
+        </div>
+        <div id="actionOutput" class="output empty">Els resultats de les accions apareixeran ací.</div>
+      </section>
+    </main>
+
+    <script src="/app.js"></script>
+  </body>
+</html>

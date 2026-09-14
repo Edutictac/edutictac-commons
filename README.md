@@ -32,6 +32,19 @@ El token docent de demo és el valor de `EDUTICTAC_ID_TEACHER_TOKEN` en `.env` (
 | `id-api` | 8005 | Credencial pseudònima d'alumnat |
 | `eduhoot` | 3000 | Activitat quiz (opcional, `COMPOSE_PROFILES=eduhoot`) |
 | `eduhoot-mongo` | 27017 | Base de dades d'EduHoot (opcional) |
+| `admin` | 8091 | Panell `/admin`: estat operatiu i backups (sempre actiu) |
+
+## Panell d'administració
+
+`http://127.0.0.1:8091/` — nomes accessible en local per defecte. Cal el
+token d'`EDUTICTAC_ADMIN_TOKEN` (`.env`) per entrar-hi.
+
+Mostra la versió instal·lada, l'estat dels serveis, l'últim backup i la
+llista de còpies disponibles, els avisos de cobertura i l'estat del timer de
+backup automàtic. Tres botons: "Crear backup ara", "Activar backups
+automàtics" i "Desactivar backups automàtics" — cap requereix terminal, tot
+es fa des del navegador. Canvia el token per defecte abans de fer servir el
+stack fora d'una demo local.
 
 ## Reutilització del treball existent
 

@@ -30,6 +30,51 @@ services:
     ports:
       - "${PORTAL_PORT:-8082}:80"
 
+  admin:
+    build:
+      context: .
+      dockerfile: admin/Dockerfile
+      # host: evita fallades de resolucio DNS durant "apt-get update" en hosts
+      # amb un resolver local (p.ex. NetworkManager+dnsmasq en 127.0.0.1)
+      network: host
+    # systemctl --user resol el PID del manager d'usuari del host (l'altre
+    # extrem del socket privat de systemd) via SO_PEERCRED. Sense compartir
+    # l'espai de noms de PID del host, eixe procés es invisible des del
+    # contenidor i el kernel torna pid=0, que systemd tracta com a
+    # credencial invalida ("Failed to connect... No data available").
+    # Nomes dona visibilitat de la llista de processos del host (sense
+    # ptrace ni cap altra capacitat nova).
+    pid: host
+    user: "${PUID:-1000}:${PGID:-1000}"
+    environment:
+      EDUTICTAC_ADMIN_TOKEN: ${EDUTICTAC_ADMIN_TOKEN:-change-this-admin-token}
+      REPO_DIR: ${PWD}
+      XDG_RUNTIME_DIR: /run/user/${PUID:-1000}
+      XDG_CONFIG_HOME: /hostcfg
+      COMPOSE_PROFILES: ${COMPOSE_PROFILES:-}
+      IMAGE_REGISTRY: ${IMAGE_REGISTRY:-edutictac}
+      IMAGE_TAG: ${IMAGE_TAG:-0.1.0-alpha}
+      EDUHOOT_TAG: ${EDUHOOT_TAG:-0.1.0}
+      PORTAL_HEALTH_URL: http://portal/api/health
+      ID_API_HEALTH_URL: http://id-api:8005/api/health
+    volumes:
+      - /run/user/${PUID:-1000}/bus:/run/user/${PUID:-1000}/bus
+      # systemctl --user parla amb el manager per un socket local directe
+      # (XDG_RUNTIME_DIR/systemd/private), no nomes pel bus de sessio.
+      - /run/user/${PUID:-1000}/systemd:/run/user/${PUID:-1000}/systemd
+      # sd_booted(): "enable --now" es nega si no detecta que el sistema
+      # (no nomes la sessio d'usuari) arranca amb systemd. Nomes lectura,
+      # es un directori marcador buit, no dona cap privilegi nou.
+      - /run/systemd/system:/run/systemd/system:ro
+      - ${XDG_CONFIG_HOME:-$HOME/.config}/systemd/user:/hostcfg/systemd/user
+      - ./backups:/app/backups
+      - ./data:/app/data:ro
+    ports:
+      - "127.0.0.1:${ADMIN_PORT:-8091}:8091"
+    depends_on:
+      id-api:
+        condition: service_healthy
+
   eduhoot-mongo:
     image: mongo:7
     profiles: ["eduhoot"]

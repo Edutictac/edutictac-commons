@@ -5,11 +5,15 @@ cd "$(dirname "$0")/.."
 
 max_age_hours="${BACKUP_MAX_AGE_HOURS:-24}"
 
-env_file=".env"
-if [ ! -f "$env_file" ]; then
-  env_file=".env.example"
+if [ -n "${COMPOSE_PROFILES+x}" ]; then
+  profiles="$COMPOSE_PROFILES"
+else
+  env_file=".env"
+  if [ ! -f "$env_file" ]; then
+    env_file=".env.example"
+  fi
+  profiles="$(grep -E '^COMPOSE_PROFILES=' "$env_file" 2>/dev/null | cut -d= -f2- || true)"
 fi
-profiles="$(grep -E '^COMPOSE_PROFILES=' "$env_file" 2>/dev/null | cut -d= -f2- || true)"
 
 latest_dir="$(find backups -maxdepth 1 -type d -name 'commons-*' 2>/dev/null | sort | tail -n1)"
 

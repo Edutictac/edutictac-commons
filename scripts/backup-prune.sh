@@ -3,6 +3,19 @@ set -eu
 
 cd "$(dirname "$0")/.."
 
+if [ "${BACKUP_LOCK_HELD:-0}" != "1" ]; then
+  mkdir -p backups
+  lock_dir="${BACKUP_LOCK_DIR:-backups/.backup.lock}"
+  if ! mkdir "$lock_dir" 2>/dev/null; then
+    echo "Un altre backup o neteja de backups esta en marxa: $lock_dir"
+    exit 1
+  fi
+  trap 'rmdir "$lock_dir" 2>/dev/null || true' EXIT
+  trap 'rmdir "$lock_dir" 2>/dev/null || true; exit 130' INT TERM
+  BACKUP_LOCK_HELD=1
+  export BACKUP_LOCK_HELD
+fi
+
 keep_daily="${BACKUP_KEEP_DAILY:-7}"
 keep_weekly="${BACKUP_KEEP_WEEKLY:-4}"
 keep_monthly="${BACKUP_KEEP_MONTHLY:-6}"

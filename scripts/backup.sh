@@ -3,17 +3,46 @@ set -eu
 
 cd "$(dirname "$0")/.."
 
+lock_acquired=0
+tmp_dir=""
+cleanup() {
+  if [ -n "$tmp_dir" ] && [ -d "$tmp_dir" ]; then
+    rm -rf "$tmp_dir"
+  fi
+  if [ "$lock_acquired" = "1" ]; then
+    rmdir "$lock_dir" 2>/dev/null || true
+  fi
+}
+
+if [ "${BACKUP_LOCK_HELD:-0}" != "1" ]; then
+  mkdir -p backups
+  lock_dir="${BACKUP_LOCK_DIR:-backups/.backup.lock}"
+  if ! mkdir "$lock_dir" 2>/dev/null; then
+    echo "Un altre backup o neteja de backups esta en marxa: $lock_dir"
+    exit 1
+  fi
+  lock_acquired=1
+  trap cleanup EXIT
+  trap 'cleanup; exit 130' INT TERM
+  BACKUP_LOCK_HELD=1
+  export BACKUP_LOCK_HELD
+fi
+
 src="data/id.db"
 if [ ! -f "$src" ]; then
   echo "No hi ha base de dades en $src"
   exit 1
 fi
 
-env_file=".env"
-if [ ! -f "$env_file" ]; then
-  env_file=".env.example"
+if [ -n "${COMPOSE_PROFILES+x}" ]; then
+  profiles="$COMPOSE_PROFILES"
+else
+  env_file=".env"
+  if [ ! -f "$env_file" ]; then
+    env_file=".env.example"
+  fi
+  profiles="$(grep -E '^COMPOSE_PROFILES=' "$env_file" 2>/dev/null | cut -d= -f2- || true)"
 fi
-profiles="$(grep -E '^COMPOSE_PROFILES=' "$env_file" 2>/dev/null | cut -d= -f2- || true)"
 
 warning=""
 case ",${profiles}," in
@@ -24,8 +53,14 @@ esac
 
 stamp="$(date -u +%Y%m%dT%H%M%SZ)"
 dest_dir="backups/commons-${stamp}"
-mkdir -p "${dest_dir}/id-api"
-dest_db="${dest_dir}/id-api/id.db"
+while [ -e "$dest_dir" ]; do
+  sleep 1
+  stamp="$(date -u +%Y%m%dT%H%M%SZ)"
+  dest_dir="backups/commons-${stamp}"
+done
+tmp_dir="${dest_dir}.tmp.$$"
+mkdir -p "${tmp_dir}/id-api"
+dest_db="${tmp_dir}/id-api/id.db"
 
 python3 - "$src" "$dest_db" <<'PY'
 import sqlite3
@@ -43,7 +78,7 @@ PY
 
 stack_version="$(cat VERSION 2>/dev/null || echo unknown)"
 
-python3 - "$dest_dir" "$stack_version" "$warning" <<'PY'
+python3 - "$tmp_dir" "$stack_version" "$warning" <<'PY'
 import hashlib
 import json
 import os
@@ -78,6 +113,8 @@ with open(os.path.join(dest_dir, "manifest.json"), "w") as f:
     json.dump(manifest, f, indent=2)
     f.write("\n")
 PY
+
+mv "$tmp_dir" "$dest_dir"
 
 echo "Copia creada: $dest_dir"
 if [ -n "$warning" ]; then

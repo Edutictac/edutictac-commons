@@ -3,7 +3,7 @@ set -eu
 
 cd "$(dirname "$0")/.."
 
-repo_dir="$(pwd)"
+repo_dir="${REPO_DIR:-$(pwd)}"
 unit_dir="${XDG_CONFIG_HOME:-$HOME/.config}/systemd/user"
 mkdir -p "$unit_dir"
 
