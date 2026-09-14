@@ -145,6 +145,9 @@ function table(rows, columns) {
 function teacherDashboard(summary, assignments) {
   const groups = summary.groups || [];
   const groupNames = new Map(groups.map((group) => [group.id, group.name]));
+  const selectedIdentities = state.group
+    ? state.identities.filter((identity) => identity.group_id === state.group.id)
+    : state.identities;
   return `
     <p><strong>${summary.active}</strong> identitats actives de ${summary.total} totals.</p>
     ${selectedTeacherContext()}
@@ -158,6 +161,26 @@ function teacherDashboard(summary, assignments) {
         { key: "name", label: "Grup opac" },
         { key: "tenant_id", label: "Tenant" },
         { key: "active", label: "Actives" },
+        { key: "action", label: "", html: true },
+      ],
+    )}
+    <h3>Credencials actives${state.group ? "" : " recents"}</h3>
+    ${table(
+      selectedIdentities.map((identity) => ({
+        ...identity,
+        group_name: groupNames.get(identity.group_id) || identity.group_name || identity.group_id,
+        pin_rotated_at: identity.pin_rotated_at || "",
+        action: `
+          <div class="inline-actions">
+            <button class="compact secondary" type="button" data-regenerate-pin="${escapeHtml(identity.id)}">Regenerar PIN</button>
+            <button class="compact danger" type="button" data-revoke-identity="${escapeHtml(identity.id)}">Revocar</button>
+          </div>
+        `,
+      })),
+      [
+        { key: "public_code", label: "Codi" },
+        { key: "group_name", label: "Grup" },
+        { key: "pin_rotated_at", label: "PIN actualitzat" },
         { key: "action", label: "", html: true },
       ],
     )}
@@ -251,16 +274,15 @@ async function teacherSummary() {
   );
 }
 
-async function refreshDashboard() {
-  if (!state.teacher) {
-    throw new Error("Entra primer com a docent.");
-  }
-  const [summary, assignmentData] = await Promise.all([
+async function loadTeacherData() {
+  const [summary, assignmentData, identityData] = await Promise.all([
     api("/api/teacher/summary", { method: "GET" }),
     api("/api/teacher/activity-assignments", { method: "GET" }),
+    api("/api/teacher/identities", { method: "GET" }),
   ]);
   state.groups = summary.groups || [];
   state.assignments = assignmentData.assignments || [];
+  state.identities = identityData.identities || [];
   if (state.group) {
     const freshGroup = state.groups.find((group) => group.id === state.group.id);
     if (freshGroup) {
@@ -271,6 +293,14 @@ async function refreshDashboard() {
     state.assignment = state.assignments.find((assignment) => assignment.id === state.assignment.id) || state.assignment;
   }
   saveState();
+  return [summary, assignmentData, identityData];
+}
+
+async function refreshDashboard() {
+  if (!state.teacher) {
+    throw new Error("Entra primer com a docent.");
+  }
+  const [summary] = await loadTeacherData();
   setOutput($("teacherOutput"), teacherDashboard(summary, state.assignments));
 }
 
@@ -322,6 +352,42 @@ async function createAssignment() {
   setOutput(
     $("resultsOutput"),
     `<p>Activitat assignada al grup <strong>${escapeHtml(state.group.group_code)}</strong>.</p>`,
+  );
+}
+
+async function regeneratePin(identityId) {
+  if (!state.teacher) {
+    throw new Error("Entra primer com a docent.");
+  }
+  const identity = state.identities.find((item) => item.id === identityId);
+  const regenerated = await api(`/api/identities/${encodeURIComponent(identityId)}/regenerate-pin`, {
+    method: "POST",
+  });
+  const [summary, assignmentData, identityData] = await loadTeacherData();
+  setOutput(
+    $("teacherOutput"),
+    `
+      <p>PIN regenerat per al codi <strong>${escapeHtml(identity ? identity.public_code : regenerated.id)}</strong>.</p>
+      <p class="pin-notice">Nou PIN: <strong>${escapeHtml(regenerated.pin)}</strong>. Guarda'l ara; no es tornarà a mostrar.</p>
+      ${teacherDashboard(summary, assignmentData.assignments || [], identityData.identities || [])}
+    `,
+  );
+}
+
+async function revokeIdentity(identityId) {
+  if (!state.teacher) {
+    throw new Error("Entra primer com a docent.");
+  }
+  const identity = state.identities.find((item) => item.id === identityId);
+  const label = identity ? identity.public_code : identityId;
+  if (!window.confirm(`Vols revocar la credencial ${label}? Les sessions obertes quedaran tancades.`)) {
+    return;
+  }
+  await api(`/api/identities/${encodeURIComponent(identityId)}/revoke`, { method: "POST" });
+  const [summary, assignmentData, identityData] = await loadTeacherData();
+  setOutput(
+    $("teacherOutput"),
+    `<p>Credencial <strong>${escapeHtml(label)}</strong> revocada.</p>${teacherDashboard(summary, assignmentData.assignments || [], identityData.identities || [])}`,
   );
 }
 
@@ -414,7 +480,9 @@ document.addEventListener("click", (event) => {
     state.group = { id: group.id, group_code: group.name, tenant_id: group.tenant_id };
     state.assignment = null;
     saveState();
-    setOutput($("teacherOutput"), `<p>Grup seleccionat: <strong>${escapeHtml(group.name)}</strong>.</p>${groupLinks(state.group)}`);
+    refreshDashboard().catch((error) => {
+      setOutput($("teacherOutput"), `<p><strong>Error:</strong> ${escapeHtml(error.message)}</p>`);
+    });
     return;
   }
 
@@ -432,6 +500,22 @@ document.addEventListener("click", (event) => {
       $("resultsOutput"),
       `<p>Activitat seleccionada: <strong>${escapeHtml(assignment.title || assignment.activity_id)}</strong>.</p>`,
     );
+    return;
+  }
+
+  const pinButton = event.target.closest("[data-regenerate-pin]");
+  if (pinButton) {
+    regeneratePin(pinButton.dataset.regeneratePin).catch((error) => {
+      setOutput($("teacherOutput"), `<p><strong>Error:</strong> ${escapeHtml(error.message)}</p>`);
+    });
+    return;
+  }
+
+  const revokeButton = event.target.closest("[data-revoke-identity]");
+  if (revokeButton) {
+    revokeIdentity(revokeButton.dataset.revokeIdentity).catch((error) => {
+      setOutput($("teacherOutput"), `<p><strong>Error:</strong> ${escapeHtml(error.message)}</p>`);
+    });
   }
 });
 

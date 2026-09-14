@@ -77,7 +77,7 @@ tauler Commons.
 - [ ] Separar visualment flux docent i flux alumnat.
 - [x] Llistar grups i assignacions ja creades, no només l'estat guardat en
   `localStorage`.
-- [ ] Permetre regenerar PIN i revocar identitats des del tauler.
+- [x] Permetre regenerar PIN i revocar identitats des del tauler.
 - [ ] Afegir exportació docent clara: targetes, CSV de codis i estadístiques.
 - [ ] Afegir una vista d'alumnat amb recorregut i progrés bàsic.
 
