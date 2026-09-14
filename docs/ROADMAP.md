@@ -127,6 +127,8 @@ l'alumnat pot completar-la amb la mateixa identitat pseudònima.
 
 **Resultat:** un centre pot entendre què dades guarda el stack i què no guarda.
 
+- [ ] Definir autenticació senzilla per a centres amb Authentik o equivalent,
+  evitant tokens manuals per a administració i professorat.
 - [ ] Crear `docs/PRIVACITAT.md` amb explicació clara de codi + PIN,
   pseudonimització i límits.
 - [ ] Crear fitxa docent imprimible.

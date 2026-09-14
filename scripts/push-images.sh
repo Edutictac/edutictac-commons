@@ -15,11 +15,14 @@ tag="${tag:-$(cat VERSION)}"
 
 portal_image="${registry}/commons-portal:${tag}"
 id_image="${registry}/commons-id-api:${tag}"
+admin_image="${registry}/commons-admin:${tag}"
 
 ${DOCKER:-docker} compose --env-file "$env_file" -f compose.yml build
 ${DOCKER:-docker} push "$id_image"
 ${DOCKER:-docker} push "$portal_image"
+${DOCKER:-docker} push "$admin_image"
 
 echo "Imatges publicades:"
 echo "- $id_image"
 echo "- $portal_image"
+echo "- $admin_image"

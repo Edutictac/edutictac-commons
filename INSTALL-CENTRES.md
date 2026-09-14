@@ -132,6 +132,9 @@ Això genera:
 dist/edutictac-commons-images-0.1.0-alpha.tar
 ```
 
+L'arxiu inclou les imatges pròpies versionades del stack:
+`commons-id-api`, `commons-portal` i `commons-admin`.
+
 En la màquina del centre:
 
 ```bash

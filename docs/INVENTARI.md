@@ -16,7 +16,7 @@ quins comandaments s'usen per operar-lo. No inclou secrets ni valors locals de
 | `id-api` | `${IMAGE_REGISTRY}/commons-id-api:${IMAGE_TAG}` | intern `8005` | API de credencial pseudònima, grups, sessions, assignacions i puntuacions |
 | `eduhoot` | `${IMAGE_REGISTRY}/eduhoot:${EDUHOOT_TAG}` | `EDUHOOT_PORT` -> `3000` (`8090` per defecte) | Activitat de qüestionari opcional |
 | `eduhoot-mongo` | `mongo:7` | intern `27017` | Base de dades MongoDB d'EduHoot |
-| `admin` | build local `admin/Dockerfile` | `ADMIN_PORT` -> `8091`, només `127.0.0.1` | Panell `/admin`: estat operatiu i accions de backup (vegeu secció pròpia més avall) |
+| `admin` | `${IMAGE_REGISTRY}/commons-admin:${IMAGE_TAG}` | `ADMIN_PORT` -> `8091`, només `127.0.0.1` | Panell `/admin`: estat operatiu i accions de backup (vegeu secció pròpia més avall) |
 
 `eduhoot` i `eduhoot-mongo` només s'activen si `COMPOSE_PROFILES=eduhoot`.
 `admin` arranca sempre amb `make up`/`make up-pulled`, sense pas de terminal
@@ -160,9 +160,10 @@ El stack usa imatges Docker/OCI fixades per variables:
 - `IMAGE_TAG`
 - `EDUHOOT_TAG`
 
-La política objectiu és no usar `latest` en centres. El panell `/admin` ja
-mostra el registre i les versions d'imatge configurades (`IMAGE_REGISTRY`,
-`IMAGE_TAG`, `EDUHOOT_TAG`); consultar versions disponibles al registre,
+Les imatges pròpies versionades són `commons-id-api`, `commons-portal` i
+`commons-admin`. La política objectiu és no usar `latest` en centres. El
+panell `/admin` ja mostra el registre i les versions d'imatge configurades
+(`IMAGE_REGISTRY`, `IMAGE_TAG`, `EDUHOOT_TAG`); consultar versions disponibles al registre,
 comparar-les amb la instal·lada i oferir una actualització guiada queda
 pendent del punt 7. Qualsevol actualització ha d'exigir:
 

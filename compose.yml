@@ -31,6 +31,7 @@ services:
       - "${PORTAL_PORT:-8082}:80"
 
   admin:
+    image: ${IMAGE_REGISTRY:-edutictac}/commons-admin:${IMAGE_TAG:-0.1.0-alpha}
     build:
       context: .
       dockerfile: admin/Dockerfile

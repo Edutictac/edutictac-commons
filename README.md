@@ -111,6 +111,9 @@ make export-images
 make load-images ARCHIVE=dist/edutictac-commons-images-0.1.0-alpha.tar
 ```
 
+L'arxiu d'imatges inclou les imatges pròpies versionades del stack:
+`commons-id-api`, `commons-portal` i `commons-admin`.
+
 Els objectius `up`, `down`, `build`, `logs`, `ps`, `reset` i `restore` accepten també `DOCKER="sudo docker"` quan cal.
 
 ## Diagnòstic ràpid

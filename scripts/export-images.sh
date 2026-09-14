@@ -15,10 +15,11 @@ tag="${tag:-$(cat VERSION)}"
 
 portal_image="${registry}/commons-portal:${tag}"
 id_image="${registry}/commons-id-api:${tag}"
+admin_image="${registry}/commons-admin:${tag}"
 archive="dist/edutictac-commons-images-${tag}.tar"
 
 mkdir -p dist
 ${DOCKER:-docker} compose --env-file "$env_file" -f compose.yml build
-${DOCKER:-docker} save "$portal_image" "$id_image" > "$archive"
+${DOCKER:-docker} save "$portal_image" "$id_image" "$admin_image" > "$archive"
 
 echo "Imatges exportades: $archive"
