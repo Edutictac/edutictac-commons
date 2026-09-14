@@ -81,7 +81,33 @@ tauler Commons.
 - [x] Afegir exportació docent clara: targetes, CSV de codis i estadístiques.
 - [x] Afegir una vista d'alumnat amb recorregut i progrés bàsic.
 
-### Fita 3 — EduHoot com a primera activitat integrada
+### Fita 3 — Administració operativa: backups i actualitzacions
+
+**Resultat:** el stack es pot administrar des d'un panell tècnic segur, amb
+còpies de seguretat completes, restauració provada i actualitzacions
+controlades d'imatges Docker/OCI.
+
+Principi: **cap dada persistent sense backup** i **cap actualització sense
+backup recent i verificable**.
+
+- [ ] Documentar política de backup per servei: `id-api`, EduHoot/Mongo,
+  uploads, logs rellevants, configuració local i futurs mòduls.
+- [ ] Ampliar `make backup` perquè cobrisca tots els serveis amb dades
+  persistents activats.
+- [ ] Ampliar `make restore` i documentar restauració pas a pas per servei.
+- [ ] Afegir verificació mínima de backup/restauració en entorn local segur.
+- [ ] Crear panell `/admin` només per administració tècnica.
+- [ ] Mostrar en `/admin` estat de serveis, versió instal·lada i últim backup.
+- [ ] Permetre crear backup manual des del panell.
+- [ ] Llistar backups disponibles i avisar si algun servei no està cobert.
+- [ ] Consultar `IMAGE_REGISTRY` i detectar si hi ha una versió nova
+  disponible.
+- [ ] Oferir actualització guiada d'imatges: backup previ obligatori,
+  descàrrega, reinici, healthchecks i rollback documentat.
+- [ ] Definir canals `stable`, `testing` i `dev`; centres en `stable` per
+  defecte.
+
+### Fita 4 — EduHoot com a primera activitat integrada
 
 **Resultat:** el professorat pot crear o seleccionar una activitat EduHoot i
 l'alumnat pot completar-la amb la mateixa identitat pseudònima.
@@ -93,7 +119,7 @@ l'alumnat pot completar-la amb la mateixa identitat pseudònima.
 - [ ] Documentar persistència local d'EduHoot (`data/eduhoot-*`) i còpia de
   seguretat.
 
-### Fita 4 — Privacitat per a centres
+### Fita 5 — Privacitat per a centres
 
 **Resultat:** un centre pot entendre què dades guarda el stack i què no guarda.
 
@@ -103,16 +129,6 @@ l'alumnat pot completar-la amb la mateixa identitat pseudònima.
 - [ ] Crear informació breu per a famílies.
 - [ ] Crear fitxa tècnica per a direcció/DPD.
 - [ ] Revisar que cap document prometa anonimat absolut.
-
-### Fita 5 — Operació i recuperació
-
-**Resultat:** el stack no només arranca; també es pot recuperar.
-
-- [ ] Provar `make backup` i `make restore` amb un flux real.
-- [ ] Incloure EduHoot/Mongo en la política de còpies si el perfil està actiu.
-- [ ] Documentar restauració pas a pas.
-- [ ] Afegir una comprovació automàtica mínima de backup/restauració quan siga
-  segur fer-ho sense perdre dades locals.
 
 ### Fita 6 — Distribució
 

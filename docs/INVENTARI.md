@@ -44,6 +44,33 @@ de Compose.
 Cap d'aquestes dades ha d'entrar al repositori. Només es versionen els
 `.gitkeep` de carpetes buides.
 
+## Política de backup
+
+Regla del projecte: **tot servei amb dades persistents ha de tindre backup,
+restauració documentada i verificació**. No s'accepta afegir un servei nou al
+stack si no declara explícitament:
+
+- quines dades guarda;
+- on les guarda;
+- com es fa backup;
+- com es restaura;
+- com es comprova que la restauració funciona.
+
+Estat actual:
+
+| Dades | Cobertura actual | Objectiu |
+|---|---|---|
+| `data/id.db` | `make backup` / `make restore` | mantindre i verificar amb prova automàtica segura |
+| `data/eduhoot-mongo/` | pendent | `mongodump`/restore o equivalent dins de la política comuna |
+| `data/eduhoot-uploads/` | pendent | còpia de fitxers amb restauració documentada |
+| `data/eduhoot-logs/` | pendent | decidir quins logs/informes són dades a conservar |
+| `.env` local | pendent | còpia segura fora del repo, mai impresa ni versionada |
+
+El panell d'administració previst en el roadmap (`/admin`) ha de mostrar
+l'estat de l'últim backup, permetre crear-ne un manualment, llistar còpies
+disponibles, avisar de serveis no coberts i bloquejar actualitzacions si no hi
+ha un backup recent i verificable.
+
 ## Configuració
 
 | Fitxer | Estat | Ús |
@@ -108,13 +135,33 @@ El contenidor `id-api` també té un healthcheck intern contra:
 http://127.0.0.1:8005/api/health
 ```
 
+## Actualitzacions d'imatges
+
+El stack usa imatges Docker/OCI fixades per variables:
+
+- `IMAGE_REGISTRY`
+- `IMAGE_TAG`
+- `EDUHOOT_TAG`
+
+La política objectiu és no usar `latest` en centres. El futur panell `/admin`
+ha de poder consultar el registre configurat, comparar la versió instal·lada
+amb versions disponibles, mostrar el canal actiu (`stable`, `testing` o
+`dev`) i oferir una actualització guiada. Qualsevol actualització ha d'exigir:
+
+1. backup recent i verificable;
+2. descàrrega de noves imatges;
+3. reinici controlat;
+4. healthchecks;
+5. rollback documentat si alguna comprovació falla.
+
 ## Riscos operatius
 
 - `.env` conté secrets locals: no s'ha de mostrar ni versionar.
 - Els PINs només es retornen en el moment de generar o regenerar credencials.
 - El CSV exporta codis públics, no PINs.
 - Si `COMPOSE_PROFILES=eduhoot`, hi ha dades addicionals en
-  `data/eduhoot-*` que encara no entren en `make backup`.
+  `data/eduhoot-*` que encara no entren en `make backup`; és un bloqueig de la
+  Fita 3 abans de considerar el mòdul operativament complet.
 - `make reset` esborra dades locals de demo; cal fer `make backup` abans si es
   vol conservar l'estat.
 - En un centre no s'han d'usar els valors demo `change-this-local-secret` ni
