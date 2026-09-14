@@ -10,6 +10,7 @@ scripts ja existents al repo.
 import hmac
 import json
 import os
+import re
 import socket
 import subprocess
 import sys
@@ -40,6 +41,7 @@ TIMER_UNIT = "edutictac-commons-backup.timer"
 SERVICE_UNIT = "edutictac-commons-backup.service"
 
 SCRIPT_TIMEOUT = 120
+BACKUP_NAME_RE = re.compile(r"^commons-\d{8}T\d{6}Z$")
 
 
 def read_stack_version():
@@ -168,13 +170,13 @@ def build_status():
     }
 
 
-def run_script(*args):
+def run_script(*args, timeout=SCRIPT_TIMEOUT):
     try:
         proc = subprocess.run(
             args,
             capture_output=True,
             text=True,
-            timeout=SCRIPT_TIMEOUT,
+            timeout=timeout,
             cwd=str(APP_DIR),
         )
     except (OSError, subprocess.TimeoutExpired) as exc:
@@ -184,12 +186,12 @@ def run_script(*args):
 
 
 ACTIONS = {
-    "/api/backup-timer/install": lambda: run_script(str(APP_DIR / "scripts" / "install-backup-timer.sh")),
-    "/api/backup-timer/uninstall": lambda: run_script(str(APP_DIR / "scripts" / "uninstall-backup-timer.sh")),
+    "/api/backup-timer/install": lambda payload: run_script(str(APP_DIR / "scripts" / "install-backup-timer.sh")),
+    "/api/backup-timer/uninstall": lambda payload: run_script(str(APP_DIR / "scripts" / "uninstall-backup-timer.sh")),
 }
 
 
-def action_backup_create():
+def action_backup_create(payload):
     ok, out1 = run_script(str(APP_DIR / "scripts" / "backup.sh"))
     if not ok:
         return False, out1
@@ -198,6 +200,41 @@ def action_backup_create():
 
 
 ACTIONS["/api/backup/create"] = action_backup_create
+
+
+def action_backup_restore(payload):
+    name = str(payload.get("backup", ""))
+    if not BACKUP_NAME_RE.match(name):
+        return False, "Backup invalid: selecciona una carpeta commons-YYYYmmddTHHMMSSZ", 400
+
+    backup_dir = BACKUPS_DIR / name
+    if not backup_dir.is_dir() or not (backup_dir / "manifest.json").is_file():
+        return False, f"Backup no trobat o incomplet: {name}", 400
+
+    repo_dir = os.environ.get("REPO_DIR", str(APP_DIR))
+    host_backup_dir = str(Path(repo_dir) / "backups" / name)
+    restore_script = str(Path(repo_dir) / "scripts" / "restore.sh")
+
+    unit_name = f"edutictac-commons-restore-{datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S')}"
+    ok, output = run_script(
+        "systemd-run",
+        "--user",
+        "--collect",
+        f"--unit={unit_name}",
+        f"--property=WorkingDirectory={repo_dir}",
+        "/bin/sh",
+        restore_script,
+        host_backup_dir,
+    )
+    if ok:
+        output += (
+            "\nRestauracio iniciada. El panell pot desconnectar-se uns segons "
+            "mentre el stack es para i torna a arrancar."
+        )
+    return ok, output
+
+
+ACTIONS["/api/backup/restore"] = action_backup_restore
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -220,6 +257,18 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body)
+
+    def _read_json_body(self):
+        length = int(self.headers.get("Content-Length", "0") or "0")
+        if length <= 0:
+            return {}
+        if length > 8192:
+            raise ValueError("cos de peticio massa gran")
+        body = self.rfile.read(length)
+        try:
+            return json.loads(body.decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise ValueError(f"JSON invalid: {exc}") from exc
 
     def _send_static(self, rel_path):
         if rel_path in ("", "/"):
@@ -267,8 +316,15 @@ class Handler(BaseHTTPRequestHandler):
         if action is None:
             self._send_json(404, {"error": "no trobat"})
             return
-        ok, output = action()
-        self._send_json(200 if ok else 500, {"ok": ok, "output": output})
+        try:
+            payload = self._read_json_body()
+        except ValueError as exc:
+            self._send_json(400, {"ok": False, "output": str(exc)})
+            return
+        result = action(payload)
+        ok, output = result[:2]
+        status = result[2] if len(result) > 2 else (200 if ok else 500)
+        self._send_json(status, {"ok": ok, "output": output})
 
 
 def main():

@@ -41,10 +41,10 @@ token d'`EDUTICTAC_ADMIN_TOKEN` (`.env`) per entrar-hi.
 
 Mostra la versió instal·lada, l'estat dels serveis, l'últim backup i la
 llista de còpies disponibles, els avisos de cobertura i l'estat del timer de
-backup automàtic. Tres botons: "Crear backup ara", "Activar backups
-automàtics" i "Desactivar backups automàtics" — cap requereix terminal, tot
-es fa des del navegador. Canvia el token per defecte abans de fer servir el
-stack fora d'una demo local.
+backup automàtic. Permet crear un backup, activar/desactivar backups
+automàtics i restaurar una còpia seleccionada amb confirmació forta — cap
+requereix terminal, tot es fa des del navegador. Canvia el token per defecte
+abans de fer servir el stack fora d'una demo local.
 
 ## Reutilització del treball existent
 

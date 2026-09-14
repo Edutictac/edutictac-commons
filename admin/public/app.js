@@ -4,6 +4,7 @@ const tokenInput = document.getElementById("adminToken");
 const apiStatus = document.getElementById("apiStatus");
 const statusOutput = document.getElementById("statusOutput");
 const actionOutput = document.getElementById("actionOutput");
+const restoreBackupSelect = document.getElementById("restoreBackupSelect");
 
 localStorage.removeItem(TOKEN_KEY);
 
@@ -60,6 +61,26 @@ function fmtSystemdValue(data, key) {
   return data[key] || "?";
 }
 
+function populateBackupSelect(backups) {
+  restoreBackupSelect.textContent = "";
+  const usable = backups.filter((b) => !b.error);
+  if (!usable.length) {
+    const option = document.createElement("option");
+    option.value = "";
+    option.textContent = "Cap backup disponible";
+    restoreBackupSelect.appendChild(option);
+    restoreBackupSelect.disabled = true;
+    return;
+  }
+  usable.forEach((backup) => {
+    const option = document.createElement("option");
+    option.value = backup.name;
+    option.textContent = `${backup.name} (${backup.created_at || "sense data"})`;
+    restoreBackupSelect.appendChild(option);
+  });
+  restoreBackupSelect.disabled = false;
+}
+
 function renderStatus(data) {
   const lines = [];
   lines.push(`Versió del stack: ${data.stack_version}`);
@@ -105,6 +126,7 @@ async function loadStatus() {
     }
     const data = await resp.json();
     apiStatus.textContent = "Connectat";
+    populateBackupSelect(data.backups || []);
     setOutput(statusOutput, renderStatus(data), false);
   } catch (err) {
     setOutput(statusOutput, `Error: ${err.message}`, true);
@@ -118,6 +140,22 @@ async function runAction(path, confirmMessage) {
   setOutput(actionOutput, "Executant...", false);
   try {
     const resp = await apiFetch(path, { method: "POST" });
+    const data = await resp.json();
+    setOutput(actionOutput, data.output || JSON.stringify(data), !data.ok);
+    await loadStatus();
+  } catch (err) {
+    setOutput(actionOutput, `Error: ${err.message}`, true);
+  }
+}
+
+async function runJsonAction(path, payload) {
+  setOutput(actionOutput, "Executant...", false);
+  try {
+    const resp = await apiFetch(path, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
     const data = await resp.json();
     setOutput(actionOutput, data.output || JSON.stringify(data), !data.ok);
     await loadStatus();
@@ -158,6 +196,22 @@ document.getElementById("timerUninstallBtn").addEventListener("click", () => {
     "/api/backup-timer/uninstall",
     "Desactivar el timer de backups automàtics en aquest host?"
   );
+});
+
+document.getElementById("backupRestoreBtn").addEventListener("click", () => {
+  const backup = restoreBackupSelect.value;
+  if (!backup) {
+    setOutput(actionOutput, "No hi ha cap backup seleccionat.", true);
+    return;
+  }
+  const typed = window.prompt(
+    `Aquesta accio parara el stack i restaurara ${backup}. Escriu RESTAURAR per continuar.`
+  );
+  if (typed !== "RESTAURAR") {
+    setOutput(actionOutput, "Restauracio cancel·lada.", false);
+    return;
+  }
+  runJsonAction("/api/backup/restore", { backup });
 });
 
 const savedToken = getToken();

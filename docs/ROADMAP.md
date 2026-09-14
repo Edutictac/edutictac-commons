@@ -103,6 +103,7 @@ backup recent i verificable**.
 - [x] Crear panell `/admin` només per administració tècnica.
 - [x] Mostrar en `/admin` estat de serveis, versió instal·lada i últim backup.
 - [x] Permetre crear backup manual des del panell.
+- [x] Permetre restaurar backup seleccionat des del panell amb confirmació.
 - [x] Llistar backups disponibles i avisar si algun servei no està cobert.
 - [ ] Consultar `IMAGE_REGISTRY` i detectar si hi ha una versió nova
   disponible.

@@ -71,9 +71,10 @@ Estat actual:
 | `.env` local | pendent | còpia segura fora del repo, mai impresa ni versionada |
 
 El panell `/admin` (servei `admin`, vegeu secció pròpia) ja mostra l'estat de
-l'últim backup, permet crear-ne un manualment, llista còpies disponibles i
-avisa de serveis no coberts. Bloquejar actualitzacions si no hi ha un backup
-recent i verificable queda pendent del punt 7 (actualitzacions Docker/OCI).
+l'últim backup, permet crear-ne un manualment, llista còpies disponibles,
+permet restaurar una còpia seleccionada (amb confirmació forta) i avisa de
+serveis no coberts. Bloquejar actualitzacions si no hi ha un backup recent i
+verificable queda pendent del punt 7 (actualitzacions Docker/OCI).
 
 ## Configuració
 
@@ -150,7 +151,8 @@ http://127.0.0.1:8005/api/health
 
 El panell `/admin` (`http://127.0.0.1:8091/`) mostra l'estat agregat: versió
 instal·lada, serveis actius, últim backup, cobertura i estat del timer de
-backup automàtic.
+backup automàtic. També permet crear backups, restaurar una còpia seleccionada
+i activar/desactivar el timer.
 
 ## Actualitzacions d'imatges
 

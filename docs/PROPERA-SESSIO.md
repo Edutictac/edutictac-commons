@@ -170,6 +170,9 @@ Escriptura (allowlist tancada, cap dada de la petició arriba a un shell):
 
 - `POST /api/backup/create` -> `scripts/backup.sh` + `scripts/backup-check.sh`
   ("Crear backup ara" al panell);
+- `POST /api/backup/restore` -> `scripts/restore.sh backups/<nom>` executat
+  en el host via `systemd-run --user`, amb nom de backup validat i confirmació
+  forta al frontend ("Restaurar backup seleccionat");
 - `POST /api/backup-timer/install` -> `scripts/install-backup-timer.sh`
   ("Activar backups automàtics");
 - `POST /api/backup-timer/uninstall` -> `scripts/uninstall-backup-timer.sh`
@@ -217,9 +220,9 @@ amb `make backup-timer-install`, alternativa cron documentada.
 
 Fet (2026-09-14): primer panell `/admin` (punt 6), com a contenidor Compose
 nou `admin` (`admin/Dockerfile`, `admin/server.py`, `admin/public/`), amb
-lectura de l'estat operatiu i tres accions d'escriptura per allowlist (crear
-backup, activar/desactivar el timer automàtic) — cap pas de terminal
-addicional a `make up`.
+lectura de l'estat operatiu i quatre accions d'escriptura per allowlist (crear
+backup, restaurar backup seleccionat, activar/desactivar el timer automàtic)
+— cap pas de terminal addicional a `make up`.
 
 Següent pas: ampliar cobertura a EduHoot dins del punt 2, o punt 7
 (actualitzacions Docker/OCI).
