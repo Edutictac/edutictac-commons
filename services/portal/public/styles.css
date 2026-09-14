@@ -209,6 +209,12 @@ button.secondary {
   color: var(--accent-dark);
 }
 
+button.compact {
+  min-height: 34px;
+  padding: 6px 10px;
+  font-size: 13px;
+}
+
 .button-link.secondary {
   background: #fff;
   color: var(--accent-dark);
@@ -239,6 +245,10 @@ button:disabled {
 
 .output.empty {
   color: var(--muted);
+}
+
+.output h3 {
+  margin: 18px 0 8px;
 }
 
 .cards {

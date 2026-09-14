@@ -6,8 +6,10 @@ const STORAGE_KEY = "edutictac-commons-demo-state";
 const state = {
   teacher: false,
   group: null,
+  groups: [],
   identities: [],
   assignment: null,
+  assignments: [],
   student: null,
 };
 
@@ -45,7 +47,7 @@ function setEmpty(node, content) {
 
 function setTeacherSession(active) {
   state.teacher = active;
-  ["teacherSummary", "createBatch", "createAssignment", "teacherLogout"].forEach((id) => {
+  ["teacherSummary", "refreshDashboard", "createBatch", "createAssignment", "teacherLogout"].forEach((id) => {
     $(id).disabled = !active;
   });
 }
@@ -104,6 +106,16 @@ function groupLinks(group) {
   `;
 }
 
+function selectedTeacherContext() {
+  const groupText = state.group
+    ? `Grup seleccionat: <strong>${escapeHtml(state.group.group_code || state.group.name)}</strong>`
+    : "Cap grup seleccionat.";
+  const assignmentText = state.assignment
+    ? `Activitat seleccionada: <strong>${escapeHtml(state.assignment.title || state.assignment.activity_id)}</strong>`
+    : "Cap activitat seleccionada.";
+  return `<p>${groupText}</p><p>${assignmentText}</p>${groupLinks(state.group)}`;
+}
+
 function table(rows, columns) {
   if (!rows.length) {
     return "<p>Sense dades encara.</p>";
@@ -118,13 +130,51 @@ function table(rows, columns) {
           .map(
             (row) => `
               <tr>
-                ${columns.map((col) => `<td>${escapeHtml(row[col.key] ?? "")}</td>`).join("")}
+                ${columns
+                  .map((col) => `<td>${col.html ? row[col.key] || "" : escapeHtml(row[col.key] ?? "")}</td>`)
+                  .join("")}
               </tr>
             `,
           )
           .join("")}
       </tbody>
     </table>
+  `;
+}
+
+function teacherDashboard(summary, assignments) {
+  const groups = summary.groups || [];
+  const groupNames = new Map(groups.map((group) => [group.id, group.name]));
+  return `
+    <p><strong>${summary.active}</strong> identitats actives de ${summary.total} totals.</p>
+    ${selectedTeacherContext()}
+    <h3>Grups</h3>
+    ${table(
+      groups.map((group) => ({
+        ...group,
+        action: `<button class="compact secondary" type="button" data-select-group="${escapeHtml(group.id)}">Seleccionar</button>`,
+      })),
+      [
+        { key: "name", label: "Grup opac" },
+        { key: "tenant_id", label: "Tenant" },
+        { key: "active", label: "Actives" },
+        { key: "action", label: "", html: true },
+      ],
+    )}
+    <h3>Assignacions</h3>
+    ${table(
+      assignments.map((assignment) => ({
+        ...assignment,
+        group_name: groupNames.get(assignment.group_id) || assignment.group_id,
+        action: `<button class="compact secondary" type="button" data-select-assignment="${escapeHtml(assignment.id)}">Seleccionar</button>`,
+      })),
+      [
+        { key: "title", label: "Títol" },
+        { key: "group_name", label: "Grup" },
+        { key: "activity_id", label: "Activitat" },
+        { key: "action", label: "", html: true },
+      ],
+    )}
   `;
 }
 
@@ -156,6 +206,7 @@ async function refreshTeacherSession() {
   try {
     await api("/api/teacher/summary", { method: "GET" });
     setTeacherSession(true);
+    await refreshDashboard();
   } catch (error) {
     setTeacherSession(false);
   }
@@ -168,20 +219,17 @@ async function teacherLogin() {
     body: JSON.stringify({ token }),
   });
   setTeacherSession(true);
-  setOutput(
-    $("teacherOutput"),
-    state.group
-      ? `<p>Sessió docent iniciada. Grup recuperat: <strong>${escapeHtml(state.group.group_code)}</strong>.</p>${groupLinks(state.group)}`
-      : "<p>Sessió docent iniciada.</p>",
-  );
+  await refreshDashboard();
 }
 
 async function teacherLogout() {
   await api("/api/teacher/logout", { method: "POST" });
   setTeacherSession(false);
   state.group = null;
+  state.groups = [];
   state.identities = [];
   state.assignment = null;
+  state.assignments = [];
   saveState();
   setEmpty($("teacherOutput"), "Sessió docent tancada. Entra de nou per generar credencials.");
   setEmpty($("resultsOutput"), "Els resultats apareixeran ací.");
@@ -189,6 +237,7 @@ async function teacherLogout() {
 
 async function teacherSummary() {
   const summary = await api("/api/teacher/summary", { method: "GET" });
+  state.groups = summary.groups || [];
   setOutput(
     $("teacherOutput"),
     `
@@ -200,6 +249,29 @@ async function teacherSummary() {
       ])}
     `,
   );
+}
+
+async function refreshDashboard() {
+  if (!state.teacher) {
+    throw new Error("Entra primer com a docent.");
+  }
+  const [summary, assignmentData] = await Promise.all([
+    api("/api/teacher/summary", { method: "GET" }),
+    api("/api/teacher/activity-assignments", { method: "GET" }),
+  ]);
+  state.groups = summary.groups || [];
+  state.assignments = assignmentData.assignments || [];
+  if (state.group) {
+    const freshGroup = state.groups.find((group) => group.id === state.group.id);
+    if (freshGroup) {
+      state.group = { id: freshGroup.id, group_code: freshGroup.name, tenant_id: freshGroup.tenant_id };
+    }
+  }
+  if (state.assignment) {
+    state.assignment = state.assignments.find((assignment) => assignment.id === state.assignment.id) || state.assignment;
+  }
+  saveState();
+  setOutput($("teacherOutput"), teacherDashboard(summary, state.assignments));
 }
 
 async function createBatch() {
@@ -215,6 +287,7 @@ async function createBatch() {
   state.group = batch.group;
   state.identities = batch.identities;
   state.assignment = null;
+  state.assignments = [];
   saveState();
   setOutput(
     $("teacherOutput"),
@@ -244,6 +317,7 @@ async function createAssignment() {
     }),
   });
   state.assignment = created.assignment;
+  state.assignments = [created.assignment, ...state.assignments.filter((item) => item.id !== created.assignment.id)];
   saveState();
   setOutput(
     $("resultsOutput"),
@@ -326,15 +400,45 @@ function bind(id, fn, outputId = "resultsOutput") {
 
 document.addEventListener("click", (event) => {
   const card = event.target.closest(".credential");
-  if (!card) return;
-  $("studentCode").value = card.dataset.code;
-  $("studentPin").value = card.dataset.pin;
-  setOutput($("studentOutput"), `<p>Credencial carregada. Ja pots entrar com a alumne.</p>`);
+  if (card) {
+    $("studentCode").value = card.dataset.code;
+    $("studentPin").value = card.dataset.pin;
+    setOutput($("studentOutput"), `<p>Credencial carregada. Ja pots entrar com a alumne.</p>`);
+    return;
+  }
+
+  const groupButton = event.target.closest("[data-select-group]");
+  if (groupButton) {
+    const group = state.groups.find((item) => item.id === groupButton.dataset.selectGroup);
+    if (!group) return;
+    state.group = { id: group.id, group_code: group.name, tenant_id: group.tenant_id };
+    state.assignment = null;
+    saveState();
+    setOutput($("teacherOutput"), `<p>Grup seleccionat: <strong>${escapeHtml(group.name)}</strong>.</p>${groupLinks(state.group)}`);
+    return;
+  }
+
+  const assignmentButton = event.target.closest("[data-select-assignment]");
+  if (assignmentButton) {
+    const assignment = state.assignments.find((item) => item.id === assignmentButton.dataset.selectAssignment);
+    if (!assignment) return;
+    const group = state.groups.find((item) => item.id === assignment.group_id);
+    state.assignment = assignment;
+    if (group) {
+      state.group = { id: group.id, group_code: group.name, tenant_id: group.tenant_id };
+    }
+    saveState();
+    setOutput(
+      $("resultsOutput"),
+      `<p>Activitat seleccionada: <strong>${escapeHtml(assignment.title || assignment.activity_id)}</strong>.</p>`,
+    );
+  }
 });
 
 bind("teacherLogin", teacherLogin, "teacherOutput");
 bind("teacherLogout", teacherLogout, "teacherOutput");
 bind("teacherSummary", teacherSummary, "teacherOutput");
+bind("refreshDashboard", refreshDashboard, "teacherOutput");
 bind("createBatch", createBatch, "teacherOutput");
 bind("createAssignment", createAssignment, "resultsOutput");
 bind("studentLogin", studentLogin, "studentOutput");

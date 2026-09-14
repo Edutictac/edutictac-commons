@@ -75,7 +75,7 @@ intern de l'ecosistema EduTicTac:
 tauler Commons.
 
 - [ ] Separar visualment flux docent i flux alumnat.
-- [ ] Llistar grups i assignacions ja creades, no només l'estat guardat en
+- [x] Llistar grups i assignacions ja creades, no només l'estat guardat en
   `localStorage`.
 - [ ] Permetre regenerar PIN i revocar identitats des del tauler.
 - [ ] Afegir exportació docent clara: targetes, CSV de codis i estadístiques.
