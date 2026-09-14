@@ -15,6 +15,7 @@ const state = {
 };
 
 const $ = (id) => document.getElementById(id);
+const has = (id) => Boolean($(id));
 
 function saveState() {
   localStorage.setItem(
@@ -49,7 +50,10 @@ function setEmpty(node, content) {
 function setTeacherSession(active) {
   state.teacher = active;
   ["teacherSummary", "refreshDashboard", "createBatch", "createAssignment", "teacherLogout"].forEach((id) => {
-    $(id).disabled = !active;
+    const node = $(id);
+    if (node) {
+      node.disabled = !active;
+    }
   });
 }
 
@@ -517,11 +521,16 @@ async function loadRanking() {
 }
 
 function bind(id, fn, outputId = "resultsOutput") {
-  $(id).addEventListener("click", async () => {
+  const node = $(id);
+  if (!node) return;
+  node.addEventListener("click", async () => {
     try {
       await fn();
     } catch (error) {
-      setOutput($(outputId), `<p><strong>Error:</strong> ${escapeHtml(error.message)}</p>`);
+      const output = $(outputId);
+      if (output) {
+        setOutput(output, `<p><strong>Error:</strong> ${escapeHtml(error.message)}</p>`);
+      }
     }
   });
 }
@@ -529,9 +538,11 @@ function bind(id, fn, outputId = "resultsOutput") {
 document.addEventListener("click", (event) => {
   const card = event.target.closest(".credential");
   if (card) {
-    $("studentCode").value = card.dataset.code;
-    $("studentPin").value = card.dataset.pin;
-    setOutput($("studentOutput"), `<p>Credencial carregada. Ja pots entrar com a alumne.</p>`);
+    if (has("studentCode") && has("studentPin") && has("studentOutput")) {
+      $("studentCode").value = card.dataset.code;
+      $("studentPin").value = card.dataset.pin;
+      setOutput($("studentOutput"), `<p>Credencial carregada. Ja pots entrar com a alumne.</p>`);
+    }
     return;
   }
 
@@ -543,7 +554,9 @@ document.addEventListener("click", (event) => {
     state.assignment = null;
     saveState();
     refreshDashboard().catch((error) => {
-      setOutput($("teacherOutput"), `<p><strong>Error:</strong> ${escapeHtml(error.message)}</p>`);
+      if (has("teacherOutput")) {
+        setOutput($("teacherOutput"), `<p><strong>Error:</strong> ${escapeHtml(error.message)}</p>`);
+      }
     });
     return;
   }
@@ -558,17 +571,21 @@ document.addEventListener("click", (event) => {
       state.group = { id: group.id, group_code: group.name, tenant_id: group.tenant_id };
     }
     saveState();
-    setOutput(
-      $("resultsOutput"),
-      `<p>Activitat seleccionada: <strong>${escapeHtml(assignment.title || assignment.activity_id)}</strong>.</p>`,
-    );
+    if (has("resultsOutput")) {
+      setOutput(
+        $("resultsOutput"),
+        `<p>Activitat seleccionada: <strong>${escapeHtml(assignment.title || assignment.activity_id)}</strong>.</p>`,
+      );
+    }
     return;
   }
 
   const pinButton = event.target.closest("[data-regenerate-pin]");
   if (pinButton) {
     regeneratePin(pinButton.dataset.regeneratePin).catch((error) => {
-      setOutput($("teacherOutput"), `<p><strong>Error:</strong> ${escapeHtml(error.message)}</p>`);
+      if (has("teacherOutput")) {
+        setOutput($("teacherOutput"), `<p><strong>Error:</strong> ${escapeHtml(error.message)}</p>`);
+      }
     });
     return;
   }
@@ -576,7 +593,9 @@ document.addEventListener("click", (event) => {
   const revokeButton = event.target.closest("[data-revoke-identity]");
   if (revokeButton) {
     revokeIdentity(revokeButton.dataset.revokeIdentity).catch((error) => {
-      setOutput($("teacherOutput"), `<p><strong>Error:</strong> ${escapeHtml(error.message)}</p>`);
+      if (has("teacherOutput")) {
+        setOutput($("teacherOutput"), `<p><strong>Error:</strong> ${escapeHtml(error.message)}</p>`);
+      }
     });
     return;
   }
@@ -609,18 +628,22 @@ bind("loadResults", loadResults);
 bind("loadRanking", loadRanking);
 
 restoreState();
-setTeacherSession(false);
-if (state.group) {
+if (has("teacherLogin")) {
+  setTeacherSession(false);
+}
+if (state.group && has("teacherOutput")) {
   setOutput(
     $("teacherOutput"),
     `<p>Grup demo recuperat: <strong>${escapeHtml(state.group.group_code)}</strong>. Entra com a docent per obrir targetes, CSV o consultar resultats.</p>${groupLinks(state.group)}`,
   );
 }
-if (state.assignment) {
+if (state.assignment && has("resultsOutput")) {
   setOutput(
     $("resultsOutput"),
     `<p>Activitat demo recuperada: <strong>${escapeHtml(state.assignment.title || state.assignment.activity_id)}</strong>.</p>`,
   );
 }
 checkHealth();
-refreshTeacherSession();
+if (has("teacherLogin")) {
+  refreshTeacherSession();
+}

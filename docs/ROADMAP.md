@@ -74,7 +74,7 @@ intern de l'ecosistema EduTicTac:
 **Resultat:** el portal deixa de ser només una demo i es converteix en el primer
 tauler Commons.
 
-- [ ] Separar visualment flux docent i flux alumnat.
+- [x] Separar visualment flux docent i flux alumnat.
 - [x] Llistar grups i assignacions ja creades, no només l'estat guardat en
   `localStorage`.
 - [x] Permetre regenerar PIN i revocar identitats des del tauler.

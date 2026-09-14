@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="ca">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Tauler docent — EduTicTac Commons</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">EduTicTac Commons</p>
+        <h1>Tauler docent</h1>
+      </div>
+      <nav class="topnav" aria-label="Navegació principal">
+        <a href="/">Inici</a>
+        <a href="/student.html">Alumnat</a>
+      </nav>
+      <span id="apiStatus" class="status">Comprovant API...</span>
+    </header>
+
+    <main class="single-layout">
+      <section class="role-area teacher-area" aria-labelledby="teacherTitle">
+        <div class="role-heading">
+          <p class="eyebrow">Professorat</p>
+          <h2 id="teacherTitle">Credencials, assignacions i resultats</h2>
+        </div>
+
+        <div class="panel">
+          <div class="panel-heading">
+            <p class="eyebrow">Accés i grups</p>
+            <h3>Generar aula pseudònima</h3>
+          </div>
+
+          <label>
+            Token docent
+            <input id="teacherToken" type="password" autocomplete="off" value="dev-teacher">
+          </label>
+
+          <div class="actions">
+            <button id="teacherLogin" type="button">Entrar</button>
+            <button id="teacherLogout" type="button" class="secondary">Eixir</button>
+            <button id="teacherSummary" type="button" class="secondary">Resum</button>
+            <button id="refreshDashboard" type="button" class="secondary">Actualitzar tauler</button>
+          </div>
+
+          <div class="grid-fields">
+            <label>
+              Nom intern demo
+              <input id="tenantId" type="text" value="demo-centre">
+            </label>
+            <label>
+              Alumnat
+              <input id="identityCount" type="number" min="1" max="30" value="6">
+            </label>
+          </div>
+
+          <div class="actions">
+            <button id="createBatch" type="button">Generar credencials</button>
+            <button id="createAssignment" type="button" class="secondary">Assignar activitat demo</button>
+          </div>
+
+          <div id="teacherOutput" class="output empty">Encara no hi ha credencials generades.</div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-heading">
+            <p class="eyebrow">Resultats</p>
+            <h3>Activitat demo</h3>
+          </div>
+          <div class="actions">
+            <button id="loadResults" type="button">Veure resultats</button>
+            <button id="loadRanking" type="button" class="secondary">Veure rànquing</button>
+          </div>
+          <div id="resultsOutput" class="output empty">Els resultats apareixeran ací.</div>
+        </div>
+      </section>
+    </main>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
