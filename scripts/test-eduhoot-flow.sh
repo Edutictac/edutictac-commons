@@ -108,6 +108,17 @@ curl -fsS -c "$student_cookie" -b "$student_cookie" \
   -d "{\"public_code\":\"${code}\",\"pin\":\"${pin}\"}" \
   "$base/api/auth/student" >/dev/null
 
+profile="$(curl -fsS -c "$student_cookie" -b "$student_cookie" \
+  -X PATCH \
+  -H 'Content-Type: application/json' \
+  -d '{"avatar_icon":"🚀"}' \
+  "$base/api/student/profile")"
+profile_icon="$(printf '%s' "$profile" | jq -r '.identity.avatar_icon')"
+if [ "$profile_icon" != "🚀" ]; then
+  echo "No s'ha guardat correctament la icona de l'alumne"
+  exit 1
+fi
+
 launch="$(curl -fsS -c "$student_cookie" -b "$student_cookie" \
   -H 'Content-Type: application/json' \
   -d "{\"assignment_id\":\"${assignment_id}\"}" \
@@ -126,9 +137,10 @@ launch_claim="$(printf '{"token":"%s"}' "$launch_token" | curl -fsS --config "$a
   "$base/api/apps/eduhoot/launch-tokens/consume")"
 launch_claim_identity="$(printf '%s' "$launch_claim" | jq -r '.identity.id')"
 launch_claim_assignment="$(printf '%s' "$launch_claim" | jq -r '.assignment.id')"
-if [ "$launch_claim_identity" != "$identity_id" ] || [ "$launch_claim_assignment" != "$assignment_id" ]; then
+launch_claim_icon="$(printf '%s' "$launch_claim" | jq -r '.identity.avatar_icon')"
+if [ "$launch_claim_identity" != "$identity_id" ] || [ "$launch_claim_assignment" != "$assignment_id" ] || [ "$launch_claim_icon" != "🚀" ]; then
   echo "El token de llançament no apunta a la identitat o assignació esperada"
-  echo "identity=$launch_claim_identity assignment=$launch_claim_assignment"
+  echo "identity=$launch_claim_identity assignment=$launch_claim_assignment icon=$launch_claim_icon"
   exit 1
 fi
 
@@ -154,9 +166,10 @@ eduhoot_join="$(printf '{"launch_token":"%s"}' "$eduhoot_launch_token" | curl -f
 eduhoot_join_code="$(printf '%s' "$eduhoot_join" | jq -r '.public_code')"
 eduhoot_join_token="$(printf '%s' "$eduhoot_join" | jq -r '.join_token')"
 eduhoot_join_assignment="$(printf '%s' "$eduhoot_join" | jq -r '.assignment.id')"
-if [ "$eduhoot_join_code" != "$code" ] || [ -z "$eduhoot_join_token" ] || [ "$eduhoot_join_token" = "null" ] || [ "$eduhoot_join_assignment" != "$assignment_id" ]; then
+eduhoot_join_icon="$(printf '%s' "$eduhoot_join" | jq -r '.avatar_icon')"
+if [ "$eduhoot_join_code" != "$code" ] || [ -z "$eduhoot_join_token" ] || [ "$eduhoot_join_token" = "null" ] || [ "$eduhoot_join_assignment" != "$assignment_id" ] || [ "$eduhoot_join_icon" != "🚀" ]; then
   echo "EduHoot no ha acceptat correctament el token de llançament Commons"
-  echo "code=$eduhoot_join_code assignment=$eduhoot_join_assignment"
+  echo "code=$eduhoot_join_code assignment=$eduhoot_join_assignment icon=$eduhoot_join_icon"
   exit 1
 fi
 

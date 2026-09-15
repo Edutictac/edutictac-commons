@@ -4,6 +4,11 @@ const EDUHOOT_APP = "eduhoot";
 const ACTIVITY_QUESTIONS = 3;
 const STORAGE_KEY = "edutictac-commons-demo-state";
 const EDUHOOT_BASE_URL = `${window.location.protocol}//${window.location.hostname}:8090`;
+const STUDENT_ICONS = [
+  "🦊", "🐱", "🐶", "🐼", "🐧", "🐸", "🦉", "🦄", "🐰", "🐢",
+  "🐙", "🦁", "🐨", "🐝", "🐯", "🐻", "🦕", "🦖", "🐉", "🚀",
+  "🌈", "⚽️", "🏀", "🏆", "🎮", "🎧", "📚", "🎨",
+];
 
 const state = {
   teacher: false,
@@ -248,6 +253,33 @@ function studentDashboard(assignments) {
       { key: "last_score_at", label: "Última vegada" },
       { key: "action", label: "", html: true },
     ])}
+  `;
+}
+
+function studentProfileCard(message = "") {
+  const selected = state.student && state.student.avatar_icon ? state.student.avatar_icon : "";
+  return `
+    <section class="student-profile" aria-label="Perfil pseudònim">
+      <div class="student-profile__summary">
+        <span class="student-profile__icon" aria-hidden="true">${escapeHtml(selected || "🙂")}</span>
+        <div>
+          <p>Hola, <strong>${escapeHtml(state.student.public_code)}</strong>.</p>
+          <p class="muted">Tria una icona per reconèixer-te millor en les activitats.</p>
+        </div>
+      </div>
+      <div class="student-icon-picker" role="group" aria-label="Icona de l'alumne">
+        ${STUDENT_ICONS.map((icon) => `
+          <button
+            class="student-icon${icon === selected ? " selected" : ""}"
+            type="button"
+            data-student-icon="${escapeHtml(icon)}"
+            aria-pressed="${icon === selected ? "true" : "false"}"
+            title="Triar ${escapeHtml(icon)}"
+          >${escapeHtml(icon)}</button>
+        `).join("")}
+      </div>
+      ${message ? `<p class="profile-status">${escapeHtml(message)}</p>` : ""}
+    </section>
   `;
 }
 
@@ -514,11 +546,22 @@ async function loadStudentDashboard(message = "") {
   setOutput(
     $("studentOutput"),
     `
-      ${message}
-      <p>Hola, <strong>${escapeHtml(state.student.public_code)}</strong>. Ja tens sessió pseudònima.</p>
+      ${studentProfileCard(message)}
       ${studentDashboard(state.studentAssignments)}
     `,
   );
+}
+
+async function updateStudentIcon(icon) {
+  if (!state.student) {
+    throw new Error("Entra primer com a alumne.");
+  }
+  const data = await api("/api/student/profile", {
+    method: "PATCH",
+    body: JSON.stringify({ avatar_icon: icon }),
+  });
+  state.student = data.identity;
+  await loadStudentDashboard("Icona guardada.");
 }
 
 async function launchEduhootAssignment(assignment) {
@@ -675,9 +718,17 @@ document.addEventListener("click", (event) => {
       $("studentOutput"),
       `
         <p>Activitat seleccionada: <strong>${escapeHtml(assignment.title || assignment.activity_id)}</strong>. Pots completar el repte.</p>
+        ${studentProfileCard()}
         ${studentDashboard(state.studentAssignments)}
       `,
     );
+  }
+
+  const iconButton = event.target.closest("[data-student-icon]");
+  if (iconButton) {
+    updateStudentIcon(iconButton.dataset.studentIcon).catch((error) => {
+      setOutput($("studentOutput"), `<p><strong>Error:</strong> ${escapeHtml(error.message)}</p>${studentProfileCard()}${studentDashboard(state.studentAssignments)}`);
+    });
   }
 
   const eduhootLaunchButton = event.target.closest("[data-launch-eduhoot-assignment]");

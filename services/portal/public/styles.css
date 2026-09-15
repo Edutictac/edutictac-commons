@@ -357,6 +357,67 @@ button:disabled {
   gap: 6px;
 }
 
+.student-profile {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  background: #fff;
+}
+
+.student-profile__summary {
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+}
+
+.student-profile__summary p {
+  margin: 0;
+}
+
+.student-profile__icon {
+  display: grid;
+  width: 54px;
+  height: 54px;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #f2f6ff;
+  font-size: 32px;
+  line-height: 1;
+}
+
+.student-icon-picker {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(42px, 1fr));
+  gap: 6px;
+}
+
+.student-icon {
+  min-height: 42px;
+  padding: 4px;
+  border-color: var(--line);
+  background: #fff;
+  font-size: 24px;
+  line-height: 1;
+}
+
+.student-icon.selected,
+.student-icon:hover {
+  border-color: #5b6fbd;
+  background: #e9edff;
+  color: var(--ink);
+}
+
+.profile-status {
+  margin: 0;
+  color: #375a2f;
+  font-weight: 700;
+}
+
 .pin-notice {
   margin-top: 8px;
   border: 1px solid #d4a142;

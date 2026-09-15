@@ -41,6 +41,11 @@ PIN_RE = re.compile(r"^[0-9]{4,6}$")
 GROUP_CODE_RE = re.compile(r"^G[A-Z2-9]{5}$")
 SESSION_TTL_DAYS = 180
 LAUNCH_TOKEN_TTL_SECONDS = 5 * 60
+IDENTITY_ICONS = {
+    "🦊", "🐱", "🐶", "🐼", "🐧", "🐸", "🦉", "🦄", "🐰", "🐢",
+    "🐙", "🦁", "🐨", "🐝", "🐯", "🐻", "🦕", "🦖", "🐉", "🚀",
+    "🌈", "⚽️", "🏀", "🏆", "🎮", "🎧", "📚", "🎨",
+}
 RATE_WINDOW = 60
 RATE_MAX = 12
 PIN_HASH_ITERATIONS = int(os.environ.get("EDUTICTAC_ID_PIN_HASH_ITERATIONS", "210000"))
@@ -83,6 +88,7 @@ def init_db() -> None:
                 public_code TEXT NOT NULL,
                 pin_hash TEXT NOT NULL,
                 active INTEGER NOT NULL DEFAULT 1,
+                avatar_icon TEXT NOT NULL DEFAULT '',
                 created_at TEXT NOT NULL,
                 updated_at TEXT NOT NULL,
                 pin_rotated_at TEXT,
@@ -147,6 +153,11 @@ def init_db() -> None:
                 ON app_launch_tokens(token_hash);
             """
         )
+        identity_columns = {
+            row["name"] for row in conn.execute("PRAGMA table_info(student_identities)").fetchall()
+        }
+        if "avatar_icon" not in identity_columns:
+            conn.execute("ALTER TABLE student_identities ADD COLUMN avatar_icon TEXT NOT NULL DEFAULT ''")
         score_columns = {row["name"] for row in conn.execute("PRAGMA table_info(scores)").fetchall()}
         if "assignment_id" not in score_columns:
             conn.execute("ALTER TABLE scores ADD COLUMN assignment_id TEXT DEFAULT ''")
@@ -248,6 +259,7 @@ def public_identity(row: sqlite3.Row) -> dict[str, Any]:
         "id": row["id"],
         "group_id": row["group_id"],
         "public_code": row["public_code"],
+        "avatar_icon": row["avatar_icon"],
         "active": bool(row["active"]),
         "created_at": row["created_at"],
         "updated_at": row["updated_at"],
@@ -367,6 +379,18 @@ class StudentAuthIn(BaseModel):
     group_id: str = ""
     public_code: str
     pin: str
+
+
+class StudentProfileIn(BaseModel):
+    avatar_icon: str = ""
+
+    @field_validator("avatar_icon")
+    @classmethod
+    def _avatar_icon(cls, value: str) -> str:
+        icon = (value or "").strip()
+        if icon and icon not in IDENTITY_ICONS:
+            raise ValueError("invalid avatar icon")
+        return icon
 
 
 class ScoreIn(BaseModel):
@@ -575,6 +599,30 @@ def me(request: Request) -> dict[str, Any]:
     if not identity:
         raise HTTPException(status_code=401, detail="not authenticated")
     return {"identity": identity}
+
+
+@app.patch("/api/student/profile")
+def update_student_profile(payload: StudentProfileIn, request: Request) -> dict[str, Any]:
+    identity = current_identity(request)
+    if not identity:
+        raise HTTPException(status_code=401, detail="not authenticated")
+    ts = iso_now()
+    with get_conn() as conn:
+        conn.execute(
+            """
+            UPDATE student_identities
+            SET avatar_icon = ?, updated_at = ?
+            WHERE id = ? AND active = 1
+            """,
+            (payload.avatar_icon, ts, identity["id"]),
+        )
+        row = conn.execute(
+            "SELECT * FROM student_identities WHERE id = ? AND active = 1",
+            (identity["id"],),
+        ).fetchone()
+    if not row:
+        raise HTTPException(status_code=404, detail="identity not found")
+    return {"identity": public_identity(row)}
 
 
 @app.get("/api/student/dashboard")
@@ -971,6 +1019,7 @@ def consume_app_launch_token(app_id: str, payload: ConsumeLaunchTokenIn, request
                 t.*,
                 i.group_id,
                 i.public_code,
+                i.avatar_icon,
                 i.active
             FROM app_launch_tokens t
             JOIN student_identities i ON i.id = t.identity_id
@@ -996,6 +1045,7 @@ def consume_app_launch_token(app_id: str, payload: ConsumeLaunchTokenIn, request
             "id": row["identity_id"],
             "group_id": row["group_id"],
             "public_code": row["public_code"],
+            "avatar_icon": row["avatar_icon"],
             "active": bool(row["active"]),
         },
         "assignment": {
@@ -1202,7 +1252,7 @@ def printable_cards(group_id: str, request: Request) -> str:
             raise HTTPException(status_code=404, detail="group not found")
         rows = conn.execute(
             """
-            SELECT id, public_code FROM student_identities
+            SELECT id, public_code, avatar_icon FROM student_identities
             WHERE group_id = ? AND active = 1
             ORDER BY public_code
             """,
@@ -1280,6 +1330,7 @@ def app_roster(app_id: str, payload: AppRosterIn, request: Request) -> dict[str,
         {
             "identity_id": row["id"],
             "public_code": row["public_code"],
+            "avatar_icon": row["avatar_icon"],
             "app_user": f"{app_key}-{row['public_code'].lower()}",
         }
         for row in rows
