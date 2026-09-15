@@ -120,6 +120,28 @@ if [ "$score_assignment_id" != "$assignment_id" ]; then
   exit 1
 fi
 
+explicit_score="$(curl -fsS --config "$app_curl_config" \
+  -H 'Content-Type: application/json' \
+  -d "{\"identity_id\":\"${identity_id}\",\"activity_id\":\"${activity_id}\",\"assignment_id\":\"${assignment_id}\",\"score\":97,\"metadata\":{\"source\":\"test-eduhoot-flow\",\"mode\":\"explicit-assignment\"}}" \
+  "$base/api/apps/eduhoot/scores")"
+
+explicit_assignment_id="$(printf '%s' "$explicit_score" | jq -r '.assignment_id')"
+if [ "$explicit_assignment_id" != "$assignment_id" ]; then
+  echo "La puntuacio EduHoot amb assignment_id explicit no s'ha associat correctament"
+  printf '%s\n' "$explicit_score"
+  exit 1
+fi
+
+bad_status="$(curl -sS -o /dev/null -w '%{http_code}' \
+  -H 'Content-Type: application/json' \
+  -d "{\"identity_id\":\"${identity_id}\",\"activity_id\":\"${activity_id}\",\"score\":13}" \
+  "$base/api/apps/eduhoot/scores")"
+if [ "$bad_status" != "401" ]; then
+  echo "L'endpoint intern de puntuacions EduHoot ha acceptat una peticio sense token"
+  echo "HTTP $bad_status"
+  exit 1
+fi
+
 results="$(curl -fsS -c "$teacher_cookie" -b "$teacher_cookie" \
   "$base/api/teacher/activity-assignments/${assignment_id}/results")"
 
@@ -127,7 +149,7 @@ attempts="$(printf '%s' "$results" | jq -r '.results[0].attempts')"
 best_score="$(printf '%s' "$results" | jq -r '.results[0].best_score')"
 result_code="$(printf '%s' "$results" | jq -r '.results[0].public_code')"
 
-if [ "$attempts" != "1" ] || [ "$best_score" != "91" ] || [ "$result_code" != "$code" ]; then
+if [ "$attempts" != "2" ] || [ "$best_score" != "97" ] || [ "$result_code" != "$code" ]; then
   echo "Flux EduHoot incorrecte"
   printf '%s\n' "$results"
   exit 1
@@ -136,7 +158,7 @@ fi
 ranking="$(curl -fsS -c "$teacher_cookie" -b "$teacher_cookie" \
   "$base/api/rankings?app_id=eduhoot&activity_id=${activity_id}&limit=5")"
 ranking_score="$(printf '%s' "$ranking" | jq -r 'map(select(.public_code == "'"$code"'"))[0].score')"
-if [ "$ranking_score" != "91" ]; then
+if [ "$ranking_score" != "97" ]; then
   echo "El ranking no inclou la puntuacio EduHoot esperada"
   printf '%s\n' "$ranking"
   exit 1

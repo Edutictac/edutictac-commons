@@ -22,7 +22,13 @@ El flux manual ja funciona:
 
 Comprovació reproduïble implementada amb `make test-eduhoot-flow`: valida
 l'endpoint de configuració d'EduHoot, autenticació d'alumnat, assignació
-EduHoot, registre de puntuació via token intern i lectura de resultats/rànquing.
+EduHoot, token intern obligatori, registre de puntuació via token intern
+(associació automàtica i `assignment_id` explícit) i lectura de
+resultats/rànquing.
+
+També queda implementat `CONFIRM_RESET_TEST=1 make test-reset-flow`, una prova
+destructiva protegida que crea backup previ, genera dades temporals, executa
+reset, comprova que Commons queda buit i restaura el backup.
 
 Següent pas recomanat: començar la **Fita 5 — Privacitat per a centres**.
 

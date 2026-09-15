@@ -3,7 +3,7 @@ ENV_FILE = $(shell test -f .env && echo .env || echo .env.example)
 COMPOSE = $(DOCKER) compose --env-file $(ENV_FILE) -f compose.yml
 COMPOSE_EXAMPLE = $(DOCKER) compose --env-file .env.example -f compose.yml
 
-.PHONY: init doctor up up-pulled up-example down build logs ps test-flow test-eduhoot-flow bootstrap-demo release-check backup backup-check backup-auto backup-prune backup-timer-install backup-timer-status backup-timer-uninstall restore reset images check-images check-updates update-images export-images load-images push-images
+.PHONY: init doctor up up-pulled up-example down build logs ps test-flow test-eduhoot-flow test-reset-flow bootstrap-demo release-check backup backup-check backup-auto backup-prune backup-timer-install backup-timer-status backup-timer-uninstall restore reset images check-images check-updates update-images export-images load-images push-images
 
 init:
 	@test -f .env || cp .env.example .env
@@ -37,6 +37,9 @@ test-flow:
 
 test-eduhoot-flow:
 	./scripts/test-eduhoot-flow.sh
+
+test-reset-flow:
+	./scripts/test-reset-flow.sh
 
 bootstrap-demo:
 	./scripts/bootstrap-demo.sh

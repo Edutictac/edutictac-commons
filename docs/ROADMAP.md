@@ -140,7 +140,8 @@ l'alumnat pot completar-la amb la mateixa identitat pseudònima.
 - [x] Documentar exactament què espera EduHoot del servei d'identitat.
 - [x] Validar el flux amb `COMPOSE_PROFILES=eduhoot`.
 - [x] Crear una prova funcional que cobrisca portal + identitat + EduHoot
-  (`make test-eduhoot-flow`).
+  (`make test-eduhoot-flow`, inclou token intern obligatori, associació
+  automàtica i `assignment_id` explícit).
 - [x] Evitar que l'alumnat necessite cap compte personal.
 - [x] Documentar persistència local d'EduHoot (`data/eduhoot-*`) i còpia de
   seguretat.
@@ -169,6 +170,8 @@ l'alumnat pot completar-la amb la mateixa identitat pseudònima.
 - [ ] Provar `make load-images` en un entorn net o simulat.
 - [ ] Publicar instruccions de `docker compose pull` amb registre propi.
 - [ ] Mantindre canals de versió sense usar `latest`.
+- [x] Provar el flux de reset amb restauració (`CONFIRM_RESET_TEST=1 make
+  test-reset-flow`): backup previ, dades temporals, reset buit i restore.
 
 ## v2 — més enllà del nucli finançat
 
