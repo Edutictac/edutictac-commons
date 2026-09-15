@@ -143,7 +143,28 @@ l'alumnat pot completar-la amb la mateixa identitat pseudònima.
 - [x] Permetre mode mixt en EduHoot: entrada amb nom curt o amb codi + PIN
   Commons sense demanar nom addicional.
 
-### Fita 5 — Privacitat per a centres
+### Fita 5 — Banc de recursos (cistella i recorregut)
+
+**Resultat:** el professorat pot triar activitats del Banc de recursos des del
+tauler (cistella de recursos) i assignar-les als recorreguts, amb més fonts
+d'activitat que EduHoot sol.
+
+> **Nota d'abast:** això avança el «Banc de recursos com a mòdul de
+> l'instal·lador» que el roadmap 4D situa en v2; ací s'acota a la integració
+> mínima, no a l'índex federat complet ni als thumbnails proxy.
+
+- [ ] Dockeritzar `recursos-api` i el frontend de `recursos` com a mòdul del
+  stack (perfil Compose propi, persistència a `data/recursos-*`).
+- [ ] Integrar la identitat docent del stack al Banc de recursos perquè els
+  preferits queden al compte (depèn de la decisió d'Authentik de la Fita 6).
+- [ ] Cistella de recursos al tauler: endpoint `GET /api/teacher/favorites`
+  (sessió docent) que resol els preferits a recurs complet.
+- [ ] Assignar recursos de la cistella als recorreguts; qualsevol recurs és
+  assignable, només els d'app (JClic/H5P/EduHoot) generen puntuació i resultats.
+- [ ] Migració de preferits anònims → OIDC (diferida mentre no hi haja comptes
+  reals al Banc de recursos).
+
+### Fita 6 — Privacitat per a centres
 
 **Resultat:** un centre pot entendre què dades guarda el stack i què no guarda.
 
@@ -156,7 +177,7 @@ l'alumnat pot completar-la amb la mateixa identitat pseudònima.
 - [ ] Crear fitxa tècnica per a direcció/DPD.
 - [ ] Revisar que cap document prometa anonimat absolut.
 
-### Fita 6 — Distribució
+### Fita 7 — Distribució
 
 **Resultat:** la v1 es pot portar a una màquina neta.
 
@@ -194,13 +215,3 @@ Aquest repo cobreix la **Pista B** del roadmap 4D:
 Queden fora d'aquest repo, excepte com a documentació o integració futura:
 Nextcloud complet, WordPress, Forgejo, DokuWiki i la instància real
 `edutictac.es`.
-
-## Futur proper (post v1)
-
-- [ ] **Cistella de recursos (P1-17):** quan el docent marca un recurs com a
-  preferit al Banc de recursos, aquest apareix al tauler del professorat com
-  una cistella (preferits resolts amb les metadades completes). Des d'allà els
-  tria i assigna als recorreguts. Endpoint `GET /api/teacher/favorites` a
-  `recursos-api` (sessió OIDC docent). Qualsevol recurs és assignable; només els
-  d'app (JClic/H5P/EduHoot) generen puntuació i resultats. Migració de preferits
-  anònims → OIDC diferida.
