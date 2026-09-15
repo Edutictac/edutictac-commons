@@ -207,7 +207,40 @@ d'activitat que EduHoot sol.
 - [ ] Permetre l'accés del professorat a EduHoot amb Authentik/OIDC (crear i
   gestionar qüestionaris), en lloc del flux actual per tokens.
 
-### Fita v2-4 — LRS complet (xAPI)
+### Fita v2-4 — Visor net de vídeos i col·lecció docent
+
+**Resultat:** el professorat pot guardar vídeos de YouTube en una col·lecció
+catalogada, preparar-los en una interfície neta per a l'aula i assignar-los a
+un grup classe dins del recorregut de l'alumnat.
+
+Criteri legal i de producte: la funcionalitat s'ha de presentar com a **visor
+net / sense distraccions**, no com a bloquejador d'anuncis. Ha d'usar el
+reproductor oficial de YouTube o `youtube-nocookie.com`, mantenir l'atribució i
+el consentiment quan corresponga, i no ha d'interferir tècnicament amb la
+publicitat servida pel reproductor.
+
+- [ ] Avaluar el fork de Digiview (`ladigitale/digiview`, AGPLv3) com a base:
+  llicència, avisos d'autoria, obligació de publicar el codi modificat i
+  encaix amb la UI/stack Commons.
+- [ ] Definir model de dades per a la biblioteca de vídeos docent: URL/ID de
+  YouTube, títol, descripció, miniatura, inici/fi, idioma/subtítols, categoria,
+  etiquetes, visibilitat i professor/centre propietari.
+- [ ] Afegir al tauler docent una col·lecció de vídeos amb busca, filtres per
+  categoria/etiqueta i accions ràpides: crear, editar, previsualitzar, duplicar
+  i assignar a grup.
+- [ ] Permetre assignar un vídeo guardat a un grup classe com una activitat
+  Commons (`activity_assignments`) sense puntuació obligatòria, marcant progrés
+  com a visualitzat/completat si corresponga.
+- [ ] Afegir al tauler de l'alumnat una targeta de vídeo assignat que obri el
+  visor net mantenint la identitat pseudònima i sense demanar cap compte
+  personal.
+- [ ] Documentar el text públic recomanat: "vídeos en una interfície neta, sense
+  comentaris, recomanacions ni distraccions externes", evitant prometre
+  eliminació garantida de publicitat.
+- [ ] Incloure els vídeos i metadades en la política de backup/restauració i en
+  la documentació de privacitat per a centres.
+
+### Fita v2-5 — LRS complet (xAPI)
 
 - [ ] Desplegar `lrsql` (LRS) com a mòdul de l'stack i connectar-hi el Learning
   Bridge (normalització JClic/H5P) i el SDK client per al progrés docent, més
