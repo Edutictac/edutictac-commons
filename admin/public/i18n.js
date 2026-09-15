@@ -16,6 +16,7 @@
       "common.actionPlaceholder": "Los resultados de las acciones aparecerán aquí.",
       "errors.unauthorized": "no autorizado",
       "admin.title": "Panel de administración",
+      "admin.pageTitle": "Panel de administración — EduTicTac Commons",
       "login.access": "Acceso",
       "login.title": "Token de administración",
       "login.token": "Token",
@@ -89,6 +90,7 @@
       "common.actionPlaceholder": "Els resultats de les accions apareixeran ací.",
       "errors.unauthorized": "no autoritzat",
       "admin.title": "Panell d'administració",
+      "admin.pageTitle": "Panell d'administració — EduTicTac Commons",
       "login.access": "Accés",
       "login.title": "Token d'administració",
       "login.token": "Token",
@@ -165,6 +167,7 @@
       "common.actionPlaceholder": "The results of the actions will appear here.",
       "errors.unauthorized": "unauthorized",
       "admin.title": "Admin panel",
+      "admin.pageTitle": "Admin panel — EduTicTac Commons",
       "login.access": "Access",
       "login.title": "Admin token",
       "login.token": "Token",
@@ -293,6 +296,7 @@
   }
 
   function applyStaticTranslations() {
+    document.title = t("admin.pageTitle");
     document.querySelectorAll("[data-i18n]").forEach(function (node) {
       node.textContent = t(node.getAttribute("data-i18n"));
     });
