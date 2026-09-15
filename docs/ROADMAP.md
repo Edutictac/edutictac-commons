@@ -229,5 +229,5 @@ Aquest repo cobreix la **Pista B** del roadmap 4D:
 - instal·lador v1 del nucli replicable.
 
 Queden fora d'aquest repo, excepte com a documentació o integració futura:
-Nextcloud complet, WordPress, Forgejo, DokuWiki i la instància real
+Nextcloud complet, Moodle, WordPress, Forgejo, DokuWiki i la instància real
 `edutictac.es`.
