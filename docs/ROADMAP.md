@@ -184,6 +184,9 @@ Aquest repo cobreix la **Pista B** del roadmap 4D:
 - P0-13: credencial pseudònima i recorregut didàctic mínim;
 - P1-10: ampliació de la credencial a més apps;
 - P1-16: kit de privacitat per a centres;
+- P1-17: editor avançat de recorreguts didàctics — inclou la **cistella de
+  recursos** (els preferits del Banc de recursos resolts al tauler del
+  professorat, per triar-los i assignar-los als recorreguts de l'alumnat);
 - part de P0-8: repositori públic, instruccions reproduïbles i mecanisme de
   versionat;
 - instal·lador v1 del nucli replicable.
@@ -191,3 +194,13 @@ Aquest repo cobreix la **Pista B** del roadmap 4D:
 Queden fora d'aquest repo, excepte com a documentació o integració futura:
 Nextcloud complet, WordPress, Forgejo, DokuWiki i la instància real
 `edutictac.es`.
+
+## Futur proper (post v1)
+
+- [ ] **Cistella de recursos (P1-17):** quan el docent marca un recurs com a
+  preferit al Banc de recursos, aquest apareix al tauler del professorat com
+  una cistella (preferits resolts amb les metadades completes). Des d'allà els
+  tria i assigna als recorreguts. Endpoint `GET /api/teacher/favorites` a
+  `recursos-api` (sessió OIDC docent). Qualsevol recurs és assignable; només els
+  d'app (JClic/H5P/EduHoot) generen puntuació i resultats. Migració de preferits
+  anònims → OIDC diferida.
