@@ -99,6 +99,43 @@ h3 {
   background: var(--soft);
 }
 
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.lang-switcher {
+  display: flex;
+  gap: 4px;
+}
+
+.lang-switcher button {
+  min-height: auto;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 6px 10px;
+  background: #fff;
+  color: var(--accent-dark);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.lang-switcher button:hover {
+  border-color: var(--accent-dark);
+  background: var(--soft);
+}
+
+.lang-switcher button.active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+
+html.i18n-pending body {
+  visibility: hidden;
+}
+
 .home-layout {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

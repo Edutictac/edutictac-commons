@@ -4,66 +4,75 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Panell d'administració — EduTicTac Commons</title>
+    <script src="/i18n.js"></script>
     <link rel="stylesheet" href="/styles.css">
   </head>
   <body>
     <header class="topbar">
       <div>
         <p class="eyebrow">EduTicTac Commons</p>
-        <h1>Panell d'administració</h1>
+        <h1 data-i18n="admin.title">Panell d'administració</h1>
       </div>
-      <span id="apiStatus" class="status">Comprovant token...</span>
+      <div class="topbar-actions">
+        <span id="apiStatus" class="status">Comprovant token...</span>
+        <div class="lang-switcher" role="group" aria-label="Idioma" data-i18n-title="common.lang.label">
+          <button type="button" data-lang="es" title="Español">ES</button>
+          <button type="button" data-lang="ca" title="Català">CA</button>
+          <button type="button" data-lang="va" title="Valencià">VA</button>
+          <button type="button" data-lang="en" title="English">EN</button>
+        </div>
+      </div>
     </header>
 
     <main class="single-layout">
       <section class="panel" aria-labelledby="loginTitle">
         <div class="panel-heading">
-          <p class="eyebrow">Accés</p>
-          <h2 id="loginTitle">Token d'administració</h2>
+          <p class="eyebrow" data-i18n="login.access">Accés</p>
+          <h2 id="loginTitle" data-i18n="login.title">Token d'administració</h2>
         </div>
         <label>
           Token
           <input id="adminToken" type="password" autocomplete="off">
         </label>
         <div class="actions">
-          <button id="loginBtn" type="button">Entrar</button>
-          <button id="logoutBtn" type="button" class="secondary">Eixir</button>
-          <button id="refreshBtn" type="button" class="secondary">Actualitzar</button>
+          <button id="loginBtn" type="button" data-i18n="login.enter">Entrar</button>
+          <button id="logoutBtn" type="button" class="secondary" data-i18n="login.logout">Eixir</button>
+          <button id="refreshBtn" type="button" class="secondary" data-i18n="login.refresh">Actualitzar</button>
         </div>
       </section>
 
       <section class="panel" aria-labelledby="statusTitle">
         <div class="panel-heading">
-          <p class="eyebrow">Estat</p>
-          <h2 id="statusTitle">Estat operatiu del stack</h2>
+          <p class="eyebrow" data-i18n="status.label">Estat</p>
+          <h2 id="statusTitle" data-i18n="status.title">Estat operatiu del stack</h2>
         </div>
         <div id="statusOutput" class="output empty">Entra amb el token per veure l'estat.</div>
       </section>
 
       <section class="panel" aria-labelledby="actionsTitle">
         <div class="panel-heading">
-          <p class="eyebrow">Accions</p>
-          <h2 id="actionsTitle">Backups</h2>
+          <p class="eyebrow" data-i18n="common.actions">Accions</p>
+          <h2 id="actionsTitle" data-i18n="backup.title">Backups</h2>
         </div>
         <div class="actions">
-          <button id="backupCreateBtn" type="button">Crear backup ara</button>
-          <button id="timerInstallBtn" type="button">Activar backups automàtics</button>
-          <button id="timerUninstallBtn" type="button" class="secondary">Desactivar backups automàtics</button>
+          <button id="backupCreateBtn" type="button" data-i18n="backup.create">Crear backup ara</button>
+          <button id="timerInstallBtn" type="button" data-i18n="backup.installTimer">Activar backups automàtics</button>
+          <button id="timerUninstallBtn" type="button" class="secondary" data-i18n="backup.uninstallTimer">Desactivar backups automàtics</button>
         </div>
         <label>
-          Backup per restaurar
+          <span data-i18n="backup.restoreLabel">Backup per restaurar</span>
           <select id="restoreBackupSelect"></select>
         </label>
         <div class="actions">
-          <button id="backupRestoreBtn" type="button" class="danger">Restaurar backup seleccionat</button>
+          <button id="backupRestoreBtn" type="button" class="danger" data-i18n="backup.restore">Restaurar backup seleccionat</button>
         </div>
         <div class="panel-heading compact">
-          <p class="eyebrow">Imatges</p>
-          <h2>Actualitzacions</h2>
+          <p class="eyebrow" data-i18n="images.label">Imatges</p>
+          <h2 data-i18n="images.title">Actualitzacions</h2>
         </div>
         <div class="actions">
-          <button id="imagesCheckBtn" type="button" class="secondary">Comprovar actualitzacions</button>
-          <button id="imagesUpdateBtn" type="button" class="danger">Actualitzar imatges</button>
+          <button id="imagesCheckBtn" type="button" class="secondary" data-i18n="images.check">Comprovar actualitzacions</button>
+          <button id="imagesUpdateBtn" type="button" class="danger" data-i18n="images.update">Actualitzar imatges</button>
         </div>
         <div id="actionOutput" class="output empty">Els resultats de les accions apareixeran ací.</div>
       </section>

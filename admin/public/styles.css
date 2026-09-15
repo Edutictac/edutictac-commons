@@ -68,6 +68,41 @@ h1, h2, h3 {
   color: var(--muted);
 }
 
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.lang-switcher {
+  display: flex;
+  gap: 4px;
+}
+
+.lang-switcher button {
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--panel);
+  color: var(--text);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.lang-switcher button:hover {
+  border-color: var(--accent);
+}
+
+.lang-switcher button.active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-contrast);
+}
+
+html.i18n-pending body {
+  visibility: hidden;
+}
+
 .single-layout {
   display: flex;
   flex-direction: column;

@@ -4,74 +4,83 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Tauler docent — EduTicTac Commons</title>
+    <script src="/i18n.js"></script>
     <link rel="stylesheet" href="/styles.css">
   </head>
   <body>
     <header class="topbar">
       <div>
         <p class="eyebrow">EduTicTac Commons</p>
-        <h1>Tauler docent</h1>
+        <h1 data-i18n="teacher.title">Tauler docent</h1>
       </div>
-      <nav class="topnav" aria-label="Navegació principal">
-        <a href="/">Inici</a>
-        <a href="/student.html">Alumnat</a>
+      <nav class="topnav" aria-label="Navegació principal" data-i18n-title="common.nav.label">
+        <a href="/" data-i18n="common.home">Inici</a>
+        <a href="/student.html" data-i18n="common.students">Alumnat</a>
       </nav>
-      <span id="apiStatus" class="status">Comprovant API...</span>
+      <div class="topbar-actions">
+        <span id="apiStatus" class="status">Comprovant API...</span>
+        <div class="lang-switcher" role="group" aria-label="Idioma" data-i18n-title="common.lang.label">
+          <button type="button" data-lang="es" title="Español">ES</button>
+          <button type="button" data-lang="ca" title="Català">CA</button>
+          <button type="button" data-lang="va" title="Valencià">VA</button>
+          <button type="button" data-lang="en" title="English">EN</button>
+        </div>
+      </div>
     </header>
 
     <main class="single-layout">
       <section class="role-area teacher-area" aria-labelledby="teacherTitle">
         <div class="role-heading">
-          <p class="eyebrow">Professorat</p>
-          <h2 id="teacherTitle">Credencials, assignacions i resultats</h2>
+          <p class="eyebrow" data-i18n="common.teachers">Professorat</p>
+          <h2 id="teacherTitle" data-i18n="teacher.subtitle">Credencials, assignacions i resultats</h2>
         </div>
 
         <div class="panel">
           <div class="panel-heading">
-            <p class="eyebrow">Accés i grups</p>
-            <h3>Generar aula pseudònima</h3>
+            <p class="eyebrow" data-i18n="teacher.accessGroups">Accés i grups</p>
+            <h3 data-i18n="teacher.generatePseudoClass">Generar aula pseudònima</h3>
           </div>
 
           <label>
-            Token docent
+            <span data-i18n="teacher.tokenLabel">Token docent</span>
             <input id="teacherToken" type="password" autocomplete="off" value="dev-teacher">
           </label>
 
           <div class="actions">
-            <button id="teacherLogin" type="button">Entrar</button>
-            <button id="teacherLogout" type="button" class="secondary">Eixir</button>
-            <button id="teacherSummary" type="button" class="secondary">Resum</button>
-            <button id="refreshDashboard" type="button" class="secondary">Actualitzar tauler</button>
+            <button id="teacherLogin" type="button" data-i18n="common.login">Entrar</button>
+            <button id="teacherLogout" type="button" class="secondary" data-i18n="common.logout">Eixir</button>
+            <button id="teacherSummary" type="button" class="secondary" data-i18n="teacher.summary">Resum</button>
+            <button id="refreshDashboard" type="button" class="secondary" data-i18n="teacher.refreshDashboard">Actualitzar tauler</button>
           </div>
 
           <div class="grid-fields">
             <label>
-              Nom intern del centre
+              <span data-i18n="teacher.tenantLabel">Nom intern del centre</span>
               <input id="tenantId" type="text" value="centre">
             </label>
             <label>
-              Alumnat
+              <span data-i18n="common.students">Alumnat</span>
               <input id="identityCount" type="number" min="1" max="30" value="6">
             </label>
           </div>
 
           <div class="actions">
-            <button id="createBatch" type="button">Generar credencials</button>
+            <button id="createBatch" type="button" data-i18n="teacher.generateCredentials">Generar credencials</button>
           </div>
 
           <div class="grid-fields">
             <label>
-              ID activitat EduHoot
-              <input id="eduhootActivityId" type="text" placeholder="local-... o id del quiz">
+              <span data-i18n="teacher.eduhootActivityId">ID activitat EduHoot</span>
+              <input id="eduhootActivityId" type="text" placeholder="local-... o id del quiz" data-i18n-placeholder="teacher.eduhootIdPlaceholder">
             </label>
             <label>
-              Títol EduHoot
-              <input id="eduhootActivityTitle" type="text" placeholder="Repàs inicial">
+              <span data-i18n="teacher.eduhootTitle">Títol EduHoot</span>
+              <input id="eduhootActivityTitle" type="text" placeholder="Repàs inicial" data-i18n-placeholder="teacher.eduhootTitlePlaceholder">
             </label>
           </div>
 
           <div class="actions">
-            <button id="createEduhootAssignment" type="button" class="secondary">Assignar EduHoot</button>
+            <button id="createEduhootAssignment" type="button" class="secondary" data-i18n="teacher.assignEduhoot">Assignar EduHoot</button>
           </div>
 
           <div id="teacherOutput" class="output empty">Encara no hi ha credencials generades.</div>
@@ -79,12 +88,12 @@
 
         <div class="panel">
           <div class="panel-heading">
-            <p class="eyebrow">Resultats</p>
-            <h3>Activitat seleccionada</h3>
+            <p class="eyebrow" data-i18n="teacher.results">Resultats</p>
+            <h3 data-i18n="teacher.selectedActivity">Activitat seleccionada</h3>
           </div>
           <div class="actions">
-            <button id="loadResults" type="button">Veure resultats</button>
-            <button id="loadRanking" type="button" class="secondary">Veure rànquing</button>
+            <button id="loadResults" type="button" data-i18n="teacher.viewResults">Veure resultats</button>
+            <button id="loadRanking" type="button" class="secondary" data-i18n="teacher.viewRanking">Veure rànquing</button>
           </div>
           <div id="resultsOutput" class="output empty">Els resultats apareixeran ací.</div>
         </div>

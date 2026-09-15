@@ -4,28 +4,37 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>EduTicTac Commons</title>
+    <script src="/i18n.js"></script>
     <link rel="stylesheet" href="/styles.css">
   </head>
   <body>
     <header class="topbar">
       <div>
         <p class="eyebrow">EduTicTac Commons</p>
-        <h1>Demo local</h1>
+        <h1 data-i18n="home.title">Demo local</h1>
       </div>
-      <span id="apiStatus" class="status">Comprovant API...</span>
+      <div class="topbar-actions">
+        <span id="apiStatus" class="status">Comprovant API...</span>
+        <div class="lang-switcher" role="group" aria-label="Idioma" data-i18n-title="common.lang.label">
+          <button type="button" data-lang="es" title="Español">ES</button>
+          <button type="button" data-lang="ca" title="Català">CA</button>
+          <button type="button" data-lang="va" title="Valencià">VA</button>
+          <button type="button" data-lang="en" title="English">EN</button>
+        </div>
+      </div>
     </header>
 
     <main class="home-layout">
       <a class="role-card teacher-card" href="/teacher.html">
-        <span class="eyebrow">Professorat</span>
-        <strong>Tauler docent</strong>
-        <span>Generar grups, credencials, assignacions i resultats.</span>
+        <span class="eyebrow" data-i18n="common.teachers">Professorat</span>
+        <strong data-i18n="teacher.title">Tauler docent</strong>
+        <span data-i18n="home.teacherCard.description">Generar grups, credencials, assignacions i resultats.</span>
       </a>
 
       <a class="role-card student-card" href="/student.html">
-        <span class="eyebrow">Alumnat</span>
-        <strong>Tauler d'alumnat</strong>
-        <span>Entrar amb codi + PIN, veure recorregut i completar activitats.</span>
+        <span class="eyebrow" data-i18n="common.students">Alumnat</span>
+        <strong data-i18n="student.title">Tauler d'alumnat</strong>
+        <span data-i18n="home.studentCard.description">Entrar amb codi + PIN, veure recorregut i completar activitats.</span>
       </a>
     </main>
 

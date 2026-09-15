@@ -4,37 +4,46 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Tauler d'alumnat — EduTicTac Commons</title>
+    <script src="/i18n.js"></script>
     <link rel="stylesheet" href="/styles.css">
   </head>
   <body>
     <header class="topbar">
       <div>
         <p class="eyebrow">EduTicTac Commons</p>
-        <h1>Tauler d'alumnat</h1>
+        <h1 data-i18n="student.title">Tauler d'alumnat</h1>
       </div>
-      <nav class="topnav" aria-label="Navegació principal">
-        <a href="/">Inici</a>
+      <nav class="topnav" aria-label="Navegació principal" data-i18n-title="common.nav.label">
+        <a href="/" data-i18n="common.home">Inici</a>
       </nav>
-      <span id="apiStatus" class="status">Comprovant API...</span>
+      <div class="topbar-actions">
+        <span id="apiStatus" class="status">Comprovant API...</span>
+        <div class="lang-switcher" role="group" aria-label="Idioma" data-i18n-title="common.lang.label">
+          <button type="button" data-lang="es" title="Español">ES</button>
+          <button type="button" data-lang="ca" title="Català">CA</button>
+          <button type="button" data-lang="va" title="Valencià">VA</button>
+          <button type="button" data-lang="en" title="English">EN</button>
+        </div>
+      </div>
     </header>
 
     <main class="single-layout">
       <section class="role-area student-area" aria-labelledby="studentTitle">
         <div class="role-heading">
-          <p class="eyebrow">Alumnat</p>
-          <h2 id="studentTitle">Recorregut i activitat</h2>
+          <p class="eyebrow" data-i18n="common.students">Alumnat</p>
+          <h2 id="studentTitle" data-i18n="student.subtitle">Recorregut i activitat</h2>
         </div>
 
         <div class="panel">
           <div id="studentLoginPanel">
             <div class="panel-heading">
-              <p class="eyebrow">Accés</p>
-              <h3>Entrar amb codi + PIN</h3>
+              <p class="eyebrow" data-i18n="student.access">Accés</p>
+              <h3 data-i18n="student.loginTitle">Entrar amb codi + PIN</h3>
             </div>
 
             <div class="grid-fields">
               <label>
-                Codi públic
+                <span data-i18n="student.codeLabel">Codi públic</span>
                 <input id="studentCode" type="text" maxlength="3" placeholder="K7P">
               </label>
               <label>
@@ -44,12 +53,12 @@
             </div>
 
             <div class="actions">
-              <button id="studentLogin" type="button">Entrar com a alumne</button>
+              <button id="studentLogin" type="button" data-i18n="student.login">Entrar com a alumne</button>
             </div>
           </div>
 
           <div id="studentSessionActions" class="actions hidden">
-            <button id="studentLogout" type="button" class="secondary">Sortir</button>
+            <button id="studentLogout" type="button" class="secondary" data-i18n="student.logout">Sortir</button>
           </div>
 
           <div id="studentOutput" class="output empty">Usa una credencial generada pel docent.</div>

@@ -6,6 +6,8 @@ const statusOutput = document.getElementById("statusOutput");
 const actionOutput = document.getElementById("actionOutput");
 const restoreBackupSelect = document.getElementById("restoreBackupSelect");
 
+const t = window.i18nAdmin.t;
+
 localStorage.removeItem(TOKEN_KEY);
 
 function getToken() {
@@ -35,14 +37,14 @@ async function apiFetch(path, options) {
   });
   const resp = await fetch(path, Object.assign({}, options, { headers }));
   if (resp.status === 401) {
-    apiStatus.textContent = "Token invàlid";
-    throw new Error("no autoritzat");
+    apiStatus.textContent = t("status.invalidToken");
+    throw new Error(t("errors.unauthorized"));
   }
   return resp;
 }
 
 function fmtService(name, info) {
-  const state = info.reachable ? "OK" : "NO respon";
+  const state = info.reachable ? "OK" : t("status.notResponding");
   return `- ${name}: ${state} (${info.detail})`;
 }
 
@@ -50,7 +52,7 @@ function fmtBackup(b) {
   if (b.error) {
     return `  - ${b.name}: ${b.error}`;
   }
-  const warn = b.warnings && b.warnings.length ? ` | avisos: ${b.warnings.join("; ")}` : "";
+  const warn = b.warnings && b.warnings.length ? ` | ${t("backup.warnings")}: ${b.warnings.join("; ")}` : "";
   return `  - ${b.name} (${b.created_at}, v${b.stack_version})${warn}`;
 }
 
@@ -67,7 +69,7 @@ function populateBackupSelect(backups) {
   if (!usable.length) {
     const option = document.createElement("option");
     option.value = "";
-    option.textContent = "Cap backup disponible";
+    option.textContent = t("backup.noneAvailable");
     restoreBackupSelect.appendChild(option);
     restoreBackupSelect.disabled = true;
     return;
@@ -75,7 +77,7 @@ function populateBackupSelect(backups) {
   usable.forEach((backup) => {
     const option = document.createElement("option");
     option.value = backup.name;
-    option.textContent = `${backup.name} (${backup.created_at || "sense data"})`;
+    option.textContent = `${backup.name} (${backup.created_at || t("backup.noDate")})`;
     restoreBackupSelect.appendChild(option);
   });
   restoreBackupSelect.disabled = false;
@@ -83,45 +85,54 @@ function populateBackupSelect(backups) {
 
 function renderStatus(data) {
   const lines = [];
-  lines.push(`Versió del stack: ${data.stack_version}`);
-  lines.push(`Imatges: registre=${data.image_registry} tag=${data.image_tag} eduhoot=${data.eduhoot_tag}`);
-  lines.push(`Canal d'actualitzacions: ${data.update_channel || "testing"}`);
-  lines.push(`Perfils actius: ${data.active_profiles.length ? data.active_profiles.join(", ") : "cap"}`);
+  lines.push(t("status.stackVersion", { version: data.stack_version }));
+  lines.push(t("status.imagesLine", {
+    registry: data.image_registry,
+    tag: data.image_tag,
+    eduhoot: data.eduhoot_tag,
+  }));
+  lines.push(t("status.updateChannel", { channel: data.update_channel || "testing" }));
+  lines.push(t("status.activeProfiles", {
+    profiles: data.active_profiles.length ? data.active_profiles.join(", ") : t("status.none"),
+  }));
   lines.push("");
-  lines.push("Serveis:");
+  lines.push(t("status.services"));
   Object.entries(data.services).forEach(([name, info]) => {
     lines.push(fmtService(name, info));
   });
   lines.push("");
   if (data.last_backup) {
-    lines.push(`Últim backup: ${data.last_backup.name} (${data.last_backup.created_at})`);
+    lines.push(t("status.lastBackup", {
+      name: data.last_backup.name,
+      date: data.last_backup.created_at,
+    }));
   } else {
-    lines.push("Últim backup: cap");
+    lines.push(t("status.lastBackupNone"));
   }
   if (data.coverage_warnings && data.coverage_warnings.length) {
-    lines.push(`Avisos de cobertura: ${data.coverage_warnings.join("; ")}`);
+    lines.push(t("status.coverageWarnings", { warnings: data.coverage_warnings.join("; ") }));
   }
   lines.push("");
-  lines.push(`Backups disponibles (${data.backups.length}):`);
+  lines.push(t("status.backupsAvailable", { count: data.backups.length }));
   data.backups.forEach((b) => lines.push(fmtBackup(b)));
   lines.push("");
   const timer = data.backup_timer.timer || {};
   const service = data.backup_timer.service || {};
-  lines.push("Timer de backup automàtic:");
-  lines.push(`  UnitFileState: ${fmtSystemdValue(timer, "UnitFileState")}`);
-  lines.push(`  ActiveState (timer): ${fmtSystemdValue(timer, "ActiveState")}`);
-  lines.push(`  Última execució: ${fmtSystemdValue(timer, "LastTriggerUSec")}`);
-  lines.push(`  Pròxima execució: ${fmtSystemdValue(timer, "NextElapseUSecRealtime")}`);
-  lines.push(`  ActiveState (servei): ${fmtSystemdValue(service, "ActiveState")}`);
-  lines.push(`  Resultat última execució: ${fmtSystemdValue(service, "Result")}`);
-  lines.push(`Comprovat: ${data.checked_at}`);
+  lines.push(t("status.backupTimer"));
+  lines.push(`  ${t("status.unitFileState")} ${fmtSystemdValue(timer, "UnitFileState")}`);
+  lines.push(`  ${t("status.activeStateTimer")} ${fmtSystemdValue(timer, "ActiveState")}`);
+  lines.push(`  ${t("status.lastRun")} ${fmtSystemdValue(timer, "LastTriggerUSec")}`);
+  lines.push(`  ${t("status.nextRun")} ${fmtSystemdValue(timer, "NextElapseUSecRealtime")}`);
+  lines.push(`  ${t("status.activeStateService")} ${fmtSystemdValue(service, "ActiveState")}`);
+  lines.push(`  ${t("status.lastRunResult")} ${fmtSystemdValue(service, "Result")}`);
+  lines.push(t("status.checkedAt", { date: data.checked_at }));
   return lines.join("\n");
 }
 
 function renderUpdateStatus(data) {
   const lines = [];
-  lines.push(`Registre: ${data.registry}`);
-  lines.push(`Canal: ${data.channel}`);
+  lines.push(`${t("status.registryLine")} ${data.registry}`);
+  lines.push(`${t("status.channelLine")} ${data.channel}`);
   ["commons", "eduhoot"].forEach((name) => {
     const item = data[name];
     if (!item) return;
@@ -130,9 +141,9 @@ function renderUpdateStatus(data) {
     if (item.error) {
       lines.push(`  ERROR: ${item.error}`);
     } else {
-      lines.push(`  Instal·lada: ${item.current || "-"}`);
-      lines.push(`  Disponible: ${item.candidate || "-"}`);
-      lines.push(`  Actualització: ${item.update_available ? "sí" : "no"}`);
+      lines.push(`  ${t("status.installed")} ${item.current || "-"}`);
+      lines.push(`  ${t("status.available")} ${item.candidate || "-"}`);
+      lines.push(`  ${t("status.updateAvailable")} ${item.update_available ? t("status.yes") : t("status.no")}`);
     }
   });
   return lines.join("\n");
@@ -142,26 +153,26 @@ async function loadStatus() {
   try {
     const resp = await apiFetch("/api/status");
     if (!resp.ok) {
-      setOutput(statusOutput, `Error carregant estat: HTTP ${resp.status}`, true);
+      setOutput(statusOutput, t("status.loadError", { status: resp.status }), true);
       return;
     }
     const data = await resp.json();
-    apiStatus.textContent = "Connectat";
+    apiStatus.textContent = t("status.connected");
     populateBackupSelect(data.backups || []);
     setOutput(statusOutput, renderStatus(data), false);
   } catch (err) {
-    setOutput(statusOutput, `Error: ${err.message}`, true);
+    setOutput(statusOutput, `${t("common.errorLabel")} ${err.message}`, true);
   }
 }
 
 async function checkUpdates() {
-  setOutput(actionOutput, "Comprovant actualitzacions...", false);
+  setOutput(actionOutput, t("images.checking"), false);
   try {
     const resp = await apiFetch("/api/updates");
     const data = await resp.json();
     setOutput(actionOutput, data.output || renderUpdateStatus(data), !resp.ok || data.ok === false);
   } catch (err) {
-    setOutput(actionOutput, `Error: ${err.message}`, true);
+    setOutput(actionOutput, `${t("common.errorLabel")} ${err.message}`, true);
   }
 }
 
@@ -169,19 +180,19 @@ async function runAction(path, confirmMessage) {
   if (!window.confirm(confirmMessage)) {
     return;
   }
-  setOutput(actionOutput, "Executant...", false);
+  setOutput(actionOutput, t("common.executing"), false);
   try {
     const resp = await apiFetch(path, { method: "POST" });
     const data = await resp.json();
     setOutput(actionOutput, data.output || JSON.stringify(data), !data.ok);
     await loadStatus();
   } catch (err) {
-    setOutput(actionOutput, `Error: ${err.message}`, true);
+    setOutput(actionOutput, `${t("common.errorLabel")} ${err.message}`, true);
   }
 }
 
 async function runJsonAction(path, payload) {
-  setOutput(actionOutput, "Executant...", false);
+  setOutput(actionOutput, t("common.executing"), false);
   try {
     const resp = await apiFetch(path, {
       method: "POST",
@@ -192,7 +203,7 @@ async function runJsonAction(path, payload) {
     setOutput(actionOutput, data.output || JSON.stringify(data), !data.ok);
     await loadStatus();
   } catch (err) {
-    setOutput(actionOutput, `Error: ${err.message}`, true);
+    setOutput(actionOutput, `${t("common.errorLabel")} ${err.message}`, true);
   }
 }
 
@@ -205,42 +216,40 @@ document.getElementById("logoutBtn").addEventListener("click", () => {
   setToken("");
   localStorage.removeItem(TOKEN_KEY);
   tokenInput.value = "";
-  apiStatus.textContent = "Desconnectat";
-  setOutput(statusOutput, "Entra amb el token per veure l'estat.", false);
+  apiStatus.textContent = t("status.disconnected");
+  setOutput(statusOutput, t("status.enterToken"), false);
   statusOutput.classList.add("empty");
 });
 
 document.getElementById("refreshBtn").addEventListener("click", loadStatus);
 
 document.getElementById("backupCreateBtn").addEventListener("click", () => {
-  runAction("/api/backup/create", "Crear un backup ara?");
+  runAction("/api/backup/create", t("backup.createConfirm"));
 });
 
 document.getElementById("timerInstallBtn").addEventListener("click", () => {
   runAction(
     "/api/backup-timer/install",
-    "Activar el timer diari de backups automàtics en aquest host?"
+    t("backup.installTimerConfirm"),
   );
 });
 
 document.getElementById("timerUninstallBtn").addEventListener("click", () => {
   runAction(
     "/api/backup-timer/uninstall",
-    "Desactivar el timer de backups automàtics en aquest host?"
+    t("backup.uninstallTimerConfirm"),
   );
 });
 
 document.getElementById("backupRestoreBtn").addEventListener("click", () => {
   const backup = restoreBackupSelect.value;
   if (!backup) {
-    setOutput(actionOutput, "No hi ha cap backup seleccionat.", true);
+    setOutput(actionOutput, t("backup.noneSelected"), true);
     return;
   }
-  const typed = window.prompt(
-    `Aquesta accio parara el stack i restaurara ${backup}. Escriu RESTAURAR per continuar.`
-  );
+  const typed = window.prompt(t("backup.restorePrompt", { backup }));
   if (typed !== "RESTAURAR") {
-    setOutput(actionOutput, "Restauracio cancel·lada.", false);
+    setOutput(actionOutput, t("backup.restoreCancelled"), false);
     return;
   }
   runJsonAction("/api/backup/restore", { backup });
@@ -249,15 +258,19 @@ document.getElementById("backupRestoreBtn").addEventListener("click", () => {
 document.getElementById("imagesCheckBtn").addEventListener("click", checkUpdates);
 
 document.getElementById("imagesUpdateBtn").addEventListener("click", () => {
-  const typed = window.prompt(
-    "Aquesta accio buscara el tag mes recent del canal, creara un backup, descarregara imatges i reiniciara el stack. Escriu ACTUALITZAR per continuar."
-  );
+  const typed = window.prompt(t("images.updatePrompt"));
   if (typed !== "ACTUALITZAR") {
-    setOutput(actionOutput, "Actualitzacio cancel·lada.", false);
+    setOutput(actionOutput, t("images.updateCancelled"), false);
     return;
   }
   runJsonAction("/api/images/update", {});
 });
+
+apiStatus.textContent = t("status.checking");
+setOutput(statusOutput, t("status.enterToken"), false);
+statusOutput.classList.add("empty");
+setOutput(actionOutput, t("common.actionPlaceholder"), false);
+actionOutput.classList.add("empty");
 
 const savedToken = getToken();
 if (savedToken) {

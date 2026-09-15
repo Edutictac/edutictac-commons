@@ -20,6 +20,7 @@ const state = {
 
 const $ = (id) => document.getElementById(id);
 const has = (id) => Boolean($(id));
+const t = window.i18nPortal.t;
 
 function saveState() {
   localStorage.setItem(
@@ -107,7 +108,7 @@ function credentialCards(identities) {
             <button class="credential" type="button" data-code="${escapeHtml(item.public_code)}" data-pin="${escapeHtml(item.pin)}">
               <strong>${escapeHtml(item.public_code)}</strong>
               <span>PIN ${escapeHtml(item.pin)}</span>
-              <small>Usar en alumnat</small>
+              <small>${t("common.useAsStudent")}</small>
             </button>
           `,
         )
@@ -121,27 +122,27 @@ function groupLinks(group) {
     ? `/api/teacher/stats.csv?group_id=${encodeURIComponent(group.id)}`
     : "/api/teacher/stats.csv";
   return `
-    <div class="export-actions" aria-label="Exportacions docents">
+    <div class="export-actions" aria-label="${t("teacher.exports")}">
       ${
         group
           ? `
-            <a class="button-link" href="/api/groups/${encodeURIComponent(group.id)}/cards" target="_blank" rel="noopener">Targetes</a>
-            <a class="button-link secondary" href="/api/groups/${encodeURIComponent(group.id)}/csv" target="_blank" rel="noopener">CSV codis</a>
+            <a class="button-link" href="/api/groups/${encodeURIComponent(group.id)}/cards" target="_blank" rel="noopener">${t("teacher.cards")}</a>
+            <a class="button-link secondary" href="/api/groups/${encodeURIComponent(group.id)}/csv" target="_blank" rel="noopener">${t("teacher.csvCodes")}</a>
           `
           : ""
       }
-      <a class="button-link secondary" href="${statsHref}" target="_blank" rel="noopener">Estadístiques CSV</a>
+      <a class="button-link secondary" href="${statsHref}" target="_blank" rel="noopener">${t("teacher.csvStats")}</a>
     </div>
   `;
 }
 
 function selectedTeacherContext() {
   const groupText = state.group
-    ? `Grup seleccionat: <strong>${escapeHtml(state.group.group_code || state.group.name)}</strong>`
-    : "Cap grup seleccionat.";
+    ? `${t("teacher.groupSelected")} <strong>${escapeHtml(state.group.group_code || state.group.name)}</strong>`
+    : t("teacher.noGroupSelected");
   const assignmentText = state.assignment
-    ? `Activitat seleccionada: <strong>${escapeHtml(state.assignment.title || state.assignment.activity_id)}</strong>`
-    : "Cap activitat seleccionada.";
+    ? `${t("teacher.activitySelected")} <strong>${escapeHtml(state.assignment.title || state.assignment.activity_id)}</strong>`
+    : t("teacher.noActivitySelected");
   return `
     <div class="teacher-context">
       <p>${groupText}</p>
@@ -153,7 +154,7 @@ function selectedTeacherContext() {
 
 function table(rows, columns) {
   if (!rows.length) {
-    return "<p>Sense dades encara.</p>";
+    return `<p>${t("common.tableEmpty")}</p>`;
   }
   return `
     <table>
@@ -184,22 +185,22 @@ function teacherDashboard(summary, assignments) {
     ? state.identities.filter((identity) => identity.group_id === state.group.id)
     : state.identities;
   return `
-    <p><strong>${summary.active}</strong> identitats actives de ${summary.total} totals.</p>
+    <p><strong>${escapeHtml(summary.active)}</strong> ${t("teacher.activeOfTotal", { total: escapeHtml(summary.total) })}</p>
     ${selectedTeacherContext()}
-    <h3>Grups</h3>
+    <h3>${t("teacher.groups")}</h3>
     ${table(
       groups.map((group) => ({
         ...group,
-        action: `<button class="compact secondary" type="button" data-select-group="${escapeHtml(group.id)}">Seleccionar</button>`,
+        action: `<button class="compact secondary" type="button" data-select-group="${escapeHtml(group.id)}">${t("common.select")}</button>`,
       })),
       [
-        { key: "name", label: "Grup opac" },
-        { key: "tenant_id", label: "Tenant" },
-        { key: "active", label: "Actives" },
+        { key: "name", label: t("teacher.groupOpaque") },
+        { key: "tenant_id", label: t("teacher.tenant") },
+        { key: "active", label: t("teacher.active") },
         { key: "action", label: "", html: true },
       ],
     )}
-    <h3>Credencials actives${state.group ? "" : " recents"}</h3>
+    <h3>${state.group ? t("teacher.activeCredentials") : t("teacher.recentCredentials")}</h3>
     ${table(
       selectedIdentities.map((identity) => ({
         ...identity,
@@ -207,29 +208,29 @@ function teacherDashboard(summary, assignments) {
         pin_rotated_at: identity.pin_rotated_at || "",
         action: `
           <div class="inline-actions">
-            <button class="compact secondary" type="button" data-regenerate-pin="${escapeHtml(identity.id)}">Regenerar PIN</button>
-            <button class="compact danger" type="button" data-revoke-identity="${escapeHtml(identity.id)}">Revocar</button>
+            <button class="compact secondary" type="button" data-regenerate-pin="${escapeHtml(identity.id)}">${t("teacher.regeneratePin")}</button>
+            <button class="compact danger" type="button" data-revoke-identity="${escapeHtml(identity.id)}">${t("teacher.revoke")}</button>
           </div>
         `,
       })),
       [
-        { key: "public_code", label: "Codi" },
-        { key: "group_name", label: "Grup" },
-        { key: "pin_rotated_at", label: "PIN actualitzat" },
+        { key: "public_code", label: t("common.code") },
+        { key: "group_name", label: t("common.group") },
+        { key: "pin_rotated_at", label: t("teacher.pinUpdated") },
         { key: "action", label: "", html: true },
       ],
     )}
-    <h3>Assignacions</h3>
+    <h3>${t("teacher.assignments")}</h3>
     ${table(
       assignments.map((assignment) => ({
         ...assignment,
         group_name: groupNames.get(assignment.group_id) || assignment.group_id,
-        action: `<button class="compact secondary" type="button" data-select-assignment="${escapeHtml(assignment.id)}">Seleccionar</button>`,
+        action: `<button class="compact secondary" type="button" data-select-assignment="${escapeHtml(assignment.id)}">${t("common.select")}</button>`,
       })),
       [
-        { key: "title", label: "Títol" },
-        { key: "group_name", label: "Grup" },
-        { key: "activity_id", label: "Activitat" },
+        { key: "title", label: t("common.title") },
+        { key: "group_name", label: t("common.group") },
+        { key: "activity_id", label: t("common.activity") },
         { key: "action", label: "", html: true },
       ],
     )}
@@ -242,21 +243,21 @@ function studentDashboard(assignments) {
   const rows = assignments.map((assignment) => ({
     ...assignment,
     title: assignment.title || assignment.activity_id,
-    status: assignment.completed ? "Feta" : "Pendent",
+    status: assignment.completed ? t("student.done") : t("student.pending"),
     best_score: assignment.best_score ?? "",
     last_score_at: assignment.last_score_at || "",
     action:
       assignment.app_id === EDUHOOT_APP
-        ? `<button class="compact secondary" type="button" data-launch-eduhoot-assignment="${escapeHtml(assignment.id)}">Obrir EduHoot</button>`
+        ? `<button class="compact secondary" type="button" data-launch-eduhoot-assignment="${escapeHtml(assignment.id)}">${t("student.openEduhoot")}</button>`
         : "",
   }));
   return `
-    <p>Recorregut: <strong>${completed}/${total}</strong> activitats completades.</p>
+    <p>${t("student.progressLabel")} <strong>${completed}/${total}</strong> ${t("student.progressCompleted")}</p>
     ${table(rows, [
-      { key: "title", label: "Activitat" },
-      { key: "status", label: "Estat" },
-      { key: "best_score", label: "Millor puntuació" },
-      { key: "last_score_at", label: "Última vegada" },
+      { key: "title", label: t("common.activity") },
+      { key: "status", label: t("common.status") },
+      { key: "best_score", label: t("common.bestScore") },
+      { key: "last_score_at", label: t("common.lastScoreAt") },
       { key: "action", label: "", html: true },
     ])}
   `;
@@ -265,22 +266,22 @@ function studentDashboard(assignments) {
 function studentProfileCard(message = "") {
   const selected = state.student && state.student.avatar_icon ? state.student.avatar_icon : "";
   return `
-    <section class="student-profile" aria-label="Perfil pseudònim">
+    <section class="student-profile" aria-label="${t("student.profileAria")}">
       <div class="student-profile__summary">
         <span class="student-profile__icon" aria-hidden="true">${escapeHtml(selected || "🙂")}</span>
         <div>
-          <p>Hola, <strong>${escapeHtml(state.student.public_code)}</strong>.</p>
-          <p class="muted">Tria una icona per reconèixer-te millor en les activitats.</p>
+          <p>${t("student.hello")} <strong>${escapeHtml(state.student.public_code)}</strong>.</p>
+          <p class="muted">${t("student.iconHint")}</p>
         </div>
       </div>
-      <div class="student-icon-picker" role="group" aria-label="Icona de l'alumne">
+      <div class="student-icon-picker" role="group" aria-label="${t("student.iconPickerAria")}">
         ${STUDENT_ICONS.map((icon) => `
           <button
             class="student-icon${icon === selected ? " selected" : ""}"
             type="button"
             data-student-icon="${escapeHtml(icon)}"
             aria-pressed="${icon === selected ? "true" : "false"}"
-            title="Triar ${escapeHtml(icon)}"
+            title="${t("student.chooseIcon")} ${escapeHtml(icon)}"
           >${escapeHtml(icon)}</button>
         `).join("")}
       </div>
@@ -290,12 +291,13 @@ function studentProfileCard(message = "") {
 }
 
 async function checkHealth() {
+  $("apiStatus").textContent = t("common.apiStatus.checking");
   try {
     await api("/api/health", { method: "GET" });
-    $("apiStatus").textContent = "API activa";
+    $("apiStatus").textContent = t("common.apiStatus.ok");
     $("apiStatus").classList.remove("error");
   } catch (error) {
-    $("apiStatus").textContent = "API no disponible";
+    $("apiStatus").textContent = t("common.apiStatus.error");
     $("apiStatus").classList.add("error");
   }
 }
@@ -329,8 +331,8 @@ async function teacherLogout() {
   state.assignment = null;
   state.assignments = [];
   saveState();
-  setEmpty($("teacherOutput"), "Sessió docent tancada. Entra de nou per generar credencials.");
-  setEmpty($("resultsOutput"), "Els resultats apareixeran ací.");
+  setEmpty($("teacherOutput"), t("teacher.logoutMessage"));
+  setEmpty($("resultsOutput"), t("teacher.resultsPlaceholder"));
 }
 
 async function teacherSummary() {
@@ -339,11 +341,11 @@ async function teacherSummary() {
   setOutput(
     $("teacherOutput"),
     `
-      <p><strong>${summary.active}</strong> identitats actives de ${summary.total} totals.</p>
+      <p><strong>${escapeHtml(summary.active)}</strong> ${t("teacher.activeOfTotal", { total: escapeHtml(summary.total) })}</p>
       ${table(summary.groups, [
-        { key: "name", label: "Grup opac" },
-        { key: "tenant_id", label: "Tenant" },
-        { key: "active", label: "Actives" },
+        { key: "name", label: t("teacher.groupOpaque") },
+        { key: "tenant_id", label: t("teacher.tenant") },
+        { key: "active", label: t("teacher.active") },
       ])}
     `,
   );
@@ -373,7 +375,7 @@ async function loadTeacherData() {
 
 async function refreshDashboard() {
   if (!state.teacher) {
-    throw new Error("Entra primer com a docent.");
+    throw new Error(t("teacher.errors.loginFirst"));
   }
   const [summary] = await loadTeacherData();
   setOutput($("teacherOutput"), teacherDashboard(summary, state.assignments));
@@ -381,7 +383,7 @@ async function refreshDashboard() {
 
 async function createBatch() {
   if (!state.teacher) {
-    throw new Error("Entra primer com a docent.");
+    throw new Error(t("teacher.errors.loginFirst"));
   }
   const tenantId = $("tenantId").value.trim() || "centre";
   const count = Number($("identityCount").value || 6);
@@ -397,8 +399,8 @@ async function createBatch() {
   setOutput(
     $("teacherOutput"),
     `
-      <p>Grup generat: <strong>${escapeHtml(batch.group.group_code)}</strong></p>
-      <p>Tria una targeta d'ací baix per omplir l'accés de l'alumne. Els PINs només es mostren en aquest moment; el CSV no els inclou.</p>
+      <p>${t("teacher.groupCreated")} <strong>${escapeHtml(batch.group.group_code)}</strong></p>
+      <p>${t("teacher.pickCardHint")}</p>
       ${groupLinks(batch.group)}
       ${credentialCards(batch.identities)}
     `,
@@ -407,14 +409,14 @@ async function createBatch() {
 
 async function createEduhootAssignment() {
   if (!state.teacher) {
-    throw new Error("Entra primer com a docent.");
+    throw new Error(t("teacher.errors.loginFirst"));
   }
   if (!state.group) {
-    throw new Error("Selecciona o genera primer un grup.");
+    throw new Error(t("teacher.errors.selectGroupFirst"));
   }
   const activityId = $("eduhootActivityId").value.trim();
   if (!activityId) {
-    throw new Error("Indica l'ID de l'activitat EduHoot.");
+    throw new Error(t("teacher.errors.enterEduhootId"));
   }
   const title = $("eduhootActivityTitle").value.trim() || `EduHoot ${activityId}`;
   const created = await api("/api/teacher/activity-assignments", {
@@ -431,13 +433,13 @@ async function createEduhootAssignment() {
   saveState();
   setOutput(
     $("resultsOutput"),
-    `<p>EduHoot assignat al grup <strong>${escapeHtml(state.group.group_code)}</strong>: <strong>${escapeHtml(title)}</strong>.</p>`,
+    `<p>${t("teacher.eduhootAssigned")} <strong>${escapeHtml(state.group.group_code)}</strong>: <strong>${escapeHtml(title)}</strong>.</p>`,
   );
 }
 
 async function regeneratePin(identityId) {
   if (!state.teacher) {
-    throw new Error("Entra primer com a docent.");
+    throw new Error(t("teacher.errors.loginFirst"));
   }
   const identity = state.identities.find((item) => item.id === identityId);
   const regenerated = await api(`/api/identities/${encodeURIComponent(identityId)}/regenerate-pin`, {
@@ -447,8 +449,8 @@ async function regeneratePin(identityId) {
   setOutput(
     $("teacherOutput"),
     `
-      <p>PIN regenerat per al codi <strong>${escapeHtml(identity ? identity.public_code : regenerated.id)}</strong>.</p>
-      <p class="pin-notice">Nou PIN: <strong>${escapeHtml(regenerated.pin)}</strong>. Guarda'l ara; no es tornarà a mostrar.</p>
+      <p>${t("teacher.pinRegenerated")} <strong>${escapeHtml(identity ? identity.public_code : regenerated.id)}</strong>.</p>
+      <p class="pin-notice">${t("teacher.newPin")} <strong>${escapeHtml(regenerated.pin)}</strong>. ${t("teacher.pinStoreHint")}</p>
       ${teacherDashboard(summary, assignmentData.assignments || [], identityData.identities || [])}
     `,
   );
@@ -456,18 +458,18 @@ async function regeneratePin(identityId) {
 
 async function revokeIdentity(identityId) {
   if (!state.teacher) {
-    throw new Error("Entra primer com a docent.");
+    throw new Error(t("teacher.errors.loginFirst"));
   }
   const identity = state.identities.find((item) => item.id === identityId);
   const label = identity ? identity.public_code : identityId;
-  if (!window.confirm(`Vols revocar la credencial ${label}? Les sessions obertes quedaran tancades.`)) {
+  if (!window.confirm(t("teacher.confirmRevoke", { label }))) {
     return;
   }
   await api(`/api/identities/${encodeURIComponent(identityId)}/revoke`, { method: "POST" });
   const [summary, assignmentData, identityData] = await loadTeacherData();
   setOutput(
     $("teacherOutput"),
-    `<p>Credencial <strong>${escapeHtml(label)}</strong> revocada.</p>${teacherDashboard(summary, assignmentData.assignments || [], identityData.identities || [])}`,
+    `<p>${t("teacher.revoked", { label: escapeHtml(label) })}</p>${teacherDashboard(summary, assignmentData.assignments || [], identityData.identities || [])}`,
   );
 }
 
@@ -490,7 +492,7 @@ async function studentLogout() {
   setStudentSession(false);
   setOutput(
     $("studentOutput"),
-    `<p>Sessió tancada. Entra de nou amb el teu codi + PIN quan vulgues continuar.</p>`,
+    `<p>${t("student.logoutMessage")}</p>`,
   );
 }
 
@@ -506,14 +508,14 @@ async function refreshStudentSession() {
     setStudentSession(false);
     setOutput(
       $("studentOutput"),
-      `<p>Entra amb el teu codi + PIN per veure el teu itinerari individual.</p>`,
+      `<p>${t("student.loginPrompt")}</p>`,
     );
   }
 }
 
 async function loadStudentDashboard(message = "") {
   if (!state.student) {
-    throw new Error("Entra primer com a alumne.");
+    throw new Error(t("student.errors.loginFirst"));
   }
   const data = await api("/api/student/dashboard", { method: "GET" });
   state.student = data.identity;
@@ -529,19 +531,19 @@ async function loadStudentDashboard(message = "") {
 
 async function updateStudentIcon(icon) {
   if (!state.student) {
-    throw new Error("Entra primer com a alumne.");
+    throw new Error(t("student.errors.loginFirst"));
   }
   const data = await api("/api/student/profile", {
     method: "PATCH",
     body: JSON.stringify({ avatar_icon: icon }),
   });
   state.student = data.identity;
-  await loadStudentDashboard("Icona guardada.");
+  await loadStudentDashboard(t("student.iconSaved"));
 }
 
 async function launchEduhootAssignment(assignment) {
   if (!state.student) {
-    throw new Error("Entra primer com a alumne.");
+    throw new Error(t("student.errors.loginFirst"));
   }
   const launch = await api("/api/student/launch-token", {
     method: "POST",
@@ -555,23 +557,23 @@ async function launchEduhootAssignment(assignment) {
 
 async function loadResults() {
   if (!state.assignment) {
-    throw new Error("Selecciona o assigna primer una activitat.");
+    throw new Error(t("teacher.errors.selectActivityFirst"));
   }
   const data = await api(`/api/teacher/activity-assignments/${state.assignment.id}/results`, { method: "GET" });
   setOutput(
     $("resultsOutput"),
     table(data.results, [
-      { key: "public_code", label: "Codi" },
-      { key: "attempts", label: "Intents" },
-      { key: "best_score", label: "Millor puntuació" },
-      { key: "last_score_at", label: "Última vegada" },
+      { key: "public_code", label: t("common.code") },
+      { key: "attempts", label: t("common.attempts") },
+      { key: "best_score", label: t("common.bestScore") },
+      { key: "last_score_at", label: t("common.lastScoreAt") },
     ]),
   );
 }
 
 async function loadRanking() {
   if (!state.assignment) {
-    throw new Error("Selecciona o assigna primer una activitat.");
+    throw new Error(t("teacher.errors.selectActivityFirst"));
   }
   const appId = state.assignment.app_id;
   const activityId = state.assignment.activity_id;
@@ -579,9 +581,9 @@ async function loadRanking() {
   setOutput(
     $("resultsOutput"),
     table(ranking, [
-      { key: "public_code", label: "Codi" },
-      { key: "score", label: "Puntuació" },
-      { key: "ts", label: "Data" },
+      { key: "public_code", label: t("common.code") },
+      { key: "score", label: t("common.score") },
+      { key: "ts", label: t("common.date") },
     ]),
   );
 }
@@ -595,7 +597,7 @@ function bind(id, fn, outputId = "resultsOutput") {
     } catch (error) {
       const output = $(outputId);
       if (output) {
-        setOutput(output, `<p><strong>Error:</strong> ${escapeHtml(error.message)}</p>`);
+        setOutput(output, `<p><strong>${t("common.errorLabel")}</strong> ${escapeHtml(error.message)}</p>`);
       }
     }
   });
@@ -607,7 +609,7 @@ document.addEventListener("click", (event) => {
     if (has("studentCode") && has("studentPin") && has("studentOutput")) {
       $("studentCode").value = card.dataset.code;
       $("studentPin").value = card.dataset.pin;
-      setOutput($("studentOutput"), `<p>Credencial carregada. Ja pots entrar com a alumne.</p>`);
+      setOutput($("studentOutput"), `<p>${t("common.credentialLoaded")}</p>`);
     }
     return;
   }
@@ -621,7 +623,7 @@ document.addEventListener("click", (event) => {
     saveState();
     refreshDashboard().catch((error) => {
       if (has("teacherOutput")) {
-        setOutput($("teacherOutput"), `<p><strong>Error:</strong> ${escapeHtml(error.message)}</p>`);
+        setOutput($("teacherOutput"), `<p><strong>${t("common.errorLabel")}</strong> ${escapeHtml(error.message)}</p>`);
       }
     });
     return;
@@ -640,7 +642,7 @@ document.addEventListener("click", (event) => {
     if (has("resultsOutput")) {
       setOutput(
         $("resultsOutput"),
-        `<p>Activitat seleccionada: <strong>${escapeHtml(assignment.title || assignment.activity_id)}</strong>.</p>`,
+        `<p>${t("teacher.activitySelected")} <strong>${escapeHtml(assignment.title || assignment.activity_id)}</strong>.</p>`,
       );
     }
     return;
@@ -650,7 +652,7 @@ document.addEventListener("click", (event) => {
   if (pinButton) {
     regeneratePin(pinButton.dataset.regeneratePin).catch((error) => {
       if (has("teacherOutput")) {
-        setOutput($("teacherOutput"), `<p><strong>Error:</strong> ${escapeHtml(error.message)}</p>`);
+        setOutput($("teacherOutput"), `<p><strong>${t("common.errorLabel")}</strong> ${escapeHtml(error.message)}</p>`);
       }
     });
     return;
@@ -660,7 +662,7 @@ document.addEventListener("click", (event) => {
   if (revokeButton) {
     revokeIdentity(revokeButton.dataset.revokeIdentity).catch((error) => {
       if (has("teacherOutput")) {
-        setOutput($("teacherOutput"), `<p><strong>Error:</strong> ${escapeHtml(error.message)}</p>`);
+        setOutput($("teacherOutput"), `<p><strong>${t("common.errorLabel")}</strong> ${escapeHtml(error.message)}</p>`);
       }
     });
     return;
@@ -669,7 +671,7 @@ document.addEventListener("click", (event) => {
   const iconButton = event.target.closest("[data-student-icon]");
   if (iconButton) {
     updateStudentIcon(iconButton.dataset.studentIcon).catch((error) => {
-      setOutput($("studentOutput"), `<p><strong>Error:</strong> ${escapeHtml(error.message)}</p>${studentProfileCard()}${studentDashboard(state.studentAssignments)}`);
+      setOutput($("studentOutput"), `<p><strong>${t("common.errorLabel")}</strong> ${escapeHtml(error.message)}</p>${studentProfileCard()}${studentDashboard(state.studentAssignments)}`);
     });
   }
 
@@ -678,7 +680,7 @@ document.addEventListener("click", (event) => {
     const assignment = state.studentAssignments.find((item) => item.id === eduhootLaunchButton.dataset.launchEduhootAssignment);
     if (!assignment) return;
     launchEduhootAssignment(assignment).catch((error) => {
-      setOutput($("studentOutput"), `<p><strong>Error:</strong> ${escapeHtml(error.message)}</p>${studentDashboard(state.studentAssignments)}`);
+      setOutput($("studentOutput"), `<p><strong>${t("common.errorLabel")}</strong> ${escapeHtml(error.message)}</p>${studentDashboard(state.studentAssignments)}`);
     });
   }
 });
@@ -698,17 +700,25 @@ restoreState();
 if (has("teacherLogin")) {
   setTeacherSession(false);
 }
-if (state.group && has("teacherOutput")) {
-  setOutput(
-    $("teacherOutput"),
-    `<p>Grup recuperat: <strong>${escapeHtml(state.group.group_code)}</strong>. Entra com a docent per obrir targetes, CSV o consultar resultats.</p>${groupLinks(state.group)}`,
-  );
+if (has("teacherOutput")) {
+  if (state.group) {
+    setOutput(
+      $("teacherOutput"),
+      `<p>${t("teacher.groupRestored")} <strong>${escapeHtml(state.group.group_code)}</strong>. ${t("teacher.groupRestoredHint")}</p>${groupLinks(state.group)}`,
+    );
+  } else {
+    setEmpty($("teacherOutput"), t("teacher.emptyCredentials"));
+  }
 }
-if (state.assignment && has("resultsOutput")) {
-  setOutput(
-    $("resultsOutput"),
-    `<p>Activitat recuperada: <strong>${escapeHtml(state.assignment.title || state.assignment.activity_id)}</strong>.</p>`,
-  );
+if (has("resultsOutput")) {
+  if (state.assignment) {
+    setOutput(
+      $("resultsOutput"),
+      `<p>${t("teacher.activityRestored")} <strong>${escapeHtml(state.assignment.title || state.assignment.activity_id)}</strong>.</p>`,
+    );
+  } else {
+    setEmpty($("resultsOutput"), t("teacher.resultsPlaceholder"));
+  }
 }
 
 refreshStudentSession().catch(() => {});
