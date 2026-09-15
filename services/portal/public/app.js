@@ -61,6 +61,17 @@ function setTeacherSession(active) {
   });
 }
 
+function setStudentSession(active) {
+  const loginPanel = $("studentLoginPanel");
+  const sessionActions = $("studentSessionActions");
+  if (loginPanel) {
+    loginPanel.classList.toggle("hidden", active);
+  }
+  if (sessionActions) {
+    sessionActions.classList.toggle("hidden", !active);
+  }
+}
+
 async function api(path, options = {}) {
   const response = await fetch(path, {
     credentials: "include",
@@ -468,6 +479,7 @@ async function studentLogin() {
     body: JSON.stringify({ public_code: publicCode, pin }),
   });
   state.student = login.identity;
+  setStudentSession(true);
   await loadStudentDashboard();
 }
 
@@ -475,6 +487,7 @@ async function studentLogout() {
   await api("/api/auth/logout", { method: "POST" });
   state.student = null;
   state.studentAssignments = [];
+  setStudentSession(false);
   setOutput(
     $("studentOutput"),
     `<p>Sessió tancada. Entra de nou amb el teu codi + PIN quan vulgues continuar.</p>`,
@@ -486,9 +499,11 @@ async function refreshStudentSession() {
   try {
     const data = await api("/api/auth/me", { method: "GET" });
     state.student = data.identity;
+    setStudentSession(true);
     await loadStudentDashboard();
   } catch (error) {
     state.student = null;
+    setStudentSession(false);
     setOutput(
       $("studentOutput"),
       `<p>Entra amb el teu codi + PIN per veure el teu itinerari individual.</p>`,

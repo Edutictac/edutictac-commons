@@ -165,6 +165,10 @@ h3 {
   border-bottom-color: #5b6fbd;
 }
 
+.hidden {
+  display: none !important;
+}
+
 .panel {
   border: 1px solid var(--line);
   border-radius: 8px;

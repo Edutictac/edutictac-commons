@@ -26,24 +26,29 @@
         </div>
 
         <div class="panel">
-          <div class="panel-heading">
-            <p class="eyebrow">Accés</p>
-            <h3>Entrar amb codi + PIN</h3>
+          <div id="studentLoginPanel">
+            <div class="panel-heading">
+              <p class="eyebrow">Accés</p>
+              <h3>Entrar amb codi + PIN</h3>
+            </div>
+
+            <div class="grid-fields">
+              <label>
+                Codi públic
+                <input id="studentCode" type="text" maxlength="3" placeholder="K7P">
+              </label>
+              <label>
+                PIN
+                <input id="studentPin" type="text" inputmode="numeric" maxlength="6" placeholder="1234">
+              </label>
+            </div>
+
+            <div class="actions">
+              <button id="studentLogin" type="button">Entrar com a alumne</button>
+            </div>
           </div>
 
-          <div class="grid-fields">
-            <label>
-              Codi públic
-              <input id="studentCode" type="text" maxlength="3" placeholder="K7P">
-            </label>
-            <label>
-              PIN
-              <input id="studentPin" type="text" inputmode="numeric" maxlength="6" placeholder="1234">
-            </label>
-          </div>
-
-          <div class="actions">
-            <button id="studentLogin" type="button">Entrar com a alumne</button>
+          <div id="studentSessionActions" class="actions hidden">
             <button id="studentLogout" type="button" class="secondary">Sortir</button>
           </div>
 
