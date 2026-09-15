@@ -153,12 +153,12 @@ l'alumnat pot completar-la amb la mateixa identitat pseudònima.
 
 **Resultat:** un centre pot entendre què dades guarda el stack i què no guarda.
 
-- [ ] Crear `docs/PRIVACITAT.md` amb explicació clara de codi + PIN,
+- [x] Crear `docs/PRIVACITAT.md` amb explicació clara de codi + PIN,
   pseudonimització i límits.
-- [ ] Crear fitxa docent imprimible.
-- [ ] Crear informació breu per a famílies.
-- [ ] Crear fitxa tècnica per a direcció/DPD.
-- [ ] Revisar que cap document prometa anonimat absolut.
+- [x] Crear fitxa docent imprimible.
+- [x] Crear informació breu per a famílies.
+- [x] Crear fitxa tècnica per a direcció/DPD.
+- [x] Revisar que cap document prometa anonimat absolut.
 
 ### Fita 6 — Distribució
 

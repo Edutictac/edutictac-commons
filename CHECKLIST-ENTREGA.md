@@ -50,5 +50,6 @@ La comprovació revisa requisits locals, sintaxi bàsica del portal, artefactes 
   `EDUHOOT_ID_AUTH_REQUIRED=0` permet nom curt o codi + PIN Commons;
   `EDUHOOT_ID_AUTH_REQUIRED=1` força codi + PIN Commons.
 - No uses dades reals d'alumnat en captures o vídeos.
-- Revisa `FITXA-PRIVACITAT-PROTOTIP.md` abans d'una prova amb professorat real.
+- Revisa `docs/PRIVACITAT.md` i completa `docs/DIRECCIO-DPD.md` abans d'una
+  prova amb professorat real.
 - Si publiques imatges, comprova que has actualitzat `VERSION`, `IMAGE_TAG` i la documentació.

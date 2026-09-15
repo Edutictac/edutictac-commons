@@ -96,6 +96,14 @@ Abans d'esborrar dades locals, fes una còpia si vols conservar la demo:
 make backup
 ```
 
+## Privacitat
+
+Documentació de privacitat del stack: `docs/PRIVACITAT.md` (explicació de
+codi + PIN i límits), `docs/FITXA-DOCENT.md` (fitxa docent imprimible),
+`docs/FAMILIES.md` (informació per a famílies) i `docs/DIRECCIO-DPD.md`
+(fitxa tècnica per a direcció/DPD). Revisa-les abans d'usar el stack amb
+professorat o alumnat real.
+
 ## Operació local
 
 ```bash

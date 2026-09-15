@@ -65,7 +65,8 @@ EDUTICTAC_ADMIN_TOKEN=canvia-aquest-token-admin
 No uses els valors `change-this-local-secret`, `dev-teacher`,
 `dev-app-token` ni `change-this-admin-token` fora d'una demo local.
 
-Abans d'usar el prototip amb professorat o alumnat real, revisa `../FITXA-PRIVACITAT-PROTOTIP.md`.
+Abans d'usar el prototip amb professorat o alumnat real, revisa
+`docs/PRIVACITAT.md` i completa `docs/DIRECCIO-DPD.md`.
 
 ## Operació habitual
 
