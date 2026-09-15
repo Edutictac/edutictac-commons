@@ -696,6 +696,12 @@ bind("studentLogout", studentLogout, "studentOutput");
 bind("loadResults", loadResults);
 bind("loadRanking", loadRanking);
 
+window.addEventListener("edutictac:langchange", () => {
+  if (has("studentOutput") && !state.student) {
+    setEmpty($("studentOutput"), t("student.loginPrompt"));
+  }
+});
+
 restoreState();
 if (has("teacherLogin")) {
   setTeacherSession(false);

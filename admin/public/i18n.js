@@ -3,7 +3,7 @@
 
   document.documentElement.classList.add("i18n-pending");
 
-  var SUPPORTED_LANGS = ["es", "ca", "va", "en"];
+  var SUPPORTED_LANGS = ["ca", "va", "es", "en"];
   var FALLBACK_LANG = "es";
   var STORAGE_KEY = "edutictac-admin-lang";
 
@@ -337,6 +337,7 @@
     document.documentElement.setAttribute("lang", lang === "va" ? "ca" : lang);
     applyStaticTranslations();
     updateSwitcher();
+    window.dispatchEvent(new CustomEvent("edutictac:langchange", { detail: { lang: lang } }));
   }
 
   document.documentElement.setAttribute("lang", lang === "va" ? "ca" : lang);

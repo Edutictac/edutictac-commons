@@ -3,7 +3,7 @@
 
   document.documentElement.classList.add("i18n-pending");
 
-  var SUPPORTED_LANGS = ["es", "ca", "va", "en"];
+  var SUPPORTED_LANGS = ["ca", "va", "es", "en"];
   var FALLBACK_LANG = "es";
   var STORAGE_KEY = "edutictac-portal-lang";
 
@@ -228,6 +228,7 @@
     },
     va: {
       "common.apiStatus.checking": "Comprovant l'API...",
+      "student.loginPrompt": "Entra amb el teu codi + PIN per vore el teu itinerari individual.",
     },
     en: {
       "common.lang.label": "Language",
@@ -441,6 +442,7 @@
     document.documentElement.setAttribute("lang", lang === "va" ? "ca" : lang);
     applyStaticTranslations();
     updateSwitcher();
+    window.dispatchEvent(new CustomEvent("edutictac:langchange", { detail: { lang: lang } }));
   }
 
   document.documentElement.setAttribute("lang", lang === "va" ? "ca" : lang);
