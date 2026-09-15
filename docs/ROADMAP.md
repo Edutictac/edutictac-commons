@@ -154,8 +154,8 @@ d'activitat que EduHoot sol.
 > mínima, no a l'índex federat complet ni als thumbnails proxy.
 
 - [ ] Desplegar **Authentik (OIDC)** a l'stack com a identitat docent i
-  d'administració — requisit previ per a la cistella i per eliminar els tokens
-  manuals.
+  d'administració — cobreix el tauler del professorat i la cistella de recursos,
+  i elimina els tokens manuals.
 - [ ] Dockeritzar `recursos-api` i el frontend de `recursos` com a mòdul del
   stack (perfil Compose propi, persistència a `data/recursos-*`).
 - [ ] Integrar la identitat docent (Authentik/OIDC) al Banc de recursos perquè
