@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Tauler d'alumnat — EduTicTac Commons</title>
+    <title data-i18n="student.pageTitle">Tauler d'alumnat — EduTicTac Commons</title>
     <script src="/i18n.js"></script>
     <link rel="stylesheet" href="/styles.css">
   </head>
@@ -47,7 +47,7 @@
                 <input id="studentCode" type="text" maxlength="3" placeholder="K7P">
               </label>
               <label>
-                PIN
+                <span data-i18n="student.pinLabel">PIN</span>
                 <input id="studentPin" type="text" inputmode="numeric" maxlength="6" placeholder="1234">
               </label>
             </div>
@@ -58,7 +58,7 @@
           </div>
 
           <div id="studentSessionActions" class="actions hidden">
-            <button id="studentLogout" type="button" class="secondary" data-i18n="student.logout">Sortir</button>
+            <button id="studentLogout" type="button" class="secondary" data-i18n="student.logout">Eixir</button>
           </div>
 
           <div id="studentOutput" class="output empty">Usa una credencial generada pel docent.</div>
