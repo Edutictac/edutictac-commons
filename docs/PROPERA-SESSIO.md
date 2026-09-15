@@ -1,14 +1,26 @@
 # Propera sessió de treball
 
-> Estat: Fita 3 tancada excepte rollback assistit; Fita 4 avançada amb
-> EduHoot integrat, assignacions des del portal i puntuacions enviades a
-> Commons. Pendent principal: prova funcional portal + identitat + EduHoot i
-> kit de privacitat per a centres.
-> Data: 2026-09-14
+> Estat: Fites 4 i 5 tancades en documentació i proves: EduHoot té test
+> funcional reproduïble i el kit mínim de privacitat per a centres està creat.
+> Pendent principal: Fita 6, distribució en entorn net i publicació de paquet.
+> Data: 2026-09-15
 
 ## Objectiu immediat actual
 
-Tancar la **Fita 4 — EduHoot com a primera activitat integrada**.
+Començar la **Fita 6 — Distribució**.
+
+Treball recomanat:
+
+1. Revisar `VERSION`, `IMAGE_TAG`, `EDUHOOT_TAG` i `UPDATE_CHANNEL`.
+2. Executar `make release-check` amb el perfil EduHoot actiu.
+3. Generar paquet amb `make export-images`.
+4. Provar `make load-images` en un entorn net o simulat.
+5. Documentar el flux final de `docker compose pull` contra
+   `registry.edutictac.es`.
+
+## Històric immediat: Fita 4 i Fita 5
+
+Fita 4 — EduHoot com a primera activitat integrada:
 
 El flux manual ja funciona:
 
@@ -30,7 +42,15 @@ També queda implementat `CONFIRM_RESET_TEST=1 make test-reset-flow`, una prova
 destructiva protegida que crea backup previ, genera dades temporals, executa
 reset, comprova que Commons queda buit i restaura el backup.
 
-Següent pas recomanat: començar la **Fita 5 — Privacitat per a centres**.
+Fita 5 — Privacitat per a centres:
+
+- `docs/PRIVACITAT.md`: dades guardades/no guardades, pseudonimització,
+  cookies, conservació, drets i eliminació.
+- `docs/FITXA-DOCENT.md`: fitxa imprimible per al professorat.
+- `docs/FAMILIES.md`: informació breu per a famílies.
+- `docs/DIRECCIO-DPD.md`: fitxa tècnica per a direcció, coordinació TIC o DPD.
+- `CHECKLIST-ENTREGA.md`: recordatoris de privacitat abans de compartir o
+  provar amb professorat real.
 
 ## Històric de Fita 3
 

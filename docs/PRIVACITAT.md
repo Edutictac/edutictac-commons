@@ -6,6 +6,13 @@
 > guarda i amb quines mesures de seguretat. No és material legal: és
 > documentació tècnica de privacitat per a qui desplega el stack.
 
+## Abast i responsabilitat
+
+Aquest document descriu el comportament del programari. Abans d'usar-lo amb
+alumnat real, el centre ha de completar la fitxa `DIRECCIO-DPD.md` amb el seu
+responsable del tractament, contacte DPD, ubicació del servidor, base jurídica,
+terminis de conservació i procediments d'atenció de drets.
+
 ## Què és
 
 EduTicTac Commons és un conjunt d'eines educatives lliures i autoallotjables.
@@ -67,12 +74,16 @@ regenera (mai es recupera l'antic).
 
 | Cookie | Ús | Caducitat | Propietats |
 |---|---|---|---|
-| `edutictac_id` | sessió de l'alumnat | 180 dies | `HttpOnly`, `Secure`, `SameSite=Lax` |
-| `edutictac_teacher` | sessió del professorat | 8 hores | `HttpOnly`, `Secure`, `SameSite=Lax` |
+| `edutictac_id` | sessió de l'alumnat | 180 dies | `HttpOnly`, `SameSite=Lax`; `Secure` en HTTPS |
+| `edutictac_teacher` | sessió del professorat | 8 hores | `HttpOnly`, `SameSite=Lax`; `Secure` en HTTPS |
 
 Són cookies tècniques de sessió, firmades (HMAC). El portal també pot guardar en
 `localStorage` del navegador un estat de demostració local
 (`edutictac-commons-demo-state`), mai dades personals.
+
+En una demo local sense HTTPS, el stack pot configurar
+`EDUTICTAC_ID_COOKIE_SECURE=0` perquè el navegador accepte les cookies. En un
+desplegament real s'ha d'usar HTTPS i cookies `Secure`.
 
 ## Mesures de seguretat
 
@@ -84,6 +95,9 @@ Són cookies tècniques de sessió, firmades (HMAC). El portal també pot guarda
 - Connexió HTTPS en desplegament real.
 - Codi font obert i auditable.
 - Còpies de seguretat amb restauració verificada.
+- Tests funcionals reproduïbles (`make release-check`, `make
+  test-eduhoot-flow` i, en entorn controlat, `CONFIRM_RESET_TEST=1 make
+  test-reset-flow`).
 
 ## Conservació
 
@@ -93,6 +107,10 @@ Són cookies tècniques de sessió, firmades (HMAC). El portal també pot guarda
 | PIN (hash) | mentre la identitat estiga activa |
 | Còpies de seguretat | retenció 7 diàries / 4 setmanals / 6 mensuals |
 | Identitats i puntuacions | **a decidir pel centre** (vegeu `DIRECCIO-DPD.md`) |
+
+Recomanació inicial per a pilots: revisar grups i puntuacions en acabar la
+prova, exportar només allò necessari i eliminar o revocar credencials que ja no
+s'hagen d'usar.
 
 ## Pseudonimització ≠ anonimat
 
@@ -111,6 +129,20 @@ de «codi pseudònim» i de «pseudonimització».
 
 El stack no inclou analítica, publicitat, rastreig ni fonts externes. Les
 imatges i les fonts es serveixen des del propi desplegament.
+
+Si el centre afegeix serveis externs, plugins, proxies o analítica pròpia, ha
+d'actualitzar aquesta documentació i la fitxa `DIRECCIO-DPD.md`.
+
+## Drets i eliminació
+
+El stack no coneix la identitat real de l'alumnat. Per això, qualsevol petició
+d'accés, rectificació o eliminació s'ha de gestionar des de la correspondència
+que conserve el centre entre alumne/a real i codi pseudònim, si existeix.
+
+Operativament, el professorat pot revocar credencials i regenerar PINs des del
+tauler. La supressió completa de dades d'un grup o d'un pilot s'ha de fer amb
+un procediment del centre, després de comprovar si cal conservar evidències o
+resultats educatius.
 
 ## Contacte i dades del centre
 

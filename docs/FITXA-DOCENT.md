@@ -10,9 +10,10 @@ alumne/a usa un **codi públic + PIN**.
 
 ## Com es generen les credencials
 
-1. Entra al tauler del professorat amb el teu compte.
+1. Entra al tauler del professorat amb l'accés que t'haja facilitat el centre.
 2. Crea un grup i genera un lot de credencials (codi + PIN).
-3. Imprimeix les targetes o exporta el CSV de codis.
+3. Imprimeix les targetes per repartir-les o exporta el CSV de codis si el
+   centre ho necessita per a la gestió interna.
 
 - El **codi públic** (3 caràcters, per exemple `K7P`) és el que apareix en les
   activitats i els rànquings.
@@ -37,7 +38,20 @@ alumne/a usa un **codi públic + PIN**.
 
 - No escriguis el PIN enlloc on es puga veure junt amb el codi i el nom real.
 - Reparteix cada targeta directament a l'alumne/a corresponent.
+- No puges captures amb codis, PINs o rànquings a espais públics.
+- Si uses un rànquing a classe, recorda que mostra codis pseudònims, no noms:
+  evita convertir-lo en una llista pública d'alumnes reals.
+- En acabar un pilot o una activitat puntual, revisa si cal revocar
+  credencials o demanar l'eliminació del grup segons la política del centre.
 - Revisa `PRIVACITAT.md` i `DIRECCIO-DPD.md` per al detall tècnic i legal.
+
+## Si passa alguna cosa
+
+- Si una targeta es perd, regenera el PIN.
+- Si una credencial s'ha compartit amb qui no tocava, revoca-la i genera'n una
+  nova.
+- Si detectes puntuacions o dades que no haurien d'estar, avisa el contacte de
+  privacitat del centre.
 
 ## Contacte
 

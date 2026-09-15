@@ -52,4 +52,7 @@ La comprovació revisa requisits locals, sintaxi bàsica del portal, artefactes 
 - No uses dades reals d'alumnat en captures o vídeos.
 - Revisa `docs/PRIVACITAT.md` i completa `docs/DIRECCIO-DPD.md` abans d'una
   prova amb professorat real.
+- Prepara les versions adaptades de `docs/FITXA-DOCENT.md` i
+  `docs/FAMILIES.md` amb el contacte real del centre.
+- Si el desplegament no és només local, comprova HTTPS i cookies `Secure`.
 - Si publiques imatges, comprova que has actualitzat `VERSION`, `IMAGE_TAG` i la documentació.
