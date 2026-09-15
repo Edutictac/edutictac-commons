@@ -40,6 +40,7 @@ CODE_RE = re.compile(r"^[A-Z2-9]{3}$")
 PIN_RE = re.compile(r"^[0-9]{4,6}$")
 GROUP_CODE_RE = re.compile(r"^G[A-Z2-9]{5}$")
 SESSION_TTL_DAYS = 180
+LAUNCH_TOKEN_TTL_SECONDS = 5 * 60
 RATE_WINDOW = 60
 RATE_MAX = 12
 PIN_HASH_ITERATIONS = int(os.environ.get("EDUTICTAC_ID_PIN_HASH_ITERATIONS", "210000"))
@@ -120,6 +121,18 @@ def init_db() -> None:
                 updated_at TEXT NOT NULL
             );
 
+            CREATE TABLE IF NOT EXISTS app_launch_tokens (
+                id TEXT PRIMARY KEY,
+                token_hash TEXT NOT NULL UNIQUE,
+                identity_id TEXT NOT NULL REFERENCES student_identities(id) ON DELETE CASCADE,
+                assignment_id TEXT NOT NULL REFERENCES activity_assignments(id) ON DELETE CASCADE,
+                app_id TEXT NOT NULL,
+                activity_id TEXT NOT NULL,
+                created_at TEXT NOT NULL,
+                expires_at TEXT NOT NULL,
+                consumed_at TEXT
+            );
+
             CREATE INDEX IF NOT EXISTS idx_scores_rank
                 ON scores(app_id, activity_id, score DESC, created_at ASC);
             CREATE INDEX IF NOT EXISTS idx_assignments_teacher
@@ -130,6 +143,8 @@ def init_db() -> None:
                 ON student_sessions(identity_id);
             CREATE INDEX IF NOT EXISTS idx_identities_public_code
                 ON student_identities(public_code);
+            CREATE INDEX IF NOT EXISTS idx_launch_tokens_hash
+                ON app_launch_tokens(token_hash);
             """
         )
         score_columns = {row["name"] for row in conn.execute("PRAGMA table_info(scores)").fetchall()}
@@ -325,6 +340,10 @@ def set_student_session(response: Response, identity_id: str) -> str:
     return session_id
 
 
+def hash_launch_token(token: str) -> str:
+    return hashlib.sha256(token.encode()).hexdigest()
+
+
 class TeacherLoginIn(BaseModel):
     token: str
 
@@ -378,6 +397,14 @@ class AppScoreIn(BaseModel):
         if value < 0 or value > 1_000_000:
             raise ValueError("score out of range")
         return value
+
+
+class LaunchTokenIn(BaseModel):
+    assignment_id: str
+
+
+class ConsumeLaunchTokenIn(BaseModel):
+    token: str
 
 
 class AppRosterIn(BaseModel):
@@ -586,6 +613,54 @@ def student_dashboard(request: Request) -> dict[str, Any]:
             }
             for row in rows
         ],
+    }
+
+
+@app.post("/api/student/launch-token", status_code=201)
+def create_student_launch_token(payload: LaunchTokenIn, request: Request) -> dict[str, Any]:
+    identity = current_identity(request)
+    if not identity:
+        raise HTTPException(status_code=401, detail="not authenticated")
+    assignment_id = (payload.assignment_id or "").strip()
+    token = secrets.token_urlsafe(32)
+    token_hash = hash_launch_token(token)
+    launch_id = secrets.token_urlsafe(14)
+    created_at = now_utc()
+    expires_at = created_at + timedelta(seconds=LAUNCH_TOKEN_TTL_SECONDS)
+    with get_conn() as conn:
+        assignment = conn.execute(
+            """
+            SELECT *
+            FROM activity_assignments
+            WHERE id = ?
+              AND group_id = ?
+              AND active = 1
+            """,
+            (assignment_id, identity["group_id"]),
+        ).fetchone()
+        if not assignment:
+            raise HTTPException(status_code=404, detail="assignment not found")
+        conn.execute(
+            """
+            INSERT INTO app_launch_tokens
+                (id, token_hash, identity_id, assignment_id, app_id, activity_id, created_at, expires_at, consumed_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, NULL)
+            """,
+            (
+                launch_id,
+                token_hash,
+                identity["id"],
+                assignment["id"],
+                assignment["app_id"],
+                assignment["activity_id"],
+                created_at.isoformat(),
+                expires_at.isoformat(),
+            ),
+        )
+    return {
+        "token": token,
+        "expires_at": expires_at.isoformat(),
+        "assignment": public_assignment(assignment),
     }
 
 
@@ -876,6 +951,58 @@ def add_app_score(app_id: str, payload: AppScoreIn, request: Request) -> dict[st
         "public_code": identity["public_code"],
         "assignment_id": assignment_id,
         "score": payload.score,
+    }
+
+
+@app.post("/api/apps/{app_id}/launch-tokens/consume")
+def consume_app_launch_token(app_id: str, payload: ConsumeLaunchTokenIn, request: Request) -> dict[str, Any]:
+    require_app_token(request)
+    app_key = normalize_app_id(app_id)
+    token = (payload.token or "").strip()
+    if not token:
+        raise HTTPException(status_code=401, detail="invalid launch token")
+    token_hash = hash_launch_token(token)
+    ts_dt = now_utc()
+    ts = ts_dt.isoformat()
+    with get_conn() as conn:
+        row = conn.execute(
+            """
+            SELECT
+                t.*,
+                i.group_id,
+                i.public_code,
+                i.active
+            FROM app_launch_tokens t
+            JOIN student_identities i ON i.id = t.identity_id
+            WHERE t.token_hash = ?
+            """,
+            (token_hash,),
+        ).fetchone()
+        expires_at = datetime.fromisoformat(row["expires_at"]) if row else ts_dt
+        if (
+            not row
+            or row["app_id"] != app_key
+            or row["consumed_at"]
+            or expires_at <= ts_dt
+            or not row["active"]
+        ):
+            raise HTTPException(status_code=401, detail="invalid launch token")
+        conn.execute(
+            "UPDATE app_launch_tokens SET consumed_at = ? WHERE id = ?",
+            (ts, row["id"]),
+        )
+    return {
+        "identity": {
+            "id": row["identity_id"],
+            "group_id": row["group_id"],
+            "public_code": row["public_code"],
+            "active": bool(row["active"]),
+        },
+        "assignment": {
+            "id": row["assignment_id"],
+            "app_id": row["app_id"],
+            "activity_id": row["activity_id"],
+        },
     }
 
 

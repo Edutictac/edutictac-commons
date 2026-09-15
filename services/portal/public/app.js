@@ -3,6 +3,7 @@ const DEMO_ACTIVITY = "primera-activitat";
 const EDUHOOT_APP = "eduhoot";
 const ACTIVITY_QUESTIONS = 3;
 const STORAGE_KEY = "edutictac-commons-demo-state";
+const EDUHOOT_BASE_URL = `${window.location.protocol}//${window.location.hostname}:8090`;
 
 const state = {
   teacher: false,
@@ -234,6 +235,8 @@ function studentDashboard(assignments) {
     action:
       assignment.app_id === DEMO_APP && assignment.activity_id === DEMO_ACTIVITY
         ? `<button class="compact secondary" type="button" data-use-student-assignment="${escapeHtml(assignment.id)}">Usar en el repte</button>`
+        : assignment.app_id === EDUHOOT_APP
+          ? `<button class="compact secondary" type="button" data-launch-eduhoot-assignment="${escapeHtml(assignment.id)}">Obrir EduHoot</button>`
         : "",
   }));
   return `
@@ -479,6 +482,21 @@ async function studentLogin() {
   await loadStudentDashboard();
 }
 
+async function refreshStudentSession() {
+  if (!has("studentOutput")) return;
+  try {
+    const data = await api("/api/auth/me", { method: "GET" });
+    state.student = data.identity;
+    await loadStudentDashboard();
+  } catch (error) {
+    state.student = null;
+    setOutput(
+      $("studentOutput"),
+      `<p>Entra amb el teu codi + PIN per veure el teu itinerari individual.</p>`,
+    );
+  }
+}
+
 async function loadStudentDashboard(message = "") {
   if (!state.student) {
     throw new Error("Entra primer com a alumne.");
@@ -501,6 +519,20 @@ async function loadStudentDashboard(message = "") {
       ${studentDashboard(state.studentAssignments)}
     `,
   );
+}
+
+async function launchEduhootAssignment(assignment) {
+  if (!state.student) {
+    throw new Error("Entra primer com a alumne.");
+  }
+  const launch = await api("/api/student/launch-token", {
+    method: "POST",
+    body: JSON.stringify({ assignment_id: assignment.id }),
+  });
+  const url = new URL("/solo/", EDUHOOT_BASE_URL);
+  url.searchParams.set("id", assignment.activity_id);
+  url.searchParams.set("commonsLaunchToken", launch.token);
+  window.location.href = url.toString();
 }
 
 async function sendScore() {
@@ -647,6 +679,15 @@ document.addEventListener("click", (event) => {
       `,
     );
   }
+
+  const eduhootLaunchButton = event.target.closest("[data-launch-eduhoot-assignment]");
+  if (eduhootLaunchButton) {
+    const assignment = state.studentAssignments.find((item) => item.id === eduhootLaunchButton.dataset.launchEduhootAssignment);
+    if (!assignment) return;
+    launchEduhootAssignment(assignment).catch((error) => {
+      setOutput($("studentOutput"), `<p><strong>Error:</strong> ${escapeHtml(error.message)}</p>${studentDashboard(state.studentAssignments)}`);
+    });
+  }
 });
 
 bind("teacherLogin", teacherLogin, "teacherOutput");
@@ -677,6 +718,8 @@ if (state.assignment && has("resultsOutput")) {
     `<p>Activitat demo recuperada: <strong>${escapeHtml(state.assignment.title || state.assignment.activity_id)}</strong>.</p>`,
   );
 }
+
+refreshStudentSession().catch(() => {});
 checkHealth();
 if (has("teacherLogin")) {
   refreshTeacherSession();

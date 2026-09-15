@@ -108,6 +108,58 @@ curl -fsS -c "$student_cookie" -b "$student_cookie" \
   -d "{\"public_code\":\"${code}\",\"pin\":\"${pin}\"}" \
   "$base/api/auth/student" >/dev/null
 
+launch="$(curl -fsS -c "$student_cookie" -b "$student_cookie" \
+  -H 'Content-Type: application/json' \
+  -d "{\"assignment_id\":\"${assignment_id}\"}" \
+  "$base/api/student/launch-token")"
+
+launch_assignment_id="$(printf '%s' "$launch" | jq -r '.assignment.id')"
+launch_token="$(printf '%s' "$launch" | jq -r '.token')"
+if [ "$launch_assignment_id" != "$assignment_id" ] || [ -z "$launch_token" ] || [ "$launch_token" = "null" ]; then
+  echo "No s'ha creat correctament el token de llançament EduHoot"
+  exit 1
+fi
+
+launch_claim="$(printf '{"token":"%s"}' "$launch_token" | curl -fsS --config "$app_curl_config" \
+  -H 'Content-Type: application/json' \
+  --data-binary @- \
+  "$base/api/apps/eduhoot/launch-tokens/consume")"
+launch_claim_identity="$(printf '%s' "$launch_claim" | jq -r '.identity.id')"
+launch_claim_assignment="$(printf '%s' "$launch_claim" | jq -r '.assignment.id')"
+if [ "$launch_claim_identity" != "$identity_id" ] || [ "$launch_claim_assignment" != "$assignment_id" ]; then
+  echo "El token de llançament no apunta a la identitat o assignació esperada"
+  echo "identity=$launch_claim_identity assignment=$launch_claim_assignment"
+  exit 1
+fi
+
+reuse_status="$(printf '{"token":"%s"}' "$launch_token" | curl -sS -o /dev/null -w '%{http_code}' --config "$app_curl_config" \
+  -H 'Content-Type: application/json' \
+  --data-binary @- \
+  "$base/api/apps/eduhoot/launch-tokens/consume")"
+if [ "$reuse_status" != "401" ]; then
+  echo "El token de llançament EduHoot s'ha pogut reutilitzar"
+  echo "HTTP $reuse_status"
+  exit 1
+fi
+
+eduhoot_launch="$(curl -fsS -c "$student_cookie" -b "$student_cookie" \
+  -H 'Content-Type: application/json' \
+  -d "{\"assignment_id\":\"${assignment_id}\"}" \
+  "$base/api/student/launch-token")"
+eduhoot_launch_token="$(printf '%s' "$eduhoot_launch" | jq -r '.token')"
+eduhoot_join="$(printf '{"launch_token":"%s"}' "$eduhoot_launch_token" | curl -fsS \
+  -H 'Content-Type: application/json' \
+  --data-binary @- \
+  "$eduhoot_base/api/player-auth/launch-token")"
+eduhoot_join_code="$(printf '%s' "$eduhoot_join" | jq -r '.public_code')"
+eduhoot_join_token="$(printf '%s' "$eduhoot_join" | jq -r '.join_token')"
+eduhoot_join_assignment="$(printf '%s' "$eduhoot_join" | jq -r '.assignment.id')"
+if [ "$eduhoot_join_code" != "$code" ] || [ -z "$eduhoot_join_token" ] || [ "$eduhoot_join_token" = "null" ] || [ "$eduhoot_join_assignment" != "$assignment_id" ]; then
+  echo "EduHoot no ha acceptat correctament el token de llançament Commons"
+  echo "code=$eduhoot_join_code assignment=$eduhoot_join_assignment"
+  exit 1
+fi
+
 score="$(curl -fsS --config "$app_curl_config" \
   -H 'Content-Type: application/json' \
   -d "{\"identity_id\":\"${identity_id}\",\"activity_id\":\"${activity_id}\",\"score\":91,\"metadata\":{\"source\":\"test-eduhoot-flow\",\"pin\":\"test-pin\",\"quiz_name\":\"Prova EduHoot\",\"correct\":3,\"wrong\":1,\"total_questions\":4}}" \
