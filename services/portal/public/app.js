@@ -44,11 +44,13 @@ function restoreState() {
 
 function setOutput(node, content) {
   node.classList.remove("empty");
+  node.removeAttribute("data-i18n");
   node.innerHTML = content;
 }
 
 function setEmpty(node, content) {
   node.classList.add("empty");
+  node.removeAttribute("data-i18n");
   node.textContent = content;
 }
 
@@ -697,7 +699,14 @@ bind("loadResults", loadResults);
 bind("loadRanking", loadRanking);
 
 window.addEventListener("edutictac:langchange", () => {
-  if (has("studentOutput") && !state.student) {
+  if (!has("studentOutput")) {
+    return;
+  }
+  if (state.student) {
+    loadStudentDashboard().catch((error) => {
+      setOutput($("studentOutput"), `<p><strong>${t("common.errorLabel")}</strong> ${escapeHtml(error.message)}</p>`);
+    });
+  } else {
     setEmpty($("studentOutput"), t("student.loginPrompt"));
   }
 });
