@@ -153,10 +153,13 @@ d'activitat que EduHoot sol.
 > l'instal·lador» que el roadmap 4D situa en v2; ací s'acota a la integració
 > mínima, no a l'índex federat complet ni als thumbnails proxy.
 
+- [ ] Desplegar **Authentik (OIDC)** a l'stack com a identitat docent i
+  d'administració — requisit previ per a la cistella i per eliminar els tokens
+  manuals.
 - [ ] Dockeritzar `recursos-api` i el frontend de `recursos` com a mòdul del
   stack (perfil Compose propi, persistència a `data/recursos-*`).
-- [ ] Integrar la identitat docent del stack al Banc de recursos perquè els
-  preferits queden al compte (depèn de la decisió d'Authentik de la Fita 6).
+- [ ] Integrar la identitat docent (Authentik/OIDC) al Banc de recursos perquè
+  els preferits queden al compte.
 - [ ] Cistella de recursos al tauler: endpoint `GET /api/teacher/favorites`
   (sessió docent) que resol els preferits a recurs complet.
 - [ ] Assignar recursos de la cistella als recorreguts; qualsevol recurs és
@@ -168,8 +171,6 @@ d'activitat que EduHoot sol.
 
 **Resultat:** un centre pot entendre què dades guarda el stack i què no guarda.
 
-- [ ] Definir autenticació senzilla per a centres amb Authentik o equivalent,
-  evitant tokens manuals per a administració i professorat.
 - [ ] Crear `docs/PRIVACITAT.md` amb explicació clara de codi + PIN,
   pseudonimització i límits.
 - [ ] Crear fitxa docent imprimible.
