@@ -1,6 +1,9 @@
 const EDUHOOT_APP = "eduhoot";
 const STORAGE_KEY = "edutictac-commons-state";
-const EDUHOOT_BASE_URL = `${window.location.protocol}//${window.location.hostname}:8090`;
+const EDUHOOT_BASE_PROTOCOL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+  ? window.location.protocol
+  : "http:";
+const EDUHOOT_BASE_URL = `${EDUHOOT_BASE_PROTOCOL}//${window.location.hostname}:8090`;
 const STUDENT_ICONS = [
   "🦊", "🐱", "🐶", "🐼", "🐧", "🐸", "🦉", "🦄", "🐰", "🐢",
   "🐙", "🦁", "🐨", "🐝", "🐯", "🐻", "🦕", "🦖", "🐉", "🚀",
@@ -554,6 +557,9 @@ async function launchEduhootAssignment(assignment) {
   const url = new URL("/solo/", EDUHOOT_BASE_URL);
   url.searchParams.set("id", assignment.activity_id);
   url.searchParams.set("commonsLaunchToken", launch.token);
+  if (window.i18nPortal && typeof window.i18nPortal.getLang === "function") {
+    url.searchParams.set("lang", window.i18nPortal.getLang());
+  }
   window.location.href = url.toString();
 }
 

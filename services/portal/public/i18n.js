@@ -6,6 +6,7 @@
   var SUPPORTED_LANGS = ["ca", "va", "es", "en"];
   var FALLBACK_LANG = "es";
   var STORAGE_KEY = "edutictac-portal-lang";
+  var SHARED_STORAGE_KEY = "edutictac-lang";
 
   var translations = {
     es: {
@@ -353,9 +354,12 @@
 
   function storedLang() {
     try {
-      var stored = localStorage.getItem(STORAGE_KEY);
-      if (stored && SUPPORTED_LANGS.indexOf(stored) !== -1) {
-        return stored;
+      var keys = [STORAGE_KEY, SHARED_STORAGE_KEY];
+      for (var i = 0; i < keys.length; i++) {
+        var stored = localStorage.getItem(keys[i]);
+        if (stored && SUPPORTED_LANGS.indexOf(stored) !== -1) {
+          return stored;
+        }
       }
     } catch (error) {
       /* localStorage pot estar desactivat */
@@ -377,9 +381,6 @@
         return "va";
       }
       var primary = tag.split("-")[0];
-      if (primary === "ca") {
-        return "va";
-      }
       if (SUPPORTED_LANGS.indexOf(primary) !== -1) {
         return primary;
       }
@@ -442,6 +443,7 @@
     lang = newLang;
     try {
       localStorage.setItem(STORAGE_KEY, lang);
+      localStorage.setItem(SHARED_STORAGE_KEY, lang);
     } catch (error) {
       /* ignora si localStorage no està disponible */
     }
