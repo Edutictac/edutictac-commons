@@ -203,6 +203,12 @@ d'activitat que EduHoot sol.
 - [ ] Permetre l'accés del professorat a EduHoot amb Authentik/OIDC (crear i
   gestionar qüestionaris), en lloc del flux actual per tokens.
 
+### Fita v2-4 — LRS complet (xAPI)
+
+- [ ] Desplegar `lrsql` (LRS) com a mòdul de l'stack i connectar-hi el Learning
+  Bridge (normalització JClic/H5P) i el SDK client per al progrés docent, més
+  enllà de la prova de concepte finançada.
+
 ## Criteris de no-go
 
 No es dona una versió per preparada si:
