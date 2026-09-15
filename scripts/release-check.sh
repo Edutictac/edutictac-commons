@@ -75,6 +75,13 @@ echo
 echo "== Flux funcional =="
 ./scripts/test-flow.sh
 
+profiles="$(grep '^COMPOSE_PROFILES=' .env 2>/dev/null | tail -n 1 | cut -d= -f2- || true)"
+if printf '%s' "$profiles" | tr ',' ' ' | grep -Eq '(^|[[:space:]])eduhoot($|[[:space:]])'; then
+  echo
+  echo "== Flux funcional EduHoot =="
+  ./scripts/test-eduhoot-flow.sh
+fi
+
 echo
 echo "Release check correcte"
 echo "Si alguna prova falla en un altre entorn, revisa INSTALL-CENTRES.md#solucio-de-problemes."

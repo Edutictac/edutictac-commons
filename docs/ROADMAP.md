@@ -139,7 +139,8 @@ l'alumnat pot completar-la amb la mateixa identitat pseudònima.
 
 - [x] Documentar exactament què espera EduHoot del servei d'identitat.
 - [x] Validar el flux amb `COMPOSE_PROFILES=eduhoot`.
-- [ ] Crear una prova funcional que cobrisca portal + identitat + EduHoot.
+- [x] Crear una prova funcional que cobrisca portal + identitat + EduHoot
+  (`make test-eduhoot-flow`).
 - [x] Evitar que l'alumnat necessite cap compte personal.
 - [x] Documentar persistència local d'EduHoot (`data/eduhoot-*`) i còpia de
   seguretat.

@@ -73,6 +73,7 @@ Abans d'usar el prototip amb professorat o alumnat real, revisa `../FITXA-PRIVAC
 make ps          # estat dels serveis
 make logs        # logs del stack
 make test-flow   # prova automàtica del flux principal
+make test-eduhoot-flow # prova EduHoot si COMPOSE_PROFILES=eduhoot
 make backup      # crea backups/commons-<stamp>/ amb manifest.json i dades persistents
 make down        # atura contenidors sense esborrar dades
 make up          # arranca o actualitza contenidors

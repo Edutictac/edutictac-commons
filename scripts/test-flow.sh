@@ -12,20 +12,42 @@ portal_port="$(grep '^PORTAL_PORT=' "$env_file" | tail -n 1 | cut -d= -f2)"
 portal_port="${portal_port:-8082}"
 teacher_token="$(grep '^EDUTICTAC_ID_TEACHER_TOKEN=' "$env_file" | tail -n 1 | cut -d= -f2)"
 teacher_token="${teacher_token:-dev-teacher}"
+docker_cmd="${DOCKER:-docker}"
+compose="$docker_cmd compose --env-file $env_file -f compose.yml"
 base="http://127.0.0.1:${portal_port}"
 
 teacher_cookie="$(mktemp /tmp/commons-teacher.XXXXXX)"
 student_cookie="$(mktemp /tmp/commons-student.XXXXXX)"
+group_id=""
+cleanup_group() {
+  if [ -n "$group_id" ]; then
+    $compose exec -T -e TEST_GROUP_ID="$group_id" id-api python - <<'PY' >/dev/null 2>&1 || true
+import os
+import sqlite3
+
+db_path = os.environ.get("EDUTICTAC_ID_DB", "/data/id.db")
+group_id = os.environ.get("TEST_GROUP_ID", "")
+if group_id:
+    conn = sqlite3.connect(db_path)
+    conn.execute("PRAGMA foreign_keys=ON")
+    conn.execute("DELETE FROM groups WHERE id = ?", (group_id,))
+    conn.commit()
+    conn.close()
+PY
+  fi
+}
+
 cleanup() {
+  cleanup_group
   rm -f "$teacher_cookie" "$student_cookie"
 }
 trap cleanup EXIT
 
 curl -fsS "$base/api/health" >/dev/null
 
-curl -fsS -c "$teacher_cookie" -b "$teacher_cookie" \
+printf '{"token":"%s"}' "$teacher_token" | curl -fsS -c "$teacher_cookie" -b "$teacher_cookie" \
   -H 'Content-Type: application/json' \
-  -d "{\"token\":\"${teacher_token}\"}" \
+  --data-binary @- \
   "$base/api/teacher/login" >/dev/null
 
 batch="$(curl -fsS -c "$teacher_cookie" -b "$teacher_cookie" \

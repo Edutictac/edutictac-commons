@@ -20,9 +20,11 @@ El flux manual ja funciona:
    `/api/apps/eduhoot/scores`.
 6. El tauler docent consulta resultats/rànquing des de Commons.
 
-Queda convertir això en comprovació reproduïble, idealment un script de test
-que valide almenys l'endpoint de configuració, autenticació d'alumnat, registre
-de puntuació i lectura de resultats.
+Comprovació reproduïble implementada amb `make test-eduhoot-flow`: valida
+l'endpoint de configuració d'EduHoot, autenticació d'alumnat, assignació
+EduHoot, registre de puntuació via token intern i lectura de resultats/rànquing.
+
+Següent pas recomanat: començar la **Fita 5 — Privacitat per a centres**.
 
 ## Històric de Fita 3
 

@@ -129,6 +129,7 @@ En qualsevol entorn que no siga demo local cal canviar
 | `make ps` | mostra l'estat dels serveis |
 | `make logs` | mostra logs del stack |
 | `make test-flow` | prova docent -> credencials -> alumne -> puntuació -> resultats |
+| `make test-eduhoot-flow` | amb `COMPOSE_PROFILES=eduhoot`, prova identitat Commons -> assignació EduHoot -> puntuació interna -> resultats/rànquing |
 | `make bootstrap-demo` | crea grup, activitat i TSV de credencials demo |
 | `make backup` | crea `backups/commons-<stamp>/` amb `manifest.json` i `id-api/id.db` |
 | `make backup-check` | comprova sense tocar dades que hi ha un backup recent, amb manifest i checksums vàlids i cobertura de tots els serveis actius |
