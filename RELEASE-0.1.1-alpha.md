@@ -30,6 +30,9 @@ La plataforma construïda i comprovada és `linux/amd64`.
 
 ## Validació
 
+Les proves de navegador requerixen Node 24 i Python 3. GitHub Actions les
+executa en cada push a `main` i pull request.
+
 ```bash
 npm ci
 npx playwright install --with-deps chromium

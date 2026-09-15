@@ -1,0 +1,22 @@
+{
+  "version": "0.1.1-alpha",
+  "eduhoot_version": "1.0.2",
+  "source_revisions": {
+    "commons": "5ad7b3866694a3c0e3a11a2e70d0ab9af930eb7d",
+    "eduhoot": "f7f574f83e73c131449633517dae5d9dfa6de93b"
+  },
+  "images": {
+    "id-api": "registry.edutictac.es/edutictac/commons-id-api@sha256:ba4f0f5c9884f83555ccbd5263bc34e04630844028d2649cb04f386c3789b648",
+    "portal": "registry.edutictac.es/edutictac/commons-portal@sha256:67007435334b86bbbc3dbdd50d967b3b0660160a1ef050d649f6886aac31f52b",
+    "admin": "registry.edutictac.es/edutictac/commons-admin@sha256:d4f4936d42c127e4485706b034e88a4375a7b7fc1a5d56d4c002e9adc5817b3d",
+    "eduhoot": "registry.edutictac.es/edutictac/eduhoot@sha256:c106dd0222e079b68cec28f1cadb2a20dea6dface69fb8de081064484140e01e",
+    "eduhoot-mongo": "mongo@sha256:b096b4cb9269f3ebcf363be63f1c50920f786879d03a1890347a3bf33f1f0df0"
+  },
+  "platforms": {
+    "id-api": "linux/amd64",
+    "portal": "linux/amd64",
+    "admin": "linux/amd64",
+    "eduhoot": "linux/amd64",
+    "eduhoot-mongo": "linux/amd64"
+  }
+}
