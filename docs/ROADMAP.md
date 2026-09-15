@@ -45,7 +45,7 @@ El criteri d'estabilitat actual és:
 make DOCKER="sudo docker" release-check
 ```
 
-## Objectiu v1
+## Objectiu v1 (nucli finançat)
 
 Construir un nucli instal·lable que un centre puga provar sense coneixement
 intern de l'ecosistema EduTicTac:
@@ -57,6 +57,11 @@ intern de l'ecosistema EduTicTac:
 5. documentació i kit mínim de privacitat;
 6. còpies de seguretat i restauració provades;
 7. paquet d'imatges versionat i actualitzable.
+
+Aquesta v1.0 és el **mínim entregable** de la primera fase 4D. Els ítems que
+l'eixamplen (Authentik, Banc de recursos/cistella, SSO docent a EduHoot) es
+mantenen a banda en la secció «v2 — més enllà del nucli finançat», per no
+mesclar-los amb l'abast finançat.
 
 ## Fites
 
@@ -143,19 +148,45 @@ l'alumnat pot completar-la amb la mateixa identitat pseudònima.
 - [x] Permetre mode mixt en EduHoot: entrada amb nom curt o amb codi + PIN
   Commons sense demanar nom addicional.
 
-### Fita 5 — Banc de recursos (cistella i recorregut)
+### Fita 5 — Privacitat per a centres
+
+**Resultat:** un centre pot entendre què dades guarda el stack i què no guarda.
+
+- [ ] Crear `docs/PRIVACITAT.md` amb explicació clara de codi + PIN,
+  pseudonimització i límits.
+- [ ] Crear fitxa docent imprimible.
+- [ ] Crear informació breu per a famílies.
+- [ ] Crear fitxa tècnica per a direcció/DPD.
+- [ ] Revisar que cap document prometa anonimat absolut.
+
+### Fita 6 — Distribució
+
+**Resultat:** la v1 es pot portar a una màquina neta.
+
+- [ ] Revisar `IMAGE_REGISTRY`, `IMAGE_TAG` i `VERSION`.
+- [ ] Exportar imatges amb `make export-images`.
+- [ ] Provar `make load-images` en un entorn net o simulat.
+- [ ] Publicar instruccions de `docker compose pull` amb registre propi.
+- [ ] Mantindre canals de versió sense usar `latest`.
+
+## v2 — més enllà del nucli finançat
+
+Ítems que queden **fora** de la v1.0 (nucli finançat per la 4D). Es treballen a
+continuació, amb l'objectiu d'arribar-hi abans d'agost 2027 (vegeu §0.1 del
+roadmap 4D).
+
+### Fita v2-1 — Authentik (identitat docent i d'administració)
+
+- [ ] Desplegar **Authentik (OIDC)** a l'stack com a identitat docent i
+  d'administració — cobreix el tauler del professorat, la cistella de recursos i
+  l'accés docent a EduHoot, i elimina els tokens manuals.
+
+### Fita v2-2 — Banc de recursos (cistella i recorregut)
 
 **Resultat:** el professorat pot triar activitats del Banc de recursos des del
 tauler (cistella de recursos) i assignar-les als recorreguts, amb més fonts
 d'activitat que EduHoot sol.
 
-> **Nota d'abast:** això avança el «Banc de recursos com a mòdul de
-> l'instal·lador» que el roadmap 4D situa en v2; ací s'acota a la integració
-> mínima, no a l'índex federat complet ni als thumbnails proxy.
-
-- [ ] Desplegar **Authentik (OIDC)** a l'stack com a identitat docent i
-  d'administració — cobreix el tauler del professorat i la cistella de recursos,
-  i elimina els tokens manuals.
 - [ ] Dockeritzar `recursos-api` i el frontend de `recursos` com a mòdul del
   stack (perfil Compose propi, persistència a `data/recursos-*`).
 - [ ] Integrar la identitat docent (Authentik/OIDC) al Banc de recursos perquè
@@ -167,26 +198,10 @@ d'activitat que EduHoot sol.
 - [ ] Migració de preferits anònims → OIDC (diferida mentre no hi haja comptes
   reals al Banc de recursos).
 
-### Fita 6 — Privacitat per a centres
+### Fita v2-3 — SSO docent a EduHoot
 
-**Resultat:** un centre pot entendre què dades guarda el stack i què no guarda.
-
-- [ ] Crear `docs/PRIVACITAT.md` amb explicació clara de codi + PIN,
-  pseudonimització i límits.
-- [ ] Crear fitxa docent imprimible.
-- [ ] Crear informació breu per a famílies.
-- [ ] Crear fitxa tècnica per a direcció/DPD.
-- [ ] Revisar que cap document prometa anonimat absolut.
-
-### Fita 7 — Distribució
-
-**Resultat:** la v1 es pot portar a una màquina neta.
-
-- [ ] Revisar `IMAGE_REGISTRY`, `IMAGE_TAG` i `VERSION`.
-- [ ] Exportar imatges amb `make export-images`.
-- [ ] Provar `make load-images` en un entorn net o simulat.
-- [ ] Publicar instruccions de `docker compose pull` amb registre propi.
-- [ ] Mantindre canals de versió sense usar `latest`.
+- [ ] Permetre l'accés del professorat a EduHoot amb Authentik/OIDC (crear i
+  gestionar qüestionaris), en lloc del flux actual per tokens.
 
 ## Criteris de no-go
 
