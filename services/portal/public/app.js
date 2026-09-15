@@ -1,8 +1,5 @@
-const DEMO_APP = "commons-demo";
-const DEMO_ACTIVITY = "primera-activitat";
 const EDUHOOT_APP = "eduhoot";
-const ACTIVITY_QUESTIONS = 3;
-const STORAGE_KEY = "edutictac-commons-demo-state";
+const STORAGE_KEY = "edutictac-commons-state";
 const EDUHOOT_BASE_URL = `${window.location.protocol}//${window.location.hostname}:8090`;
 const STUDENT_ICONS = [
   "🦊", "🐱", "🐶", "🐼", "🐧", "🐸", "🦉", "🦄", "🐰", "🐢",
@@ -56,7 +53,7 @@ function setEmpty(node, content) {
 
 function setTeacherSession(active) {
   state.teacher = active;
-  ["teacherSummary", "refreshDashboard", "createBatch", "createAssignment", "createEduhootAssignment", "teacherLogout"].forEach((id) => {
+  ["teacherSummary", "refreshDashboard", "createBatch", "createEduhootAssignment", "teacherLogout"].forEach((id) => {
     const node = $(id);
     if (node) {
       node.disabled = !active;
@@ -238,10 +235,8 @@ function studentDashboard(assignments) {
     best_score: assignment.best_score ?? "",
     last_score_at: assignment.last_score_at || "",
     action:
-      assignment.app_id === DEMO_APP && assignment.activity_id === DEMO_ACTIVITY
-        ? `<button class="compact secondary" type="button" data-use-student-assignment="${escapeHtml(assignment.id)}">Usar en el repte</button>`
-        : assignment.app_id === EDUHOOT_APP
-          ? `<button class="compact secondary" type="button" data-launch-eduhoot-assignment="${escapeHtml(assignment.id)}">Obrir EduHoot</button>`
+      assignment.app_id === EDUHOOT_APP
+        ? `<button class="compact secondary" type="button" data-launch-eduhoot-assignment="${escapeHtml(assignment.id)}">Obrir EduHoot</button>`
         : "",
   }));
   return `
@@ -281,19 +276,6 @@ function studentProfileCard(message = "") {
       ${message ? `<p class="profile-status">${escapeHtml(message)}</p>` : ""}
     </section>
   `;
-}
-
-function activityScore() {
-  const answers = Array.from(document.querySelectorAll("#activityForm input[type='radio']:checked"));
-  if (answers.length !== ACTIVITY_QUESTIONS) {
-    throw new Error("Respon les tres preguntes abans d'enviar l'activitat.");
-  }
-  const correct = answers.reduce((total, answer) => total + Number(answer.value), 0);
-  return {
-    correct,
-    total: ACTIVITY_QUESTIONS,
-    score: Math.round((correct / ACTIVITY_QUESTIONS) * 100),
-  };
 }
 
 async function checkHealth() {
@@ -390,7 +372,7 @@ async function createBatch() {
   if (!state.teacher) {
     throw new Error("Entra primer com a docent.");
   }
-  const tenantId = $("tenantId").value.trim() || "demo-centre";
+  const tenantId = $("tenantId").value.trim() || "centre";
   const count = Number($("identityCount").value || 6);
   const batch = await api("/api/identities/batch", {
     method: "POST",
@@ -409,31 +391,6 @@ async function createBatch() {
       ${groupLinks(batch.group)}
       ${credentialCards(batch.identities)}
     `,
-  );
-}
-
-async function createAssignment() {
-  if (!state.teacher) {
-    throw new Error("Entra primer com a docent.");
-  }
-  if (!state.group) {
-    throw new Error("Genera primer un grup.");
-  }
-  const created = await api("/api/teacher/activity-assignments", {
-    method: "POST",
-    body: JSON.stringify({
-      group_id: state.group.id,
-      app_id: DEMO_APP,
-      activity_id: DEMO_ACTIVITY,
-      title: "Activitat demo Commons",
-    }),
-  });
-  state.assignment = created.assignment;
-  state.assignments = [created.assignment, ...state.assignments.filter((item) => item.id !== created.assignment.id)];
-  saveState();
-  setOutput(
-    $("resultsOutput"),
-    `<p>Activitat assignada al grup <strong>${escapeHtml(state.group.group_code)}</strong>.</p>`,
   );
 }
 
@@ -514,6 +471,16 @@ async function studentLogin() {
   await loadStudentDashboard();
 }
 
+async function studentLogout() {
+  await api("/api/auth/logout", { method: "POST" });
+  state.student = null;
+  state.studentAssignments = [];
+  setOutput(
+    $("studentOutput"),
+    `<p>Sessió tancada. Entra de nou amb el teu codi + PIN quan vulgues continuar.</p>`,
+  );
+}
+
 async function refreshStudentSession() {
   if (!has("studentOutput")) return;
   try {
@@ -536,13 +503,6 @@ async function loadStudentDashboard(message = "") {
   const data = await api("/api/student/dashboard", { method: "GET" });
   state.student = data.identity;
   state.studentAssignments = data.assignments || [];
-  const demoAssignment = state.studentAssignments.find(
-    (assignment) => assignment.app_id === DEMO_APP && assignment.activity_id === DEMO_ACTIVITY,
-  );
-  if (demoAssignment) {
-    state.assignment = demoAssignment;
-    saveState();
-  }
   setOutput(
     $("studentOutput"),
     `
@@ -578,26 +538,6 @@ async function launchEduhootAssignment(assignment) {
   window.location.href = url.toString();
 }
 
-async function sendScore() {
-  if (!state.student) {
-    throw new Error("Entra primer com a alumne.");
-  }
-  const result = activityScore();
-  const saved = await api("/api/scores", {
-    method: "POST",
-    body: JSON.stringify({
-      app_id: DEMO_APP,
-      activity_id: DEMO_ACTIVITY,
-      assignment_id: state.assignment ? state.assignment.id : "",
-      score: result.score,
-      metadata: { demo: true, correct: result.correct, total: result.total },
-    }),
-  });
-  await loadStudentDashboard(
-    `<p>Activitat completada per <strong>${escapeHtml(saved.public_code)}</strong>: ${result.correct}/${result.total} encerts, puntuació <strong>${saved.score}</strong>.</p>`,
-  );
-}
-
 async function loadResults() {
   if (!state.assignment) {
     throw new Error("Selecciona o assigna primer una activitat.");
@@ -615,8 +555,11 @@ async function loadResults() {
 }
 
 async function loadRanking() {
-  const appId = state.assignment ? state.assignment.app_id : DEMO_APP;
-  const activityId = state.assignment ? state.assignment.activity_id : DEMO_ACTIVITY;
+  if (!state.assignment) {
+    throw new Error("Selecciona o assigna primer una activitat.");
+  }
+  const appId = state.assignment.app_id;
+  const activityId = state.assignment.activity_id;
   const ranking = await api(`/api/rankings?app_id=${encodeURIComponent(appId)}&activity_id=${encodeURIComponent(activityId)}&limit=20`, { method: "GET" });
   setOutput(
     $("resultsOutput"),
@@ -708,22 +651,6 @@ document.addEventListener("click", (event) => {
     return;
   }
 
-  const studentAssignmentButton = event.target.closest("[data-use-student-assignment]");
-  if (studentAssignmentButton) {
-    const assignment = state.studentAssignments.find((item) => item.id === studentAssignmentButton.dataset.useStudentAssignment);
-    if (!assignment) return;
-    state.assignment = assignment;
-    saveState();
-    setOutput(
-      $("studentOutput"),
-      `
-        <p>Activitat seleccionada: <strong>${escapeHtml(assignment.title || assignment.activity_id)}</strong>. Pots completar el repte.</p>
-        ${studentProfileCard()}
-        ${studentDashboard(state.studentAssignments)}
-      `,
-    );
-  }
-
   const iconButton = event.target.closest("[data-student-icon]");
   if (iconButton) {
     updateStudentIcon(iconButton.dataset.studentIcon).catch((error) => {
@@ -746,10 +673,9 @@ bind("teacherLogout", teacherLogout, "teacherOutput");
 bind("teacherSummary", teacherSummary, "teacherOutput");
 bind("refreshDashboard", refreshDashboard, "teacherOutput");
 bind("createBatch", createBatch, "teacherOutput");
-bind("createAssignment", createAssignment, "resultsOutput");
 bind("createEduhootAssignment", createEduhootAssignment, "resultsOutput");
 bind("studentLogin", studentLogin, "studentOutput");
-bind("sendScore", sendScore, "studentOutput");
+bind("studentLogout", studentLogout, "studentOutput");
 bind("loadResults", loadResults);
 bind("loadRanking", loadRanking);
 
@@ -760,13 +686,13 @@ if (has("teacherLogin")) {
 if (state.group && has("teacherOutput")) {
   setOutput(
     $("teacherOutput"),
-    `<p>Grup demo recuperat: <strong>${escapeHtml(state.group.group_code)}</strong>. Entra com a docent per obrir targetes, CSV o consultar resultats.</p>${groupLinks(state.group)}`,
+    `<p>Grup recuperat: <strong>${escapeHtml(state.group.group_code)}</strong>. Entra com a docent per obrir targetes, CSV o consultar resultats.</p>${groupLinks(state.group)}`,
   );
 }
 if (state.assignment && has("resultsOutput")) {
   setOutput(
     $("resultsOutput"),
-    `<p>Activitat demo recuperada: <strong>${escapeHtml(state.assignment.title || state.assignment.activity_id)}</strong>.</p>`,
+    `<p>Activitat recuperada: <strong>${escapeHtml(state.assignment.title || state.assignment.activity_id)}</strong>.</p>`,
   );
 }
 

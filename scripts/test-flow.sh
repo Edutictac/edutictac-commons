@@ -18,6 +18,7 @@ base="http://127.0.0.1:${portal_port}"
 
 teacher_cookie="$(mktemp /tmp/commons-teacher.XXXXXX)"
 student_cookie="$(mktemp /tmp/commons-student.XXXXXX)"
+student_headers="$(mktemp /tmp/commons-student-headers.XXXXXX)"
 group_id=""
 cleanup_group() {
   if [ -n "$group_id" ]; then
@@ -39,7 +40,7 @@ PY
 
 cleanup() {
   cleanup_group
-  rm -f "$teacher_cookie" "$student_cookie"
+  rm -f "$teacher_cookie" "$student_cookie" "$student_headers"
 }
 trap cleanup EXIT
 
@@ -66,10 +67,21 @@ assignment="$(curl -fsS -c "$teacher_cookie" -b "$teacher_cookie" \
 
 assignment_id="$(printf '%s' "$assignment" | jq -r '.assignment.id')"
 
-curl -fsS -c "$student_cookie" -b "$student_cookie" \
+curl -fsS -D "$student_headers" -c "$student_cookie" -b "$student_cookie" \
   -H 'Content-Type: application/json' \
   -d "{\"public_code\":\"${code}\",\"pin\":\"${pin}\"}" \
   "$base/api/auth/student" >/dev/null
+
+python3 - "$student_headers" <<'PY'
+import sys
+
+headers = open(sys.argv[1], encoding="utf-8").read().splitlines()
+student_cookies = [line for line in headers if line.lower().startswith("set-cookie: edutictac_id=")]
+if not student_cookies:
+    raise SystemExit("No s'ha rebut la cookie de sessio de l'alumne")
+if any("max-age=" in line.lower() or "expires=" in line.lower() for line in student_cookies):
+    raise SystemExit("La cookie de l'alumne no ha de ser persistent")
+PY
 
 student_dashboard="$(curl -fsS -c "$student_cookie" -b "$student_cookie" \
   "$base/api/student/dashboard")"
@@ -95,6 +107,18 @@ best_score="$(printf '%s' "$results" | jq -r '.results[0].best_score')"
 if [ "$attempts" != "1" ] || [ "$best_score" != "88" ]; then
   echo "Flux demo incorrecte"
   printf '%s\n' "$results"
+  exit 1
+fi
+
+curl -fsS -c "$student_cookie" -b "$student_cookie" \
+  -X POST \
+  "$base/api/auth/logout" >/dev/null
+
+logout_status="$(curl -sS -o /dev/null -w '%{http_code}' -c "$student_cookie" -b "$student_cookie" \
+  "$base/api/student/dashboard")"
+if [ "$logout_status" != "401" ]; then
+  echo "El panell de l'alumne continua accessible despres de tancar sessio"
+  echo "HTTP $logout_status"
   exit 1
 fi
 

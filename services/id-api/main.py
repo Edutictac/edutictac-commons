@@ -347,7 +347,7 @@ def set_student_session(response: Response, identity_id: str) -> str:
     response.set_cookie(
         SESSION_COOKIE,
         make_cookie({"sid": session_token}),
-        **cookie_kwargs(max_age=SESSION_TTL_DAYS * 24 * 60 * 60),
+        **cookie_kwargs(),
     )
     return session_id
 
