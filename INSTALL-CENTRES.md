@@ -1,5 +1,8 @@
 # Instal·lació en centres educatius
 
+Entrega actual: [Commons 0.1.1-alpha + EduHoot 1.0.2](RELEASE-0.1.1-alpha.md).
+Inclou un manifest de digests i una prova d'instal·lació/restauració aïllada.
+
 Aquest document descriu la prova tècnica mínima del stack Docker d'EduTicTac Commons en un centre educatiu o en un ordinador local.
 
 ## Requisits
@@ -131,15 +134,17 @@ perfil està actiu.
 ## Ús d'imatges ja publicades (registre propi)
 
 EduTicTac publica les imatges a un registre OCI propi,
-`registry.edutictac.es`, de lectura pública. Un centre no necessita
-credencials ni construir res des del codi font: només cal apuntar el `.env`
-al registre i descarregar les imatges ja construïdes.
+`registry.edutictac.es`. La configuració comprovada el 2026-09-15 requerix
+autenticació també per a descarregar. Cal obtindre un accés autoritzat i fer
+`docker login registry.edutictac.es`; després es poden descarregar les
+imatges sense construir-les des del codi font.
 
 Al `.env` del centre:
 
 ```bash
 IMAGE_REGISTRY=registry.edutictac.es/edutictac
-IMAGE_TAG=0.1.0-alpha
+IMAGE_TAG=0.1.1-alpha
+EDUHOOT_TAG=1.0.2
 ```
 
 I després:
@@ -183,9 +188,11 @@ Quan hi haja una versió estable, des de l'equip d'EduTicTac (cal login previ
 amb `docker login registry.edutictac.es` amb l'usuari de publicació):
 
 ```bash
-IMAGE_REGISTRY=registry.edutictac.es/edutictac
-IMAGE_TAG=0.1.0-alpha
-make push-images
+export IMAGE_REGISTRY=registry.edutictac.es/edutictac
+export IMAGE_TAG=0.1.1-alpha
+export EDUHOOT_TAG=1.0.2
+# Construïx primer EduHoot des del seu repo amb este mateix nom d'imatge.
+INCLUDE_EDUHOOT=1 make push-images
 ```
 
 Abans de publicar:

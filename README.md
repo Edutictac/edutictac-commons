@@ -1,5 +1,9 @@
 # EduTicTac Commons Stack Local
 
+Versió de proves actual: [0.1.1-alpha amb EduHoot 1.0.2](RELEASE-0.1.1-alpha.md).
+Proves d'idiomes: `npm ci`, `npx playwright install --with-deps chromium` i
+`make test-i18n`. Instal·lació i restauració aïllades: `make test-installation`.
+
 Primer stack Docker per desenvolupar i ensenyar el producte EduTicTac Commons en `debiandesktop`, sense tocar producció.
 
 ## Ús ràpid

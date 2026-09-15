@@ -3,26 +3,41 @@ set -eu
 
 cd "$(dirname "$0")/.."
 
-env_file=".env"
+env_file="${ENV_FILE:-.env}"
 if [ ! -f "$env_file" ]; then
   env_file=".env.example"
 fi
 
-registry="$(grep '^IMAGE_REGISTRY=' "$env_file" | tail -n 1 | cut -d= -f2)"
-tag="$(grep '^IMAGE_TAG=' "$env_file" | tail -n 1 | cut -d= -f2)"
+registry="${IMAGE_REGISTRY:-$(grep '^IMAGE_REGISTRY=' "$env_file" | tail -n 1 | cut -d= -f2)}"
+tag="${IMAGE_TAG:-$(grep '^IMAGE_TAG=' "$env_file" | tail -n 1 | cut -d= -f2)}"
 registry="${registry:-edutictac}"
 tag="${tag:-$(cat VERSION)}"
+eduhoot_tag="${EDUHOOT_TAG:-$(grep '^EDUHOOT_TAG=' "$env_file" | tail -n 1 | cut -d= -f2)}"
+eduhoot_tag="${eduhoot_tag:-1.0.2}"
+export IMAGE_REGISTRY="$registry" IMAGE_TAG="$tag" EDUHOOT_TAG="$eduhoot_tag"
 
 portal_image="${registry}/commons-portal:${tag}"
 id_image="${registry}/commons-id-api:${tag}"
 admin_image="${registry}/commons-admin:${tag}"
+eduhoot_image="${registry}/eduhoot:${eduhoot_tag}"
 
-${DOCKER:-docker} compose --env-file "$env_file" -f compose.yml build
+if [ "${INCLUDE_EDUHOOT:-0}" = "1" ]; then
+  ${DOCKER:-docker} image inspect "$eduhoot_image" >/dev/null
+fi
+if [ "${SKIP_BUILD:-0}" != "1" ]; then
+  ${DOCKER:-docker} compose --env-file "$env_file" -f compose.yml build
+fi
 ${DOCKER:-docker} push "$id_image"
 ${DOCKER:-docker} push "$portal_image"
 ${DOCKER:-docker} push "$admin_image"
+if [ "${INCLUDE_EDUHOOT:-0}" = "1" ]; then
+  ${DOCKER:-docker} push "$eduhoot_image"
+fi
 
 echo "Imatges publicades:"
 echo "- $id_image"
 echo "- $portal_image"
 echo "- $admin_image"
+if [ "${INCLUDE_EDUHOOT:-0}" = "1" ]; then
+  echo "- $eduhoot_image"
+fi

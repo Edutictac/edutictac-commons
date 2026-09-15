@@ -1,0 +1,12 @@
+{
+  "name": "edutictac-commons-checks",
+  "private": true,
+  "version": "0.1.1-alpha",
+  "scripts": {
+    "test": "playwright test",
+    "test:i18n": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0"
+  }
+}

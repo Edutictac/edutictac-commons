@@ -1,6 +1,6 @@
 services:
   id-api:
-    image: ${IMAGE_REGISTRY:-edutictac}/commons-id-api:${IMAGE_TAG:-0.1.0-alpha}
+    image: ${IMAGE_REGISTRY:-edutictac}/commons-id-api:${IMAGE_TAG:-0.1.1-alpha}
     build:
       context: ./services/id-api
     user: "${PUID:-1000}:${PGID:-1000}"
@@ -22,7 +22,7 @@ services:
       retries: 5
 
   portal:
-    image: ${IMAGE_REGISTRY:-edutictac}/commons-portal:${IMAGE_TAG:-0.1.0-alpha}
+    image: ${IMAGE_REGISTRY:-edutictac}/commons-portal:${IMAGE_TAG:-0.1.1-alpha}
     build:
       context: ./services/portal
     depends_on:
@@ -32,7 +32,7 @@ services:
       - "${PORTAL_PORT:-8082}:80"
 
   admin:
-    image: ${IMAGE_REGISTRY:-edutictac}/commons-admin:${IMAGE_TAG:-0.1.0-alpha}
+    image: ${IMAGE_REGISTRY:-edutictac}/commons-admin:${IMAGE_TAG:-0.1.1-alpha}
     build:
       context: .
       dockerfile: admin/Dockerfile
@@ -55,8 +55,8 @@ services:
       XDG_CONFIG_HOME: /hostcfg
       COMPOSE_PROFILES: ${COMPOSE_PROFILES:-}
       IMAGE_REGISTRY: ${IMAGE_REGISTRY:-edutictac}
-      IMAGE_TAG: ${IMAGE_TAG:-0.1.0-alpha}
-      EDUHOOT_TAG: ${EDUHOOT_TAG:-0.1.0}
+      IMAGE_TAG: ${IMAGE_TAG:-0.1.1-alpha}
+      EDUHOOT_TAG: ${EDUHOOT_TAG:-1.0.2}
       UPDATE_CHANNEL: ${UPDATE_CHANNEL:-testing}
       PORTAL_HEALTH_URL: http://portal/api/health
       ID_API_HEALTH_URL: http://id-api:8005/api/health
@@ -92,7 +92,7 @@ services:
       retries: 10
 
   eduhoot:
-    image: ${IMAGE_REGISTRY:-edutictac}/eduhoot:${EDUHOOT_TAG:-0.1.0}
+    image: ${IMAGE_REGISTRY:-edutictac}/eduhoot:${EDUHOOT_TAG:-1.0.2}
     profiles: ["eduhoot"]
     depends_on:
       eduhoot-mongo:
