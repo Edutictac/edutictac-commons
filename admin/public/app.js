@@ -248,7 +248,7 @@ document.getElementById("backupRestoreBtn").addEventListener("click", () => {
     return;
   }
   const typed = window.prompt(t("backup.restorePrompt", { backup }));
-  if (typed !== "RESTAURAR") {
+  if (typed !== t("backup.restoreConfirmWord")) {
     setOutput(actionOutput, t("backup.restoreCancelled"), false);
     return;
   }
@@ -259,7 +259,7 @@ document.getElementById("imagesCheckBtn").addEventListener("click", checkUpdates
 
 document.getElementById("imagesUpdateBtn").addEventListener("click", () => {
   const typed = window.prompt(t("images.updatePrompt"));
-  if (typed !== "ACTUALITZAR") {
+  if (typed !== t("images.updateConfirmWord")) {
     setOutput(actionOutput, t("images.updateCancelled"), false);
     return;
   }
