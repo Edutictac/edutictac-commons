@@ -218,7 +218,8 @@ No es dona una versió per preparada si:
 - el professorat no pot recuperar o regenerar credencials;
 - no hi ha forma documentada de parar, arrancar, copiar i restaurar dades;
 - la documentació confon pseudonimització amb anonimat complet;
-- algun flux demana noms, correus o identificadors institucionals d'alumnat.
+- algun flux exigeix noms reals, correus o identificadors institucionals
+  d'alumnat.
 
 ## Relació amb el roadmap 4D
 
