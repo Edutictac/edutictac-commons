@@ -3,10 +3,32 @@ import json
 import os
 import subprocess
 import tempfile
+import threading
 import time
 import urllib.request
 import zipfile
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+
+
+class CommonsScoreHandler(BaseHTTPRequestHandler):
+    received = None
+
+    def do_POST(self):  # noqa: N802
+        length = int(self.headers.get("Content-Length", "0"))
+        CommonsScoreHandler.received = {
+            "body": json.loads(self.rfile.read(length)),
+            "cookie": self.headers.get("Cookie", ""),
+        }
+        body = json.dumps({"ok": True, "id": "score-1", "score": 80}).encode()
+        self.send_response(201)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def log_message(self, *_args):
+        return
 
 
 def test_multiple_choice_h5p_export():
@@ -125,3 +147,55 @@ def test_matching_h5p_export():
     finally:
         process.terminate()
         process.wait(timeout=3)
+
+
+def test_commons_score_proxy_forwards_identity_cookie():
+    CommonsScoreHandler.received = None
+    upstream = ThreadingHTTPServer(("127.0.0.1", 0), CommonsScoreHandler)
+    thread = threading.Thread(target=upstream.serve_forever, daemon=True)
+    thread.start()
+    data_dir = Path(tempfile.mkdtemp(prefix="edutictac-play-test-"))
+    process = subprocess.Popen(
+        ["python3", "server.py"],
+        cwd=Path(__file__).parents[1] / "services" / "play",
+        env={
+            **os.environ,
+            "PORT": "18103",
+            "PLAY_DATA_DIR": str(data_dir),
+            "EDUTICTAC_ID_API_URL": f"http://127.0.0.1:{upstream.server_port}",
+            "EDUTICTAC_PLAY_APP_ID": "edutictac-play",
+        },
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    try:
+        time.sleep(0.25)
+        payload = json.dumps({
+            "activity_id": "Ab12Cd34",
+            "assignment_id": "assignment-1",
+            "score": 80,
+            "metadata": {"source": "h5p-xapi", "raw_score": 4, "max_score": 5},
+        }).encode()
+        request = urllib.request.Request(
+            "http://127.0.0.1:18103/api/commons/score",
+            data=payload,
+            headers={"Content-Type": "application/json", "Cookie": "edutictac_id=session"},
+            method="POST",
+        )
+        response = urllib.request.urlopen(request)
+        assert response.status == 201
+        assert CommonsScoreHandler.received == {
+            "body": {
+                "app_id": "edutictac-play",
+                "activity_id": "Ab12Cd34",
+                "assignment_id": "assignment-1",
+                "score": 80,
+                "metadata": {"source": "h5p-xapi", "raw_score": 4, "max_score": 5},
+            },
+            "cookie": "edutictac_id=session",
+        }
+    finally:
+        process.terminate()
+        process.wait(timeout=3)
+        upstream.shutdown()
+        upstream.server_close()

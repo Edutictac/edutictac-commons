@@ -13,7 +13,9 @@ import zipfile
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from urllib.error import HTTPError, URLError
 from urllib.parse import unquote, urlparse
+from urllib.request import Request as UpstreamRequest, urlopen
 
 
 ROOT = Path(__file__).parent
@@ -24,6 +26,8 @@ PUBLIC_DIR = ROOT / "public"
 MAX_BODY = 256 * 1024
 HOST = os.environ.get("HOST", "0.0.0.0")
 URL_PREFIX = os.environ.get("URL_PREFIX", "").rstrip("/")
+COMMONS_API_URL = os.environ.get("EDUTICTAC_ID_API_URL", "").rstrip("/")
+COMMONS_APP_ID = os.environ.get("EDUTICTAC_PLAY_APP_ID", "edutictac-play")
 ID_RE = re.compile(r"^[A-Za-z0-9]{8}$")
 PREVIEW_RE = re.compile(r"^preview-[A-Za-z0-9]{8}$")
 PREVIEWS: dict[str, dict] = {}
@@ -348,6 +352,9 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self) -> None:  # noqa: N802
         route = self.normalize_path(self.path)
+        if route == "/api/commons/score":
+            self.forward_commons_score()
+            return
         if route not in {"/api/activities", "/api/previews"}:
             self.send_json(HTTPStatus.NOT_FOUND, {"error": "Ruta no encontrada."})
             return
@@ -373,6 +380,59 @@ class Handler(BaseHTTPRequestHandler):
         activity["createdAt"] = __import__("datetime").datetime.now(__import__("datetime").timezone.utc).isoformat()
         save_activity(activity)
         self.send_json(HTTPStatus.CREATED, activity)
+
+    def forward_commons_score(self) -> None:
+        if not COMMONS_API_URL:
+            self.send_json(HTTPStatus.NOT_IMPLEMENTED, {"error": "La integración con Commons no está configurada."})
+            return
+        try:
+            length = int(self.headers.get("Content-Length", "0"))
+            if length > 32 * 1024:
+                raise ValueError("El contenido es demasiado grande.")
+            payload = json.loads(self.rfile.read(length))
+            activity_id = str(payload.get("activity_id", "")).strip()
+            assignment_id = str(payload.get("assignment_id", "")).strip()
+            score = int(payload.get("score"))
+            metadata = payload.get("metadata", {})
+            if not ID_RE.fullmatch(activity_id) or not assignment_id or not isinstance(metadata, dict):
+                raise ValueError("Datos de resultado no válidos.")
+            if score < 0 or score > 100:
+                raise ValueError("La puntuación debe estar entre 0 y 100.")
+        except (TypeError, ValueError, json.JSONDecodeError):
+            self.send_json(HTTPStatus.BAD_REQUEST, {"error": "Datos de resultado no válidos."})
+            return
+        body = json.dumps({
+            "app_id": COMMONS_APP_ID,
+            "activity_id": activity_id,
+            "assignment_id": assignment_id,
+            "score": score,
+            "metadata": metadata,
+        }).encode()
+        request = UpstreamRequest(
+            f"{COMMONS_API_URL}/api/scores",
+            data=body,
+            headers={
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                "Cookie": self.headers.get("Cookie", ""),
+            },
+            method="POST",
+        )
+        try:
+            with urlopen(request, timeout=5) as response:
+                response_body = response.read()
+                status = response.status
+        except HTTPError as error:
+            response_body = error.read()
+            status = error.code
+        except URLError:
+            self.send_json(HTTPStatus.BAD_GATEWAY, {"error": "No se ha podido contactar con Commons."})
+            return
+        try:
+            result = json.loads(response_body.decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError):
+            result = {"error": "Respuesta no válida de Commons."}
+        self.send_json(status, result if isinstance(result, dict) else {"result": result})
 
     def download_package(self, activity: dict) -> None:
         with tempfile.NamedTemporaryFile(suffix=".h5p") as tmp:

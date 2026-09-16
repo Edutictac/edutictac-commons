@@ -38,6 +38,8 @@ services:
     environment:
       PORT: 8083
       PLAY_DATA_DIR: /app/data
+      EDUTICTAC_ID_API_URL: http://id-api:8005
+      EDUTICTAC_PLAY_APP_ID: edutictac-play
     volumes:
       - ./data/play:/app/data
     ports:

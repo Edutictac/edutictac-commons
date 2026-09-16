@@ -67,6 +67,20 @@ su visor H5P. El contrato previsto y las decisiones de almacenamiento están
 documentados en [`resources-integration.md`](resources-integration.md). No se
 activa ninguna llamada remota ni dependencia de `recursos` en el MVP.
 
+## Resultados integrados con Commons
+
+Cuando Play se abre desde una asignación, la URL puede incluir
+`assignment_id`. El cliente escucha los eventos de puntuación de H5P y envía
+el resultado al proxy local:
+
+```http
+POST /api/commons/score
+```
+
+El servicio reenvía la sesión del navegador a `POST /api/scores` de Commons
+con `app_id=edutictac-play`. Sin `assignment_id`, las actividades públicas y
+las previsualizaciones no envían resultados.
+
 ## Integración con Commons: itinerarios y resultados
 
 El contrato para ejecutar actividades dentro de asignaciones de Commons está
