@@ -7,6 +7,25 @@ al módulo `recursos`, que ya dispone de su propio visor H5P. Esta integración 
 forma parte del MVP inmediato: primero se estabilizan los tipos de actividad,
 la exportación y la importación en Moodle.
 
+## Estado comprobado
+
+Recursos sí existe actualmente, pero no está desplegado dentro del
+`debiandesktop` del stack Commons. La instalación pública está separada en:
+
+- `Edutictac/recursos`: frontend estático/PWA y catálogo;
+- `Edutictac/recursos-api`: API FastAPI + SQLite, publicada bajo
+  `https://recursos.edutictac.es/api/`.
+
+En `debiandesktop` no hay contenedor `recursos` ni servicio
+`recursos-api.service`; el servicio local del stack continúa siendo Play,
+Portal, ID API, EduHoot y administración. Por tanto, Play no debe depender de
+Recursos para funcionar en una instalación local o de intranet.
+
+La API actual de Recursos expone el índice federado (`GET /api/resources`),
+favoritos, valoraciones, propuestas y autenticación. No expone todavía un
+endpoint de ingesta o publicación de recursos H5P desde una aplicación
+externa.
+
 ## Flujo previsto
 
 ```text
@@ -21,10 +40,16 @@ recursos almacena/indexa el recurso público
         +--> enlace canónico para compartir
 ```
 
-Play conservará el borrador y el modelo simplificado. Cuando una actividad se
-publique en `recursos`, el repositorio de recursos será la referencia pública y
-el visor de `recursos` podrá ser el destino principal del enlace. Mientras esa
+Play conservará el borrador y el modelo simplificado. Cuando exista una
+operación de ingesta en Recursos, el repositorio de recursos será la referencia
+pública y su visor podrá ser el destino principal del enlace. Mientras esa
 integración no exista, `/play/{id}` seguirá siendo el enlace autónomo.
+
+El caso EduHoot funciona al revés: `recursos-api` ejecuta una sincronización
+pull del endpoint público `GET /api/public-quizzes` de EduHoot, normaliza los
+quizzes y los indexa como proveedor `eduhoot`. No es un contrato reutilizable
+para publicar Play, porque no permite enviar un H5P ni registrar su
+`resource_id`.
 
 ## Decisiones preparadas
 
