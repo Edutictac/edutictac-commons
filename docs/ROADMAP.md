@@ -215,6 +215,11 @@ El detall del contracte i les decisions de propietat del recurs estan en
 `docs/resources-integration.md`. Aquesta integració és posterior al MVP i no
 és necessària per crear, jugar o exportar activitats H5P localment.
 
+El contracte local i la validació del payload ja estan preparats en
+`services/play/recursos.py` i `tests/test_recursos_contract.py`; queda pendent
+connectar-los amb una API real de `recursos` quan el servei i el seu contracte
+estiguen disponibles.
+
 El contracte de resultats, assignacions i funcionament local-first de Play està
 en `docs/play-commons-integration.md`.
 
