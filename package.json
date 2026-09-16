@@ -4,7 +4,7 @@
   "version": "0.1.1-alpha",
   "scripts": {
     "test": "playwright test",
-    "test:i18n": "playwright test",
+    "test:i18n": "playwright test tests/browser/language.spec.js",
     "test:play": "playwright test --config=playwright.play.config.js",
     "test:moodle": "playwright test --config=playwright.moodle.config.js"
   },
