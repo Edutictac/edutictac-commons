@@ -216,9 +216,10 @@ El detall del contracte i les decisions de propietat del recurs estan en
 és necessària per crear, jugar o exportar activitats H5P localment.
 
 La comprovació del 2026-09-17 confirma que `recursos` i `recursos-api` són
-repositoris i serveis separats de Commons; `recursos-api` indexa EduHoot amb un
-flux pull i ja té implementada la ingesta push autenticada per a Play. Queda
-desplegar-la i configurar el token de servei.
+repositoris i serveis separats de Commons; el perfil Compose local ja els pot
+desplegar, `recursos-api` indexa EduHoot amb un flux pull i té implementada la
+ingesta push autenticada per a Play. Queda activar-la en producció, configurar
+el token de servei i connectar el flux de publicació de la UI de Play.
 
 El contracte local i la validació del payload ja estan preparats en
 `services/play/recursos.py` i `tests/test_recursos_contract.py`; queda pendent

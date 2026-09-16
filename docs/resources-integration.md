@@ -9,22 +9,24 @@ la exportación y la importación en Moodle.
 
 ## Estado comprobado
 
-Recursos sí existe actualmente, pero no está desplegado dentro del
-`debiandesktop` del stack Commons. La instalación pública está separada en:
+Recursos existe actualmente y ya puede desplegarse dentro del entorno Docker
+local de Commons mediante el perfil opcional `recursos`. La instalación
+pública sigue separada en:
 
 - `Edutictac/recursos`: frontend estático/PWA y catálogo;
 - `Edutictac/recursos-api`: API FastAPI + SQLite, publicada bajo
   `https://recursos.edutictac.es/api/`.
 
-En `debiandesktop` no hay contenedor `recursos` ni servicio
-`recursos-api.service`; el servicio local del stack continúa siendo Play,
-Portal, ID API, EduHoot y administración. Por tanto, Play no debe depender de
-Recursos para funcionar en una instalación local o de intranet.
+En el stack local se levantan los contenedores `recursos` y `recursos-api` con
+`make up-recursos`; no se activan por defecto para que Play siga funcionando
+sin Recursos. La instalación de producción continúa usando el servicio
+`recursos-api.service` separado. Por tanto, Play no depende de Recursos para
+funcionar en una instalación local o de intranet.
 
 La API actual de Recursos expone el índice federado (`GET /api/resources`),
 favoritos, valoraciones, propuestas y autenticación. El repositorio
-`recursos-api` ya incorpora el endpoint de ingesta autenticada para Play, pero
-todavía no está desplegado en `debiandesktop` ni se ha activado en producción.
+`recursos-api` ya incorpora el endpoint de ingesta autenticada para Play y está
+probado en el perfil Docker local; todavía no se ha activado en producción.
 
 ## Flujo previsto
 
