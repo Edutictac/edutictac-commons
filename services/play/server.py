@@ -15,7 +15,7 @@ from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.error import HTTPError, URLError
-from urllib.parse import unquote, urlparse
+from urllib.parse import parse_qs, unquote, urlparse
 from urllib.request import Request as UpstreamRequest, urlopen
 
 
@@ -30,6 +30,7 @@ URL_PREFIX = os.environ.get("URL_PREFIX", "").rstrip("/")
 COMMONS_API_URL = os.environ.get("EDUTICTAC_ID_API_URL", "").rstrip("/")
 COMMONS_APP_ID = os.environ.get("EDUTICTAC_PLAY_APP_ID", "edutictac-play")
 COMMONS_APP_TOKEN = os.environ.get("EDUTICTAC_ID_APP_TOKEN", "")
+PLAY_ADMIN_TOKEN = os.environ.get("EDUTICTAC_PLAY_ADMIN_TOKEN", "").strip()
 ID_RE = re.compile(r"^[A-Za-z0-9]{8}$")
 PREVIEW_RE = re.compile(r"^preview-[A-Za-z0-9]{8}$")
 PREVIEWS: dict[str, dict] = {}
@@ -492,6 +493,34 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/api/health":
             self.send_json(HTTPStatus.OK, {"status": "ok", "service": "edutictac-play"})
             return
+        if path == "/api/activities":
+            query = parse_qs(urlparse(self.path).query)
+            try:
+                limit = max(1, min(100, int(query.get("limit", ["20"])[0])))
+                offset = max(0, int(query.get("offset", ["0"])[0]))
+            except ValueError:
+                self.send_json(HTTPStatus.BAD_REQUEST, {"error": "Paginación no válida."})
+                return
+            filters = {
+                "limit": limit,
+                "offset": offset,
+                "type": query.get("type", [""])[0],
+                "language": query.get("language", [""])[0],
+                "subject": query.get("subject", [""])[0],
+                "educational_stage": query.get("educational_stage", [""])[0],
+                "license": query.get("license", [""])[0],
+                "tag": query.get("tag", [""])[0],
+                "q": query.get("q", [""])[0],
+            }
+            items, total = list_activities(filters)
+            self.send_json(HTTPStatus.OK, {
+                "items": [activity_summary(activity) for activity in items],
+                "total": total,
+                "limit": limit,
+                "offset": offset,
+                "hasMore": offset + len(items) < total,
+            })
+            return
         match = re.fullmatch(rf"/api/activities/({ACTIVITY_ID_PATTERN})", path)
         if match:
             activity = read_activity(match.group(1))
@@ -539,6 +568,30 @@ class Handler(BaseHTTPRequestHandler):
             self.wfile.write(body)
             return
         self.serve_static(path)
+
+    def admin_authorized(self) -> bool:
+        if not PLAY_ADMIN_TOKEN:
+            return False
+        token = self.headers.get("X-Admin-Token", "").strip()
+        if not token:
+            authorization = self.headers.get("Authorization", "")
+            if authorization.lower().startswith("bearer "):
+                token = authorization[7:].strip()
+        return secrets.compare_digest(token, PLAY_ADMIN_TOKEN)
+
+    def do_DELETE(self) -> None:  # noqa: N802
+        path = self.normalize_path(self.path)
+        match = re.fullmatch(rf"/api/activities/({ACTIVITY_ID_PATTERN})", path)
+        if not match:
+            self.send_json(HTTPStatus.NOT_FOUND, {"error": "Ruta no encontrada."})
+            return
+        if not self.admin_authorized():
+            self.send_json(HTTPStatus.FORBIDDEN, {"error": "Borrado no autorizado."})
+            return
+        if not delete_activity(match.group(1)):
+            self.send_json(HTTPStatus.NOT_FOUND, {"error": "Actividad no encontrada."})
+            return
+        self.send_json(HTTPStatus.OK, {"deleted": match.group(1)})
 
     def do_POST(self) -> None:  # noqa: N802
         route = self.normalize_path(self.path)
@@ -786,6 +839,66 @@ def read_activity(activity_id: str) -> dict | None:
         return json.loads(file.read_text(encoding="utf-8"))
     except (FileNotFoundError, json.JSONDecodeError):
         return None
+
+
+def activity_matches(activity: dict, filters: dict) -> bool:
+    for key in ("type", "language", "subject", "educational_stage", "license"):
+        value = filters.get(key)
+        if value and str(activity.get(key, "")).lower() != value.lower():
+            return False
+    tag = filters.get("tag")
+    if tag and tag.lower() not in [str(item).lower() for item in activity.get("tags", [])]:
+        return False
+    query = filters.get("q")
+    if query:
+        haystack = f"{activity.get('title', '')} {activity.get('question', '')} {activity.get('description', '')}".lower()
+        if query.lower() not in haystack:
+            return False
+    return True
+
+
+def list_activities(filters: dict) -> tuple[list[dict], int]:
+    """Return a page of saved activities (newest first) and the total after filters."""
+
+    items = []
+    if ACTIVITIES_DIR.exists():
+        for folder in ACTIVITIES_DIR.iterdir():
+            if not folder.is_dir() or not ID_RE.fullmatch(folder.name):
+                continue
+            activity = read_activity(folder.name)
+            if activity:
+                items.append(activity)
+    items.sort(key=lambda activity: activity.get("createdAt", ""), reverse=True)
+    matches = [activity for activity in items if activity_matches(activity, filters)]
+    offset = filters["offset"]
+    return matches[offset:offset + filters["limit"]], len(matches)
+
+
+def activity_summary(activity: dict) -> dict:
+    return {
+        "id": activity.get("id"),
+        "type": activity.get("type"),
+        "title": activity.get("title"),
+        "question": activity.get("question"),
+        "language": activity.get("language"),
+        "createdAt": activity.get("createdAt"),
+        "description": activity.get("description", ""),
+        "subject": activity.get("subject", ""),
+        "educational_stage": activity.get("educational_stage", ""),
+        "license": activity.get("license", ""),
+        "author_pseudonym": activity.get("author_pseudonym", ""),
+        "tags": activity.get("tags", []),
+    }
+
+
+def delete_activity(activity_id: str) -> bool:
+    if not ID_RE.fullmatch(activity_id):
+        return False
+    folder = ACTIVITIES_DIR / activity_id
+    if not (folder / "activity.json").is_file():
+        return False
+    shutil.rmtree(folder)
+    return True
 
 
 def main() -> None:

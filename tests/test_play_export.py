@@ -5,10 +5,13 @@ import subprocess
 import tempfile
 import threading
 import time
+import urllib.error
 import urllib.request
 import zipfile
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+
+import pytest
 
 
 class CommonsScoreHandler(BaseHTTPRequestHandler):
@@ -259,3 +262,68 @@ def test_commons_score_proxy_forwards_identity_cookie():
         process.wait(timeout=3)
         upstream.shutdown()
         upstream.server_close()
+
+
+def _create_activity(port: int, title: str) -> dict:
+    payload = json.dumps({
+        "type": "multiple-choice",
+        "title": title,
+        "question": "¿Pregunta?",
+        "answers": [{"text": "Correcta", "correct": True}, {"text": "Incorrecta", "correct": False}],
+    }).encode()
+    request = urllib.request.Request(f"http://127.0.0.1:{port}/api/activities", data=payload, headers={"Content-Type": "application/json"}, method="POST")
+    return json.loads(urllib.request.urlopen(request).read())
+
+
+def test_list_activities_is_paginated():
+    data_dir = Path(tempfile.mkdtemp(prefix="edutictac-play-test-"))
+    process = subprocess.Popen(
+        ["python3", "server.py"],
+        cwd=Path(__file__).parents[1] / "services" / "play",
+        env={**os.environ, "PORT": "18105", "PLAY_DATA_DIR": str(data_dir)},
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    try:
+        time.sleep(0.25)
+        for index in range(3):
+            _create_activity(18105, f"Actividad {index}")
+        page = json.loads(urllib.request.urlopen("http://127.0.0.1:18105/api/activities?limit=2").read())
+        assert page["total"] == 3
+        assert len(page["items"]) == 2
+        assert page["hasMore"] is True
+        assert {"id", "type", "title", "language", "createdAt"} <= set(page["items"][0])
+        second = json.loads(urllib.request.urlopen("http://127.0.0.1:18105/api/activities?limit=2&offset=2").read())
+        assert len(second["items"]) == 1
+        assert second["hasMore"] is False
+        filtered = json.loads(urllib.request.urlopen("http://127.0.0.1:18105/api/activities?type=true-false").read())
+        assert filtered["total"] == 0
+    finally:
+        process.terminate()
+        process.wait(timeout=3)
+
+
+def test_delete_activity_requires_admin_token():
+    data_dir = Path(tempfile.mkdtemp(prefix="edutictac-play-test-"))
+    process = subprocess.Popen(
+        ["python3", "server.py"],
+        cwd=Path(__file__).parents[1] / "services" / "play",
+        env={**os.environ, "PORT": "18106", "PLAY_DATA_DIR": str(data_dir), "EDUTICTAC_PLAY_ADMIN_TOKEN": "secret-token"},
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    try:
+        time.sleep(0.25)
+        activity = _create_activity(18106, "Para borrar")
+        url = f"http://127.0.0.1:18106/api/activities/{activity['id']}"
+        with pytest.raises(urllib.error.HTTPError) as forbidden:
+            urllib.request.urlopen(urllib.request.Request(url, method="DELETE"))
+        assert forbidden.value.code == 403
+        delete = urllib.request.Request(url, method="DELETE", headers={"X-Admin-Token": "secret-token"})
+        assert json.loads(urllib.request.urlopen(delete).read())["deleted"] == activity["id"]
+        with pytest.raises(urllib.error.HTTPError) as missing:
+            urllib.request.urlopen(url)
+        assert missing.value.code == 404
+    finally:
+        process.terminate()
+        process.wait(timeout=3)

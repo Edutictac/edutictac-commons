@@ -1,6 +1,7 @@
 # API inicial de EduTicTac Play
 
-La API actual es pequeña y no requiere autenticación.
+La API de lectura y creación no requiere autenticación. El borrado sí exige un
+token de administración.
 
 ## Salud
 
@@ -44,6 +45,58 @@ Las actividades públicas guardadas también se sirven mediante la URL humana:
 La URL anterior `/?activity={id}` se mantiene como compatibilidad, pero los
 nuevos enlaces para compartir usarán `/play/{id}`.
 
+## Listar actividades (paginado)
+
+```http
+GET /api/activities?limit=20&offset=0&type=&language=&subject=&educational_stage=&license=&tag=&q=
+```
+
+Devuelve las actividades guardadas de más reciente a más antigua:
+
+```json
+{
+  "items": [
+    {
+      "id": "Ab12Cd34",
+      "type": "multiple-choice",
+      "title": "Animales",
+      "question": "¿Cuál vuela?",
+      "language": "es",
+      "createdAt": "2026-09-16T20:50:56+00:00",
+      "description": "",
+      "subject": "",
+      "educational_stage": "",
+      "license": "CC BY-SA",
+      "author_pseudonym": "",
+      "tags": []
+    }
+  ],
+  "total": 1,
+  "limit": 20,
+  "offset": 0,
+  "hasMore": false
+}
+```
+
+- `limit` se acota a 1–100 (por defecto 20); `offset` por defecto 0.
+- Filtros opcionales (coincidencia exacta, salvo `q`): `type`, `language`,
+  `subject`, `educational_stage`, `license`, `tag`. `q` busca en título,
+  pregunta y descripción.
+
+## Borrar actividad
+
+```http
+DELETE /api/activities/{id}
+X-Admin-Token: <EDUTICTAC_PLAY_ADMIN_TOKEN>
+```
+
+- Requiere el token de administración (`X-Admin-Token`, o `Authorization:
+  Bearer`). Se compara en tiempo constante.
+- Si `EDUTICTAC_PLAY_ADMIN_TOKEN` no está configurado, el borrado queda
+  **deshabilitado** (responde `403`).
+- Respuestas: `200 {"deleted": "<id>"}`, `403` sin autorización, `404` si no
+  existe.
+
 ## Rutas internas del reproductor
 
 ```http
@@ -52,12 +105,12 @@ GET /api/activities/{id}/h5p/content/content.json
 GET /h5p-libraries/{library}/{file}
 ```
 
-## API futura de Commons
+## API de Commons
 
-Se mantendrán, como mínimo, `GET /api/activities`,
-`GET /api/activities/{id}` y `GET /api/activities/{id}/download`, con filtros
-por tipo, materia, etapa, idioma, etiquetas y licencia. Deberá añadirse
-autorización antes de exponer actividades privadas o de clase.
+Están disponibles `GET /api/activities` (paginado y con filtros),
+`GET /api/activities/{id}` y `GET /api/activities/{id}/download`. Deberá
+añadirse autorización antes de exponer actividades privadas o de clase; hoy
+todas las guardadas son públicas y el borrado exige el token de administración.
 
 ## Integración futura con `recursos`
 
