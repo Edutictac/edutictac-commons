@@ -9,6 +9,7 @@ import re
 import secrets
 import shutil
 import tempfile
+import time
 import zipfile
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -28,9 +29,11 @@ HOST = os.environ.get("HOST", "0.0.0.0")
 URL_PREFIX = os.environ.get("URL_PREFIX", "").rstrip("/")
 COMMONS_API_URL = os.environ.get("EDUTICTAC_ID_API_URL", "").rstrip("/")
 COMMONS_APP_ID = os.environ.get("EDUTICTAC_PLAY_APP_ID", "edutictac-play")
+COMMONS_APP_TOKEN = os.environ.get("EDUTICTAC_ID_APP_TOKEN", "")
 ID_RE = re.compile(r"^[A-Za-z0-9]{8}$")
 PREVIEW_RE = re.compile(r"^preview-[A-Za-z0-9]{8}$")
 PREVIEWS: dict[str, dict] = {}
+LAUNCH_CONTEXTS: dict[str, dict] = {}
 ACTIVITY_ID_PATTERN = r"(?:[A-Za-z0-9]{8}|preview-[A-Za-z0-9]{8})"
 
 
@@ -352,6 +355,9 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self) -> None:  # noqa: N802
         route = self.normalize_path(self.path)
+        if route == "/api/commons/launch":
+            self.consume_commons_launch()
+            return
         if route == "/api/commons/score":
             self.forward_commons_score()
             return
@@ -393,6 +399,7 @@ class Handler(BaseHTTPRequestHandler):
             activity_id = str(payload.get("activity_id", "")).strip()
             assignment_id = str(payload.get("assignment_id", "")).strip()
             result_id = str(payload.get("result_id", "")).strip()
+            launch_context = str(payload.get("launch_context", "")).strip()
             score = int(payload.get("score"))
             metadata = payload.get("metadata", {})
             if not ID_RE.fullmatch(activity_id) or not assignment_id or len(result_id) > 512 or not isinstance(metadata, dict):
@@ -402,22 +409,45 @@ class Handler(BaseHTTPRequestHandler):
         except (TypeError, ValueError, json.JSONDecodeError):
             self.send_json(HTTPStatus.BAD_REQUEST, {"error": "Datos de resultado no válidos."})
             return
-        body = json.dumps({
-            "app_id": COMMONS_APP_ID,
-            "activity_id": activity_id,
-            "assignment_id": assignment_id,
-            "result_id": result_id,
-            "score": score,
-            "metadata": metadata,
-        }).encode()
+        context = LAUNCH_CONTEXTS.get(launch_context) if launch_context else None
+        if launch_context:
+            if not context or context["expires_at"] <= time.time():
+                LAUNCH_CONTEXTS.pop(launch_context, None)
+                self.send_json(HTTPStatus.UNAUTHORIZED, {"error": "Lanzamiento de Commons caducado."})
+                return
+            if context["assignment_id"] != assignment_id or context["activity_id"] != activity_id:
+                self.send_json(HTTPStatus.FORBIDDEN, {"error": "La actividad no coincide con el lanzamiento."})
+                return
+            if not context["identity_id"] or not COMMONS_APP_TOKEN:
+                self.send_json(HTTPStatus.NOT_IMPLEMENTED, {"error": "El lanzamiento no tiene identidad válida."})
+                return
+            upstream_path = f"/api/apps/{COMMONS_APP_ID}/scores"
+            upstream_payload = {
+                "identity_id": context["identity_id"],
+                "activity_id": activity_id,
+                "assignment_id": assignment_id,
+                "result_id": result_id,
+                "score": score,
+                "metadata": metadata,
+            }
+            upstream_headers = {"Authorization": f"Bearer {COMMONS_APP_TOKEN}"}
+        else:
+            upstream_path = "/api/scores"
+            upstream_payload = {
+                "app_id": COMMONS_APP_ID,
+                "activity_id": activity_id,
+                "assignment_id": assignment_id,
+                "result_id": result_id,
+                "score": score,
+                "metadata": metadata,
+            }
+            upstream_headers = {"Cookie": self.headers.get("Cookie", "")}
+        body = json.dumps(upstream_payload).encode()
+        upstream_headers.update({"Content-Type": "application/json", "Accept": "application/json"})
         request = UpstreamRequest(
-            f"{COMMONS_API_URL}/api/scores",
+            f"{COMMONS_API_URL}{upstream_path}",
             data=body,
-            headers={
-                "Content-Type": "application/json",
-                "Accept": "application/json",
-                "Cookie": self.headers.get("Cookie", ""),
-            },
+            headers=upstream_headers,
             method="POST",
         )
         try:
@@ -435,6 +465,63 @@ class Handler(BaseHTTPRequestHandler):
         except (UnicodeDecodeError, json.JSONDecodeError):
             result = {"error": "Respuesta no válida de Commons."}
         self.send_json(status, result if isinstance(result, dict) else {"result": result})
+
+    def consume_commons_launch(self) -> None:
+        if not COMMONS_API_URL or not COMMONS_APP_TOKEN:
+            self.send_json(HTTPStatus.NOT_IMPLEMENTED, {"error": "Los lanzamientos de Commons no están configurados."})
+            return
+        try:
+            length = int(self.headers.get("Content-Length", "0"))
+            if length > 8 * 1024:
+                raise ValueError("El contenido es demasiado grande.")
+            payload = json.loads(self.rfile.read(length))
+            token = str(payload.get("token", "")).strip()
+            if not token or len(token) > 512:
+                raise ValueError("Token no válido.")
+        except (TypeError, ValueError, json.JSONDecodeError):
+            self.send_json(HTTPStatus.BAD_REQUEST, {"error": "Token de lanzamiento no válido."})
+            return
+        body = json.dumps({"token": token}).encode()
+        request = UpstreamRequest(
+            f"{COMMONS_API_URL}/api/apps/{COMMONS_APP_ID}/launch-tokens/consume",
+            data=body,
+            headers={
+                "Authorization": f"Bearer {COMMONS_APP_TOKEN}",
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+            },
+            method="POST",
+        )
+        try:
+            with urlopen(request, timeout=5) as response:
+                response_body = response.read()
+                status = response.status
+        except HTTPError as error:
+            response_body = error.read()
+            status = error.code
+        except URLError:
+            self.send_json(HTTPStatus.BAD_GATEWAY, {"error": "No se ha podido contactar con Commons."})
+            return
+        try:
+            result = json.loads(response_body.decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError):
+            self.send_json(HTTPStatus.BAD_GATEWAY, {"error": "Respuesta no válida de Commons."})
+            return
+        if status >= 400 or not isinstance(result, dict):
+            self.send_json(status, result if isinstance(result, dict) else {"error": "Lanzamiento no válido."})
+            return
+        assignment = result.get("assignment") or {}
+        if assignment.get("app_id") != COMMONS_APP_ID or not assignment.get("id") or not assignment.get("activity_id"):
+            self.send_json(HTTPStatus.BAD_GATEWAY, {"error": "Asignación no válida de Commons."})
+            return
+        context_id = secrets.token_urlsafe(32)
+        LAUNCH_CONTEXTS[context_id] = {
+            "identity_id": (result.get("identity") or {}).get("id", ""),
+            "assignment_id": assignment["id"],
+            "activity_id": assignment["activity_id"],
+            "expires_at": time.time() + 3600,
+        }
+        self.send_json(HTTPStatus.OK, {"context_id": context_id, "assignment": assignment})
 
     def download_package(self, activity: dict) -> None:
         with tempfile.NamedTemporaryFile(suffix=".h5p") as tmp:

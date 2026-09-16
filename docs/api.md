@@ -83,6 +83,11 @@ las previsualizaciones no envían resultados. `result_id` identifica la
 declaración xAPI o el intento local de la sesión; Commons lo utiliza para que
 un reenvío no cuente como un segundo intento.
 
+Para actividades asignadas, el portal del alumnado solicita un token de corta
+duración a Commons. Play lo consume mediante su credencial interna y crea un
+contexto temporal de lanzamiento. Los resultados de ese contexto se envían a
+`/api/apps/edutictac-play/scores`, sin exponer el token interno al navegador.
+
 ## Integración con Commons: itinerarios y resultados
 
 El contrato para ejecutar actividades dentro de asignaciones de Commons está

@@ -1,4 +1,5 @@
 const EDUHOOT_APP = "eduhoot";
+const PLAY_APP = "edutictac-play";
 const STORAGE_KEY = "edutictac-commons-state";
 const EDUHOOT_BASE_PROTOCOL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
   ? window.location.protocol
@@ -254,6 +255,8 @@ function studentDashboard(assignments) {
     action:
       assignment.app_id === EDUHOOT_APP
         ? `<button class="compact secondary" type="button" data-launch-eduhoot-assignment="${escapeHtml(assignment.id)}">${t("student.openEduhoot")}</button>`
+        : assignment.app_id === PLAY_APP
+          ? `<button class="compact secondary" type="button" data-launch-play-assignment="${escapeHtml(assignment.id)}">${t("student.openPlay")}</button>`
         : "",
   }));
   return `
@@ -563,6 +566,19 @@ async function launchEduhootAssignment(assignment) {
   window.location.href = url.toString();
 }
 
+async function launchPlayAssignment(assignment) {
+  if (!state.student) {
+    throw new Error(t("student.errors.loginFirst"));
+  }
+  const launch = await api("/api/student/launch-token", {
+    method: "POST",
+    body: JSON.stringify({ assignment_id: assignment.id }),
+  });
+  const url = new URL(`/play/${encodeURIComponent(assignment.activity_id)}`, window.location.origin);
+  url.searchParams.set("launch_token", launch.token);
+  window.location.href = url.toString();
+}
+
 async function loadResults() {
   if (!state.assignment) {
     throw new Error(t("teacher.errors.selectActivityFirst"));
@@ -688,6 +704,15 @@ document.addEventListener("click", (event) => {
     const assignment = state.studentAssignments.find((item) => item.id === eduhootLaunchButton.dataset.launchEduhootAssignment);
     if (!assignment) return;
     launchEduhootAssignment(assignment).catch((error) => {
+      setOutput($("studentOutput"), `<p><strong>${t("common.errorLabel")}</strong> ${escapeHtml(error.message)}</p>${studentDashboard(state.studentAssignments)}`);
+    });
+  }
+
+  const playLaunchButton = event.target.closest("[data-launch-play-assignment]");
+  if (playLaunchButton) {
+    const assignment = state.studentAssignments.find((item) => item.id === playLaunchButton.dataset.launchPlayAssignment);
+    if (!assignment) return;
+    launchPlayAssignment(assignment).catch((error) => {
       setOutput($("studentOutput"), `<p><strong>${t("common.errorLabel")}</strong> ${escapeHtml(error.message)}</p>${studentDashboard(state.studentAssignments)}`);
     });
   }

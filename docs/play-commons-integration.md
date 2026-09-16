@@ -168,9 +168,11 @@ catálogo público.
    identidad → asignación → juego → resultado → tablero docente.
 6. [x] Añadir idempotencia mediante `result_id`, incluido el reenvío repetido
    del mismo resultado sin contar un intento adicional.
-7. Añadir reintento local de resultados pendientes cuando se pierda la conexión.
-8. Integrar el catálogo y visor de `recursos`.
-9. Añadir asociación, actualización y retirada mediante `resource_id`.
+7. [x] Utilizar tokens de lanzamiento de Commons para validar la actividad y
+   la identidad sin depender de una cookie del navegador.
+8. Añadir reintento local de resultados pendientes cuando se pierda la conexión.
+9. Integrar el catálogo y visor de `recursos`.
+10. Añadir asociación, actualización y retirada mediante `resource_id`.
 
 La prueba del punto 5 se ejecuta con `make test-play-commons`. Crea una
 actividad y una asignación temporales, autentica una identidad pseudónima,
@@ -188,4 +190,6 @@ móvil y verifica la petición xAPI a Commons.
 - El profesor ve intentos, mejor puntuación y última fecha desde su tablero.
 - Una asignación de otro grupo no puede aceptar resultados.
 - Reenviar el mismo `result_id` no crea un segundo intento.
+- Un token de lanzamiento caducado o de otra aplicación no permite jugar ni
+  registrar resultados.
 - La integración con `recursos` no duplica identidades ni calificaciones.

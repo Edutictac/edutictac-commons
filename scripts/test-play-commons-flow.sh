@@ -78,14 +78,21 @@ curl -fsS -c "$student_cookie" -b "$student_cookie" \
   -d "{\"public_code\":\"${code}\",\"pin\":\"${pin}\"}" \
   "$base/api/auth/student" >/dev/null
 
-curl -fsS -c "$student_cookie" -b "$student_cookie" \
+launch_token="$(curl -fsS -c "$student_cookie" -b "$student_cookie" \
   -H 'Content-Type: application/json' \
-  -d "{\"activity_id\":\"${activity_id}\",\"assignment_id\":\"${assignment_id}\",\"result_id\":\"https://example.test/results/play-flow-1\",\"score\":80,\"metadata\":{\"source\":\"play-commons-flow\"}}" \
+  -d "{\"assignment_id\":\"${assignment_id}\"}" "$base/api/student/launch-token" | jq -r '.token')"
+launch_context="$(curl -fsS -X POST "$play_base/api/commons/launch" \
+  -H 'Content-Type: application/json' \
+  -d "{\"token\":\"${launch_token}\"}" | jq -r '.context_id')"
+
+curl -fsS \
+  -H 'Content-Type: application/json' \
+  -d "{\"activity_id\":\"${activity_id}\",\"assignment_id\":\"${assignment_id}\",\"launch_context\":\"${launch_context}\",\"result_id\":\"https://example.test/results/play-flow-1\",\"score\":80,\"metadata\":{\"source\":\"play-commons-flow\"}}" \
   "$play_base/api/commons/score" >/dev/null
 
-curl -fsS -c "$student_cookie" -b "$student_cookie" \
+curl -fsS \
   -H 'Content-Type: application/json' \
-  -d "{\"activity_id\":\"${activity_id}\",\"assignment_id\":\"${assignment_id}\",\"result_id\":\"https://example.test/results/play-flow-1\",\"score\":80,\"metadata\":{\"source\":\"play-commons-flow\"}}" \
+  -d "{\"activity_id\":\"${activity_id}\",\"assignment_id\":\"${assignment_id}\",\"launch_context\":\"${launch_context}\",\"result_id\":\"https://example.test/results/play-flow-1\",\"score\":80,\"metadata\":{\"source\":\"play-commons-flow\"}}" \
   "$play_base/api/commons/score" >/dev/null
 
 results="$(curl -fsS -c "$teacher_cookie" -b "$teacher_cookie" \
