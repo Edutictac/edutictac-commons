@@ -173,6 +173,7 @@ def test_commons_score_proxy_forwards_identity_cookie():
         payload = json.dumps({
             "activity_id": "Ab12Cd34",
             "assignment_id": "assignment-1",
+            "result_id": "https://example.test/results/1",
             "score": 80,
             "metadata": {"source": "h5p-xapi", "raw_score": 4, "max_score": 5},
         }).encode()
@@ -189,6 +190,7 @@ def test_commons_score_proxy_forwards_identity_cookie():
                 "app_id": "edutictac-play",
                 "activity_id": "Ab12Cd34",
                 "assignment_id": "assignment-1",
+                "result_id": "https://example.test/results/1",
                 "score": 80,
                 "metadata": {"source": "h5p-xapi", "raw_score": 4, "max_score": 5},
             },

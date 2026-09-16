@@ -79,7 +79,9 @@ POST /api/commons/score
 
 El servicio reenvía la sesión del navegador a `POST /api/scores` de Commons
 con `app_id=edutictac-play`. Sin `assignment_id`, las actividades públicas y
-las previsualizaciones no envían resultados.
+las previsualizaciones no envían resultados. `result_id` identifica la
+declaración xAPI o el intento local de la sesión; Commons lo utiliza para que
+un reenvío no cuente como un segundo intento.
 
 ## Integración con Commons: itinerarios y resultados
 

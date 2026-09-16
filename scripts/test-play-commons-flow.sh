@@ -80,7 +80,12 @@ curl -fsS -c "$student_cookie" -b "$student_cookie" \
 
 curl -fsS -c "$student_cookie" -b "$student_cookie" \
   -H 'Content-Type: application/json' \
-  -d "{\"activity_id\":\"${activity_id}\",\"assignment_id\":\"${assignment_id}\",\"score\":80,\"metadata\":{\"source\":\"play-commons-flow\"}}" \
+  -d "{\"activity_id\":\"${activity_id}\",\"assignment_id\":\"${assignment_id}\",\"result_id\":\"https://example.test/results/play-flow-1\",\"score\":80,\"metadata\":{\"source\":\"play-commons-flow\"}}" \
+  "$play_base/api/commons/score" >/dev/null
+
+curl -fsS -c "$student_cookie" -b "$student_cookie" \
+  -H 'Content-Type: application/json' \
+  -d "{\"activity_id\":\"${activity_id}\",\"assignment_id\":\"${assignment_id}\",\"result_id\":\"https://example.test/results/play-flow-1\",\"score\":80,\"metadata\":{\"source\":\"play-commons-flow\"}}" \
   "$play_base/api/commons/score" >/dev/null
 
 results="$(curl -fsS -c "$teacher_cookie" -b "$teacher_cookie" \

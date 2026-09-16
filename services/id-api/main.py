@@ -111,6 +111,7 @@ def init_db() -> None:
                 app_id TEXT NOT NULL,
                 activity_id TEXT NOT NULL,
                 score INTEGER NOT NULL,
+                result_id TEXT NOT NULL DEFAULT '',
                 metadata_json TEXT NOT NULL DEFAULT '{}',
                 created_at TEXT NOT NULL
             );
@@ -165,6 +166,15 @@ def init_db() -> None:
             """
             CREATE INDEX IF NOT EXISTS idx_scores_assignment
                 ON scores(assignment_id, score DESC, created_at ASC)
+            """
+        )
+        if "result_id" not in score_columns:
+            conn.execute("ALTER TABLE scores ADD COLUMN result_id TEXT NOT NULL DEFAULT ''")
+        conn.execute(
+            """
+            CREATE UNIQUE INDEX IF NOT EXISTS idx_scores_result_unique
+                ON scores(identity_id, assignment_id, result_id)
+                WHERE result_id <> ''
             """
         )
 
@@ -397,6 +407,7 @@ class ScoreIn(BaseModel):
     app_id: str
     activity_id: str
     assignment_id: str = ""
+    result_id: str = Field(default="", max_length=512)
     score: int
     metadata: dict[str, Any] = Field(default_factory=dict)
 
@@ -412,6 +423,7 @@ class AppScoreIn(BaseModel):
     identity_id: str
     activity_id: str
     assignment_id: str = ""
+    result_id: str = Field(default="", max_length=512)
     score: int
     metadata: dict[str, Any] = Field(default_factory=dict)
 
@@ -886,6 +898,7 @@ def add_score(payload: ScoreIn, request: Request) -> dict[str, Any]:
     app_id = normalize_app_id(payload.app_id)
     activity_id = normalize_activity_id(payload.activity_id)
     assignment_id = (payload.assignment_id or "").strip()
+    result_id = (payload.result_id or "").strip()
     with get_conn() as conn:
         if assignment_id:
             assignment = conn.execute(
@@ -902,10 +915,24 @@ def add_score(payload: ScoreIn, request: Request) -> dict[str, Any]:
                 raise HTTPException(status_code=400, detail="assignment does not match activity")
             if assignment["group_id"] != identity["group_id"]:
                 raise HTTPException(status_code=403, detail="assignment is not for this group")
+        if result_id:
+            existing = conn.execute(
+                "SELECT id, score, assignment_id FROM scores WHERE identity_id = ? AND assignment_id = ? AND result_id = ?",
+                (identity["id"], assignment_id, result_id),
+            ).fetchone()
+            if existing:
+                return {
+                    "ok": True,
+                    "duplicate": True,
+                    "id": existing["id"],
+                    "public_code": identity["public_code"],
+                    "assignment_id": existing["assignment_id"],
+                    "score": existing["score"],
+                }
         conn.execute(
             """
-            INSERT INTO scores (id, identity_id, assignment_id, app_id, activity_id, score, metadata_json, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO scores (id, identity_id, assignment_id, app_id, activity_id, score, result_id, metadata_json, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 score_id,
@@ -914,6 +941,7 @@ def add_score(payload: ScoreIn, request: Request) -> dict[str, Any]:
                 app_id,
                 activity_id,
                 payload.score,
+                result_id,
                 json.dumps(payload.metadata),
                 ts,
             ),
@@ -935,6 +963,7 @@ def add_app_score(app_id: str, payload: AppScoreIn, request: Request) -> dict[st
     app_key = normalize_app_id(app_id)
     activity_id = normalize_activity_id(payload.activity_id)
     assignment_id = (payload.assignment_id or "").strip()
+    result_id = (payload.result_id or "").strip()
     with get_conn() as conn:
         identity = conn.execute(
             """
@@ -977,10 +1006,24 @@ def add_app_score(app_id: str, payload: AppScoreIn, request: Request) -> dict[st
                 (app_key, activity_id, identity["group_id"]),
             ).fetchone()
             assignment_id = assignment["id"] if assignment else ""
+        if result_id:
+            existing = conn.execute(
+                "SELECT id, score, assignment_id FROM scores WHERE identity_id = ? AND assignment_id = ? AND result_id = ?",
+                (identity["id"], assignment_id, result_id),
+            ).fetchone()
+            if existing:
+                return {
+                    "ok": True,
+                    "duplicate": True,
+                    "id": existing["id"],
+                    "public_code": identity["public_code"],
+                    "assignment_id": existing["assignment_id"],
+                    "score": existing["score"],
+                }
         conn.execute(
             """
-            INSERT INTO scores (id, identity_id, assignment_id, app_id, activity_id, score, metadata_json, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO scores (id, identity_id, assignment_id, app_id, activity_id, score, result_id, metadata_json, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 score_id,
@@ -989,6 +1032,7 @@ def add_app_score(app_id: str, payload: AppScoreIn, request: Request) -> dict[st
                 app_key,
                 activity_id,
                 payload.score,
+                result_id,
                 json.dumps(payload.metadata),
                 ts,
             ),

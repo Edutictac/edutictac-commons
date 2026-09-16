@@ -94,4 +94,6 @@ test('envía a Commons el resultado real de un Quiz H5P', async ({ page }) => {
   await expect.poll(() => scorePayload).toMatchObject({ assignment_id: 'assignment-test', score: 100 });
   expect(scorePayload.activity_id).toMatch(/^[A-Za-z0-9]{8}$/);
   expect(scorePayload.metadata.source).toBe('h5p-xapi');
+  expect(scorePayload.result_id).toMatch(/^urn:edutictac-play:/);
+  expect(scorePayload.metadata.statement_id).toBe(scorePayload.result_id);
 });

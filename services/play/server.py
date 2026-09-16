@@ -392,9 +392,10 @@ class Handler(BaseHTTPRequestHandler):
             payload = json.loads(self.rfile.read(length))
             activity_id = str(payload.get("activity_id", "")).strip()
             assignment_id = str(payload.get("assignment_id", "")).strip()
+            result_id = str(payload.get("result_id", "")).strip()
             score = int(payload.get("score"))
             metadata = payload.get("metadata", {})
-            if not ID_RE.fullmatch(activity_id) or not assignment_id or not isinstance(metadata, dict):
+            if not ID_RE.fullmatch(activity_id) or not assignment_id or len(result_id) > 512 or not isinstance(metadata, dict):
                 raise ValueError("Datos de resultado no válidos.")
             if score < 0 or score > 100:
                 raise ValueError("La puntuación debe estar entre 0 y 100.")
@@ -405,6 +406,7 @@ class Handler(BaseHTTPRequestHandler):
             "app_id": COMMONS_APP_ID,
             "activity_id": activity_id,
             "assignment_id": assignment_id,
+            "result_id": result_id,
             "score": score,
             "metadata": metadata,
         }).encode()

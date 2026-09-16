@@ -166,9 +166,11 @@ catálogo público.
 4. [x] Enviar resultados al contrato `POST /api/scores`.
 5. [x] Añadir una prueba automática de extremo a extremo:
    identidad → asignación → juego → resultado → tablero docente.
-6. Añadir reintento local de resultados pendientes, sin duplicados.
-7. Integrar el catálogo y visor de `recursos`.
-8. Añadir asociación, actualización y retirada mediante `resource_id`.
+6. [x] Añadir idempotencia mediante `result_id`, incluido el reenvío repetido
+   del mismo resultado sin contar un intento adicional.
+7. Añadir reintento local de resultados pendientes cuando se pierda la conexión.
+8. Integrar el catálogo y visor de `recursos`.
+9. Añadir asociación, actualización y retirada mediante `resource_id`.
 
 La prueba del punto 5 se ejecuta con `make test-play-commons`. Crea una
 actividad y una asignación temporales, autentica una identidad pseudónima,
@@ -185,4 +187,5 @@ móvil y verifica la petición xAPI a Commons.
 - Al completar H5P, el resultado aparece en Commons con el código pseudónimo.
 - El profesor ve intentos, mejor puntuación y última fecha desde su tablero.
 - Una asignación de otro grupo no puede aceptar resultados.
+- Reenviar el mismo `result_id` no crea un segundo intento.
 - La integración con `recursos` no duplica identidades ni calificaciones.
