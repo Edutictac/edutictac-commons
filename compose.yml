@@ -44,6 +44,9 @@ services:
       - ./data/play:/app/data
     ports:
       - "${PLAY_PORT:-8084}:8083"
+    depends_on:
+      id-api:
+        condition: service_healthy
 
   admin:
     image: ${IMAGE_REGISTRY:-edutictac}/commons-admin:${IMAGE_TAG:-0.1.1-alpha}
