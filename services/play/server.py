@@ -41,20 +41,176 @@ def safe_text(value: object, limit: int = 5000) -> str:
     return html.escape(str(value or "").strip()[:limit], quote=True)
 
 
+LANGUAGES = ("es", "ca", "en")
+
+H5P_TEXT: dict[str, dict[str, str]] = {
+    "es": {
+        "check": "Comprobar",
+        "submit": "Enviar",
+        "retryShort": "Reintentar",
+        "retryLong": "Intentarlo de nuevo",
+        "showSolution": "Mostrar solución",
+        "correct": "Correcto.",
+        "incorrect": "Prueba otra vez.",
+        "tryHarder": "Sigue intentándolo.",
+        "allCorrect": "¡Todo correcto!",
+        "wellDone": "¡Correcto!",
+        "scoreBar": "Has conseguido :num de :total puntos",
+        "scoreAt": "Has conseguido @score de @total puntos",
+        "a11yCheck": "Comprobar las respuestas.",
+        "a11yCheckOne": "Comprobar la respuesta.",
+        "a11yShowSolution": "Mostrar la solución.",
+        "a11yRetry": "Reintentar la actividad.",
+        "trueText": "Verdadero",
+        "falseText": "Falso",
+        "wrongAnswer": "Respuesta incorrecta",
+        "correctAnswer": "Respuesta correcta",
+        "tipLabel": "Mostrar pista",
+        "tipAvailable": "Hay una pista disponible",
+        "feedbackAvailable": "Hay comentarios disponibles",
+        "readFeedback": "Leer comentarios",
+        "shouldCheck": "Debía estar marcada",
+        "shouldNotCheck": "No debía estar marcada",
+        "noInput": "Responde antes de ver la solución",
+        "submitAnswerButton": "Enviar respuesta",
+        "confirmCheckHeader": "¿Terminar?",
+        "confirmCheckBody": "¿Quieres comprobar la respuesta?",
+        "confirmRetryHeader": "¿Reintentar?",
+        "confirmRetryBody": "Se borrarán tus respuestas.",
+        "cancel": "Cancelar",
+        "memCardTurns": "Movimientos",
+        "memTimeSpent": "Tiempo empleado",
+        "memFeedback": "¡Muy bien!",
+        "memClose": "Cerrar",
+        "memLabel": "Juego de memoria. Encuentra las parejas.",
+        "memInstructions": "Usa las flechas y espacio o enter para girar las cartas.",
+        "memDone": "Has encontrado todas las parejas.",
+        "memCardPrefix": "Carta %num de %total:",
+        "memCardUnturned": "Sin girar. Pulsa para girar.",
+        "memCardTurned": "Carta girada.",
+        "memCardMatched": "Pareja encontrada.",
+        "memCardMatchedA11y": "¡Las cartas coinciden!",
+        "memCardNotMatchedA11y": "No coinciden. Prueba con otras cartas.",
+    },
+    "ca": {
+        "check": "Comprova",
+        "submit": "Envia",
+        "retryShort": "Reintenta",
+        "retryLong": "Torna-ho a provar",
+        "showSolution": "Mostra la solució",
+        "correct": "Correcte.",
+        "incorrect": "Torna-ho a provar.",
+        "tryHarder": "Segueix intentant-ho.",
+        "allCorrect": "Tot correcte!",
+        "wellDone": "Correcte!",
+        "scoreBar": "Has aconseguit :num de :total punts",
+        "scoreAt": "Has aconseguit @score de @total punts",
+        "a11yCheck": "Comprova les respostes.",
+        "a11yCheckOne": "Comprova la resposta.",
+        "a11yShowSolution": "Mostra la solució.",
+        "a11yRetry": "Reintenta l'activitat.",
+        "trueText": "Veritable",
+        "falseText": "Fals",
+        "wrongAnswer": "Resposta incorrecta",
+        "correctAnswer": "Resposta correcta",
+        "tipLabel": "Mostra la pista",
+        "tipAvailable": "Hi ha una pista disponible",
+        "feedbackAvailable": "Hi ha comentaris disponibles",
+        "readFeedback": "Llig els comentaris",
+        "shouldCheck": "Havia d'estar marcada",
+        "shouldNotCheck": "No havia d'estar marcada",
+        "noInput": "Respon abans de vore la solució",
+        "submitAnswerButton": "Envia la resposta",
+        "confirmCheckHeader": "Acabar?",
+        "confirmCheckBody": "Vols comprovar la resposta?",
+        "confirmRetryHeader": "Reintentar?",
+        "confirmRetryBody": "S'esborraran les teues respostes.",
+        "cancel": "Cancel·la",
+        "memCardTurns": "Moviments",
+        "memTimeSpent": "Temps emprat",
+        "memFeedback": "Molt bé!",
+        "memClose": "Tanca",
+        "memLabel": "Joc de memòria. Troba les parelles.",
+        "memInstructions": "Usa les fletxes i espai o enter per girar les cartes.",
+        "memDone": "Has trobat totes les parelles.",
+        "memCardPrefix": "Carta %num de %total:",
+        "memCardUnturned": "Sense girar. Prem per girar.",
+        "memCardTurned": "Carta girada.",
+        "memCardMatched": "Parella trobada.",
+        "memCardMatchedA11y": "Les cartes coincideixen!",
+        "memCardNotMatchedA11y": "No coincideixen. Prova amb altres cartes.",
+    },
+    "en": {
+        "check": "Check",
+        "submit": "Submit",
+        "retryShort": "Retry",
+        "retryLong": "Try again",
+        "showSolution": "Show solution",
+        "correct": "Correct.",
+        "incorrect": "Try again.",
+        "tryHarder": "Keep trying.",
+        "allCorrect": "All correct!",
+        "wellDone": "Correct!",
+        "scoreBar": "You got :num of :total points",
+        "scoreAt": "You got @score of @total points",
+        "a11yCheck": "Check the answers.",
+        "a11yCheckOne": "Check the answer.",
+        "a11yShowSolution": "Show the solution.",
+        "a11yRetry": "Retry the activity.",
+        "trueText": "True",
+        "falseText": "False",
+        "wrongAnswer": "Wrong answer",
+        "correctAnswer": "Correct answer",
+        "tipLabel": "Show tip",
+        "tipAvailable": "A tip is available",
+        "feedbackAvailable": "Feedback is available",
+        "readFeedback": "Read feedback",
+        "shouldCheck": "Should have been checked",
+        "shouldNotCheck": "Should not have been checked",
+        "noInput": "Answer before viewing the solution",
+        "submitAnswerButton": "Submit answer",
+        "confirmCheckHeader": "Finish?",
+        "confirmCheckBody": "Do you want to check the answer?",
+        "confirmRetryHeader": "Retry?",
+        "confirmRetryBody": "Your answers will be deleted.",
+        "cancel": "Cancel",
+        "memCardTurns": "Moves",
+        "memTimeSpent": "Time spent",
+        "memFeedback": "Well done!",
+        "memClose": "Close",
+        "memLabel": "Memory game. Find the matching pairs.",
+        "memInstructions": "Use the arrow keys and space or enter to turn the cards.",
+        "memDone": "You found all the pairs.",
+        "memCardPrefix": "Card %num of %total:",
+        "memCardUnturned": "Not turned. Press to turn.",
+        "memCardTurned": "Card turned.",
+        "memCardMatched": "Pair found.",
+        "memCardMatchedA11y": "The cards match!",
+        "memCardNotMatchedA11y": "They do not match. Try other cards.",
+    },
+}
+
+
+def activity_language(payload: dict) -> str:
+    language = str(payload.get("language", "") or "").strip().lower()
+    return language if language in H5P_TEXT else "es"
+
+
 def activity_content(activity: dict) -> dict:
+    t = H5P_TEXT.get(str(activity.get("language") or "es"), H5P_TEXT["es"])
     if activity.get("type") == "matching":
         elements = []
         drop_zones = []
         for index, pair in enumerate(activity["pairs"]):
             top = 8 + index * 16
             elements.append({"type": {"library": "H5P.AdvancedText 1.1", "params": {"text": f"<p>{safe_text(pair['left'])}</p>"}}, "x": 5, "y": top, "height": 3, "width": 12, "dropZones": [index], "backgroundOpacity": 100, "multiple": False})
-            drop_zones.append({"label": safe_text(pair["right"]), "showLabel": True, "x": 55, "y": top, "height": 3, "width": 18, "correctElements": [index], "backgroundOpacity": 100, "tipsAndFeedback": {"tip": "", "feedbackOnCorrect": "Correcto.", "feedbackOnIncorrect": "Prueba otra vez."}})
+            drop_zones.append({"label": safe_text(pair["right"]), "showLabel": True, "x": 55, "y": top, "height": 3, "width": 18, "correctElements": [index], "backgroundOpacity": 100, "tipsAndFeedback": {"tip": "", "feedbackOnCorrect": t["correct"], "feedbackOnIncorrect": t["incorrect"]}})
         return {
-            "scoreShow": "Comprobar", "submit": "Enviar", "tryAgain": "Reintentar",
+            "scoreShow": t["check"], "submit": t["submit"], "tryAgain": t["retryShort"],
             "question": {"settings": {"questionTitle": safe_text(activity["question"]), "size": {"width": 620, "height": 310}}, "task": {"elements": elements, "dropZones": drop_zones}},
             "behaviour": {"enableRetry": True, "enableCheckButton": True, "singlePoint": False, "applyPenalties": True, "enableScoreExplanation": True, "dropZoneHighlighting": "dragging", "enableFullScreen": False},
-            "overallFeedback": [{"from": 0, "to": 99, "feedback": "Sigue intentándolo."}, {"from": 100, "to": 100, "feedback": "¡Todo correcto!"}],
-            "scoreBarLabel": "Has conseguido :num de :total puntos", "a11yCheck": "Comprobar las respuestas.", "a11yRetry": "Reintentar la actividad.",
+            "overallFeedback": [{"from": 0, "to": 99, "feedback": t["tryHarder"]}, {"from": 100, "to": 100, "feedback": t["allCorrect"]}],
+            "scoreBarLabel": t["scoreBar"], "a11yCheck": t["a11yCheck"], "a11yRetry": t["a11yRetry"],
         }
     if activity.get("type") == "memory":
         return {
@@ -64,13 +220,13 @@ def activity_content(activity: dict) -> dict:
             ],
             "behaviour": {"useGrid": True, "allowRetry": True},
             "l10n": {
-                "cardTurns": "Movimientos", "timeSpent": "Tiempo empleado", "feedback": "¡Muy bien!",
-                "tryAgain": "Reintentar", "closeLabel": "Cerrar", "label": "Juego de memoria. Encuentra las parejas.",
-                "labelInstructions": "Usa las flechas y espacio o enter para girar las cartas.",
-                "done": "Has encontrado todas las parejas.", "cardPrefix": "Carta %num de %total:",
-                "cardUnturned": "Sin girar. Pulsa para girar.", "cardTurned": "Carta girada.",
-                "cardMatched": "Pareja encontrada.", "cardMatchedA11y": "¡Las cartas coinciden!",
-                "cardNotMatchedA11y": "No coinciden. Prueba con otras cartas.",
+                "cardTurns": t["memCardTurns"], "timeSpent": t["memTimeSpent"], "feedback": t["memFeedback"],
+                "tryAgain": t["retryShort"], "closeLabel": t["memClose"], "label": t["memLabel"],
+                "labelInstructions": t["memInstructions"],
+                "done": t["memDone"], "cardPrefix": t["memCardPrefix"],
+                "cardUnturned": t["memCardUnturned"], "cardTurned": t["memCardTurned"],
+                "cardMatched": t["memCardMatched"], "cardMatchedA11y": t["memCardMatchedA11y"],
+                "cardNotMatchedA11y": t["memCardNotMatchedA11y"],
             },
         }
     if activity.get("type") == "true-false":
@@ -78,19 +234,19 @@ def activity_content(activity: dict) -> dict:
             "question": f"<p>{safe_text(activity['question'])}</p>",
             "correct": "true" if activity["correct"] else "false",
             "l10n": {
-                "trueText": "Verdadero",
-                "falseText": "Falso",
-                "score": "Has conseguido @score de @total puntos",
-                "checkAnswer": "Comprobar",
-                "submitAnswer": "Enviar",
-                "showSolutionButton": "Mostrar solución",
-                "tryAgain": "Intentarlo de nuevo",
-                "wrongAnswerMessage": "Respuesta incorrecta",
-                "correctAnswerMessage": "Respuesta correcta",
-                "scoreBarLabel": "Has conseguido :num de :total puntos",
-                "a11yCheck": "Comprobar la respuesta.",
-                "a11yShowSolution": "Mostrar la solución.",
-                "a11yRetry": "Reintentar la actividad.",
+                "trueText": t["trueText"],
+                "falseText": t["falseText"],
+                "score": t["scoreAt"],
+                "checkAnswer": t["check"],
+                "submitAnswer": t["submit"],
+                "showSolutionButton": t["showSolution"],
+                "tryAgain": t["retryLong"],
+                "wrongAnswerMessage": t["wrongAnswer"],
+                "correctAnswerMessage": t["correctAnswer"],
+                "scoreBarLabel": t["scoreBar"],
+                "a11yCheck": t["a11yCheckOne"],
+                "a11yShowSolution": t["a11yShowSolution"],
+                "a11yRetry": t["a11yRetry"],
             },
             "behaviour": {
                 "enableRetry": True,
@@ -125,30 +281,30 @@ def activity_content(activity: dict) -> dict:
             "showScorePoints": True,
         },
         "UI": {
-            "showSolutionButton": "Mostrar solución",
-            "tryAgainButton": "Intentarlo de nuevo",
-            "checkAnswerButton": "Comprobar",
-            "tipsLabel": "Mostrar pista",
-            "scoreBarLabel": "Has conseguido :num de :total puntos",
-            "tipAvailable": "Hay una pista disponible",
-            "feedbackAvailable": "Hay comentarios disponibles",
-            "readFeedback": "Leer comentarios",
-            "wrongAnswer": "Respuesta incorrecta",
-            "correctAnswer": "Respuesta correcta",
-            "shouldCheck": "Debía estar marcada",
-            "shouldNotCheck": "No debía estar marcada",
-            "noInput": "Responde antes de ver la solución",
-            "submitAnswerButton": "Enviar respuesta",
-            "a11yCheck": "Comprobar las respuestas.",
-            "a11yShowSolution": "Mostrar la solución.",
-            "a11yRetry": "Reintentar la actividad.",
+            "showSolutionButton": t["showSolution"],
+            "tryAgainButton": t["retryLong"],
+            "checkAnswerButton": t["check"],
+            "tipsLabel": t["tipLabel"],
+            "scoreBarLabel": t["scoreBar"],
+            "tipAvailable": t["tipAvailable"],
+            "feedbackAvailable": t["feedbackAvailable"],
+            "readFeedback": t["readFeedback"],
+            "wrongAnswer": t["wrongAnswer"],
+            "correctAnswer": t["correctAnswer"],
+            "shouldCheck": t["shouldCheck"],
+            "shouldNotCheck": t["shouldNotCheck"],
+            "noInput": t["noInput"],
+            "submitAnswerButton": t["submitAnswerButton"],
+            "a11yCheck": t["a11yCheck"],
+            "a11yShowSolution": t["a11yShowSolution"],
+            "a11yRetry": t["a11yRetry"],
         },
         "overallFeedback": [
-            {"from": 0, "to": 99, "feedback": "Sigue intentándolo."},
-            {"from": 100, "to": 100, "feedback": "¡Correcto!"},
+            {"from": 0, "to": 99, "feedback": t["tryHarder"]},
+            {"from": 100, "to": 100, "feedback": t["wellDone"]},
         ],
-        "confirmCheck": {"header": "¿Terminar?", "body": "¿Quieres comprobar la respuesta?", "cancelLabel": "Cancelar", "confirmLabel": "Comprobar"},
-        "confirmRetry": {"header": "¿Reintentar?", "body": "Se borrarán tus respuestas.", "cancelLabel": "Cancelar", "confirmLabel": "Reintentar"},
+        "confirmCheck": {"header": t["confirmCheckHeader"], "body": t["confirmCheckBody"], "cancelLabel": t["cancel"], "confirmLabel": t["check"]},
+        "confirmRetry": {"header": t["confirmRetryHeader"], "body": t["confirmRetryBody"], "cancelLabel": t["cancel"], "confirmLabel": t["retryShort"]},
     }
 
 
@@ -224,13 +380,18 @@ def validate_activity(payload: dict) -> tuple[dict | None, list[str]]:
     activity_type = str(payload.get("type", "multiple-choice"))
     title = str(payload.get("title", "")).strip()
     question = str(payload.get("question", "")).strip()
+    language = activity_language(payload)
     if activity_type == "true-false":
+        if not title:
+            errors.append("Escribe un título.")
+        if not question:
+            errors.append("Escribe una descripción.")
         correct = payload.get("correct")
         if not isinstance(correct, bool):
             errors.append("Elige si la afirmación es verdadera o falsa.")
         if errors:
             return None, errors
-        return {"type": activity_type, "title": title[:200], "question": question[:2000], "correct": correct, "language": "es"}, []
+        return {"type": activity_type, "title": title[:200], "question": question[:2000], "correct": correct, "language": language}, []
     if activity_type == "memory":
         cards = payload.get("cards")
         if not title:
@@ -245,7 +406,7 @@ def validate_activity(payload: dict) -> tuple[dict | None, list[str]]:
             errors.append("Cada pareja debe tener texto.")
         if errors:
             return None, errors
-        return {"type": activity_type, "title": title[:200], "question": question[:2000], "cards": cleaned, "language": "es"}, []
+        return {"type": activity_type, "title": title[:200], "question": question[:2000], "cards": cleaned, "language": language}, []
     if activity_type == "matching":
         pairs = payload.get("pairs")
         if not title:
@@ -260,7 +421,7 @@ def validate_activity(payload: dict) -> tuple[dict | None, list[str]]:
             errors.append("Cada relación debe tener dos textos.")
         if errors:
             return None, errors
-        return {"type": activity_type, "title": title[:200], "question": question[:2000], "pairs": cleaned, "language": "es"}, []
+        return {"type": activity_type, "title": title[:200], "question": question[:2000], "pairs": cleaned, "language": language}, []
     if activity_type != "multiple-choice":
         errors.append("Tipo de actividad no disponible.")
         return None, errors
@@ -283,7 +444,7 @@ def validate_activity(payload: dict) -> tuple[dict | None, list[str]]:
         errors.append("Marca al menos una respuesta correcta.")
     if errors:
         return None, errors
-    return {"type": activity_type, "title": title[:200], "question": question[:2000], "answers": cleaned, "language": "es"}, []
+    return {"type": activity_type, "title": title[:200], "question": question[:2000], "answers": cleaned, "language": language}, []
 
 
 class Handler(BaseHTTPRequestHandler):
