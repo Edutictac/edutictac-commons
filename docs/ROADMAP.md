@@ -201,6 +201,16 @@ d'activitat que EduHoot sol.
   assignable, només els d'app (JClic/H5P/EduHoot) generen puntuació i resultats.
 - [ ] Migració de preferits anònims → OIDC (diferida mentre no hi haja comptes
   reals al Banc de recursos).
+- [ ] Integrar EduTicTac Play amb `recursos`: enviar activitats H5P públiques i
+  metadades perquè `recursos` les indexe i les reproduïsca amb el seu visor H5P.
+- [ ] Definir l'enllaç canònic configurable de les activitats: visor autònom de
+  Play durant el MVP i, posteriorment, visor o redirecció a `recursos`.
+- [ ] Associar l'activitat de Play amb el `resource_id` de `recursos`, incloent
+  actualització, retirada, permisos i sincronització sense duplicar fitxers.
+
+El detall del contracte i les decisions de propietat del recurs estan en
+`docs/resources-integration.md`. Aquesta integració és posterior al MVP i no
+és necessària per crear, jugar o exportar activitats H5P localment.
 
 ### Fita v2-3 — SSO docent a EduHoot
 

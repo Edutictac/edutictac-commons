@@ -37,6 +37,22 @@ El token docent de demo és el valor de `EDUTICTAC_ID_TEACHER_TOKEN` en `.env` (
 | `eduhoot` | 3000 | Activitat quiz (opcional, `COMPOSE_PROFILES=eduhoot`) |
 | `eduhoot-mongo` | 27017 | Base de dades d'EduHoot (opcional) |
 | `admin` | 8091 | Panell `/admin`: estat operatiu i backups (sempre actiu) |
+| `play` | 8084 | Editor simplificat d'activitats H5P (Fase 1) |
+
+EduTicTac Play està disponible en `http://localhost:8084`. El prototip permet
+crear un Quiz simplificat, previsualitzar-lo amb el reproductor H5P, guardar-lo
+localment i descarregar-lo com a `.h5p`. La viabilitat, les llicències i les
+limitacions de Moodle/AULES estan documentades en
+[`docs/h5p-feasibility.md`](docs/h5p-feasibility.md).
+
+Documentación complementaria de Play: [arquitectura](docs/architecture.md),
+[instalación](docs/installation.md), [desarrollo](docs/development.md),
+[tipos de actividad](docs/activity-types.md), [API](docs/api.md),
+[seguridad](docs/security.md), [privacidad](docs/privacy.md) e
+[integración futura con Authentik](docs/authentik.md) y [prueba de importación
+H5P en Moodle](docs/moodle-h5p-test.md).
+La integración futura con el módulo `recursos` está descrita en
+[resources-integration.md](docs/resources-integration.md).
 
 ## Panell d'administració
 

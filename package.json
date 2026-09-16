@@ -4,7 +4,9 @@
   "version": "0.1.1-alpha",
   "scripts": {
     "test": "playwright test",
-    "test:i18n": "playwright test"
+    "test:i18n": "playwright test",
+    "test:play": "playwright test --config=playwright.play.config.js",
+    "test:moodle": "playwright test --config=playwright.moodle.config.js"
   },
   "devDependencies": {
     "@playwright/test": "1.63.0"
