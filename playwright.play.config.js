@@ -9,7 +9,7 @@ module.exports = defineConfig({
     { name: 'mobile', use: { ...devices['Pixel 7'] } },
   ],
   webServer: {
-    command: 'PORT=18183 URL_PREFIX=/play PLAY_DATA_DIR=/tmp/edutictac-play-browser python3 services/play/server.py',
+    command: 'PORT=18183 URL_PREFIX=/play PLAY_DATA_DIR=/tmp/edutictac-play-browser EDUTICTAC_PLAY_ADMIN_TOKEN=test-admin-token python3 services/play/server.py',
     url: 'http://127.0.0.1:18183/play/api/health',
     reuseExistingServer: false,
     stderr: 'ignore',

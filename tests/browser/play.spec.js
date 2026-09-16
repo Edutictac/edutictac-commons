@@ -130,3 +130,25 @@ test('reintenta el resultado pendiente al recuperar conexión', async ({ page })
   await expect.poll(() => scoreCalls).toBe(2);
   await expect.poll(() => page.evaluate(() => localStorage.getItem('edutictac-play-result-queue'))).toBeNull();
 });
+
+test('biblioteca: lista, filtra y borra actividades con token', async ({ page, request }) => {
+  const marker = `Biblio${Date.now().toString(36)}`;
+  for (const title of [`${marker} uno`, `${marker} dos`]) {
+    await request.post('/play/api/activities', { data: { type: 'multiple-choice', title, question: 'q', answers: [{ text: 'a', correct: true }, { text: 'b', correct: false }] } });
+  }
+  await page.goto('/play/');
+  await page.getByRole('button', { name: 'Ver biblioteca' }).click();
+  await page.locator('#librarySearch').fill(marker);
+  await page.getByRole('button', { name: 'Buscar' }).click();
+  await expect(page.locator('.library-card')).toHaveCount(2);
+  await expect(page.getByRole('button', { name: 'Borrar' })).toHaveCount(0);
+  await page.locator('.library-admin summary').click();
+  await page.locator('#libraryToken').fill('test-admin-token');
+  await page.getByRole('button', { name: 'Guardar token' }).click();
+  await expect(page.getByRole('button', { name: 'Borrar' })).toHaveCount(2);
+  page.on('dialog', (dialog) => dialog.accept());
+  await page.getByRole('button', { name: 'Borrar' }).first().click();
+  await expect(page.locator('.library-card')).toHaveCount(1);
+  await page.getByRole('button', { name: 'Borrar' }).first().click();
+  await expect(page.locator('.library-card')).toHaveCount(0);
+});
