@@ -173,7 +173,9 @@ catálogo público.
 La prueba del punto 5 se ejecuta con `make test-play-commons`. Crea una
 actividad y una asignación temporales, autentica una identidad pseudónima,
 envía una puntuación a través de Play y comprueba el resultado desde Commons;
-al terminar elimina los datos de prueba.
+al terminar elimina los datos de prueba. Además, `npm run test:play` contiene
+una prueba de navegador que responde realmente al Quiz H5P en escritorio y
+móvil y verifica la petición xAPI a Commons.
 
 ## Criterios de aceptación
 

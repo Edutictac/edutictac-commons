@@ -71,3 +71,27 @@ test('crear y reproducir una actividad de relacionar', async ({ page }) => {
   await expect(page.locator('#download')).toBeVisible();
   await expect(page).toHaveURL(/\/play\/[A-Za-z0-9]{8}$/);
 });
+
+test('envía a Commons el resultado real de un Quiz H5P', async ({ page }) => {
+  let scorePayload;
+  await page.route('**/play/api/commons/score', async (route) => {
+    scorePayload = route.request().postDataJSON();
+    await route.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify({ ok: true, score: scorePayload.score }) });
+  });
+  await page.goto('/play/?assignment_id=assignment-test');
+  await page.getByRole('button', { name: 'Quiz' }).click();
+  await page.locator('#title').fill('Resultado H5P');
+  await page.locator('#question').fill('¿Cuál puede volar?');
+  await page.locator('.answer-row:nth-child(1) .answer-text').fill('Águila');
+  await page.locator('.answer-row:nth-child(2) .answer-text').fill('Gato');
+  await page.getByRole('button', { name: 'Previsualizar' }).click();
+  await page.locator('#savePreview').click();
+  await expect(page).toHaveURL(/\/play\/[A-Za-z0-9]{8}\?assignment_id=assignment-test$/);
+  await expect.poll(() => page.frames().length).toBeGreaterThan(1);
+  const player = page.frames().find((frame) => frame !== page.mainFrame());
+  await player.getByText('Águila').click({ force: true });
+  await player.getByRole('button', { name: /Comprobar/ }).click();
+  await expect.poll(() => scorePayload).toMatchObject({ assignment_id: 'assignment-test', score: 100 });
+  expect(scorePayload.activity_id).toMatch(/^[A-Za-z0-9]{8}$/);
+  expect(scorePayload.metadata.source).toBe('h5p-xapi');
+});
