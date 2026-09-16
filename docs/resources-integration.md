@@ -59,7 +59,7 @@ para publicar Play, porque no permite enviar un H5P ni registrar su
 - El identificador de actividad será estable y podrá asociarse a un
   `resource_id` externo.
 - La exportación `.h5p` seguirá disponible aunque `recursos` no esté instalado.
-- La API futura debe poder enviar el paquete H5P y sus metadatos: título,
+- La API de ingesta ya puede recibir el paquete H5P y sus metadatos: título,
   descripción, tipo, idioma, etapa, materia, etiquetas, licencia, autor
   pseudónimo y estado de publicación.
 - El enlace público deberá admitir una política configurable: visor local de
@@ -130,6 +130,23 @@ duro del contenedor Play. La autenticación usa una credencial Bearer de
 servicio (`PLAY_INGEST_TOKEN`), nunca contraseñas almacenadas por Play. El
 endpoint valida HTTPS, lista de hosts permitidos y rechaza actividades no
 públicas.
+
+## Uso desde el tablero docente de Commons
+
+Cuando el perfil Compose `recursos` está activo, el tablero docente de Commons
+expone un buscador del catálogo. El flujo local es:
+
+1. el docente inicia sesión y selecciona un grupo;
+2. consulta `GET /api/resources` a través del proxy interno de Commons;
+3. asigna un recurso al grupo mediante `POST /api/teacher/activity-assignments`;
+4. si el proveedor es `edutictac-play`, la asignación conserva el `activity_id`
+   de Play y los resultados siguen apareciendo en Commons;
+5. otros proveedores quedan preparados para asignación, pero no generan
+   resultados hasta que exista un adaptador de lanzamiento y reporte.
+
+Este flujo no convierte aún a Recursos en el visor canónico. La URL pública de
+Play continúa siendo la de reproducción hasta activar y probar el enlace de
+producción de Recursos.
 
 ## Prioridad
 

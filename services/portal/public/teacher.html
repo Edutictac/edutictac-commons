@@ -88,6 +88,18 @@
 
         <div class="panel">
           <div class="panel-heading">
+            <p class="eyebrow" data-i18n="teacher.resourcesBank">Banc de recursos</p>
+            <h3 data-i18n="teacher.resourcesTitle">Buscar i assignar activitats</h3>
+          </div>
+          <div class="grid-fields">
+            <label><span data-i18n="teacher.resourcesSearch">Cerca</span><input id="resourceSearch" type="search" placeholder="Títol, matèria o etiqueta" data-i18n-placeholder="teacher.resourcesPlaceholder"></label>
+            <div class="actions"><button id="searchResources" type="button" class="secondary" data-i18n="teacher.resourcesButton">Buscar recursos</button></div>
+          </div>
+          <div id="resourcesOutput" class="output empty" data-i18n="teacher.resourcesHint">Activa el perfil Recursos per consultar el catàleg.</div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-heading">
             <p class="eyebrow" data-i18n="teacher.results">Resultats</p>
             <h3 data-i18n="teacher.selectedActivity">Activitat seleccionada</h3>
           </div>

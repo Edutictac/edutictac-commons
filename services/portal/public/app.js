@@ -20,6 +20,7 @@ const state = {
   assignments: [],
   student: null,
   studentAssignments: [],
+  resources: [],
 };
 
 const $ = (id) => document.getElementById(id);
@@ -241,6 +242,59 @@ function teacherDashboard(summary, assignments) {
       ],
     )}
   `;
+}
+
+function resourceActivityId(resource) {
+  if (resource.provider === PLAY_APP && resource.external_id.startsWith(`${PLAY_APP}:`)) {
+    return resource.external_id.slice(`${PLAY_APP}:`.length);
+  }
+  return resource.external_id;
+}
+
+function renderResources(data) {
+  const output = $("resourcesOutput");
+  if (!output) return;
+  state.resources = data.items || [];
+  if (!state.resources.length) {
+    setEmpty(output, t("teacher.resourcesEmpty"));
+    return;
+  }
+  setOutput(output, `<div class="cards">${state.resources.map((resource) => `
+    <article class="card">
+      <strong>${escapeHtml(resource.title || resource.external_id)}</strong>
+      <small>${escapeHtml(resource.provider || resource.format || "recurs")} · ${escapeHtml(resource.subject || "")}</small>
+      <button class="compact secondary" type="button" data-assign-resource="${escapeHtml(resource.external_id)}">${t("teacher.assignResource")}</button>
+    </article>`).join("")}</div>`);
+}
+
+async function loadResources() {
+  const output = $("resourcesOutput");
+  if (!output) return;
+  const query = new URLSearchParams({ limit: "24" });
+  const search = $("resourceSearch")?.value.trim();
+  if (search) query.set("q", search);
+  output.textContent = t("teacher.resourcesLoading");
+  try {
+    renderResources(await api(`/resources-api/resources?${query}`, { method: "GET" }));
+  } catch (error) {
+    setEmpty(output, t("teacher.resourcesUnavailable"));
+  }
+}
+
+async function assignResource(resource) {
+  if (!state.group) throw new Error("Selecciona primer un grup.");
+  const assignment = await api("/api/teacher/activity-assignments", {
+    method: "POST",
+    body: JSON.stringify({
+      group_id: state.group.id,
+      app_id: resource.provider === PLAY_APP ? PLAY_APP : "resource",
+      activity_id: resourceActivityId(resource),
+      title: resource.title || resource.external_id,
+    }),
+  });
+  state.assignment = assignment.assignment;
+  await loadTeacherData();
+  setOutput($("resourcesOutput"), `<p>Recurs assignat: <strong>${escapeHtml(assignment.assignment.title)}</strong>.</p>`);
 }
 
 function studentDashboard(assignments) {
@@ -716,6 +770,17 @@ document.addEventListener("click", (event) => {
       setOutput($("studentOutput"), `<p><strong>${t("common.errorLabel")}</strong> ${escapeHtml(error.message)}</p>${studentDashboard(state.studentAssignments)}`);
     });
   }
+
+  const resourceButton = event.target.closest("[data-assign-resource]");
+  if (resourceButton) {
+    const resource = state.resources.find((item) => item.external_id === resourceButton.dataset.assignResource);
+    if (!resource) return;
+    assignResource(resource).catch((error) => {
+      if (has("resourcesOutput")) {
+        setOutput($("resourcesOutput"), `<p><strong>${t("common.errorLabel")}</strong> ${escapeHtml(error.message)}</p>`);
+      }
+    });
+  }
 });
 
 bind("teacherLogin", teacherLogin, "teacherOutput");
@@ -728,6 +793,20 @@ bind("studentLogin", studentLogin, "studentOutput");
 bind("studentLogout", studentLogout, "studentOutput");
 bind("loadResults", loadResults);
 bind("loadRanking", loadRanking);
+
+if (has("searchResources")) {
+  $("searchResources").addEventListener("click", () => {
+    loadResources();
+  });
+}
+if (has("resourceSearch")) {
+  $("resourceSearch").addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      loadResources();
+    }
+  });
+}
 
 window.addEventListener("edutictac:langchange", () => {
   if (!has("studentOutput")) {

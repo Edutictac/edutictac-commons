@@ -197,6 +197,9 @@ d'activitat que EduHoot sol.
   els preferits queden al compte.
 - [ ] Cistella de recursos al tauler: endpoint `GET /api/teacher/favorites`
   (sessió docent) que resol els preferits a recurs complet.
+- [x] Cercador local del Banc de recursos al tauler docent i assignació de
+  recursos Play al grup seleccionat, conservant l'`activity_id` per al tauler
+  de resultats.
 - [ ] Assignar recursos de la cistella als recorreguts; qualsevol recurs és
   assignable, només els d'app (JClic/H5P/EduHoot) generen puntuació i resultats.
 - [ ] Migració de preferits anònims → OIDC (diferida mentre no hi haja comptes
