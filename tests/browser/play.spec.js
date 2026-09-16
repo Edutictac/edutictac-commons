@@ -97,3 +97,32 @@ test('envía a Commons el resultado real de un Quiz H5P', async ({ page }) => {
   expect(scorePayload.result_id).toMatch(/^urn:edutictac-play:/);
   expect(scorePayload.metadata.statement_id).toBe(scorePayload.result_id);
 });
+
+test('reintenta el resultado pendiente al recuperar conexión', async ({ page }) => {
+  let scoreCalls = 0;
+  await page.route('**/play/api/commons/score', async (route) => {
+    scoreCalls += 1;
+    if (scoreCalls === 1) {
+      await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'offline' }) });
+      return;
+    }
+    await route.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify({ ok: true, score: 100 }) });
+  });
+  await page.goto('/play/?assignment_id=assignment-test&launch_context=context-test');
+  await page.getByRole('button', { name: 'Quiz' }).click();
+  await page.locator('#title').fill('Resultado pendiente');
+  await page.locator('#question').fill('¿Cuál puede volar?');
+  await page.locator('.answer-row:nth-child(1) .answer-text').fill('Águila');
+  await page.locator('.answer-row:nth-child(2) .answer-text').fill('Gato');
+  await page.getByRole('button', { name: 'Previsualizar' }).click();
+  await page.locator('#savePreview').click();
+  await expect.poll(() => page.frames().length).toBeGreaterThan(1);
+  const player = page.frames().find((frame) => frame !== page.mainFrame());
+  await player.getByText('Águila').click({ force: true });
+  await player.getByRole('button', { name: /Comprobar/ }).click();
+  await expect.poll(() => scoreCalls).toBe(1);
+  await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('edutictac-play-result-queue') || '[]').length)).toBe(1);
+  await page.evaluate(() => window.dispatchEvent(new Event('online')));
+  await expect.poll(() => scoreCalls).toBe(2);
+  await expect.poll(() => page.evaluate(() => localStorage.getItem('edutictac-play-result-queue'))).toBeNull();
+});

@@ -170,7 +170,8 @@ catálogo público.
    del mismo resultado sin contar un intento adicional.
 7. [x] Utilizar tokens de lanzamiento de Commons para validar la actividad y
    la identidad sin depender de una cookie del navegador.
-8. Añadir reintento local de resultados pendientes cuando se pierda la conexión.
+8. [x] Añadir reintento local de resultados pendientes cuando se pierda la
+   conexión, limitado a contextos autenticados de Commons.
 9. Integrar el catálogo y visor de `recursos`.
 10. Añadir asociación, actualización y retirada mediante `resource_id`.
 
@@ -192,4 +193,6 @@ móvil y verifica la petición xAPI a Commons.
 - Reenviar el mismo `result_id` no crea un segundo intento.
 - Un token de lanzamiento caducado o de otra aplicación no permite jugar ni
   registrar resultados.
+- Una caída temporal de red conserva y reintenta el resultado autenticado;
+  las actividades públicas no crean cola de resultados.
 - La integración con `recursos` no duplica identidades ni calificaciones.
