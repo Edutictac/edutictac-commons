@@ -49,6 +49,11 @@ que deberá consumir Recursos. No hace peticiones HTTP todavía: en este
 repositorio no existe una instancia ni una API de `recursos` contra la que
 probarlas. Esto evita acoplar el MVP a una URL o credencial inventada.
 
+Play ya conserva estos campos opcionales en cada actividad guardada:
+`description`, `subject`, `educational_stage`, `tags`, `license` y
+`author_pseudonym`. Se validan en el servidor, se limitan en tamaño y no se
+interpretan como HTML.
+
 La publicación se solicitará sobre la API de Play/Commons y será idempotente:
 
 ```http

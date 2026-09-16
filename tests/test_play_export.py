@@ -73,6 +73,41 @@ def test_multiple_choice_h5p_export():
         process.wait(timeout=3)
 
 
+def test_activity_keeps_catalogue_metadata():
+    data_dir = Path(tempfile.mkdtemp(prefix="edutictac-play-test-"))
+    process = subprocess.Popen(
+        ["python3", "server.py"],
+        cwd=Path(__file__).parents[1] / "services" / "play",
+        env={**os.environ, "PORT": "18105", "PLAY_DATA_DIR": str(data_dir)},
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    try:
+        time.sleep(0.25)
+        payload = json.dumps({
+            "title": "Animales",
+            "question": "¿Cuál vuela?",
+            "answers": [{"text": "Águila", "correct": True}, {"text": "Gato", "correct": False}],
+            "description": "Una actividad de ciencias.",
+            "subject": "Ciencias",
+            "educational_stage": "Primaria",
+            "tags": ["ciencias", "ciencias"],
+            "license": "CC0",
+            "author_pseudonym": "Aula 1",
+        }).encode()
+        request = urllib.request.Request("http://127.0.0.1:18105/api/activities", data=payload, headers={"Content-Type": "application/json"}, method="POST")
+        activity = json.loads(urllib.request.urlopen(request).read())
+        assert activity["description"] == "Una actividad de ciencias."
+        assert activity["subject"] == "Ciencias"
+        assert activity["educational_stage"] == "Primaria"
+        assert activity["tags"] == ["ciencias"]
+        assert activity["license"] == "CC0"
+        assert activity["author_pseudonym"] == "Aula 1"
+    finally:
+        process.terminate()
+        process.wait(timeout=3)
+
+
 def test_true_false_h5p_export():
     data_dir = Path(tempfile.mkdtemp(prefix="edutictac-play-test-"))
     process = subprocess.Popen(

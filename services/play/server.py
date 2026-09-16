@@ -381,6 +381,8 @@ def validate_activity(payload: dict) -> tuple[dict | None, list[str]]:
     title = str(payload.get("title", "")).strip()
     question = str(payload.get("question", "")).strip()
     language = activity_language(payload)
+    metadata, metadata_errors = activity_metadata(payload)
+    errors.extend(metadata_errors)
     if activity_type == "true-false":
         if not title:
             errors.append("Escribe un título.")
@@ -391,7 +393,7 @@ def validate_activity(payload: dict) -> tuple[dict | None, list[str]]:
             errors.append("Elige si la afirmación es verdadera o falsa.")
         if errors:
             return None, errors
-        return {"type": activity_type, "title": title[:200], "question": question[:2000], "correct": correct, "language": language}, []
+        return {"type": activity_type, "title": title[:200], "question": question[:2000], "correct": correct, "language": language, **metadata}, []
     if activity_type == "memory":
         cards = payload.get("cards")
         if not title:
@@ -406,7 +408,7 @@ def validate_activity(payload: dict) -> tuple[dict | None, list[str]]:
             errors.append("Cada pareja debe tener texto.")
         if errors:
             return None, errors
-        return {"type": activity_type, "title": title[:200], "question": question[:2000], "cards": cleaned, "language": language}, []
+        return {"type": activity_type, "title": title[:200], "question": question[:2000], "cards": cleaned, "language": language, **metadata}, []
     if activity_type == "matching":
         pairs = payload.get("pairs")
         if not title:
@@ -421,7 +423,7 @@ def validate_activity(payload: dict) -> tuple[dict | None, list[str]]:
             errors.append("Cada relación debe tener dos textos.")
         if errors:
             return None, errors
-        return {"type": activity_type, "title": title[:200], "question": question[:2000], "pairs": cleaned, "language": language}, []
+        return {"type": activity_type, "title": title[:200], "question": question[:2000], "pairs": cleaned, "language": language, **metadata}, []
     if activity_type != "multiple-choice":
         errors.append("Tipo de actividad no disponible.")
         return None, errors
@@ -444,7 +446,28 @@ def validate_activity(payload: dict) -> tuple[dict | None, list[str]]:
         errors.append("Marca al menos una respuesta correcta.")
     if errors:
         return None, errors
-    return {"type": activity_type, "title": title[:200], "question": question[:2000], "answers": cleaned, "language": language}, []
+    return {"type": activity_type, "title": title[:200], "question": question[:2000], "answers": cleaned, "language": language, **metadata}, []
+
+
+def activity_metadata(payload: dict) -> tuple[dict, list[str]]:
+    """Keep optional catalogue metadata without accepting arbitrary HTML."""
+
+    errors = []
+    metadata = {
+        "description": str(payload.get("description", "")).strip()[:2000],
+        "subject": str(payload.get("subject", "")).strip()[:120],
+        "educational_stage": str(payload.get("educational_stage", "")).strip()[:120],
+        "license": str(payload.get("license", "CC BY-SA") or "CC BY-SA").strip()[:80],
+        "author_pseudonym": str(payload.get("author_pseudonym", "")).strip()[:120],
+    }
+    tags = payload.get("tags", [])
+    if tags is None:
+        tags = []
+    if not isinstance(tags, list):
+        errors.append("Las etiquetas deben ser una lista.")
+        tags = []
+    metadata["tags"] = list(dict.fromkeys(str(tag).strip()[:80] for tag in tags if str(tag).strip()))[:20]
+    return metadata, errors
 
 
 class Handler(BaseHTTPRequestHandler):
