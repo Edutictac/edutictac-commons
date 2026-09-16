@@ -217,7 +217,8 @@ El detall del contracte i les decisions de propietat del recurs estan en
 
 La comprovació del 2026-09-17 confirma que `recursos` i `recursos-api` són
 repositoris i serveis separats de Commons; `recursos-api` indexa EduHoot amb un
-flux pull, però encara no ofereix ingesta push per a Play.
+flux pull i ja té implementada la ingesta push autenticada per a Play. Queda
+desplegar-la i configurar el token de servei.
 
 El contracte local i la validació del payload ja estan preparats en
 `services/play/recursos.py` i `tests/test_recursos_contract.py`; queda pendent

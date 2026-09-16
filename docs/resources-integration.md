@@ -22,9 +22,9 @@ Portal, ID API, EduHoot y administración. Por tanto, Play no debe depender de
 Recursos para funcionar en una instalación local o de intranet.
 
 La API actual de Recursos expone el índice federado (`GET /api/resources`),
-favoritos, valoraciones, propuestas y autenticación. No expone todavía un
-endpoint de ingesta o publicación de recursos H5P desde una aplicación
-externa.
+favoritos, valoraciones, propuestas y autenticación. El repositorio
+`recursos-api` ya incorpora el endpoint de ingesta autenticada para Play, pero
+todavía no está desplegado en `debiandesktop` ni se ha activado en producción.
 
 ## Flujo previsto
 
@@ -67,19 +67,19 @@ para publicar Play, porque no permite enviar un H5P ni registrar su
   `recursos` recibe el `.h5p`, una URL de descarga firmada temporalmente o una
   referencia a almacenamiento compartido.
 
-## Contrato v1 preparado (sin conexión remota todavía)
+## Contrato v1 preparado (API implementada, despliegue pendiente)
 
-El adaptador local `services/play/recursos.py` ya construye y valida el payload
-que deberá consumir Recursos. No hace peticiones HTTP todavía: en este
-repositorio no existe una instancia ni una API de `recursos` contra la que
-probarlas. Esto evita acoplar el MVP a una URL o credencial inventada.
+El adaptador local `services/play/recursos.py` construye y valida el payload
+que consume el endpoint implementado en `Edutictac/recursos-api`. El endpoint
+está versionado y probado, pero no se habilitará hasta desplegar el servicio y
+configurar su token de servicio.
 
 Play ya conserva estos campos opcionales en cada actividad guardada:
 `description`, `subject`, `educational_stage`, `tags`, `license` y
 `author_pseudonym`. Se validan en el servidor, se limitan en tamaño y no se
 interpretan como HTML.
 
-La publicación se solicitará sobre la API de Play/Commons y será idempotente:
+La publicación se solicitará sobre la API de Recursos y será idempotente:
 
 ```http
 POST /api/integrations/recursos/activities/{id}/publish
@@ -113,7 +113,7 @@ El cuerpo de publicación tendrá esta forma estable:
 }
 ```
 
-Recursos deberá responder, como mínimo, con `resource_id`, `canonical_url`,
+Recursos responde con `resource_id`, `canonical_url`,
 `status` (`published`, `updated`, `unpublished` o `error`) y la versión
 aceptada. Las publicaciones repetidas con la misma `idempotency_key` no deben
 crear recursos duplicados.
@@ -123,8 +123,10 @@ o `class` seguirán bajo el control de Commons. Recursos será catálogo y visor
 no autoridad de identidad, asignaciones ni resultados.
 
 La URL base de `recursos` será configurable y no se incorporará como requisito
-duro del contenedor Play. La autenticación futura utilizará una credencial de
-servicio u OIDC, nunca contraseñas almacenadas por Play.
+duro del contenedor Play. La autenticación usa una credencial Bearer de
+servicio (`PLAY_INGEST_TOKEN`), nunca contraseñas almacenadas por Play. El
+endpoint valida HTTPS, lista de hosts permitidos y rechaza actividades no
+públicas.
 
 ## Prioridad
 
