@@ -161,14 +161,19 @@ catálogo público.
 ## Plan de implementación
 
 1. Definir el adaptador `CommonsActivityProvider` en Play.
-2. Añadir `assignment_id` a la URL y al estado de reproducción.
-3. Capturar eventos xAPI de Multiple Choice, True/False, Memory y Matching.
-4. Enviar resultados al contrato `POST /api/scores`.
-5. Añadir una prueba automática de extremo a extremo:
+2. [x] Añadir `assignment_id` a la URL y al estado de reproducción.
+3. [x] Capturar eventos xAPI de Multiple Choice, True/False, Memory y Matching.
+4. [x] Enviar resultados al contrato `POST /api/scores`.
+5. [x] Añadir una prueba automática de extremo a extremo:
    identidad → asignación → juego → resultado → tablero docente.
 6. Añadir reintento local de resultados pendientes, sin duplicados.
 7. Integrar el catálogo y visor de `recursos`.
 8. Añadir asociación, actualización y retirada mediante `resource_id`.
+
+La prueba del punto 5 se ejecuta con `make test-play-commons`. Crea una
+actividad y una asignación temporales, autentica una identidad pseudónima,
+envía una puntuación a través de Play y comprueba el resultado desde Commons;
+al terminar elimina los datos de prueba.
 
 ## Criterios de aceptación
 
