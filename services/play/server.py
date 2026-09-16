@@ -18,6 +18,8 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import parse_qs, unquote, urlparse
 from urllib.request import Request as UpstreamRequest, urlopen
 
+from recursos import RecursosContractError, build_publish_payload
+
 
 ROOT = Path(__file__).parent
 DATA_DIR = Path(os.environ.get("PLAY_DATA_DIR", ROOT / "data"))
@@ -31,6 +33,9 @@ COMMONS_API_URL = os.environ.get("EDUTICTAC_ID_API_URL", "").rstrip("/")
 COMMONS_APP_ID = os.environ.get("EDUTICTAC_PLAY_APP_ID", "edutictac-play")
 COMMONS_APP_TOKEN = os.environ.get("EDUTICTAC_ID_APP_TOKEN", "")
 PLAY_ADMIN_TOKEN = os.environ.get("EDUTICTAC_PLAY_ADMIN_TOKEN", "").strip()
+RECURSOS_API_URL = os.environ.get("RECURSOS_API_URL", "").rstrip("/")
+RECURSOS_INGEST_TOKEN = os.environ.get("PLAY_INGEST_TOKEN", "").strip()
+PLAY_PUBLIC_URL = os.environ.get("PLAY_PUBLIC_URL", "").rstrip("/")
 ID_RE = re.compile(r"^[A-Za-z0-9]{8}$")
 PREVIEW_RE = re.compile(r"^preview-[A-Za-z0-9]{8}$")
 PREVIEWS: dict[str, dict] = {}
@@ -601,6 +606,9 @@ class Handler(BaseHTTPRequestHandler):
         if route == "/api/commons/score":
             self.forward_commons_score()
             return
+        if route == "/api/recursos/publish":
+            self.publish_recursos_activity()
+            return
         if route not in {"/api/activities", "/api/previews"}:
             self.send_json(HTTPStatus.NOT_FOUND, {"error": "Ruta no encontrada."})
             return
@@ -626,6 +634,52 @@ class Handler(BaseHTTPRequestHandler):
         activity["createdAt"] = __import__("datetime").datetime.now(__import__("datetime").timezone.utc).isoformat()
         save_activity(activity)
         self.send_json(HTTPStatus.CREATED, activity)
+
+    def publish_recursos_activity(self) -> None:
+        if not RECURSOS_API_URL or not RECURSOS_INGEST_TOKEN or not PLAY_PUBLIC_URL:
+            self.send_json(HTTPStatus.SERVICE_UNAVAILABLE, {"error": "La integración con Recursos no está configurada."})
+            return
+        try:
+            length = int(self.headers.get("Content-Length", "0"))
+            if length > 4096:
+                raise ValueError("El contenido es demasiado grande.")
+            payload = json.loads(self.rfile.read(length))
+            activity_id = str(payload.get("activity_id", "")).strip()
+            if not ID_RE.fullmatch(activity_id):
+                raise ValueError("Actividad no válida.")
+            activity = read_activity(activity_id)
+            if not activity:
+                self.send_json(HTTPStatus.NOT_FOUND, {"error": "Actividad no encontrada."})
+                return
+            publish_payload = build_publish_payload(activity, public_base_url=PLAY_PUBLIC_URL)
+            upstream = UpstreamRequest(
+                f"{RECURSOS_API_URL}/api/integrations/recursos/activities/{activity_id}/publish",
+                data=json.dumps(publish_payload, ensure_ascii=False).encode(),
+                headers={"Authorization": f"Bearer {RECURSOS_INGEST_TOKEN}", "Content-Type": "application/json"},
+                method="POST",
+            )
+            with urlopen(upstream, timeout=10) as response:
+                body = response.read()
+                status = response.status
+        except (ValueError, json.JSONDecodeError, RecursosContractError) as exc:
+            self.send_json(HTTPStatus.BAD_REQUEST, {"error": str(exc)})
+            return
+        except HTTPError as exc:
+            try:
+                body = exc.read()
+                payload = json.loads(body.decode())
+            except (OSError, ValueError, json.JSONDecodeError):
+                payload = {"error": "Recursos rechazó la publicación."}
+            self.send_json(exc.code, payload)
+            return
+        except (URLError, TimeoutError, OSError):
+            self.send_json(HTTPStatus.BAD_GATEWAY, {"error": "No se ha podido contactar con Recursos."})
+            return
+        try:
+            response_payload = json.loads(body.decode())
+        except (ValueError, json.JSONDecodeError):
+            response_payload = {"error": "Respuesta no válida de Recursos."}
+        self.send_json(status, response_payload)
 
     def forward_commons_score(self) -> None:
         if not COMMONS_API_URL:

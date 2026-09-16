@@ -41,6 +41,9 @@ services:
       EDUTICTAC_ID_API_URL: http://id-api:8005
       EDUTICTAC_PLAY_APP_ID: edutictac-play
       EDUTICTAC_ID_APP_TOKEN: ${EDUTICTAC_ID_APP_TOKEN:-dev-app-token}
+      RECURSOS_API_URL: ${RECURSOS_API_URL:-}
+      PLAY_INGEST_TOKEN: ${PLAY_INGEST_TOKEN:-}
+      PLAY_PUBLIC_URL: ${PLAY_PUBLIC_URL:-}
     volumes:
       - ./data/play:/app/data
     ports:
