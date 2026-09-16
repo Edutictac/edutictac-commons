@@ -22,6 +22,8 @@ ACTIVITIES_DIR = DATA_DIR / "activities"
 LIBRARIES_DIR = ROOT / "h5p-libraries"
 PUBLIC_DIR = ROOT / "public"
 MAX_BODY = 256 * 1024
+HOST = os.environ.get("HOST", "0.0.0.0")
+URL_PREFIX = os.environ.get("URL_PREFIX", "").rstrip("/")
 ID_RE = re.compile(r"^[A-Za-z0-9]{8}$")
 PREVIEW_RE = re.compile(r"^preview-[A-Za-z0-9]{8}$")
 PREVIEWS: dict[str, dict] = {}
@@ -288,8 +290,14 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    def normalize_path(self, raw: str) -> str:
+        path = unquote(urlparse(raw).path)
+        if URL_PREFIX and (path == URL_PREFIX or path.startswith(URL_PREFIX + "/")):
+            path = path[len(URL_PREFIX):] or "/"
+        return path
+
     def do_GET(self) -> None:  # noqa: N802
-        path = unquote(urlparse(self.path).path)
+        path = self.normalize_path(self.path)
         if path == "/api/health":
             self.send_json(HTTPStatus.OK, {"status": "ok", "service": "edutictac-play"})
             return
@@ -339,7 +347,7 @@ class Handler(BaseHTTPRequestHandler):
         self.serve_static(path)
 
     def do_POST(self) -> None:  # noqa: N802
-        route = urlparse(self.path).path
+        route = self.normalize_path(self.path)
         if route not in {"/api/activities", "/api/previews"}:
             self.send_json(HTTPStatus.NOT_FOUND, {"error": "Ruta no encontrada."})
             return
@@ -381,8 +389,8 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
     def serve_static(self, path: str) -> None:
-        play_match = re.fullmatch(r"/play/([A-Za-z0-9]{8})", path)
-        if play_match and read_activity(play_match.group(1)):
+        activity_match = re.fullmatch(rf"/({ACTIVITY_ID_PATTERN})", path)
+        if activity_match and read_activity(activity_match.group(1)):
             path = "/index.html"
         if path == "/":
             path = "/index.html"
@@ -447,7 +455,7 @@ def read_activity(activity_id: str) -> dict | None:
 def main() -> None:
     ACTIVITIES_DIR.mkdir(parents=True, exist_ok=True)
     port = int(os.environ.get("PORT", "8083"))
-    ThreadingHTTPServer(("0.0.0.0", port), Handler).serve_forever()
+    ThreadingHTTPServer((HOST, port), Handler).serve_forever()
 
 
 if __name__ == "__main__":

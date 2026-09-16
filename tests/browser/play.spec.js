@@ -1,7 +1,7 @@
 const { test, expect } = require('@playwright/test');
 
 test('crear, previsualizar, guardar y reproducir un quiz', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/play/');
   await page.getByRole('button', { name: 'Quiz' }).click();
   await page.locator('#title').fill('Animales del bosque');
   await page.locator('#question').fill('¿Cuál puede volar?');
@@ -20,7 +20,7 @@ test('crear, previsualizar, guardar y reproducir un quiz', async ({ page }) => {
 });
 
 test('crear, previsualizar, guardar y reproducir un verdadero/falso', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/play/');
   await page.getByRole('button', { name: 'Verdadero/Falso' }).click();
   await page.locator('#title').fill('Ciencia básica');
   await page.locator('#question').fill('El agua se congela a 0 °C.');
@@ -36,7 +36,7 @@ test('crear, previsualizar, guardar y reproducir un verdadero/falso', async ({ p
 });
 
 test('crear y reproducir un Memory', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/play/');
   await page.getByRole('button', { name: 'Memory' }).click();
   await page.locator('#title').fill('Animales');
   await page.locator('#question').fill('Encuentra las parejas');
@@ -53,7 +53,7 @@ test('crear y reproducir un Memory', async ({ page }) => {
 });
 
 test('crear y reproducir una actividad de relacionar', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/play/');
   await page.getByRole('button', { name: 'Relacionar' }).click();
   await page.locator('#title').fill('Capitales');
   await page.locator('#question').fill('Relaciona cada país con su capital');
