@@ -49,6 +49,44 @@ services:
       id-api:
         condition: service_healthy
 
+  recursos-api:
+    image: ${IMAGE_REGISTRY:-edutictac}/recursos-api:${RECURSOS_TAG:-local}
+    build:
+      context: ../recursos-api
+      network: host
+    profiles: ["recursos"]
+    environment:
+      RECURSOS_DB: /data/recursos.db
+      RECURSOS_SECRET: ${RECURSOS_SECRET:-local-recursos-secret}
+      RECURSOS_COOKIE_SECURE: ${RECURSOS_COOKIE_SECURE:-0}
+      RECURSOS_APP_URL: ${RECURSOS_APP_URL:-http://localhost:8086}
+      PLAY_INGEST_TOKEN: ${PLAY_INGEST_TOKEN:-local-play-ingest-token}
+      PLAY_ALLOWED_HOSTS: ${PLAY_ALLOWED_HOSTS:-play.local.test,localhost}
+      EDUTICTAC_ID_API_URL: http://id-api:8005
+    volumes:
+      - ./data/recursos-api:/data
+    expose:
+      - "8004"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8004/api/health', timeout=3).read()"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    depends_on:
+      id-api:
+        condition: service_healthy
+
+  recursos:
+    image: ${IMAGE_REGISTRY:-edutictac}/recursos:${RECURSOS_TAG:-local}
+    build:
+      context: ../recursos
+    profiles: ["recursos"]
+    ports:
+      - "${RECURSOS_PORT:-8086}:80"
+    depends_on:
+      recursos-api:
+        condition: service_healthy
+
   admin:
     image: ${IMAGE_REGISTRY:-edutictac}/commons-admin:${IMAGE_TAG:-0.1.1-alpha}
     build:

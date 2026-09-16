@@ -26,6 +26,30 @@ Servicios principales:
 Antes de usar el sistema fuera de una demo, cambia los secretos de `.env`,
 especialmente `EDUTICTAC_ID_SECRET` y `EDUTICTAC_ADMIN_TOKEN`.
 
+## Banc de recursos local opcional
+
+El Banc de recursos se puede levantar como perfil Compose independiente. Los
+repositorios deben estar como hermanos del repositorio Commons:
+
+```bash
+git clone https://git.edutictac.es/Edutictac/recursos-api.git ../recursos-api
+git clone https://git.edutictac.es/Edutictac/recursos.git ../recursos
+make up-recursos
+make test-recursos
+```
+
+Queda disponible en `http://localhost:8086` y su API se sirve bajo el mismo
+origen (`/api`). El perfil crea `data/recursos-api/` para la base SQLite. En
+una instalación existente cuyo directorio haya sido creado por Docker como
+`root`, hay que corregir una vez su propietario para el UID configurado:
+
+```bash
+docker run --rm -v "$PWD/data/recursos-api:/data" alpine:3.20 chown -R "$(id -u):$(id -g)" /data
+```
+
+La integración local usa un token de desarrollo de `.env`; no reutilizarlo en
+producción.
+
 ## Podman
 
 ```bash

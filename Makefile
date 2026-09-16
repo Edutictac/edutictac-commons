@@ -4,7 +4,7 @@ COMPOSE = $(DOCKER) compose --env-file $(ENV_FILE) -f compose.yml
 COMPOSE_EXAMPLE = $(DOCKER) compose --env-file .env.example -f compose.yml
 
 .PHONY: init doctor up up-pulled up-example down build logs ps test-flow test-play-commons test-eduhoot-flow test-reset-flow bootstrap-demo release-check backup backup-check backup-auto backup-prune backup-timer-install backup-timer-status backup-timer-uninstall restore reset images check-images check-updates update-images export-images load-images push-images
-.PHONY: test-i18n test-installation test-play test-moodle
+.PHONY: test-i18n test-installation test-play test-moodle up-recursos test-recursos
 
 init:
 	@test -f .env || cp .env.example .env
@@ -50,6 +50,13 @@ test-play:
 
 test-moodle:
 	npm run test:moodle
+
+up-recursos: init
+	mkdir -p data/recursos-api
+	COMPOSE_PROFILES=recursos $(COMPOSE) up --build -d recursos-api recursos
+
+test-recursos:
+	./scripts/test-recursos-flow.sh
 
 test-eduhoot-flow:
 	./scripts/test-eduhoot-flow.sh
