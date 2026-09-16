@@ -47,6 +47,10 @@ test('crear y reproducir un Memory', async ({ page }) => {
   await expect.poll(() => page.frames().length).toBeGreaterThan(1);
   const player = page.frames().find((frame) => frame !== page.mainFrame());
   await expect(player.getByText('Juego de memoria. Encuentra las parejas.')).toBeVisible();
+  await expect.poll(() => player.evaluate(() => {
+    const images = Array.from(document.querySelectorAll('.h5p-memory-card img'));
+    return images.length > 0 && images.every((image) => image.complete && image.naturalWidth > 0);
+  })).toBe(true);
   await page.getByRole('button', { name: 'Guardar' }).click();
   await expect(page.locator('#download')).toBeVisible();
   await expect(page).toHaveURL(/\/play\/[A-Za-z0-9]{8}$/);

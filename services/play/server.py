@@ -485,16 +485,19 @@ class Handler(BaseHTTPRequestHandler):
                 return
             self.download_package(activity)
             return
-        match = re.fullmatch(rf"/api/activities/({ACTIVITY_ID_PATTERN})/h5p/(h5p\.json|content/content\.json)", path)
+        match = re.fullmatch(rf"/api/activities/({ACTIVITY_ID_PATTERN})/h5p/(.+)", path)
         if match:
             activity = read_activity(match.group(1))
             if not activity:
                 self.send_error(HTTPStatus.NOT_FOUND)
                 return
             files = package_files(activity)
-            body = files[match.group(2)]
+            body = files.get(match.group(2))
+            if body is None:
+                self.send_error(HTTPStatus.NOT_FOUND)
+                return
             self.send_response(HTTPStatus.OK)
-            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Content-Type", content_type_for(Path(match.group(2))))
             self.send_header("Content-Length", str(len(body)))
             self.end_headers()
             self.wfile.write(body)
