@@ -203,6 +203,9 @@ d'activitat que EduHoot sol.
   reals al Banc de recursos).
 - [ ] Integrar EduTicTac Play amb `recursos`: enviar activitats H5P públiques i
   metadades perquè `recursos` les indexe i les reproduïsca amb el seu visor H5P.
+- [ ] Integrar Play amb les APIs de Commons per a itineraris, assignacions i
+  resultats abans de convertir `recursos` en el visor canònic. Play haurà de
+  funcionar també sense identitat, guardant els borradors en el navegador.
 - [ ] Definir l'enllaç canònic configurable de les activitats: visor autònom de
   Play durant el MVP i, posteriorment, visor o redirecció a `recursos`.
 - [ ] Associar l'activitat de Play amb el `resource_id` de `recursos`, incloent
@@ -211,6 +214,9 @@ d'activitat que EduHoot sol.
 El detall del contracte i les decisions de propietat del recurs estan en
 `docs/resources-integration.md`. Aquesta integració és posterior al MVP i no
 és necessària per crear, jugar o exportar activitats H5P localment.
+
+El contracte de resultats, assignacions i funcionament local-first de Play està
+en `docs/play-commons-integration.md`.
 
 ### Fita v2-3 — SSO docent a EduHoot
 

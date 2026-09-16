@@ -66,3 +66,11 @@ Play queda preparado para publicar actividades públicas en el módulo
 su visor H5P. El contrato previsto y las decisiones de almacenamiento están
 documentados en [`resources-integration.md`](resources-integration.md). No se
 activa ninguna llamada remota ni dependencia de `recursos` en el MVP.
+
+## Integración con Commons: itinerarios y resultados
+
+El contrato para ejecutar actividades dentro de asignaciones de Commons está
+documentado en [`play-commons-integration.md`](play-commons-integration.md).
+Play utilizará el contrato existente de Commons para `assignment_id` y
+`POST /api/scores`; no creará una tabla paralela de identidades, grupos ni
+calificaciones.
