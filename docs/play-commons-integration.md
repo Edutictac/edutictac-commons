@@ -172,8 +172,11 @@ catálogo público.
    la identidad sin depender de una cookie del navegador.
 8. [x] Añadir reintento local de resultados pendientes cuando se pierda la
    conexión, limitado a contextos autenticados de Commons.
-9. Integrar el catálogo y visor de `recursos`.
-10. Añadir asociación, actualización y retirada mediante `resource_id`.
+9. [x] Integrar el catálogo y visor de `recursos` en el perfil Docker local,
+   con publicación autenticada desde Play.
+10. [x] Añadir asociación, actualización y retirada mediante `resource_id`;
+    el estado queda guardado en la actividad Play y Recursos conserva el índice.
+    El despliegue de producción y el visor H5P canónico siguen pendientes.
 
 La prueba del punto 5 se ejecuta con `make test-play-commons`. Crea una
 actividad y una asignación temporales, autentica una identidad pseudónima,

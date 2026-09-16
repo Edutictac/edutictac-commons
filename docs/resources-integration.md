@@ -28,7 +28,7 @@ favoritos, valoraciones, propuestas y autenticación. El repositorio
 `recursos-api` ya incorpora el endpoint de ingesta autenticada para Play y está
 probado en el perfil Docker local; todavía no se ha activado en producción.
 
-## Flujo previsto
+## Flujo implementado en local
 
 ```text
 Play crea y guarda la actividad
@@ -42,10 +42,11 @@ recursos almacena/indexa el recurso público
         +--> enlace canónico para compartir
 ```
 
-Play conservará el borrador y el modelo simplificado. Cuando exista una
-operación de ingesta en Recursos, el repositorio de recursos será la referencia
-pública y su visor podrá ser el destino principal del enlace. Mientras esa
-integración no exista, `/play/{id}` seguirá siendo el enlace autónomo.
+Play conserva el borrador y el modelo simplificado. La publicación desde Play
+envía los metadatos al API de Recursos, guarda la respuesta —incluido
+`resource_id` y `status`— en la actividad y permite retirarla posteriormente.
+Mientras no se configure un visor canónico de Recursos, `/play/{id}` sigue
+siendo el enlace autónomo.
 
 El caso EduHoot funciona al revés: `recursos-api` ejecuta una sincronización
 pull del endpoint público `GET /api/public-quizzes` de EduHoot, normaliza los
@@ -69,7 +70,7 @@ para publicar Play, porque no permite enviar un H5P ni registrar su
   `recursos` recibe el `.h5p`, una URL de descarga firmada temporalmente o una
   referencia a almacenamiento compartido.
 
-## Contrato v1 preparado (API implementada, despliegue pendiente)
+## Contrato v1 implementado (producción pendiente)
 
 El adaptador local `services/play/recursos.py` construye y valida el payload
 que consume el endpoint implementado en `Edutictac/recursos-api`. El endpoint

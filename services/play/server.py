@@ -609,6 +609,9 @@ class Handler(BaseHTTPRequestHandler):
         if route == "/api/recursos/publish":
             self.publish_recursos_activity()
             return
+        if route == "/api/recursos/unpublish":
+            self.unpublish_recursos_activity()
+            return
         if route not in {"/api/activities", "/api/previews"}:
             self.send_json(HTTPStatus.NOT_FOUND, {"error": "Ruta no encontrada."})
             return
@@ -679,6 +682,56 @@ class Handler(BaseHTTPRequestHandler):
             response_payload = json.loads(body.decode())
         except (ValueError, json.JSONDecodeError):
             response_payload = {"error": "Respuesta no válida de Recursos."}
+        if status < 300 and isinstance(response_payload, dict):
+            activity["recursos"] = response_payload
+            save_activity(activity)
+        self.send_json(status, response_payload)
+
+    def unpublish_recursos_activity(self) -> None:
+        if not RECURSOS_API_URL or not RECURSOS_INGEST_TOKEN:
+            self.send_json(HTTPStatus.SERVICE_UNAVAILABLE, {"error": "La integración con Recursos no está configurada."})
+            return
+        try:
+            length = int(self.headers.get("Content-Length", "0"))
+            if length > 4096:
+                raise ValueError("El contenido es demasiado grande.")
+            payload = json.loads(self.rfile.read(length))
+            activity_id = str(payload.get("activity_id", "")).strip()
+            if not ID_RE.fullmatch(activity_id):
+                raise ValueError("Actividad no válida.")
+            activity = read_activity(activity_id)
+            if not activity:
+                self.send_json(HTTPStatus.NOT_FOUND, {"error": "Actividad no encontrada."})
+                return
+            upstream = UpstreamRequest(
+                f"{RECURSOS_API_URL}/api/integrations/recursos/activities/{activity_id}/unpublish",
+                data=b"",
+                headers={"Authorization": f"Bearer {RECURSOS_INGEST_TOKEN}"},
+                method="POST",
+            )
+            with urlopen(upstream, timeout=10) as response:
+                body = response.read()
+                status = response.status
+        except (ValueError, json.JSONDecodeError) as exc:
+            self.send_json(HTTPStatus.BAD_REQUEST, {"error": str(exc)})
+            return
+        except HTTPError as exc:
+            try:
+                response_payload = json.loads(exc.read().decode())
+            except (OSError, ValueError, json.JSONDecodeError):
+                response_payload = {"error": "Recursos rechazó la retirada."}
+            self.send_json(exc.code, response_payload)
+            return
+        except (URLError, TimeoutError, OSError):
+            self.send_json(HTTPStatus.BAD_GATEWAY, {"error": "No se ha podido contactar con Recursos."})
+            return
+        try:
+            response_payload = json.loads(body.decode())
+        except (ValueError, json.JSONDecodeError):
+            response_payload = {"error": "Respuesta no válida de Recursos."}
+        if status < 300 and isinstance(response_payload, dict):
+            activity["recursos"] = response_payload
+            save_activity(activity)
         self.send_json(status, response_payload)
 
     def forward_commons_score(self) -> None:
@@ -879,7 +932,7 @@ def new_id() -> str:
 
 def save_activity(activity: dict) -> None:
     folder = ACTIVITIES_DIR / activity["id"]
-    folder.mkdir(parents=True, exist_ok=False)
+    folder.mkdir(parents=True, exist_ok=True)
     (folder / "activity.json").write_text(json.dumps(activity, ensure_ascii=False, indent=2), encoding="utf-8")
 
 

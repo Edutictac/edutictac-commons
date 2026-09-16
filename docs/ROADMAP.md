@@ -191,7 +191,7 @@ roadmap 4D).
 tauler (cistella de recursos) i assignar-les als recorreguts, amb més fonts
 d'activitat que EduHoot sol.
 
-- [ ] Dockeritzar `recursos-api` i el frontend de `recursos` com a mòdul del
+- [x] Dockeritzar `recursos-api` i el frontend de `recursos` com a mòdul del
   stack (perfil Compose propi, persistència a `data/recursos-*`).
 - [ ] Integrar la identitat docent (Authentik/OIDC) al Banc de recursos perquè
   els preferits queden al compte.
@@ -201,14 +201,14 @@ d'activitat que EduHoot sol.
   assignable, només els d'app (JClic/H5P/EduHoot) generen puntuació i resultats.
 - [ ] Migració de preferits anònims → OIDC (diferida mentre no hi haja comptes
   reals al Banc de recursos).
-- [ ] Integrar EduTicTac Play amb `recursos`: enviar activitats H5P públiques i
+- [x] Integrar EduTicTac Play amb `recursos`: enviar activitats H5P públiques i
   metadades perquè `recursos` les indexe i les reproduïsca amb el seu visor H5P.
-- [ ] Integrar Play amb les APIs de Commons per a itineraris, assignacions i
+- [x] Integrar Play amb les APIs de Commons per a itineraris, assignacions i
   resultats abans de convertir `recursos` en el visor canònic. Play haurà de
   funcionar també sense identitat, guardant els borradors en el navegador.
-- [ ] Definir l'enllaç canònic configurable de les activitats: visor autònom de
+- [x] Definir l'enllaç canònic configurable de les activitats: visor autònom de
   Play durant el MVP i, posteriorment, visor o redirecció a `recursos`.
-- [ ] Associar l'activitat de Play amb el `resource_id` de `recursos`, incloent
+- [x] Associar l'activitat de Play amb el `resource_id` de `recursos`, incloent
   actualització, retirada, permisos i sincronització sense duplicar fitxers.
 
 El detall del contracte i les decisions de propietat del recurs estan en
@@ -218,8 +218,9 @@ El detall del contracte i les decisions de propietat del recurs estan en
 La comprovació del 2026-09-17 confirma que `recursos` i `recursos-api` són
 repositoris i serveis separats de Commons; el perfil Compose local ja els pot
 desplegar, `recursos-api` indexa EduHoot amb un flux pull i té implementada la
-ingesta push autenticada per a Play. Queda activar-la en producció, configurar
-el token de servei i connectar el flux de publicació de la UI de Play.
+ingesta push autenticada per a Play. El cicle local de publicació, actualització
+i retirada ja conserva el `resource_id`; queda activar-lo en producció i
+completar la cistella i els itineraris del tauler docent.
 
 El contracte local i la validació del payload ja estan preparats en
 `services/play/recursos.py` i `tests/test_recursos_contract.py`; queda pendent
