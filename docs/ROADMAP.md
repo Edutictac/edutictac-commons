@@ -194,8 +194,9 @@ l'alumnat pot completar-la amb la mateixa identitat pseudònima.
 - [ ] Validar en una màquina neta el paquet `.deb` per a Ubuntu amd64 amb
   dependències, configuració inicial, servei systemd i comprovació
   postinstal·lació.
-- [ ] Publicar el `.deb` `0.1.1~alpha4` com a artefacte descarregable o en un
-  repositori APT.
+- [x] Publicar el `.deb` `0.1.1~alpha4` en el repositori APT signat
+  [`packages.edutictac.es`](https://packages.edutictac.es), con clave pública,
+  índices firmados y documentación de instalación.
 
 ## v2 — més enllà del nucli finançat
 

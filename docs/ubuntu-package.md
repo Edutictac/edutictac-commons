@@ -17,10 +17,38 @@ El artefacto aparece en `dist/`. La versión de Debian actual es
 `0.1.1~alpha4`, correspondiente a Commons `0.1.1-alpha`. Esta versión añade
 el asistente de activación inicial de Authentik.
 
-## Instalar
+## Instalar desde el repositorio APT
+
+El repositorio oficial publica siempre las versiones disponibles del
+instalador para Ubuntu/Debian `amd64`. La clave se instala separadamente y
+APT verifica la firma de los índices antes de descargar el paquete:
 
 ```bash
-sudo apt install ./dist/edutictac-commons_0.1.1~alpha2_amd64.deb
+curl -fsSL https://packages.edutictac.es/edutictac-archive-keyring.gpg \
+  | sudo tee /usr/share/keyrings/edutictac.gpg >/dev/null
+
+echo "deb [signed-by=/usr/share/keyrings/edutictac.gpg] https://packages.edutictac.es stable main" \
+  | sudo tee /etc/apt/sources.list.d/edutictac.list
+
+sudo apt update
+sudo apt install edutictac-commons
+```
+
+Para actualizar una instalación existente:
+
+```bash
+sudo apt update
+sudo apt install --only-upgrade edutictac-commons
+```
+
+El repositorio conserva las versiones anteriores, pero APT selecciona la más
+reciente. La publicación y la infraestructura del repositorio están
+documentadas en [`edutictac-packages`](https://git.edutictac.es/Edutictac/edutictac-packages).
+
+## Instalar un paquete local
+
+```bash
+sudo apt install ./dist/edutictac-commons_0.1.1~alpha4_amd64.deb
 ```
 
 El paquete declara Docker Engine, Docker Compose v2, Avahi/mDNS, `curl`, `jq`,
