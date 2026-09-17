@@ -27,6 +27,14 @@ const $ = (id) => document.getElementById(id);
 const has = (id) => Boolean($(id));
 const t = window.i18nPortal.t;
 
+function setAuthentikLinks() {
+  const url = `${window.location.protocol}//${window.location.hostname}:9000/`;
+  ["authentikHomeLink", "authentikNavLink"].forEach((id) => {
+    const link = $(id);
+    if (link) link.href = url;
+  });
+}
+
 function saveState() {
   localStorage.setItem(
     STORAGE_KEY,
@@ -839,6 +847,7 @@ window.addEventListener("edutictac:langchange", () => {
 });
 
 restoreState();
+setAuthentikLinks();
 if (has("teacherLogin")) {
   setTeacherSession(false);
 }
