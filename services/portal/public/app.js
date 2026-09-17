@@ -364,6 +364,18 @@ async function checkHealth() {
   }
 }
 
+async function checkOidc() {
+  const button = $("teacherOidcLogin");
+  if (!button) return;
+  try {
+    const status = await api("/api/auth/oidc/status", { method: "GET" });
+    button.disabled = !status.enabled;
+    button.title = status.enabled ? status.issuer : "OIDC no configurado en este entorno";
+  } catch (error) {
+    button.disabled = true;
+  }
+}
+
 async function refreshTeacherSession() {
   try {
     await api("/api/teacher/summary", { method: "GET" });
@@ -382,6 +394,10 @@ async function teacherLogin() {
   });
   setTeacherSession(true);
   await refreshDashboard();
+}
+
+function teacherOidcLogin() {
+  window.location.href = "/api/auth/oidc/login";
 }
 
 async function teacherLogout() {
@@ -784,6 +800,7 @@ document.addEventListener("click", (event) => {
 });
 
 bind("teacherLogin", teacherLogin, "teacherOutput");
+bind("teacherOidcLogin", teacherOidcLogin);
 bind("teacherLogout", teacherLogout, "teacherOutput");
 bind("teacherSummary", teacherSummary, "teacherOutput");
 bind("refreshDashboard", refreshDashboard, "teacherOutput");
@@ -848,6 +865,7 @@ if (has("resultsOutput")) {
 
 refreshStudentSession().catch(() => {});
 checkHealth();
+checkOidc();
 if (has("teacherLogin")) {
   refreshTeacherSession();
 }

@@ -104,6 +104,11 @@ Variables principals:
 - `EDUTICTAC_ID_TEACHER_TOKEN`: token docent inicial.
 - `EDUTICTAC_ID_APP_TOKEN`: token intern perquè apps integrades (ara EduHoot)
   registren puntuacions en Commons.
+- `EDUTICTAC_ID_OIDC_ISSUER_URL`, `EDUTICTAC_ID_OIDC_CLIENT_ID`,
+  `EDUTICTAC_ID_OIDC_CLIENT_SECRET` i `EDUTICTAC_ID_OIDC_REDIRECT_URL`:
+  integració opcional amb Authentik; si estan buides es manté codi + PIN.
+- `EDUTICTAC_ID_OIDC_SCOPES` i `EDUTICTAC_ID_OIDC_ROLE_CLAIM`: scopes OIDC i
+  claim de rols (`alumno`, `profesor`, `administrador`).
 - `COMPOSE_PROFILES`: activa mòduls opcionals, ara `eduhoot`.
 - `EDUHOOT_PORT`: port públic d'EduHoot (`8090` per defecte).
 - `EDUHOOT_TAG`: versió de la imatge `eduhoot`.

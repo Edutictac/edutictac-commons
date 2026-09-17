@@ -21,8 +21,10 @@ from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from fastapi import FastAPI, HTTPException, Query, Request, Response
-from fastapi.responses import HTMLResponse, PlainTextResponse
+from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse
 from pydantic import BaseModel, Field, field_validator
+from authlib.integrations.starlette_client import OAuth
+from starlette.middleware.sessions import SessionMiddleware
 from edutictac_community.db import connect as db_connect
 from edutictac_community.ratelimit import RateLimiter
 from edutictac_community.session import SignedSession
@@ -49,8 +51,117 @@ IDENTITY_ICONS = {
 RATE_WINDOW = 60
 RATE_MAX = 12
 PIN_HASH_ITERATIONS = int(os.environ.get("EDUTICTAC_ID_PIN_HASH_ITERATIONS", "210000"))
+OIDC_ISSUER_URL = os.environ.get("EDUTICTAC_ID_OIDC_ISSUER_URL", "").strip().rstrip("/")
+OIDC_CLIENT_ID = os.environ.get("EDUTICTAC_ID_OIDC_CLIENT_ID", "").strip()
+OIDC_CLIENT_SECRET = os.environ.get("EDUTICTAC_ID_OIDC_CLIENT_SECRET", "")
+OIDC_REDIRECT_URL = os.environ.get("EDUTICTAC_ID_OIDC_REDIRECT_URL", "").strip()
+OIDC_SCOPES = os.environ.get("EDUTICTAC_ID_OIDC_SCOPES", "openid profile").strip()
+OIDC_ROLE_CLAIM = os.environ.get("EDUTICTAC_ID_OIDC_ROLE_CLAIM", "roles").strip() or "roles"
+OIDC_COOKIE = "edutictac_oidc"
+OIDC_ROLE_ORDER = ("administrador", "profesor", "alumno")
 
 app = FastAPI(title="EduTicTac ID API")
+
+# Authlib uses this short-lived signed session only for the OIDC state/nonce
+# exchange. The resulting application session is our own signed cookie below.
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=SESSION_SECRET or "oidc-not-configured",
+    session_cookie="edutictac_oidc_state",
+    https_only=COOKIE_SECURE,
+    same_site="lax",
+)
+
+oauth = OAuth()
+
+
+def oidc_discovery_url() -> str:
+    if not OIDC_ISSUER_URL:
+        return ""
+    if OIDC_ISSUER_URL.endswith("/.well-known/openid-configuration"):
+        return OIDC_ISSUER_URL
+    return f"{OIDC_ISSUER_URL}/.well-known/openid-configuration"
+
+
+if OIDC_ISSUER_URL and OIDC_CLIENT_ID and OIDC_CLIENT_SECRET:
+    oauth.register(
+        name="authentik",
+        client_id=OIDC_CLIENT_ID,
+        client_secret=OIDC_CLIENT_SECRET,
+        server_metadata_url=oidc_discovery_url(),
+        client_kwargs={"scope": OIDC_SCOPES},
+    )
+
+
+def oidc_enabled() -> bool:
+    return bool(OIDC_ISSUER_URL and OIDC_CLIENT_ID and OIDC_CLIENT_SECRET and OIDC_REDIRECT_URL)
+
+
+def normalize_role(value: Any) -> str | None:
+    aliases = {
+        "admin": "administrador",
+        "administrator": "administrador",
+        "administrador": "administrador",
+        "teacher": "profesor",
+        "profesor": "profesor",
+        "student": "alumno",
+        "alumno": "alumno",
+    }
+    return aliases.get(str(value).strip().lower())
+
+
+def oidc_role(claims: dict[str, Any]) -> str:
+    raw = claims.get(OIDC_ROLE_CLAIM, [])
+    if isinstance(raw, str):
+        raw = [part for part in re.split(r"[,\s]+", raw) if part]
+    if not isinstance(raw, (list, tuple, set)):
+        raw = []
+    roles = {role for role in (normalize_role(item) for item in raw) if role}
+    for role in OIDC_ROLE_ORDER:
+        if role in roles:
+            return role
+    return "alumno"
+
+
+def oidc_identity(cookie: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "id": str(cookie.get("id", "")),
+        "role": str(cookie.get("role", "alumno")),
+        "pseudonym": str(cookie.get("pseudonym", "")),
+        "provider": "authentik",
+    }
+
+
+def oidc_cookie(request: Request) -> dict[str, Any] | None:
+    cookie = parse_cookie(request.cookies.get(OIDC_COOKIE))
+    if not cookie or not cookie.get("sub") or not cookie.get("iss"):
+        return None
+    if not hmac.compare_digest(str(cookie["iss"]), OIDC_ISSUER_URL):
+        return None
+    return cookie
+
+
+def set_oidc_cookie(response: Response, claims: dict[str, Any], role: str) -> None:
+    # The subject is opaque and provider-scoped. It is enough to correlate
+    # Commons records without copying profile data from the identity provider.
+    subject = str(claims.get("sub", ""))
+    pseudonym = hmac.new(
+        SESSION_SECRET.encode(),
+        f"{OIDC_ISSUER_URL}:{subject}".encode(),
+        hashlib.sha256,
+    ).hexdigest()[:20]
+    response.set_cookie(
+        OIDC_COOKIE,
+        make_cookie({
+            "oidc": True,
+            "iss": OIDC_ISSUER_URL,
+            "sub": subject,
+            "id": f"oidc:{pseudonym}",
+            "pseudonym": pseudonym,
+            "role": role,
+        }),
+        **cookie_kwargs(max_age=SESSION_TTL_DAYS * 24 * 60 * 60),
+    )
 
 _rate_limiter = RateLimiter(max_calls=RATE_MAX, window_seconds=RATE_WINDOW)
 
@@ -288,6 +399,9 @@ def require_teacher(request: Request) -> str:
     cookie = parse_cookie(request.cookies.get(TEACHER_COOKIE))
     if cookie and cookie.get("teacher"):
         return str(cookie.get("teacher_id") or "teacher")
+    oidc = oidc_cookie(request)
+    if oidc and oidc.get("role") in {"profesor", "administrador"}:
+        return str(oidc.get("id"))
     if not TEACHER_TOKEN:
         raise HTTPException(status_code=503, detail="teacher token not configured")
     auth = request.headers.get("authorization", "")
@@ -487,6 +601,50 @@ def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
+@app.get("/api/auth/oidc/status")
+def oidc_status() -> dict[str, Any]:
+    return {
+        "enabled": oidc_enabled(),
+        "provider": "authentik" if oidc_enabled() else None,
+        "issuer": OIDC_ISSUER_URL or None,
+        "scopes": OIDC_SCOPES,
+    }
+
+
+@app.get("/api/auth/oidc/login")
+async def oidc_login(request: Request):
+    if not oidc_enabled():
+        raise HTTPException(status_code=503, detail="OIDC is not configured")
+    require_secret()
+    return await oauth.authentik.authorize_redirect(request, OIDC_REDIRECT_URL)
+
+
+@app.get("/api/auth/oidc/callback")
+async def oidc_callback(request: Request):
+    if not oidc_enabled():
+        raise HTTPException(status_code=503, detail="OIDC is not configured")
+    require_secret()
+    try:
+        token = await oauth.authentik.authorize_access_token(request)
+    except Exception as exc:
+        # Do not expose provider responses or token details to the browser.
+        raise HTTPException(status_code=401, detail="OIDC authentication failed") from exc
+    claims = token.get("userinfo") or {}
+    if not isinstance(claims, dict) or not claims.get("sub"):
+        raise HTTPException(status_code=401, detail="OIDC identity missing")
+    if str(claims.get("iss", OIDC_ISSUER_URL)).rstrip("/") != OIDC_ISSUER_URL:
+        raise HTTPException(status_code=401, detail="OIDC issuer mismatch")
+    response = RedirectResponse(url="/", status_code=303)
+    set_oidc_cookie(response, claims, oidc_role(claims))
+    return response
+
+
+@app.post("/api/auth/oidc/logout")
+def oidc_logout(response: Response) -> dict[str, bool]:
+    response.delete_cookie(OIDC_COOKIE, **delete_cookie_kwargs())
+    return {"ok": True}
+
+
 @app.post("/api/teacher/login")
 def teacher_login(payload: TeacherLoginIn, request: Request, response: Response) -> dict[str, bool]:
     if not TEACHER_TOKEN:
@@ -607,6 +765,9 @@ def student_login(payload: StudentAuthIn, request: Request, response: Response) 
 
 @app.get("/api/auth/me")
 def me(request: Request) -> dict[str, Any]:
+    oidc = oidc_cookie(request)
+    if oidc:
+        return {"identity": oidc_identity(oidc)}
     identity = current_identity(request)
     if not identity:
         raise HTTPException(status_code=401, detail="not authenticated")
@@ -735,6 +896,7 @@ def logout(request: Request, response: Response) -> dict[str, bool]:
                 (iso_now(), token_hash),
             )
     response.delete_cookie(SESSION_COOKIE, **delete_cookie_kwargs())
+    response.delete_cookie(OIDC_COOKIE, **delete_cookie_kwargs())
     return {"ok": True}
 
 

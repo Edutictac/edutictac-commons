@@ -183,9 +183,18 @@ roadmap 4D).
 
 ### Fita v2-1 — Authentik (identitat docent i d'administració)
 
+- [x] Afegir al `id-api` el flux OIDC opcional Authorization Code amb Authentik.
+- [x] Mantindre el mode codi + PIN quan OIDC no estiga configurat.
+- [x] Crear sessió local signada i mapejar `alumno`, `profesor` i
+  `administrador` sense guardar noms ni correus.
+- [x] Documentar issuer, callback, property mapping, claims i llicències.
 - [ ] Desplegar **Authentik (OIDC)** a l'stack com a identitat docent i
   d'administració — cobreix el tauler del professorat, la cistella de recursos i
   l'accés docent a EduHoot, i elimina els tokens manuals.
+- [ ] Connectar la identitat OIDC pseudònima amb Portal, Play, Recursos i
+  EduHoot.
+- [ ] Provar el flux complet contra una instància Authentik del laboratori.
+- [ ] Afegir classes/grups i permisos compartits.
 
 ### Fita v2-2 — Banc de recursos (cistella i recorregut)
 

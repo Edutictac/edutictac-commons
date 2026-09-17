@@ -11,7 +11,8 @@ desde CDN ni se utiliza telemetría.
 
 ## Pendiente para producción
 
-- autenticación OIDC con Authentik;
+- despliegue y prueba de una instancia Authentik real con OIDC;
+- conexión de la identidad OIDC pseudónima con todos los servicios Commons;
 - autorización por propietario, clase y publicación;
 - rate limiting;
 - cookies seguras y protección CSRF con sesiones mutables;
