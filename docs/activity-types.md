@@ -72,31 +72,49 @@ clasificación.
 
 ## Criterio para nuevos tipos
 
-Antes de implementar un tipo se comprobará que existe un tipo H5P mantenido y
-con licencia compatible, que sus dependencias pueden servirse localmente, que
-Moodle/AULES puede reconocerlas y que el formulario reducido aporta una
-experiencia claramente más sencilla.
+El objetivo de Play **no** es alcanzar paridad con los ~50 tipos de H5P ni
+convertirse en un editor genérico para diseñadores instruccionales (para eso ya
+está Lumi). Pero **sí seguirá incorporando nuevos tipos**, guiados por un
+principio rector muy claro:
+
+> **El criterio rector: tipos de actividad que sean sencillos y que pueda
+> crear el propio alumnado.**
+
+Condiciones para incorporar un tipo nuevo:
+1. **Creable por el alumnado en 2–5 minutos:** formulario puramente textual o
+   intuitivo, sin necesidad de preparar o subir archivos multimedia pesados,
+   sin parámetros técnicos confusos y sin fricción cognitiva.
+2. **Pedagógicamente activo:** actividades donde crear el juego forme parte del
+   aprendizaje (repasar conceptos, clasificar, ordenar ideas, formular preguntas).
+3. **Soporte técnico H5P limpio:** librería oficial con licencia libre (MIT o
+   equivalente), empaquetable y reproducible con dependencias locales, y
+   compatible con Aules/Moodle.
+
+Bajo este criterio:
+- **Tienen cabida en Play:** `Fill in the Blanks` (rellenar huecos), `Ordenar`
+  (secuencias lógicas o temporales), sopa de letras o variantes de arrastre
+  textual (`Clasificar`, ya incorporado).
+- **Quedan fuera de Play y delegados a Lumi:** tipos complejos pensados para el
+  docente o creador de cursos (vídeo interactivo, escenarios ramificados,
+  presentaciones de diapositivas complejas, tours virtuales 360…).
 
 ## Alcance frente a editores H5P completos (Lumi)
 
 [Lumi](https://lumi.education) (`Lumieducation/H5P-Nodejs-library`, GPL-3.0)
-ya ofrece un editor H5P **oficial y completo** (los ~50 tipos de contenido,
-formularios semánticos reales, exportación H5P/HTML/SCORM), tanto en
-escritorio como en `Lumi Cloud` (versión online gratuita con cuenta, alojada
-en servidores de Lumi Education UG). Para "cualquier tipo de contenido H5P
-con todas sus opciones", ese problema ya está resuelto y no tiene sentido
-reconstruirlo tipo a tipo dentro de Play.
+ofrece un editor H5P **oficial y completo** (los ~50 tipos de contenido,
+formularios semánticos con decenas de opciones técnicas, exportación
+H5P/HTML/SCORM), tanto en aplicación de escritorio como en `Lumi Cloud` (versión
+online con cuenta).
 
-El valor diferencial de Play frente a Lumi es otro: formulario reducido de
-2 minutos sin conocimientos de H5P, sin cuenta, cero dependencias externas
-(Python estándar) e integración nativa con la identidad y el itinerario de
-Commons (`/api/commons/score`, catálogo `recursos`). Por eso el catálogo de
-tipos de Play se mantiene **deliberadamente corto y curado** (Multiple
-Choice, True/False, Memory, Matching, Clasificar); `Fill in the Blanks` y
-`Ordenar` quedan aparcados salvo demanda real del profesorado, y no se prevé
-seguir añadiendo tipos solo por paridad con H5P/Lumi.
+El valor diferencial de Play frente a Lumi es radicalmente distinto:
+- **Enfocado al alumnado y al aula rápida:** formularios reducidos para que un
+  estudiante pueda crear su propia actividad en pocos minutos y compartirla.
+- **Sin cuenta y sin barreras:** acceso inmediato, sin registro previo.
+- **Soberanía y ligereza:** Python estándar sin dependencias externas pesadas,
+  fácil de autoalojar en centros con hardware modesto.
+- **Integración con Commons:** identidad pseudónima, envío de calificaciones a
+  `/api/commons/score` y publicación directa en el catálogo de `recursos`.
 
-Si en el futuro el profesorado necesita un tipo de contenido más avanzado
-(vídeo interactivo, escenario ramificado, presentación...), la recomendación
-es enlazar desde Commons a una instancia de Lumi (self-hosted o `Lumi Cloud`)
-en vez de ampliar el editor propio de Play.
+Para contenidos complejos donde el docente requiera todo el potencial técnico de
+H5P, la recomendación de Commons es enlazar o complementar con Lumi, mientras
+que Play se consolida como el taller ágil de creación para el alumnado y el aula.
