@@ -28,6 +28,7 @@ const state = {
   itineraries: [],
   student: null,
   studentAssignments: [],
+  showStudentHistory: false,
   resources: [],
 };
 
@@ -417,7 +418,8 @@ async function addSelectedActivityToItinerary(itineraryId) {
 function studentDashboard(assignments) {
   const completed = assignments.filter((assignment) => assignment.completed).length;
   const total = assignments.length;
-  const rows = assignments.map((assignment) => ({
+  const visibleAssignments = state.showStudentHistory ? assignments : assignments.filter((assignment) => !assignment.completed);
+  const rows = visibleAssignments.map((assignment) => ({
     ...assignment,
     title: assignment.title || assignment.activity_id,
     status: assignment.completed ? t("student.done") : t("student.pending"),
@@ -436,13 +438,14 @@ function studentDashboard(assignments) {
   }));
   return `
     <p>${t("student.progressLabel")} <strong>${completed}/${total}</strong> ${t("student.progressCompleted")}</p>
-    ${table(rows, [
+    ${completed ? `<button class="compact secondary history-toggle" type="button" data-toggle-student-history="true">${state.showStudentHistory ? t("student.hideHistory") : t("student.showHistory")}</button>` : ""}
+    ${rows.length ? table(rows, [
       { key: "title", label: t("common.activity") },
       { key: "status", label: t("common.status") },
       { key: "best_score", label: t("common.bestScore") },
       { key: "last_score_at", label: t("common.lastScoreAt") },
       { key: "action", label: "", html: true },
-    ])}
+    ]) : `<p class="empty">${t("student.noPending")}</p>`}
   `;
 }
 
@@ -999,6 +1002,13 @@ document.addEventListener("click", (event) => {
     updateStudentIcon(iconButton.dataset.studentIcon).catch((error) => {
       setOutput($("studentOutput"), `<p><strong>${t("common.errorLabel")}</strong> ${escapeHtml(error.message)}</p>${studentProfileCard()}${studentDashboard(state.studentAssignments)}`);
     });
+  }
+
+  const historyButton = event.target.closest("[data-toggle-student-history]");
+  if (historyButton) {
+    state.showStudentHistory = !state.showStudentHistory;
+    setOutput($('studentOutput'), `${studentProfileCard()}${studentDashboard(state.studentAssignments)}`);
+    return;
   }
 
   const eduhootLaunchButton = event.target.closest("[data-launch-eduhoot-assignment]");

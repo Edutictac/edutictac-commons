@@ -50,3 +50,27 @@ test('las actividades asignadas desde Recursos muestran un enlace de apertura', 
     'https://recursos.example.test/recurso-1',
   );
 });
+
+test('el panel del alumnado oculta las actividades completadas hasta mostrar el historial', async ({ page }) => {
+  const identity = { id: 'test-student', public_code: 'TEST01', avatar_icon: '🚀' };
+  await page.route('**/api/**', (route) => {
+    const path = new URL(route.request().url()).pathname;
+    if (path === '/api/auth/me') return route.fulfill({ json: { identity } });
+    if (path === '/api/student/dashboard') {
+      return route.fulfill({ json: {
+        identity,
+        assignments: [
+          { id: 'pending-1', app_id: 'edutictac-play', activity_id: 'Pending1', title: 'Pendiente', completed: false },
+          { id: 'done-1', app_id: 'edutictac-play', activity_id: 'Done0001', title: 'Ya realizada', completed: true },
+        ],
+      } });
+    }
+    return route.fulfill({ status: 401, json: { detail: 'test unauthenticated' } });
+  });
+
+  await page.goto('/student.html');
+  await expect(page.getByText('Pendiente')).toBeVisible();
+  await expect(page.getByText('Ya realizada')).toBeHidden();
+  await page.getByRole('button', { name: /Mostrar historial|Mostrar historial|Show history/ }).click();
+  await expect(page.getByText('Ya realizada')).toBeVisible();
+});

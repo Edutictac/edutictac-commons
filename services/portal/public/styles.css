@@ -410,6 +410,10 @@ button.compact {
   font-size: 13px;
 }
 
+.history-toggle {
+  margin: 8px 0 12px;
+}
+
 .button-link.secondary {
   background: #fff;
   color: var(--accent-dark);
