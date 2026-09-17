@@ -1,6 +1,13 @@
 const EDUHOOT_APP = "eduhoot";
 const PLAY_APP = "edutictac-play";
 const STORAGE_KEY = "edutictac-commons-state";
+function playBaseUrl() {
+  const portMap = { "8082": "8084", "18082": "18084" };
+  const playPort = portMap[window.location.port];
+  return playPort
+    ? `${window.location.protocol}//${window.location.hostname}:${playPort}`
+    : window.location.origin;
+}
 const EDUHOOT_BASE_PROTOCOL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
   ? window.location.protocol
   : "http:";
@@ -755,7 +762,7 @@ async function launchPlayAssignment(assignment) {
     method: "POST",
     body: JSON.stringify({ assignment_id: assignment.id }),
   });
-  const url = new URL(`/play/${encodeURIComponent(assignment.activity_id)}`, window.location.origin);
+  const url = new URL(`/play/${encodeURIComponent(assignment.activity_id)}`, playBaseUrl());
   url.searchParams.set("launch_token", launch.token);
   window.location.href = url.toString();
 }
