@@ -8,7 +8,7 @@ test('el botón de Play usa el puerto del servicio Play local', async ({ page })
     if (path === '/api/student/dashboard') {
       return route.fulfill({ json: {
         identity,
-        assignments: [{ id: 'assignment-1', app_id: 'edutictac-play', activity_id: 'Ab12Cd34', title: 'Actividad Play', completed: false }],
+        assignments: [{ id: 'assignment-1', app_id: 'play', activity_id: 'Ab12Cd34', title: 'Actividad Play', completed: false }],
       } });
     }
     if (path === '/api/student/launch-token') return route.fulfill({ json: { token: 'launch-test-token' } });

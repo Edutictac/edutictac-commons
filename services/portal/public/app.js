@@ -410,7 +410,7 @@ function studentDashboard(assignments) {
     action:
       assignment.app_id === EDUHOOT_APP
         ? `<button class="compact secondary" type="button" data-launch-eduhoot-assignment="${escapeHtml(assignment.id)}">${t("student.openEduhoot")}</button>`
-        : assignment.app_id === PLAY_APP
+        : [PLAY_APP, "play"].includes(String(assignment.app_id || "").toLowerCase())
           ? `<button class="compact secondary" type="button" data-launch-play-assignment="${escapeHtml(assignment.id)}">${t("student.openPlay")}</button>`
           : assignment.app_id === "resource" && assignment.launch_url
             ? `<a class="compact secondary" href="${escapeHtml(assignment.launch_url)}" target="_blank" rel="noopener noreferrer">${t("student.openResource")}</a>`
