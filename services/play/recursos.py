@@ -13,7 +13,7 @@ from typing import Any
 from urllib.parse import quote
 
 
-SUPPORTED_TYPES = {"multiple-choice", "true-false", "memory", "matching"}
+SUPPORTED_TYPES = {"multiple-choice", "true-false", "memory", "matching", "classify"}
 PUBLIC_VISIBILITY = "public"
 DEFAULT_LICENSE = "CC BY-SA"
 

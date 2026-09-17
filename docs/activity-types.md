@@ -5,7 +5,8 @@
 | Multiple Choice | 1 | Implementado |
 | True/False | 2 | Implementado |
 | Memory | 2 | Implementado |
-| Matching / Relacionar | 2 | En evaluación técnica |
+| Matching / Relacionar | 2 | Implementado |
+| Clasificar | 2 | Implementado |
 | Fill in the Blanks | 2 | Pendiente |
 | Ordenar | 2 | Pendiente de evaluar |
 
@@ -59,6 +60,15 @@ El adaptador se añadirá después de fijar y probar esas dependencias localment
 La interfaz EduTicTac Play seguirá mostrando únicamente parejas origen-destino;
 las coordenadas y parámetros de accesibilidad serán valores internos del
 adaptador.
+
+## Clasificar actual
+
+El formulario reducido solicita entre 2 y 4 categorías y entre 3 y 12
+elementos, indicando la categoría correcta de cada uno. Play transforma esos
+datos en `H5P.DragQuestion` con una zona de destino por categoría y elementos
+arrastrables. Las coordenadas, penalizaciones, reintento y mensajes de
+accesibilidad son valores internos; el alumnado solo ve la actividad de
+clasificación.
 
 ## Criterio para nuevos tipos
 

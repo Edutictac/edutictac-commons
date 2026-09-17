@@ -187,6 +187,32 @@ def test_matching_h5p_export():
         process.wait(timeout=3)
 
 
+def test_classify_h5p_export():
+    data_dir = Path(tempfile.mkdtemp(prefix="edutictac-play-test-"))
+    process = subprocess.Popen(
+        ["python3", "server.py"],
+        cwd=Path(__file__).parents[1] / "services" / "play",
+        env={**os.environ, "PORT": "18106", "PLAY_DATA_DIR": str(data_dir)},
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    try:
+        time.sleep(0.25)
+        payload = json.dumps({"type": "classify", "title": "Animales", "question": "Clasifica los elementos", "categories": [{"name": "Vivos"}, {"name": "No vivos"}], "items": [{"text": "Roble", "category": 0}, {"text": "Piedra", "category": 1}, {"text": "Gato", "category": 0}]}).encode()
+        request = urllib.request.Request("http://127.0.0.1:18106/api/activities", data=payload, headers={"Content-Type": "application/json"}, method="POST")
+        activity = json.loads(urllib.request.urlopen(request).read())
+        package = urllib.request.urlopen(f"http://127.0.0.1:18106/api/activities/{activity['id']}/download").read()
+        with zipfile.ZipFile(io.BytesIO(package)) as archive:
+            names = set(archive.namelist())
+            assert {"h5p.json", "content/content.json", "H5P.DragQuestion-1.15/library.json"} <= names
+            content = json.loads(archive.read("content/content.json"))
+            assert content["question"]["task"]["dropZones"][0]["correctElements"] == [0, 2]
+            assert content["question"]["task"]["elements"][1]["dropZones"] == [1]
+    finally:
+        process.terminate()
+        process.wait(timeout=3)
+
+
 def test_memory_card_image_is_served_for_player():
     data_dir = Path(tempfile.mkdtemp(prefix="edutictac-play-test-"))
     process = subprocess.Popen(

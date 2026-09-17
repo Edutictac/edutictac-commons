@@ -204,6 +204,22 @@ def activity_language(payload: dict) -> str:
 
 def activity_content(activity: dict) -> dict:
     t = H5P_TEXT.get(str(activity.get("language") or "es"), H5P_TEXT["es"])
+    if activity.get("type") == "classify":
+        elements = []
+        drop_zones = []
+        for index, item in enumerate(activity["items"]):
+            elements.append({"type": {"library": "H5P.AdvancedText 1.1", "params": {"text": f"<p>{safe_text(item['text'])}</p>"}}, "x": 5 + (index % 3) * 30, "y": 6 + (index // 3) * 12, "height": 5, "width": 24, "dropZones": [int(item["category"])], "backgroundOpacity": 100, "multiple": False})
+        for index, category in enumerate(activity["categories"]):
+            top = 65 + (index % 2) * 17
+            left = 5 + (index // 2) * 48
+            drop_zones.append({"label": safe_text(category["name"]), "showLabel": True, "x": left, "y": top, "height": 13, "width": 42, "correctElements": [item_index for item_index, item in enumerate(activity["items"]) if int(item["category"]) == index], "backgroundOpacity": 100, "tipsAndFeedback": {"tip": "", "feedbackOnCorrect": t["correct"], "feedbackOnIncorrect": t["incorrect"]}})
+        return {
+            "scoreShow": t["check"], "submit": t["submit"], "tryAgain": t["retryShort"],
+            "question": {"settings": {"questionTitle": safe_text(activity["question"]), "size": {"width": 620, "height": 310}}, "task": {"elements": elements, "dropZones": drop_zones}},
+            "behaviour": {"enableRetry": True, "enableCheckButton": True, "singlePoint": False, "applyPenalties": True, "enableScoreExplanation": True, "dropZoneHighlighting": "dragging", "enableFullScreen": False},
+            "overallFeedback": [{"from": 0, "to": 99, "feedback": t["tryHarder"]}, {"from": 100, "to": 100, "feedback": t["allCorrect"]}],
+            "scoreBarLabel": t["scoreBar"], "a11yCheck": t["a11yCheck"], "a11yRetry": t["a11yRetry"],
+        }
     if activity.get("type") == "matching":
         elements = []
         drop_zones = []
@@ -315,7 +331,7 @@ def activity_content(activity: dict) -> dict:
 
 
 def package_files(activity: dict) -> dict[str, bytes]:
-    if activity.get("type") == "matching":
+    if activity.get("type") in {"matching", "classify"}:
         main_library = "H5P.DragQuestion"
         dependencies = [
             {"machineName": "H5P.DragQuestion", "majorVersion": 1, "minorVersion": 15},
@@ -338,7 +354,7 @@ def package_files(activity: dict) -> dict[str, bytes]:
         is_true_false = False
     else:
         is_true_false = activity.get("type") == "true-false"
-    if activity.get("type") not in {"memory", "matching"}:
+    if activity.get("type") not in {"memory", "matching", "classify"}:
         main_library = "H5P.TrueFalse" if is_true_false else "H5P.MultiChoice"
         dependencies = [
             {"machineName": "H5P.TrueFalse", "majorVersion": 1, "minorVersion": 8},
@@ -430,6 +446,36 @@ def validate_activity(payload: dict) -> tuple[dict | None, list[str]]:
         if errors:
             return None, errors
         return {"type": activity_type, "title": title[:200], "question": question[:2000], "pairs": cleaned, "language": language, **metadata}, []
+    if activity_type == "classify":
+        categories = payload.get("categories")
+        items = payload.get("items")
+        if not title:
+            errors.append("Escribe un título.")
+        if not question:
+            errors.append("Escribe una descripción.")
+        if not isinstance(categories, list) or not 2 <= len(categories) <= 4:
+            errors.append("Añade entre 2 y 4 categorías.")
+            categories = []
+        cleaned_categories = [{"name": str(category.get("name", "")).strip()[:120]} for category in categories if isinstance(category, dict) and str(category.get("name", "")).strip()]
+        if len(cleaned_categories) != len(categories):
+            errors.append("Cada categoría debe tener un nombre.")
+        if not isinstance(items, list) or not 3 <= len(items) <= 12:
+            errors.append("Añade entre 3 y 12 elementos.")
+            items = []
+        cleaned_items = []
+        for item in items:
+            if not isinstance(item, dict) or not str(item.get("text", "")).strip():
+                continue
+            try:
+                category = int(item.get("category"))
+            except (TypeError, ValueError):
+                category = -1
+            cleaned_items.append({"text": str(item["text"]).strip()[:120], "category": category})
+        if len(cleaned_items) != len(items) or any(item["category"] < 0 or item["category"] >= len(cleaned_categories) for item in cleaned_items):
+            errors.append("Cada elemento debe tener texto y una categoría válida.")
+        if errors:
+            return None, errors
+        return {"type": activity_type, "title": title[:200], "question": question[:2000], "categories": cleaned_categories, "items": cleaned_items, "language": language, **metadata}, []
     if activity_type != "multiple-choice":
         errors.append("Tipo de actividad no disponible.")
         return None, errors

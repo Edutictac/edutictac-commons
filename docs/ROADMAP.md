@@ -209,6 +209,8 @@ d'activitat que EduHoot sol.
 - [x] Integrar Play amb les APIs de Commons per a itineraris, assignacions i
   resultats abans de convertir `recursos` en el visor canònic. Play haurà de
   funcionar també sense identitat, guardant els borradors en el navegador.
+- [x] Afegir una modalitat visual de classificació basada en H5P Drag and Drop,
+  amb editor simplificat, previsualització, reproducció i exportació `.h5p`.
 - [x] Definir l'enllaç canònic configurable de les activitats: visor autònom de
   Play durant el MVP i, posteriorment, visor o redirecció a `recursos`.
 - [x] Associar l'activitat de Play amb el `resource_id` de `recursos`, incloent

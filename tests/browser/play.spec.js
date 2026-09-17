@@ -76,6 +76,30 @@ test('crear y reproducir una actividad de relacionar', async ({ page }) => {
   await expect(page).toHaveURL(/\/play\/[A-Za-z0-9]{8}$/);
 });
 
+test('crear y reproducir una actividad de clasificar', async ({ page }) => {
+  await page.goto('/play/');
+  await page.getByRole('button', { name: 'Clasificar' }).click();
+  await page.locator('#title').fill('Naturaleza');
+  await page.locator('#question').fill('Clasifica cada elemento');
+  await page.locator('.category-name').nth(0).fill('Seres vivos');
+  await page.locator('.category-name').nth(1).fill('No vivos');
+  await page.locator('.classify-text').nth(0).fill('Árbol');
+  await page.locator('.classify-category').nth(0).selectOption('0');
+  await page.locator('.classify-text').nth(1).fill('Piedra');
+  await page.locator('.classify-category').nth(1).selectOption('1');
+  await page.locator('.classify-text').nth(2).fill('Gato');
+  await page.locator('.classify-category').nth(2).selectOption('0');
+  await page.getByRole('button', { name: 'Previsualizar' }).click({ force: true });
+  await expect(page.locator('#savePreview')).toBeVisible();
+  await expect.poll(() => page.frames().length).toBeGreaterThan(1);
+  const player = page.frames().find((frame) => frame !== page.mainFrame());
+  await expect(player.getByText('Seres vivos')).toBeVisible();
+  await expect(player.getByText('No vivos')).toBeVisible();
+  await page.getByRole('button', { name: 'Guardar' }).click();
+  await expect(page.locator('#download')).toBeVisible();
+  await expect(page).toHaveURL(/\/play\/[A-Za-z0-9]{8}$/);
+});
+
 test('envía a Commons el resultado real de un Quiz H5P', async ({ page }) => {
   let scorePayload;
   await page.route('**/play/api/commons/score', async (route) => {
