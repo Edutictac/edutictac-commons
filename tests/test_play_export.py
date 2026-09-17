@@ -231,6 +231,25 @@ def test_ordering_h5p_export():
         process.wait(timeout=3)
 
 
+def test_fill_blanks_h5p_export():
+    data_dir = Path(tempfile.mkdtemp(prefix="edutictac-play-test-"))
+    process = subprocess.Popen(["python3", "server.py"], cwd=Path(__file__).parents[1] / "services" / "play", env={**os.environ, "PORT": "18108", "PLAY_DATA_DIR": str(data_dir)}, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    try:
+        time.sleep(0.25)
+        payload = json.dumps({"type": "fill-blanks", "title": "Ciencia", "question": "Completa la frase", "text": "El agua hierve a *100* grados."}).encode()
+        request = urllib.request.Request("http://127.0.0.1:18108/api/activities", data=payload, headers={"Content-Type": "application/json"}, method="POST")
+        activity = json.loads(urllib.request.urlopen(request).read())
+        package = urllib.request.urlopen(f"http://127.0.0.1:18108/api/activities/{activity['id']}/download").read()
+        with zipfile.ZipFile(io.BytesIO(package)) as archive:
+            names = set(archive.namelist())
+            assert {"h5p.json", "content/content.json", "H5P.Blanks-1.14/library.json", "H5P.TextUtilities-1.3/library.json"} <= names
+            assert json.loads(archive.read("h5p.json"))["mainLibrary"] == "H5P.Blanks"
+            assert "*100*" in json.loads(archive.read("content/content.json"))["questions"][0]
+    finally:
+        process.terminate()
+        process.wait(timeout=3)
+
+
 def test_memory_card_image_is_served_for_player():
     data_dir = Path(tempfile.mkdtemp(prefix="edutictac-play-test-"))
     process = subprocess.Popen(

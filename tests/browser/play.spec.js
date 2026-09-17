@@ -121,6 +121,21 @@ test('crear y reproducir una actividad de ordenar', async ({ page }) => {
   await expect(page.locator('#download')).toBeVisible();
 });
 
+test('crear y reproducir una actividad de rellenar huecos', async ({ page }) => {
+  await page.goto('/play/');
+  await page.getByRole('button', { name: 'Rellenar huecos' }).click();
+  await page.locator('#title').fill('Ciencia básica');
+  await page.locator('#question').fill('Completa la frase');
+  await page.locator('#fillBlanksText').fill('El agua hierve a *100* grados.');
+  await page.getByRole('button', { name: 'Previsualizar' }).click({ force: true });
+  await expect(page.locator('#savePreview')).toBeVisible();
+  await expect.poll(() => page.frames().length).toBeGreaterThan(1);
+  const player = page.frames().find((frame) => frame !== page.mainFrame());
+  await expect(player.locator('input.h5p-text-input')).toBeVisible();
+  await page.getByRole('button', { name: 'Guardar' }).click();
+  await expect(page.locator('#download')).toBeVisible();
+});
+
 test('envía a Commons el resultado real de un Quiz H5P', async ({ page }) => {
   let scorePayload;
   await page.route('**/play/api/commons/score', async (route) => {

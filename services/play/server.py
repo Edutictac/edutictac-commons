@@ -204,6 +204,17 @@ def activity_language(payload: dict) -> str:
 
 def activity_content(activity: dict) -> dict:
     t = H5P_TEXT.get(str(activity.get("language") or "es"), H5P_TEXT["es"])
+    if activity.get("type") == "fill-blanks":
+        return {
+            "text": t.get("fillInstructions", "Completa las palabras que faltan."),
+            "questions": [f"<p>{safe_text(activity['text'])}</p>"],
+            "overallFeedback": [{"from": 0, "to": 99, "feedback": t["tryHarder"]}, {"from": 100, "to": 100, "feedback": t["allCorrect"]}],
+            "showSolutions": t["showSolution"], "tryAgain": t["retryLong"], "checkAnswer": t["check"], "submitAnswer": t["submit"],
+            "answeredCorrectly": t["correctAnswer"], "answeredIncorrectly": t["wrongAnswer"], "solutionLabel": t["correctAnswer"],
+            "inputLabel": t.get("blankInput", "Espacio @num de @total"), "tipLabel": t.get("tipLabel", "Pista"), "scoreBarLabel": t["scoreBar"],
+            "behaviour": {"enableRetry": True, "enableSolutionsButton": True, "enableCheckButton": True, "caseSensitive": False, "showSolutionsRequiresInput": True, "autoCheck": False, "separateLines": False},
+            "a11yCheck": t["a11yCheck"], "a11yShowSolution": t["a11yShowSolution"], "a11yRetry": t["a11yRetry"], "a11yHeader": t["a11yCheck"],
+        }
     if activity.get("type") in {"classify", "ordering"}:
         elements = []
         drop_zones = []
@@ -353,9 +364,19 @@ def package_files(activity: dict) -> dict[str, bytes]:
             {"machineName": "FontAwesome", "majorVersion": 4, "minorVersion": 5},
         ]
         is_true_false = False
+    elif activity.get("type") == "fill-blanks":
+        main_library = "H5P.Blanks"
+        dependencies = [
+            {"machineName": "H5P.Blanks", "majorVersion": 1, "minorVersion": 14},
+            {"machineName": "FontAwesome", "majorVersion": 4, "minorVersion": 5},
+            {"machineName": "H5P.Question", "majorVersion": 1, "minorVersion": 5},
+            {"machineName": "H5P.JoubelUI", "majorVersion": 1, "minorVersion": 3},
+            {"machineName": "H5P.TextUtilities", "majorVersion": 1, "minorVersion": 3},
+        ]
+        is_true_false = False
     else:
         is_true_false = activity.get("type") == "true-false"
-    if activity.get("type") not in {"memory", "matching", "classify", "ordering"}:
+    if activity.get("type") not in {"memory", "matching", "classify", "ordering", "fill-blanks"}:
         main_library = "H5P.TrueFalse" if is_true_false else "H5P.MultiChoice"
         dependencies = [
             {"machineName": "H5P.TrueFalse", "majorVersion": 1, "minorVersion": 8},
@@ -478,6 +499,17 @@ def validate_activity(payload: dict) -> tuple[dict | None, list[str]]:
         if errors:
             return None, errors
         return {"type": activity_type, "title": title[:200], "question": question[:2000], "categories": cleaned_categories, "items": cleaned_items, "language": language, **metadata}, []
+    if activity_type == "fill-blanks":
+        text = str(payload.get("text", "")).strip()
+        if not title:
+            errors.append("Escribe un título.")
+        if not question:
+            errors.append("Escribe una descripción.")
+        if len(text) < 3 or len(text) > 5000 or not re.search(r"\*[^*]+\*", text):
+            errors.append("Escribe un texto con al menos una palabra entre asteriscos.")
+        if errors:
+            return None, errors
+        return {"type": activity_type, "title": title[:200], "question": question[:2000], "text": text, "language": language, **metadata}, []
     if activity_type != "multiple-choice":
         errors.append("Tipo de actividad no disponible.")
         return None, errors

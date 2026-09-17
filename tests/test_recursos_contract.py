@@ -33,6 +33,21 @@ def test_private_activity_cannot_be_published():
         )
 
 
+def test_fill_blanks_activity_can_be_published():
+    payload = build_publish_payload(
+        {
+            "id": "Fill1234",
+            "type": "fill-blanks",
+            "title": "Ciencia",
+            "visibility": "public",
+        },
+        public_base_url="https://example.test",
+    )
+
+    assert payload["metadata"]["type"] == "fill-blanks"
+    assert payload["canonical_url"].endswith("/play/Fill1234")
+
+
 def test_unknown_type_cannot_be_published():
     with pytest.raises(RecursosContractError, match="unsupported"):
         build_publish_payload(

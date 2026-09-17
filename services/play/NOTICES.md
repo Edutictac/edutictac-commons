@@ -15,6 +15,10 @@ distribuye bajo MIT. Se conservan sus metadatos, scripts, estilos y SVG.
 1.10 se incluyen para la actividad Relacionar. Sus metadatos upstream declaran
 licencias compatibles (MIT para DragQuestion/AdvancedText y MIT para jQuery UI).
 
+`H5P.Blanks` 1.14 procede del repositorio oficial `h5p/h5p-blanks` y se
+distribuye bajo MIT. `H5P.TextUtilities` 1.3 declara dominio público en su
+`library.json`. Ambas librerías se incluyen para Rellenar huecos.
+
 El reproductor `h5p-standalone` 3.8.2 se distribuye bajo MIT. Sus recursos
 están en `assets/`; el aviso de licencia se conserva en la documentación del
 paquete upstream.

@@ -8,7 +8,7 @@
 | Matching / Relacionar | 2 | Implementado | `H5P.DragQuestion 1.15` |
 | Clasificar | 2 | Implementado | `H5P.DragQuestion 1.15` |
 | Ordenar | 2 | Implementado | `H5P.DragQuestion 1.15` |
-| Rellenar huecos (`Fill in the Blanks`) | 2 | Planificado (Prioritario) | `H5P.Blanks 1.14` |
+| Rellenar huecos (`Fill in the Blanks`) | 2 | Implementado | `H5P.Blanks 1.14` |
 | Sopa de letras (`Find the Words`) | 3 | Planificado | `H5P.FindTheWords 1.4` |
 | Arrastrar al texto (`Drag Text`) | 3 | Planificado | `H5P.DragText 1.10` |
 | Marcar palabras (`Mark the Words`) | 3 | Planificado | `H5P.MarkTheWords 1.11` |
@@ -82,12 +82,15 @@ los elementos y los coloca en posiciones numeradas. Internamente se genera un
 `H5P.DragQuestion` con una zona de destino por posición. Se limita a entre 3 y
 12 elementos para mantener una actividad breve y manejable en móvil.
 
-## Rellenar huecos (Fill in the Blanks) — Planificado
+## Rellenar huecos (Fill in the Blanks) — Implementado
 
 El formulario solicita título, instrucciones breves y un bloque de texto donde el
 alumnado rodea con asteriscos las palabras a completar (p. ej. `El agua hierve a
 *100* grados`). El adaptador genera un paquete `H5P.Blanks` 1.14 estándar con
 validación de mayúsculas/minúsculas tolerante, reintento y visualización de solución.
+La previsualización utiliza el mismo runtime H5P que el archivo exportado. Se
+incluyen localmente `H5P.Blanks` y su dependencia `H5P.TextUtilities`; el texto
+está limitado a 5.000 caracteres y no admite HTML proporcionado por usuarios.
 Es una actividad de creación ultrarrápida (2 minutos) óptima para definiciones,
 lenguas y vocabulario.
 
