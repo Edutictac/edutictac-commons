@@ -7,7 +7,7 @@
   },
   "images": {
     "id-api": "registry.edutictac.es/edutictac/commons-id-api@sha256:e4792c95bcfdd53fe365fe40665a5ab0fed3d26fca9fc79550da6382fcf3e019",
-    "portal": "registry.edutictac.es/edutictac/commons-portal@sha256:f3440da5a9260600115b6e8b836510e42154a71646cfec42cd2435d54a2c4bbf",
+    "portal": "registry.edutictac.es/edutictac/commons-portal@sha256:c9d91c3bd66390bc3800460245d3e48923e67152463686710d2b5c784752a279",
     "admin": "registry.edutictac.es/edutictac/commons-admin@sha256:9af32bde56ea97afe6c981715fe4e9b321a01aee725477e19e0e4d41e24661dc",
     "play": "registry.edutictac.es/edutictac/commons-play@sha256:d966ff880b8cae36c30b27e2bdb0a341c8ef5b907d8d49191151ca62a4a1ab80",
     "recursos-api": "registry.edutictac.es/edutictac/recursos-api@sha256:d1b3bf1eb03db503998dc02a66dfedae7b3ba31ebe7517caef8a125c587308e0",

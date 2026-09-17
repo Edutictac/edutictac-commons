@@ -258,6 +258,78 @@ html.i18n-pending body {
   padding-bottom: 10px;
 }
 
+.teacher-intro {
+  max-width: 62ch;
+  margin-top: 4px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.teacher-primary-panel {
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--line));
+  box-shadow: 0 8px 24px rgba(29, 42, 46, 0.06);
+}
+
+.teacher-auth-actions {
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--line);
+}
+
+.teacher-collapsible {
+  padding: 0;
+  overflow: hidden;
+}
+
+.teacher-collapsible[open] {
+  padding-bottom: 18px;
+}
+
+.panel-summary {
+  display: grid;
+  gap: 4px;
+  cursor: pointer;
+  list-style: none;
+  padding: 18px;
+}
+
+.panel-summary::-webkit-details-marker {
+  display: none;
+}
+
+.panel-summary::after {
+  content: "＋";
+  position: absolute;
+  right: 18px;
+  color: var(--accent-dark);
+  font-size: 20px;
+  line-height: 1;
+}
+
+.panel-summary {
+  position: relative;
+  padding-right: 52px;
+}
+
+.teacher-collapsible[open] .panel-summary::after {
+  content: "−";
+}
+
+.panel-summary:hover {
+  background: var(--soft);
+}
+
+.panel-content {
+  padding: 0 18px;
+}
+
+.subsection-heading {
+  display: grid;
+  gap: 4px;
+  margin: 18px 0 12px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
 .student-area .role-heading {
   border-bottom-color: #5b6fbd;
 }

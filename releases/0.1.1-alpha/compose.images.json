@@ -4,7 +4,7 @@
       "image": "registry.edutictac.es/edutictac/commons-id-api@sha256:e4792c95bcfdd53fe365fe40665a5ab0fed3d26fca9fc79550da6382fcf3e019"
     },
     "portal": {
-      "image": "registry.edutictac.es/edutictac/commons-portal@sha256:f3440da5a9260600115b6e8b836510e42154a71646cfec42cd2435d54a2c4bbf"
+      "image": "registry.edutictac.es/edutictac/commons-portal@sha256:c9d91c3bd66390bc3800460245d3e48923e67152463686710d2b5c784752a279"
     },
     "admin": {
       "image": "registry.edutictac.es/edutictac/commons-admin@sha256:9af32bde56ea97afe6c981715fe4e9b321a01aee725477e19e0e4d41e24661dc"
