@@ -30,7 +30,18 @@ El cos del `POST` és:
 No es pot retirar el propietari. La validació del grup es fa al servidor i no
 es confia en cap rol o identificador enviat pel navegador.
 
-La següent iteració connectarà les lectures i escriptures de grup,
-assignacions i resultats amb aquesta membresía, i afegirà la gestió visual al
-tauler docent.
+Les lectures i operacions de treball del grup ja respecten aquesta membresía:
 
+- resum docent i llistat d'alumnat;
+- consulta, rotació i revocació de credencials de l'alumnat;
+- targetes imprimibles i exportació de codis;
+- assignacions d'activitats i consulta dels seus resultats;
+- estadístiques CSV.
+
+La gestió de membres continua reservada al propietari del grup i a
+l'administració. Això evita que un docent col·laborador puga modificar la
+composició del grup, però li permet treballar amb les activitats i resultats
+que té assignats.
+
+Queda per a la següent iteració afegir la gestió visual de membres al tauler i
+connectar aquesta informació amb classes i itineraris de la capa Commons.

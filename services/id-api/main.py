@@ -497,6 +497,26 @@ def require_group_owner(request: Request, group_id: str) -> str:
     return teacher_id
 
 
+def require_group_access(request: Request, group_id: str) -> str:
+    teacher_id = require_teacher(request)
+    with get_conn() as conn:
+        row = conn.execute(
+            """
+            SELECT g.id
+            FROM groups g
+            WHERE g.id = ?
+              AND (g.created_by_teacher_id = ? OR EXISTS (
+                  SELECT 1 FROM group_memberships m
+                  WHERE m.group_id = g.id AND m.teacher_id = ?
+              ))
+            """,
+            (group_id, teacher_id, teacher_id),
+        ).fetchone()
+    if not row and not is_oidc_admin(request):
+        raise HTTPException(status_code=404, detail="group not found")
+    return teacher_id
+
+
 def current_identity(request: Request) -> dict[str, Any] | None:
     cookie = parse_cookie(request.cookies.get(SESSION_COOKIE))
     if not cookie or not cookie.get("sid"):
@@ -1066,10 +1086,12 @@ def regenerate_pin(identity_id: str, request: Request, pin_length: int = Query(4
             WHERE id = ?
               AND active = 1
               AND group_id IN (
-                  SELECT id FROM groups WHERE created_by_teacher_id = ?
+                  SELECT id FROM groups WHERE created_by_teacher_id = ? OR id IN (
+                      SELECT group_id FROM group_memberships WHERE teacher_id = ?
+                  )
               )
             """,
-            (hash_pin(pin), ts, ts, identity_id, teacher_id),
+            (hash_pin(pin), ts, ts, identity_id, teacher_id, teacher_id),
         )
         if cur.rowcount == 0:
             raise HTTPException(status_code=404, detail="identity not found")
@@ -1091,10 +1113,12 @@ def revoke_identity(identity_id: str, request: Request) -> dict[str, bool]:
             SET active = 0, updated_at = ?
             WHERE id = ?
               AND group_id IN (
-                  SELECT id FROM groups WHERE created_by_teacher_id = ?
+                  SELECT id FROM groups WHERE created_by_teacher_id = ? OR id IN (
+                      SELECT group_id FROM group_memberships WHERE teacher_id = ?
+                  )
               )
             """,
-            (ts, identity_id, teacher_id),
+            (ts, identity_id, teacher_id, teacher_id),
         )
         if cur.rowcount == 0:
             raise HTTPException(status_code=404, detail="identity not found")
@@ -1115,10 +1139,13 @@ def create_activity_assignment(payload: ActivityAssignmentIn, request: Request) 
     ts = iso_now()
     with get_conn() as conn:
         group = conn.execute(
-            "SELECT id FROM groups WHERE id = ? AND created_by_teacher_id = ?",
-            (payload.group_id, teacher_id),
+            """SELECT id FROM groups WHERE id = ? AND
+               (created_by_teacher_id = ? OR EXISTS (
+                 SELECT 1 FROM group_memberships m
+                 WHERE m.group_id = groups.id AND m.teacher_id = ?))""",
+            (payload.group_id, teacher_id, teacher_id),
         ).fetchone()
-        if not group:
+        if not group and not is_oidc_admin(request):
             raise HTTPException(status_code=404, detail="group not found")
         conn.execute(
             """
@@ -1142,8 +1169,10 @@ def teacher_activity_assignments(
     limit: int = Query(100, ge=1, le=500),
 ) -> dict[str, Any]:
     teacher_id = require_teacher(request)
-    params: list[Any] = [teacher_id]
-    where = "WHERE created_by_teacher_id = ? AND active = 1"
+    params: list[Any] = [teacher_id, teacher_id]
+    where = """WHERE active = 1 AND (a.created_by_teacher_id = ? OR EXISTS (
+        SELECT 1 FROM group_memberships m
+        WHERE m.group_id = a.group_id AND m.teacher_id = ?))"""
     if group_id:
         where += " AND group_id = ?"
         params.append(group_id)
@@ -1151,7 +1180,7 @@ def teacher_activity_assignments(
     with get_conn() as conn:
         rows = conn.execute(
             f"""
-            SELECT * FROM activity_assignments
+            SELECT a.* FROM activity_assignments a
             {where}
             ORDER BY created_at DESC, title, app_id, activity_id
             LIMIT ?
@@ -1167,10 +1196,13 @@ def teacher_activity_assignment_results(assignment_id: str, request: Request) ->
     with get_conn() as conn:
         assignment = conn.execute(
             """
-            SELECT * FROM activity_assignments
-            WHERE id = ? AND created_by_teacher_id = ? AND active = 1
+            SELECT a.* FROM activity_assignments a
+            WHERE a.id = ? AND a.active = 1 AND (a.created_by_teacher_id = ? OR EXISTS (
+                SELECT 1 FROM group_memberships m
+                WHERE m.group_id = a.group_id AND m.teacher_id = ?
+            ))
             """,
-            (assignment_id, teacher_id),
+            (assignment_id, teacher_id, teacher_id),
         ).fetchone()
         if not assignment:
             raise HTTPException(status_code=404, detail="assignment not found")
@@ -1446,8 +1478,8 @@ def teacher_stats_csv(request: Request, group_id: str | None = None) -> str:
     out = io.StringIO()
     writer = csv.writer(out)
     writer.writerow(["group_code", "public_code", "app_id", "activity_id", "attempts", "best_score", "last_score_at"])
-    params: list[Any] = [teacher_id]
-    where = "WHERE i.active = 1 AND g.created_by_teacher_id = ?"
+    params: list[Any] = [teacher_id, teacher_id]
+    where = "WHERE i.active = 1 AND (g.created_by_teacher_id = ? OR EXISTS (SELECT 1 FROM group_memberships m WHERE m.group_id = g.id AND m.teacher_id = ?))"
     if group_id:
         where += " AND i.group_id = ?"
         params.append(group_id)
@@ -1492,9 +1524,12 @@ def teacher_summary(request: Request) -> dict[str, Any]:
                 SUM(CASE WHEN active = 0 THEN 1 ELSE 0 END) AS inactive
             FROM student_identities
             JOIN groups g ON g.id = student_identities.group_id
-            WHERE g.created_by_teacher_id = ?
+            WHERE g.created_by_teacher_id = ? OR EXISTS (
+                SELECT 1 FROM group_memberships m
+                WHERE m.group_id = g.id AND m.teacher_id = ?
+            )
             """,
-            (teacher_id,),
+            (teacher_id, teacher_id),
         ).fetchone()
         groups = conn.execute(
             """
@@ -1507,12 +1542,15 @@ def teacher_summary(request: Request) -> dict[str, Any]:
                 SUM(CASE WHEN i.active = 1 THEN 1 ELSE 0 END) AS active
             FROM groups g
             LEFT JOIN student_identities i ON i.group_id = g.id
-            WHERE g.created_by_teacher_id = ?
+            WHERE g.created_by_teacher_id = ? OR EXISTS (
+                SELECT 1 FROM group_memberships m
+                WHERE m.group_id = g.id AND m.teacher_id = ?
+            )
             GROUP BY g.id, g.name, g.tenant_id, g.created_at
             ORDER BY g.created_at DESC
             LIMIT 20
             """,
-            (teacher_id,),
+            (teacher_id, teacher_id),
         ).fetchall()
     return {
         "total": int(totals["total"] or 0),
@@ -1543,11 +1581,14 @@ def teacher_identities(request: Request, limit: int = Query(200, ge=1, le=500)) 
             FROM student_identities i
             JOIN groups g ON g.id = i.group_id
             WHERE i.active = 1
-              AND g.created_by_teacher_id = ?
+              AND (g.created_by_teacher_id = ? OR EXISTS (
+                  SELECT 1 FROM group_memberships m
+                  WHERE m.group_id = g.id AND m.teacher_id = ?
+              ))
             ORDER BY i.created_at DESC, i.public_code
             LIMIT ?
             """,
-            (teacher_id, limit),
+            (teacher_id, teacher_id, limit),
         ).fetchall()
     return {
         "identities": [
@@ -1579,9 +1620,12 @@ def teacher_identity_by_code(public_code: str, request: Request) -> dict[str, An
             JOIN groups g ON g.id = i.group_id
             WHERE i.public_code = ?
               AND i.active = 1
-              AND g.created_by_teacher_id = ?
+              AND (g.created_by_teacher_id = ? OR EXISTS (
+                  SELECT 1 FROM group_memberships m
+                  WHERE m.group_id = g.id AND m.teacher_id = ?
+              ))
             """,
-            (code, teacher_id),
+            (code, teacher_id, teacher_id),
         ).fetchone()
     if not row:
         raise HTTPException(status_code=404, detail="identity not found")
@@ -1604,8 +1648,10 @@ def printable_cards(group_id: str, request: Request) -> str:
     teacher_id = require_teacher(request)
     with get_conn() as conn:
         group = conn.execute(
-            "SELECT * FROM groups WHERE id = ? AND created_by_teacher_id = ?",
-            (group_id, teacher_id),
+            """SELECT * FROM groups WHERE id = ? AND (created_by_teacher_id = ? OR EXISTS (
+                SELECT 1 FROM group_memberships m WHERE m.group_id = groups.id AND m.teacher_id = ?
+            ))""",
+            (group_id, teacher_id, teacher_id),
         ).fetchone()
         if not group:
             raise HTTPException(status_code=404, detail="group not found")
@@ -1647,8 +1693,10 @@ def export_codes_csv(group_id: str, request: Request) -> str:
     writer.writerow(["codi", "grup"])
     with get_conn() as conn:
         group = conn.execute(
-            "SELECT id FROM groups WHERE id = ? AND created_by_teacher_id = ?",
-            (group_id, teacher_id),
+            """SELECT id FROM groups WHERE id = ? AND (created_by_teacher_id = ? OR EXISTS (
+                SELECT 1 FROM group_memberships m WHERE m.group_id = groups.id AND m.teacher_id = ?
+            ))""",
+            (group_id, teacher_id, teacher_id),
         ).fetchone()
         if not group:
             raise HTTPException(status_code=404, detail="group not found")
@@ -1672,8 +1720,10 @@ def app_roster(app_id: str, payload: AppRosterIn, request: Request) -> dict[str,
     app_key = normalize_app_id(app_id)
     with get_conn() as conn:
         group = conn.execute(
-            "SELECT id FROM groups WHERE id = ? AND created_by_teacher_id = ?",
-            (payload.group_id, teacher_id),
+            """SELECT id FROM groups WHERE id = ? AND (created_by_teacher_id = ? OR EXISTS (
+                SELECT 1 FROM group_memberships m WHERE m.group_id = groups.id AND m.teacher_id = ?
+            ))""",
+            (payload.group_id, teacher_id, teacher_id),
         ).fetchone()
         if not group:
             raise HTTPException(status_code=404, detail="group not found")

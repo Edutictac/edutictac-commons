@@ -195,11 +195,14 @@ roadmap 4D).
   EduHoot.
 - [x] Provar el flux complet contra una instància Authentik del laboratori per
   a Commons/Portal i Recursos.
-- [ ] Afegir classes/grups i permisos compartits.
+- [ ] Afegir classes/grups i permisos compartits completament integrats en el
+  tauler i els itineraris.
 
-La primera migració de dades i els endpoints de membresía estan implementats
-i documentats en `docs/groups-permissions.md`; queda connectar-los a totes les
-consultes del tauler i al flux d'assignacions.
+La primera migració de dades i els endpoints de membresía estan implementats i
+documentats en `docs/groups-permissions.md`. Les consultes del tauler, les
+credencials, les assignacions, els resultats i les estadístiques ja respecten
+els docents col·laboradors; queda afegir la gestió visual i connectar-ho amb
+classes i itineraris.
 
 ### Fita v2-2 — Banc de recursos (cistella i recorregut)
 
