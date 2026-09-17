@@ -1,15 +1,19 @@
 # Tipos de actividad
 
-| Tipo | Fase | Estado |
-|---|---:|---|
-| Multiple Choice | 1 | Implementado |
-| True/False | 2 | Implementado |
-| Memory | 2 | Implementado |
-| Matching / Relacionar | 2 | Implementado |
-| Clasificar | 2 | Implementado |
-| Ordenar | 2 | Implementado |
-| Fill in the Blanks | 2 | Pendiente |
-| Ordenar | 2 | Pendiente de evaluar |
+| Tipo | Fase | Estado | Librería H5P |
+|---|---:|---|---|
+| Multiple Choice | 1 | Implementado | `H5P.MultiChoice 1.16` |
+| True/False | 2 | Implementado | `H5P.TrueFalse 1.8` |
+| Memory | 2 | Implementado | `H5P.MemoryGame 1.3` |
+| Matching / Relacionar | 2 | Implementado | `H5P.DragQuestion 1.15` |
+| Clasificar | 2 | Implementado | `H5P.DragQuestion 1.15` |
+| Ordenar | 2 | Implementado | `H5P.DragQuestion 1.15` |
+| Rellenar huecos (`Fill in the Blanks`) | 2 | Planificado (Prioritario) | `H5P.Blanks 1.14` |
+| Sopa de letras (`Find the Words`) | 3 | Planificado | `H5P.FindTheWords 1.4` |
+| Arrastrar al texto (`Drag Text`) | 3 | Planificado | `H5P.DragText 1.10` |
+| Marcar palabras (`Mark the Words`) | 3 | Planificado | `H5P.MarkTheWords 1.11` |
+| Tarjetas de estudio (`Dialog Cards`) | 3 | Planificado | `H5P.Dialogcards 1.9` |
+| Crucigrama (`Crossword`) | 3 | Planificado | `H5P.Crossword 1.1` |
 
 ## Contrato conceptual
 
@@ -77,6 +81,57 @@ El mismo editor se presenta como una secuencia sencilla: el alumnado escribe
 los elementos y los coloca en posiciones numeradas. Internamente se genera un
 `H5P.DragQuestion` con una zona de destino por posición. Se limita a entre 3 y
 12 elementos para mantener una actividad breve y manejable en móvil.
+
+## Rellenar huecos (Fill in the Blanks) — Planificado
+
+El formulario solicita título, instrucciones breves y un bloque de texto donde el
+alumnado rodea con asteriscos las palabras a completar (p. ej. `El agua hierve a
+*100* grados`). El adaptador genera un paquete `H5P.Blanks` 1.14 estándar con
+validación de mayúsculas/minúsculas tolerante, reintento y visualización de solución.
+Es una actividad de creación ultrarrápida (2 minutos) óptima para definiciones,
+lenguas y vocabulario.
+
+## Sopa de letras (Find the Words) — Planificado
+
+El formulario solicita título, descripción y una lista de entre 4 y 12 palabras.
+El motor oficial `H5P.FindTheWords` 1.4 calcula dinámicamente la cuadrícula,
+distribuye las palabras en horizontal/vertical y rellena las casillas vacías con
+letras aleatorias. Al ser una generación completamente automática a partir de una
+lista de texto, el alumnado crea un juego completo y altamente motivador en apenas
+1 minuto sin configurar coordenadas ni tableros.
+
+## Arrastrar palabras al texto (Drag Text) — Planificado
+
+Comparte con *Rellenar huecos* la misma sintaxis de autoría basada en asteriscos
+(`*palabra*`), pero el adaptador produce `H5P.DragText` 1.10. Durante el juego, las
+palabras correctas y los distractores se presentan como fichas arrastrables hacia
+las lagunas del texto. Es la alternativa táctil preferente para dispositivos móviles
+o alumnado de primaria que aún escribe con lentitud en teclado.
+
+## Marcar las palabras (Mark the Words) — Planificado
+
+El formulario solicita una consigna y un texto con palabras objetivo señaladas entre
+asteriscos (p. ej. `Señala los adjetivos: El *rápido* guepardo corrió por la
+*seca* llanura`). El adaptador genera `H5P.MarkTheWords` 1.11, permitiendo al
+jugador hacer clic directamente sobre cualquier palabra del texto para
+seleccionarla. Es un formato nativo para aprendizaje gramatical, ortográfico y de
+comprensión lectora.
+
+## Tarjetas de estudio / Flashcards (Dialog Cards) — Planificado
+
+El formulario solicita un título y entre 3 y 15 fichas de doble cara: *Anverso*
+(pregunta, concepto o palabra) y *Reverso* (respuesta, definición o traducción).
+El adaptador genera `H5P.Dialogcards` 1.9 configurado en modo repaso y
+autoevaluación con volteo animado. No exige imágenes ni audio, convirtiéndose en
+el método más directo para estudiar fórmulas, vocabulario de idiomas o fechas.
+
+## Crucigrama (Crossword) — Planificado
+
+El formulario solicita una lista de entre 4 y 10 palabras con su pista correspondiente.
+El generador `H5P.Crossword` 1.1 calcula automáticamente los cruces e intersecciones,
+generando la cuadrícula con numeración y pistas horizontales/verticales. Permite
+al alumnado crear juegos de repaso completos de una unidad didáctica en menos de
+5 minutos sin requerir conocimientos de maquetación.
 
 ## Criterio para nuevos tipos
 
