@@ -631,6 +631,11 @@ class BatchIn(GroupIn):
     pin_length: int = 4
 
 
+class AddIdentitiesIn(BaseModel):
+    count: int = Field(ge=1, le=120)
+    pin_length: int = 4
+
+
 class StudentAuthIn(BaseModel):
     group_id: str = ""
     public_code: str
@@ -880,6 +885,46 @@ def add_group_member(group_id: str, payload: GroupMemberIn, request: Request) ->
     return {"group_id": group_id, "member": dict(row)}
 
 
+@app.post("/api/teacher/groups/{group_id}/identities", status_code=201)
+def add_group_identities(group_id: str, payload: AddIdentitiesIn, request: Request) -> dict[str, Any]:
+    require_group_access(request, group_id)
+    if payload.pin_length not in (4, 6):
+        raise HTTPException(status_code=400, detail="pin_length must be 4 or 6")
+    ts = iso_now()
+    generated: list[dict[str, str]] = []
+    with get_conn() as conn:
+        group = conn.execute("SELECT id, name, tenant_id FROM groups WHERE id = ?", (group_id,)).fetchone()
+        if not group:
+            raise HTTPException(status_code=404, detail="group not found")
+        generated = generate_identities(conn, group_id, payload.count, payload.pin_length, ts)
+        conn.execute("UPDATE groups SET updated_at = ? WHERE id = ?", (ts, group_id))
+    return {"group": {"id": group["id"], "group_code": group["name"], "tenant_id": group["tenant_id"]}, "identities": generated}
+
+
+@app.delete("/api/teacher/groups/{group_id}")
+def delete_group(group_id: str, request: Request) -> dict[str, Any]:
+    require_group_owner(request, group_id)
+    with get_conn() as conn:
+        group = conn.execute("SELECT id, name FROM groups WHERE id = ?", (group_id,)).fetchone()
+        if not group:
+            raise HTTPException(status_code=404, detail="group not found")
+        conn.execute(
+            "DELETE FROM app_launch_tokens WHERE assignment_id IN (SELECT id FROM activity_assignments WHERE group_id = ?)",
+            (group_id,),
+        )
+        conn.execute(
+            "DELETE FROM scores WHERE identity_id IN (SELECT id FROM student_identities WHERE group_id = ?) "
+            "OR assignment_id IN (SELECT id FROM activity_assignments WHERE group_id = ?)",
+            (group_id, group_id),
+        )
+        conn.execute("DELETE FROM itineraries WHERE group_id = ?", (group_id,))
+        conn.execute("DELETE FROM activity_assignments WHERE group_id = ?", (group_id,))
+        conn.execute("DELETE FROM student_identities WHERE group_id = ?", (group_id,))
+        conn.execute("DELETE FROM group_memberships WHERE group_id = ?", (group_id,))
+        conn.execute("DELETE FROM groups WHERE id = ?", (group_id,))
+    return {"deleted": group_id, "group_code": group["name"]}
+
+
 @app.delete("/api/teacher/groups/{group_id}/members/{teacher_id}")
 def remove_group_member(group_id: str, teacher_id: str, request: Request) -> dict[str, bool]:
     require_group_owner(request, group_id)
@@ -901,6 +946,33 @@ def remove_group_member(group_id: str, teacher_id: str, request: Request) -> dic
     return {"ok": True}
 
 
+def generate_identities(conn: sqlite3.Connection, group_id: str, count: int, pin_length: int, ts: str) -> list[dict[str, str]]:
+    generated: list[dict[str, str]] = []
+    for _ in range(count):
+        for _attempt in range(200):
+            code = make_code()
+            exists = conn.execute(
+                "SELECT 1 FROM student_identities WHERE public_code = ?",
+                (code,),
+            ).fetchone()
+            if not exists:
+                break
+        else:
+            raise HTTPException(status_code=409, detail="unable to generate unique code")
+        pin = make_pin(pin_length)
+        identity_id = secrets.token_urlsafe(16)
+        conn.execute(
+            """
+            INSERT INTO student_identities
+                (id, group_id, public_code, pin_hash, active, created_at, updated_at, pin_rotated_at)
+            VALUES (?, ?, ?, ?, 1, ?, ?, ?)
+            """,
+            (identity_id, group_id, code, hash_pin(pin), ts, ts, ts),
+        )
+        generated.append({"id": identity_id, "public_code": code, "pin": pin})
+    return generated
+
+
 @app.post("/api/identities/batch", status_code=201)
 def create_batch(payload: BatchIn, request: Request) -> dict[str, Any]:
     teacher_id = require_teacher(request)
@@ -910,7 +982,6 @@ def create_batch(payload: BatchIn, request: Request) -> dict[str, Any]:
     group_id = secrets.token_urlsafe(10)
     group_code = make_group_code()
     ts = iso_now()
-    generated: list[dict[str, str]] = []
     with get_conn() as conn:
         conn.execute(
             """
@@ -923,28 +994,7 @@ def create_batch(payload: BatchIn, request: Request) -> dict[str, Any]:
             "INSERT INTO group_memberships (group_id, teacher_id, role, created_at) VALUES (?, ?, 'owner', ?)",
             (group_id, teacher_id, ts),
         )
-        for _ in range(payload.count):
-            for _attempt in range(200):
-                code = make_code()
-                exists = conn.execute(
-                    "SELECT 1 FROM student_identities WHERE public_code = ?",
-                    (code,),
-                ).fetchone()
-                if not exists:
-                    break
-            else:
-                raise HTTPException(status_code=409, detail="unable to generate unique code")
-            pin = make_pin(pin_length)
-            identity_id = secrets.token_urlsafe(16)
-            conn.execute(
-                """
-                INSERT INTO student_identities
-                    (id, group_id, public_code, pin_hash, active, created_at, updated_at, pin_rotated_at)
-                VALUES (?, ?, ?, ?, 1, ?, ?, ?)
-                """,
-                (identity_id, group_id, code, hash_pin(pin), ts, ts, ts),
-            )
-            generated.append({"id": identity_id, "public_code": code, "pin": pin})
+        generated = generate_identities(conn, group_id, payload.count, pin_length, ts)
     return {
         "group": {"id": group_id, "group_code": group_code, "tenant_id": payload.tenant_id},
         "identities": generated,

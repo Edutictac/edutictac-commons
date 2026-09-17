@@ -19,12 +19,19 @@ Amb una sessió docent:
 GET    /api/teacher/groups/{group_id}/members
 POST   /api/teacher/groups/{group_id}/members
 DELETE /api/teacher/groups/{group_id}/members/{teacher_id}
+POST   /api/teacher/groups/{group_id}/identities
+DELETE /api/teacher/groups/{group_id}
 ```
 
 El tauler docent inclou una gestió inicial per seleccionar un grup, consultar,
 afegir i retirar docents col·laboradors. La identificació es demana com a valor
 pseudònim (`oidc:...`) i no com a nom o correu. El propietari es mostra però no
 es pot retirar des de la interfície.
+
+El mateix tauler permet afegir noves identitats a un grup existent. L'eliminació
+del grup és una operació exclusiva del propietari o l'administració i elimina
+en cascada les credencials, assignacions, itineraris, sessions, tokens de
+llançament i puntuacions del grup.
 
 El cos del `POST` és:
 

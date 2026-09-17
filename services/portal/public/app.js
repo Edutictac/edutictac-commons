@@ -77,7 +77,7 @@ function setEmpty(node, content) {
 
 function setTeacherSession(active) {
   state.teacher = active;
-  ["teacherSummary", "refreshDashboard", "createBatch", "createEduhootAssignment", "teacherLogout", "addGroupMember", "loadGroupMembers", "createItinerary", "loadItineraries"].forEach((id) => {
+  ["teacherSummary", "refreshDashboard", "createBatch", "createEduhootAssignment", "teacherLogout", "addGroupMember", "loadGroupMembers", "createItinerary", "loadItineraries", "addGroupIdentities", "deleteGroup"].forEach((id) => {
     const node = $(id);
     if (node) {
       node.disabled = !active;
@@ -551,6 +551,35 @@ async function createBatch() {
       ${credentialCards(batch.identities)}
     `,
   );
+}
+
+async function addGroupIdentities() {
+  if (!state.teacher) throw new Error(t("teacher.errors.loginFirst"));
+  if (!state.group) throw new Error(t("teacher.errors.selectGroupFirst"));
+  const count = Number($("additionalIdentityCount").value || 6);
+  const batch = await api(`/api/teacher/groups/${encodeURIComponent(state.group.id)}/identities`, {
+    method: "POST",
+    body: JSON.stringify({ count, pin_length: 4 }),
+  });
+  const [summary, assignmentData, identityData] = await loadTeacherData();
+  setOutput($("teacherOutput"), `<p>${t("teacher.identitiesAdded", { count: batch.identities.length })}</p>${credentialCards(batch.identities)}${teacherDashboard(summary, assignmentData.assignments || [], identityData.identities || [])}`);
+}
+
+async function deleteGroup() {
+  if (!state.teacher) throw new Error(t("teacher.errors.loginFirst"));
+  if (!state.group) throw new Error(t("teacher.errors.selectGroupFirst"));
+  if (!window.confirm(t("teacher.confirmDeleteGroup", { group: state.group.group_code }))) return;
+  await api(`/api/teacher/groups/${encodeURIComponent(state.group.id)}`, { method: "DELETE" });
+  state.group = null;
+  state.assignment = null;
+  state.identities = [];
+  state.assignments = [];
+  state.itineraries = [];
+  saveState();
+  setEmpty($("teacherOutput"), t("teacher.groupDeleted"));
+  setEmpty($("membersOutput"), t("teacher.membersEmpty"));
+  setEmpty($("itinerariesOutput"), t("teacher.itinerariesEmpty"));
+  await refreshDashboard();
 }
 
 async function createEduhootAssignment() {

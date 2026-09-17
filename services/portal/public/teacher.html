@@ -66,6 +66,17 @@
 
           <div class="grid-fields">
             <label>
+              <span data-i18n="teacher.addStudentsCount">Noves identitats</span>
+              <input id="additionalIdentityCount" type="number" min="1" max="120" value="6">
+            </label>
+            <div class="actions">
+              <button id="addGroupIdentities" type="button" class="secondary" data-i18n="teacher.addStudents">Afegir al grup seleccionat</button>
+              <button id="deleteGroup" type="button" class="danger" data-i18n="teacher.deleteGroup">Eliminar grup</button>
+            </div>
+          </div>
+
+          <div class="grid-fields">
+            <label>
               <span data-i18n="teacher.eduhootActivityId">ID activitat EduHoot</span>
               <input id="eduhootActivityId" type="text" placeholder="local-... o id del quiz" data-i18n-placeholder="teacher.eduhootIdPlaceholder">
             </label>
