@@ -134,10 +134,8 @@ perfil està actiu.
 ## Ús d'imatges ja publicades (registre propi)
 
 EduTicTac publica les imatges a un registre OCI propi,
-`registry.edutictac.es`. La configuració comprovada el 2026-09-15 requerix
-autenticació també per a descarregar. Cal obtindre un accés autoritzat i fer
-`docker login registry.edutictac.es`; després es poden descarregar les
-imatges sense construir-les des del codi font.
+`registry.edutictac.es`. Les imatges oficials publicades es poden descarregar
+sense credencials; només cal autenticació per publicar-ne de noves.
 
 Al `.env` del centre:
 

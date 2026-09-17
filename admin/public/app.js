@@ -1,4 +1,5 @@
 const TOKEN_KEY = "edutictacAdminToken";
+const API_PREFIX = window.location.pathname.startsWith("/admin/") ? "/admin" : "";
 
 const tokenInput = document.getElementById("adminToken");
 const apiStatus = document.getElementById("apiStatus");
@@ -36,7 +37,7 @@ async function apiFetch(path, options) {
   const headers = Object.assign({}, (options && options.headers) || {}, {
     Authorization: `Bearer ${token}`,
   });
-  const resp = await fetch(path, Object.assign({}, options, { headers }));
+  const resp = await fetch(`${API_PREFIX}${path}`, Object.assign({}, options, { headers }));
   if (resp.status === 401) {
     apiStatus.textContent = t("status.invalidToken");
     throw new Error(t("errors.unauthorized"));

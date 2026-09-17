@@ -1,0 +1,224 @@
+#!/bin/sh
+set -eu
+
+APP_DIR=/opt/edutictac-commons
+ENV_FILE="$APP_DIR/.env"
+EXAMPLE_FILE="$APP_DIR/.env.example"
+SERVICE=edutictac-commons.service
+MDNS_CONF=/etc/avahi/avahi-daemon.conf
+
+if [ ! -f "$ENV_FILE" ]; then
+    cp "$EXAMPLE_FILE" "$ENV_FILE"
+fi
+
+target_uid="${SUDO_UID:-1000}"
+target_gid="${SUDO_GID:-$target_uid}"
+case "$target_uid" in *[!0-9]*|'') target_uid=1000 ;; esac
+case "$target_gid" in *[!0-9]*|'') target_gid="$target_uid" ;; esac
+
+setup_token_notice="$(python3 - "$ENV_FILE" "$target_uid" "$target_gid" <<'PY'
+import secrets
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+uid, gid = sys.argv[2:4]
+text = path.read_text(encoding="utf-8")
+values = {
+    "REPO_DIR": "/opt/edutictac-commons",
+    "IMAGE_REGISTRY": "registry.edutictac.es/edutictac",
+    "IMAGE_TAG": "0.1.1-alpha",
+    "PORTAL_PORT": "80",
+    "COMPOSE_PROFILES": "authentik,eduhoot,recursos",
+    "RECURSOS_TAG": "0.1.1-alpha",
+    "EDUTICTAC_MDNS_NAME": "edutictac",
+    "PUID": uid,
+    "PGID": gid,
+    "EDUTICTAC_ID_SECRET": secrets.token_hex(32),
+    "EDUTICTAC_ID_TEACHER_TOKEN": secrets.token_urlsafe(32),
+    "EDUTICTAC_ID_APP_TOKEN": secrets.token_urlsafe(32),
+    "EDUTICTAC_ADMIN_TOKEN": secrets.token_urlsafe(32),
+    "AUTHENTIK_PG_PASS": secrets.token_urlsafe(32),
+    "AUTHENTIK_SECRET_KEY": secrets.token_urlsafe(64),
+    "EDUTICTAC_SETUP_TOKEN": secrets.token_hex(6).upper(),
+    "AUTHENTIK_BOOTSTRAP_PASSWORD": secrets.token_urlsafe(18),
+    "EDUTICTAC_ID_OIDC_CLIENT_ID": "edutictac-commons",
+    "EDUTICTAC_ID_OIDC_CLIENT_SECRET": secrets.token_urlsafe(48),
+    "EDUTICTAC_ID_OIDC_ROLE_CLAIM": "groups",
+}
+replace_if = {
+    "REPO_DIR": {"", "/opt/edutictac-commons"},
+    "IMAGE_REGISTRY": {"edutictac", ""},
+    "PUID": {"1000", ""},
+    "PGID": {"1000", ""},
+    "EDUTICTAC_ID_SECRET": {"change-this-local-secret", ""},
+    "EDUTICTAC_ID_TEACHER_TOKEN": {"dev-teacher", ""},
+    "EDUTICTAC_ID_APP_TOKEN": {"dev-app-token", ""},
+    "EDUTICTAC_ADMIN_TOKEN": {"change-this-admin-token", ""},
+    "COMPOSE_PROFILES": {"", "authentik", "eduhoot", "recursos"},
+    "RECURSOS_TAG": {"", "local"},
+    "EDUTICTAC_MDNS_NAME": {"", "edutictac"},
+    "PORTAL_PORT": {"", "8082"},
+    "AUTHENTIK_PG_PASS": {"change-this-authentik-db-password", ""},
+    "AUTHENTIK_SECRET_KEY": {"change-this-authentik-secret-key", ""},
+    "EDUTICTAC_SETUP_TOKEN": {"", "change-this-setup-token"},
+    "AUTHENTIK_BOOTSTRAP_PASSWORD": {"", "change-this-authentik-password"},
+    "EDUTICTAC_ID_OIDC_CLIENT_ID": {"", "edutictac-commons"},
+    "EDUTICTAC_ID_OIDC_CLIENT_SECRET": {"", "change-this-oidc-client-secret"},
+    "EDUTICTAC_ID_OIDC_ROLE_CLAIM": {"", "roles"},
+}
+lines = text.splitlines()
+seen = set()
+new_setup_token = None
+for index, line in enumerate(lines):
+    if "=" not in line or line.lstrip().startswith("#"):
+        continue
+    key = line.split("=", 1)[0]
+    current = line.split("=", 1)[1]
+    if key not in values:
+        continue
+    if key in replace_if and current not in replace_if[key]:
+        seen.add(key)
+        continue
+    if key == "EDUTICTAC_SETUP_TOKEN" and current in replace_if[key]:
+        new_setup_token = values[key]
+    lines[index] = f"{key}={values[key]}"
+    seen.add(key)
+for key, value in values.items():
+    if key not in seen:
+        lines.append(f"{key}={value}")
+        if key == "EDUTICTAC_SETUP_TOKEN":
+            new_setup_token = value
+path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+if new_setup_token:
+    print(new_setup_token)
+PY
+ )"
+
+chmod 600 "$ENV_FILE"
+
+if grep -q '^PORTAL_PORT=80$' "$ENV_FILE" && command -v ss >/dev/null 2>&1 \
+    && ss -ltnH | grep -Eq '(^|[[:space:]])[^[:space:]]*:80[[:space:]]'; then
+    python3 - "$ENV_FILE" <<'PY'
+from pathlib import Path
+path = Path(__import__("sys").argv[1])
+lines = path.read_text(encoding="utf-8").splitlines()
+lines = ["PORTAL_PORT=8082" if line.startswith("PORTAL_PORT=") else line for line in lines]
+path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+PY
+    echo "Aviso: el puerto 80 ya está ocupado; Commons usará el puerto 8082." >&2
+fi
+
+python3 - "$ENV_FILE" <<'PY'
+from pathlib import Path
+import sys
+
+path = Path(sys.argv[1])
+env = {}
+for line in path.read_text(encoding="utf-8").splitlines():
+    if "=" in line and not line.lstrip().startswith("#"):
+        key, value = line.split("=", 1)
+        env[key] = value
+
+name = env.get("EDUTICTAC_MDNS_NAME", "edutictac")
+portal_port = env.get("PORTAL_PORT", "80")
+portal_base = f"http://{name}" if portal_port == "80" else f"http://{name}:{portal_port}"
+authentik_base = f"http://{name}:{env.get('AUTHENTIK_PORT', '9000')}"
+values = {
+    "EDUTICTAC_ID_OIDC_ISSUER_URL": f"{authentik_base}/application/o/edutictac-commons",
+    "EDUTICTAC_ID_OIDC_DISCOVERY_URL": "http://authentik-server:9000/application/o/edutictac-commons/.well-known/openid-configuration",
+    "EDUTICTAC_ID_OIDC_AUTHORIZATION_URL": f"{authentik_base}/application/o/authorize/",
+    "EDUTICTAC_ID_OIDC_REDIRECT_URL": f"{portal_base}/api/auth/oidc/callback",
+}
+replace_if = {
+    "EDUTICTAC_ID_OIDC_ISSUER_URL": {"", "https://auth.example/application/o/commons/"},
+    "EDUTICTAC_ID_OIDC_DISCOVERY_URL": {""},
+    "EDUTICTAC_ID_OIDC_AUTHORIZATION_URL": {""},
+    "EDUTICTAC_ID_OIDC_REDIRECT_URL": {"", "https://commons.example/api/auth/oidc/callback"},
+}
+lines = path.read_text(encoding="utf-8").splitlines()
+seen = set()
+for index, line in enumerate(lines):
+    if "=" not in line or line.lstrip().startswith("#"):
+        continue
+    key, current = line.split("=", 1)
+    if key not in values:
+        continue
+    if current in replace_if[key]:
+        lines[index] = f"{key}={values[key]}"
+    seen.add(key)
+for key, value in values.items():
+    if key not in seen:
+        lines.append(f"{key}={value}")
+path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+PY
+
+python3 - "$ENV_FILE" "$MDNS_CONF" <<'PY'
+import re
+import sys
+from pathlib import Path
+
+env_path, conf_path = map(Path, sys.argv[1:])
+env = {}
+for line in env_path.read_text(encoding="utf-8").splitlines():
+    if "=" in line and not line.lstrip().startswith("#"):
+        key, value = line.split("=", 1)
+        env[key] = value.strip()
+name = re.sub(r"[^a-zA-Z0-9-]", "-", env.get("EDUTICTAC_MDNS_NAME", "edutictac")).strip("-") or "edutictac"
+if conf_path.exists():
+    lines = conf_path.read_text(encoding="utf-8").splitlines()
+else:
+    lines = []
+found = False
+in_server = False
+output = []
+for line in lines:
+    if re.match(r"^\s*\[", line):
+        in_server = line.strip() == "[server]"
+    if in_server and re.match(r"^\s*#?\s*host-name\s*=", line):
+        output.append(f"host-name={name}")
+        found = True
+    else:
+        output.append(line)
+if not found:
+    try:
+        index = next(i for i, line in enumerate(output) if line.strip() == "[server]") + 1
+    except StopIteration:
+        output = ["[server]"] + output
+        index = 1
+    output.insert(index, f"host-name={name}")
+conf_path.write_text("\n".join(output) + "\n", encoding="utf-8")
+PY
+
+if command -v systemctl >/dev/null 2>&1 && systemctl list-unit-files avahi-daemon.service >/dev/null 2>&1; then
+    systemctl enable avahi-daemon.service >/dev/null 2>&1 || true
+    systemctl restart avahi-daemon.service >/dev/null 2>&1 || true
+fi
+
+mkdir -p "$APP_DIR/data" "$APP_DIR/data/play" "$APP_DIR/data/recursos-api" \
+    "$APP_DIR/data/authentik" "$APP_DIR/data/authentik-templates" \
+    "$APP_DIR/data/eduhoot-mongo" "$APP_DIR/data/eduhoot-uploads" \
+    "$APP_DIR/data/eduhoot-logs" "$APP_DIR/backups" "$APP_DIR/dist"
+chown -R root:root "$APP_DIR"
+chown -R "$target_uid:$target_gid" "$APP_DIR/data"
+chown "$target_uid:$target_gid" "$APP_DIR/backups" "$APP_DIR/dist"
+chmod 700 "$APP_DIR/data" "$APP_DIR/backups"
+
+if command -v systemctl >/dev/null 2>&1; then
+    systemctl daemon-reload
+    systemctl enable "$SERVICE" >/dev/null 2>&1 || true
+    if ! systemctl start "$SERVICE"; then
+        echo "Aviso: no se ha podido arrancar EduTicTac Commons." >&2
+        echo "Revisa el registro del servicio y ejecuta: systemctl start $SERVICE" >&2
+    fi
+fi
+
+if [ -n "$setup_token_notice" ]; then
+    echo ""
+    echo "EduTicTac Commons requiere una activación inicial."
+    echo "Abre http://edutictac.local/ y usa este código una sola vez:"
+    echo "  $setup_token_notice"
+    echo ""
+fi
+
+exit 0

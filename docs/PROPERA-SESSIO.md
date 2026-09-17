@@ -366,3 +366,9 @@ amb healthcheck nou per `eduhoot-mongo` en `compose.yml`. Provat en real amb
 un cicle complet backup -> restore contra el stack local amb dades reals.
 Fita 3 queda tancada en codi excepte el rollback assistit des del panell:
 actualment el rollback és manual i està documentat en `docs/INVENTARI.md`.
+
+## Idees i millores per a la v2
+
+- **Configuració de ports des del panell d'administració (2026-09-17)**:
+  Permetre canviar els ports de les aplicacions i contenidors directament des de la interfície del panell d'administració (`/admin`).
+  Motivació: evitar col·lisions quan el servidor o equip amfitrió ja té algun port ocupat per altres serveis preexistents, sense haver d'editar a mà `.env` o `compose.yml`. Queda fora de la v1; detall a `docs/idea-ports-configurables-admin.md`.

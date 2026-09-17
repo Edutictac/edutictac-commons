@@ -160,6 +160,21 @@
       </section>
     </main>
 
+    <dialog id="oidcSetupDialog" class="setup-dialog">
+      <form method="dialog">
+        <p class="eyebrow" data-i18n="setup.oidcEyebrow">Configuración de acceso</p>
+        <h2 data-i18n="setup.oidcTitle">Hay que configurar el acceso docente</h2>
+        <p data-i18n="setup.oidcIntro">Authentik está instalado, pero el proveedor OIDC de Commons todavía no está disponible.</p>
+        <ol>
+          <li data-i18n="setup.oidcStep1">Abre Authentik y comprueba la configuración del administrador.</li>
+          <li data-i18n="setup.oidcStep2">Comprueba que existe la aplicación OpenID Connect de EduTicTac Commons.</li>
+          <li data-i18n="setup.oidcStep3">Si la instalación es antigua, reinicia Commons después de completar Authentik.</li>
+        </ol>
+        <p><a id="oidcSetupLink" href="http://localhost:9000/" target="_blank" rel="noopener" data-i18n="setup.openAuthentik">Abrir Authentik</a></p>
+        <button type="submit" class="secondary" data-i18n="setup.close">Cerrar</button>
+      </form>
+    </dialog>
+
     <script src="/app.js"></script>
   </body>
 </html>

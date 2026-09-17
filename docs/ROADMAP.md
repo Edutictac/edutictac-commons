@@ -174,6 +174,8 @@ l'alumnat pot completar-la amb la mateixa identitat pseudònima.
 - [ ] Mantindre canals de versió sense usar `latest`.
 - [x] Provar el flux de reset amb restauració (`CONFIRM_RESET_TEST=1 make
   test-reset-flow`): backup previ, dades temporals, reset buit i restore.
+- [ ] Publicar un paquet `.deb` per a Ubuntu amd64 amb dependències,
+  configuració inicial, servei systemd i comprovació postinstal·lació.
 
 ## v2 — més enllà del nucli finançat
 
@@ -322,6 +324,12 @@ publicitat servida pel reproductor.
 - [ ] Desplegar `lrsql` (LRS) com a mòdul de l'stack i connectar-hi el Learning
   Bridge (normalització JClic/H5P) i el SDK client per al progrés docent, més
   enllà de la prova de concepte finançada.
+
+### Fita v2-6 — Configuració de desplegament
+
+- [ ] Permetre configurar des del panell d'administració els ports publicats
+  pel host, amb detecció de conflictes, reinici controlat, còpia de la
+  configuració anterior i rollback si el stack no recupera la salut.
 
 ## Criteris de no-go
 

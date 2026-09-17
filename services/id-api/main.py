@@ -61,6 +61,8 @@ OIDC_CLIENT_SECRET = os.environ.get("EDUTICTAC_ID_OIDC_CLIENT_SECRET", "")
 OIDC_REDIRECT_URL = os.environ.get("EDUTICTAC_ID_OIDC_REDIRECT_URL", "").strip()
 OIDC_SCOPES = os.environ.get("EDUTICTAC_ID_OIDC_SCOPES", "openid profile").strip()
 OIDC_ROLE_CLAIM = os.environ.get("EDUTICTAC_ID_OIDC_ROLE_CLAIM", "roles").strip() or "roles"
+SETUP_TOKEN = os.environ.get("EDUTICTAC_SETUP_TOKEN", "").strip()
+AUTHENTIK_BOOTSTRAP_PASSWORD = os.environ.get("EDUTICTAC_AUTHENTIK_BOOTSTRAP_PASSWORD", "")
 OIDC_COOKIE = "edutictac_oidc"
 OIDC_ROLE_ORDER = ("administrador", "profesor", "alumno")
 
@@ -313,6 +315,11 @@ def init_db() -> None:
                 created_at TEXT NOT NULL,
                 expires_at TEXT NOT NULL,
                 consumed_at TEXT
+            );
+
+            CREATE TABLE IF NOT EXISTS installation_setup (
+                id INTEGER PRIMARY KEY CHECK (id = 1),
+                activated_at TEXT
             );
 
             CREATE INDEX IF NOT EXISTS idx_scores_rank
@@ -600,6 +607,10 @@ class TeacherLoginIn(BaseModel):
     token: str
 
 
+class SetupActivationIn(BaseModel):
+    code: str = Field(min_length=8, max_length=64)
+
+
 class GroupIn(BaseModel):
     tenant_id: str = "default"
 
@@ -779,6 +790,49 @@ def public_itinerary(row: sqlite3.Row, items: list[sqlite3.Row] | None = None) -
 @app.get("/api/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
+
+
+def setup_pending() -> bool:
+    if not SETUP_TOKEN or not AUTHENTIK_BOOTSTRAP_PASSWORD:
+        return False
+    with get_conn() as conn:
+        row = conn.execute(
+            "SELECT activated_at FROM installation_setup WHERE id = 1"
+        ).fetchone()
+    return not row or not row["activated_at"]
+
+
+@app.get("/api/setup/status")
+def setup_status() -> dict[str, bool]:
+    """Expose only whether the one-time first-run wizard is still pending."""
+    return {"pending": setup_pending()}
+
+
+@app.post("/api/setup/activate")
+def setup_activate(payload: SetupActivationIn, request: Request) -> dict[str, str]:
+    """Redeem the installer-generated code exactly once.
+
+    The bootstrap password is never persisted in the browser or returned after
+    the activation row has been written.  The high-entropy code is the trust
+    hand-off from the local installer to the administrator.
+    """
+    if not SETUP_TOKEN or not AUTHENTIK_BOOTSTRAP_PASSWORD:
+        raise HTTPException(status_code=404, detail="first-run setup unavailable")
+    if rate_limited(f"setup-activate:{_client_ip(request)}"):
+        raise HTTPException(status_code=429, detail="too many attempts")
+    if not hmac.compare_digest(payload.code.strip(), SETUP_TOKEN):
+        raise HTTPException(status_code=401, detail="invalid activation code")
+    with get_conn() as conn:
+        row = conn.execute(
+            "SELECT activated_at FROM installation_setup WHERE id = 1"
+        ).fetchone()
+        if row and row["activated_at"]:
+            raise HTTPException(status_code=410, detail="activation code already used")
+        conn.execute(
+            "INSERT OR REPLACE INTO installation_setup (id, activated_at) VALUES (1, ?)",
+            (iso_now(),),
+        )
+    return {"username": "akadmin", "password": AUTHENTIK_BOOTSTRAP_PASSWORD}
 
 
 @app.get("/api/auth/oidc/status")

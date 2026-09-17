@@ -177,7 +177,7 @@ Si no pots entrar com a alumne, usa una targeta acabada de generar en el portal:
 
 ## Distribució
 
-Consulta `INSTALL-CENTRES.md` per provar el stack en un centre educatiu, exportar imatges sense Docker Hub o preparar una publicació futura. Abans de compartir el paquet, revisa `CHECKLIST-ENTREGA.md` i executa `make release-check`.
+Consulta `INSTALL-CENTRES.md` per provar el stack en un centre educatiu, exportar imatges sense Docker Hub o preparar una publicació futura. Per a Ubuntu amd64 també es pot construir el paquet `.deb` amb `make package-deb`; consulta [`docs/ubuntu-package.md`](docs/ubuntu-package.md). Abans de compartir el paquet, revisa `CHECKLIST-ENTREGA.md` i executa `make release-check`.
 
 La primera versió tancada queda documentada en `RELEASE-0.1.0-alpha.md`.
 

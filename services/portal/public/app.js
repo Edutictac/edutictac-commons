@@ -2,8 +2,9 @@ const EDUHOOT_APP = "eduhoot";
 const PLAY_APP = "edutictac-play";
 const STORAGE_KEY = "edutictac-commons-state";
 function playBaseUrl() {
-  const portMap = { "8082": "8084", "18082": "18084" };
-  const playPort = portMap[window.location.port];
+  const portMap = { "80": "8084", "8082": "8084", "18082": "18084" };
+  const currentPort = window.location.port || (window.location.protocol === "http:" ? "80" : "443");
+  const playPort = portMap[currentPort];
   return playPort
     ? `${window.location.protocol}//${window.location.hostname}:${playPort}`
     : window.location.origin;
@@ -54,14 +55,87 @@ function accessibleResourceUrl(rawUrl) {
 
 function setAuthentikLinks() {
   const url = `${window.location.protocol}//${window.location.hostname}:9000/`;
-  ["authentikHomeLink", "authentikNavLink"].forEach((id) => {
+  ["authentikHomeLink", "authentikNavLink", "oidcSetupLink", "firstRunSetupLink"].forEach((id) => {
     const link = $(id);
     if (link) link.href = url;
   });
 }
 
+function showOidcSetupNotice() {
+  const dialog = $("oidcSetupDialog");
+  if (dialog && typeof dialog.showModal === "function" && !dialog.open) {
+    dialog.showModal();
+  }
+}
+
+function ensureFirstRunDialog() {
+  if ($("firstRunSetupDialog")) return $("firstRunSetupDialog");
+  document.body.insertAdjacentHTML("beforeend", `
+    <dialog id="firstRunSetupDialog" class="setup-dialog">
+      <form id="firstRunSetupForm">
+        <p class="eyebrow" data-i18n="setup.firstRunEyebrow">Primera configuración</p>
+        <h2 data-i18n="setup.firstRunTitle">Activa EduTicTac Commons</h2>
+        <p data-i18n="setup.activationHint">Introduce el código que ha mostrado el instalador. Solo funciona una vez.</p>
+        <label for="firstRunSetupCode" data-i18n="setup.activationCode">Código de activación</label>
+        <input id="firstRunSetupCode" name="code" autocomplete="one-time-code" required minlength="8" maxlength="64" spellcheck="false">
+        <p id="firstRunSetupError" class="profile-status hidden"></p>
+        <div id="firstRunSetupResult" class="hidden">
+          <p data-i18n="setup.initialCredentials">Credenciales iniciales de Authentik:</p>
+          <p><strong data-i18n="setup.username">Usuario:</strong> <code id="firstRunSetupUser"></code><br><strong data-i18n="setup.password">Contraseña:</strong> <code id="firstRunSetupPassword"></code></p>
+          <p data-i18n="setup.changePasswordHint">Guárdalas temporalmente, entra en Authentik y cambia la contraseña inmediatamente.</p>
+          <p><a id="firstRunSetupLink" href="#" target="_blank" rel="noopener" data-i18n="setup.openAuthentik">Abrir Authentik</a></p>
+        </div>
+        <div class="actions">
+          <button id="firstRunSetupSubmit" type="submit" data-i18n="setup.activate">Activar instalación</button>
+          <button id="firstRunSetupClose" type="button" class="secondary" data-i18n="setup.close">Cerrar</button>
+        </div>
+      </form>
+    </dialog>
+  `);
+  if (window.i18nPortal) window.i18nPortal.applyStaticTranslations();
+  setAuthentikLinks();
+  const dialog = $("firstRunSetupDialog");
+  $("firstRunSetupClose").addEventListener("click", () => dialog.close());
+  $("firstRunSetupForm").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const error = $("firstRunSetupError");
+    const submit = $("firstRunSetupSubmit");
+    error.classList.add("hidden");
+    submit.disabled = true;
+    try {
+      const result = await api("/api/setup/activate", {
+        method: "POST",
+        body: JSON.stringify({ code: $("firstRunSetupCode").value }),
+      });
+      $("firstRunSetupUser").textContent = result.username;
+      $("firstRunSetupPassword").textContent = result.password;
+      $("firstRunSetupResult").classList.remove("hidden");
+      $("firstRunSetupCode").disabled = true;
+      submit.classList.add("hidden");
+      $("firstRunSetupClose").textContent = t("setup.close");
+    } catch (activationError) {
+      error.textContent = activationError.message || t("setup.activationError");
+      error.classList.remove("hidden");
+      submit.disabled = false;
+    }
+  });
+  return dialog;
+}
+
+async function checkFirstRunSetup() {
+  try {
+    const status = await api("/api/setup/status", { method: "GET" });
+    if (!status.pending) return;
+    const dialog = ensureFirstRunDialog();
+    if (typeof dialog.showModal === "function" && !dialog.open) dialog.showModal();
+  } catch (error) {
+    // The wizard is optional for source/development installations.
+  }
+}
+
 function setApplicationLinks() {
   const directPorts = {
+    "80": { play: "8084", recursos: "8086", eduhoot: "8090", admin: "8091" },
     "8082": { play: "8084", recursos: "8086", eduhoot: "8090", admin: "8091" },
     "18082": { play: "18084", recursos: "18086", eduhoot: "18090", admin: "18091" },
   };
@@ -71,7 +145,7 @@ function setApplicationLinks() {
         playHomeLink: `${window.location.protocol}//${window.location.hostname}:${ports.play}/`,
         resourcesHomeLink: `${window.location.protocol}//${window.location.hostname}:${ports.recursos}/`,
         eduhootHomeLink: `${window.location.protocol}//${window.location.hostname}:${ports.eduhoot}/`,
-        adminHomeLink: `${window.location.protocol}//${window.location.hostname}:${ports.admin}/`,
+        adminHomeLink: `${window.location.origin}/admin/`,
       }
     : {
         playHomeLink: `${window.location.origin}/play/`,
@@ -492,9 +566,15 @@ async function checkOidc() {
   const button = $("teacherOidcLogin");
   if (!button) return;
   try {
+    const setup = await api("/api/setup/status", { method: "GET" });
+    if (setup.pending) {
+      button.disabled = true;
+      return;
+    }
     const status = await api("/api/auth/oidc/status", { method: "GET" });
     button.disabled = !status.enabled;
     button.title = status.enabled ? status.issuer : "OIDC no configurado en este entorno";
+    if (!status.enabled) showOidcSetupNotice();
   } catch (error) {
     button.disabled = true;
   }
@@ -1128,6 +1208,7 @@ if (has("resultsOutput")) {
 refreshStudentSession().catch(() => {});
 checkHealth();
 checkOidc();
+checkFirstRunSetup();
 if (has("teacherOidcLogin")) {
   refreshTeacherSession();
 }

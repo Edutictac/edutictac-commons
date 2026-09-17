@@ -266,6 +266,37 @@ html.i18n-pending body {
   display: none !important;
 }
 
+.setup-dialog {
+  max-width: 36rem;
+  border: 1px solid var(--line, #d8dee8);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  color: var(--ink, #172033);
+  box-shadow: 0 1rem 3rem rgb(0 0 0 / 22%);
+}
+
+.setup-dialog::backdrop {
+  background: rgb(14 23 42 / 48%);
+}
+
+.setup-dialog h2 {
+  margin-top: 0;
+}
+
+.setup-dialog li {
+  margin: 0.55rem 0;
+}
+
+.setup-dialog form {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.setup-dialog code {
+  user-select: all;
+  word-break: break-all;
+}
+
 .panel {
   border: 1px solid var(--line);
   border-radius: 8px;

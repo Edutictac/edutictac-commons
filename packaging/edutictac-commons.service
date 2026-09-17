@@ -1,0 +1,17 @@
+[Unit]
+Description=EduTicTac Commons stack
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/opt/edutictac-commons
+ExecStart=/usr/bin/docker compose --env-file /opt/edutictac-commons/.env -f compose.yml up -d --no-build
+ExecStop=/usr/bin/docker compose --env-file /opt/edutictac-commons/.env -f compose.yml down
+TimeoutStartSec=0
+TimeoutStopSec=120
+
+[Install]
+WantedBy=multi-user.target

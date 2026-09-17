@@ -3,7 +3,7 @@
 El Commons mantiene dos formas de acceso:
 
 * sin identidad externa: código público + PIN para el alumnado;
-* opcionalmente, Authentik como proveedor OIDC para el ecosistema Commons.
+* Authentik como proveedor OIDC para el acceso docente y el ecosistema Commons.
 
 La integración está implementada en `services/id-api`. No crea una base de
 contraseñas propia ni copia nombres, correos o grupos del proveedor. Tras el
@@ -23,7 +23,11 @@ cp .env.example .env
 COMPOSE_PROFILES=authentik docker compose up -d authentik-postgresql authentik-server authentik-worker
 ```
 
-La primera pantalla queda disponible en `http://localhost:9000/`. Los puertos
+La primera pantalla queda disponible en `http://localhost:9000/`. En el
+paquete Debian, Authentik recibe la contraseña bootstrap y el worker aplica
+`authentik-blueprints/edutictac-commons.yaml`: crea el grupo
+`administrador`, la aplicación `EduTicTac Commons` y su proveedor OIDC. Los
+puertos
 se cambian con `AUTHENTIK_PORT` y `AUTHENTIK_HTTPS_PORT`. Los datos de
 Authentik se guardan en el volumen Docker `authentik_database` y en
 `data/authentik/`; ambos deben incluirse en la estrategia de backup del centro.
@@ -53,7 +57,7 @@ eso se puede indicar por separado con `EDUTICTAC_ID_OIDC_AUTHORIZATION_URL`.
 En Authentik moderno es `/application/o/authorize/` (sin el slug); el slug se
 usa para el issuer y para el descubrimiento.
 
-En Authentik se recomienda crear una aplicación con proveedor
+Para una instalación manual, se recomienda crear una aplicación con proveedor
 `OAuth2/OpenID Connect`, cliente confidencial y flujo Authorization Code. Se
 debe configurar una property mapping propia que devuelva, por ejemplo:
 

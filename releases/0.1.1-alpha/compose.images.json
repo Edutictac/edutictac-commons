@@ -1,13 +1,22 @@
 {
   "services": {
     "id-api": {
-      "image": "registry.edutictac.es/edutictac/commons-id-api@sha256:ba4f0f5c9884f83555ccbd5263bc34e04630844028d2649cb04f386c3789b648"
+      "image": "registry.edutictac.es/edutictac/commons-id-api@sha256:e4792c95bcfdd53fe365fe40665a5ab0fed3d26fca9fc79550da6382fcf3e019"
     },
     "portal": {
-      "image": "registry.edutictac.es/edutictac/commons-portal@sha256:67007435334b86bbbc3dbdd50d967b3b0660160a1ef050d649f6886aac31f52b"
+      "image": "registry.edutictac.es/edutictac/commons-portal@sha256:f3440da5a9260600115b6e8b836510e42154a71646cfec42cd2435d54a2c4bbf"
     },
     "admin": {
-      "image": "registry.edutictac.es/edutictac/commons-admin@sha256:d4f4936d42c127e4485706b034e88a4375a7b7fc1a5d56d4c002e9adc5817b3d"
+      "image": "registry.edutictac.es/edutictac/commons-admin@sha256:9af32bde56ea97afe6c981715fe4e9b321a01aee725477e19e0e4d41e24661dc"
+    },
+    "play": {
+      "image": "registry.edutictac.es/edutictac/commons-play@sha256:d966ff880b8cae36c30b27e2bdb0a341c8ef5b907d8d49191151ca62a4a1ab80"
+    },
+    "recursos-api": {
+      "image": "registry.edutictac.es/edutictac/recursos-api@sha256:d1b3bf1eb03db503998dc02a66dfedae7b3ba31ebe7517caef8a125c587308e0"
+    },
+    "recursos": {
+      "image": "registry.edutictac.es/edutictac/recursos@sha256:50d5f8cee55fb5636b888388c8ad5965a981a993270747cfee4f6bc41c6d14f3"
     },
     "eduhoot": {
       "image": "registry.edutictac.es/edutictac/eduhoot@sha256:c106dd0222e079b68cec28f1cadb2a20dea6dface69fb8de081064484140e01e"

@@ -84,7 +84,6 @@ COMPOSE_PROFILES=eduhoot
 ```
 
 ```bash
-docker login registry.edutictac.es
 docker compose --env-file .env -f compose.yml pull
 make up-pulled
 make test-flow
