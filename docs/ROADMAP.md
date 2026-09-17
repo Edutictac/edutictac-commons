@@ -195,8 +195,8 @@ l'alumnat pot completar-la amb la mateixa identitat pseudònima.
   dependències, configuració inicial, servei systemd i comprovació
   postinstal·lació.
 - [x] Publicar el `.deb` `0.1.1~alpha4` en el repositori APT signat
-  [`packages.edutictac.es`](https://packages.edutictac.es), con clave pública,
-  índices firmados y documentación de instalación.
+  [`packages.edutictac.es`](https://packages.edutictac.es), amb clau pública,
+  índexs signats i documentació d'instal·lació.
 
 ## v2 — més enllà del nucli finançat
 
