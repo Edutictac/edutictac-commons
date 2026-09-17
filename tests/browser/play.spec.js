@@ -115,8 +115,8 @@ test('crear y reproducir una actividad de ordenar', async ({ page }) => {
   await expect(page.locator('#savePreview')).toBeVisible();
   await expect.poll(() => page.frames().length).toBeGreaterThan(1);
   const player = page.frames().find((frame) => frame !== page.mainFrame());
-  await expect(player.getByRole('button', { name: '1', exact: true })).toBeVisible();
-  await expect(player.getByRole('button', { name: '2', exact: true })).toBeVisible();
+  await expect(player.getByRole('button', { name: /Posición 1/ })).toBeVisible();
+  await expect(player.getByRole('button', { name: /Posición 2/ })).toBeVisible();
   await page.getByRole('button', { name: 'Guardar' }).click();
   await expect(page.locator('#download')).toBeVisible();
 });

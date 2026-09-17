@@ -212,7 +212,8 @@ def activity_content(activity: dict) -> dict:
         for index, category in enumerate(activity["categories"]):
             top = 65 + (index % 2) * 17
             left = 5 + (index // 2) * 48
-            drop_zones.append({"label": safe_text(category["name"]), "showLabel": True, "x": left, "y": top, "height": 13, "width": 42, "correctElements": [item_index for item_index, item in enumerate(activity["items"]) if int(item["category"]) == index], "backgroundOpacity": 100, "tipsAndFeedback": {"tip": "", "feedbackOnCorrect": t["correct"], "feedbackOnIncorrect": t["incorrect"]}})
+            label = f"Posición {index + 1}" if activity.get("type") == "ordering" else safe_text(category["name"])
+            drop_zones.append({"label": label, "showLabel": True, "x": left, "y": top, "height": 13, "width": 42, "correctElements": [item_index for item_index, item in enumerate(activity["items"]) if int(item["category"]) == index], "backgroundOpacity": 100, "tipsAndFeedback": {"tip": "", "feedbackOnCorrect": t["correct"], "feedbackOnIncorrect": t["incorrect"]}})
         return {
             "scoreShow": t["check"], "submit": t["submit"], "tryAgain": t["retryShort"],
             "question": {"settings": {"questionTitle": safe_text(activity["question"]), "size": {"width": 620, "height": 310}}, "task": {"elements": elements, "dropZones": drop_zones}},
