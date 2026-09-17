@@ -188,12 +188,13 @@ roadmap 4D).
 - [x] Crear sessió local signada i mapejar `alumno`, `profesor` i
   `administrador` sense guardar noms ni correus.
 - [x] Documentar issuer, callback, property mapping, claims i llicències.
-- [ ] Desplegar **Authentik (OIDC)** a l'stack com a identitat docent i
-  d'administració — cobreix el tauler del professorat, la cistella de recursos i
-  l'accés docent a EduHoot, i elimina els tokens manuals.
+- [x] Desplegar **Authentik (OIDC)** a l'stack de laboratori com a identitat
+  docent i d'administració — cobreix el tauler del professorat i l'accés al
+  Banc de recursos; queda activar-lo en producció.
 - [ ] Connectar la identitat OIDC pseudònima amb Portal, Play, Recursos i
   EduHoot.
-- [ ] Provar el flux complet contra una instància Authentik del laboratori.
+- [x] Provar el flux complet contra una instància Authentik del laboratori per
+  a Commons/Portal i Recursos.
 - [ ] Afegir classes/grups i permisos compartits.
 
 ### Fita v2-2 — Banc de recursos (cistella i recorregut)
@@ -204,7 +205,7 @@ d'activitat que EduHoot sol.
 
 - [x] Dockeritzar `recursos-api` i el frontend de `recursos` com a mòdul del
   stack (perfil Compose propi, persistència a `data/recursos-*`).
-- [ ] Integrar la identitat docent (Authentik/OIDC) al Banc de recursos perquè
+- [x] Integrar la identitat docent (Authentik/OIDC) al Banc de recursos perquè
   els preferits queden al compte.
 - [ ] Crear un catàleg controlat de categories i etiquetes per a les activitats:
   l'alumnat només podrà seleccionar valors tancats i el professorat podrà
