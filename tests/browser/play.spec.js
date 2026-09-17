@@ -136,6 +136,25 @@ test('crear y reproducir una actividad de rellenar huecos', async ({ page }) => 
   await expect(page.locator('#download')).toBeVisible();
 });
 
+test('crear y reproducir una sopa de letras', async ({ page }) => {
+  await page.goto('/play/');
+  await page.getByRole('button', { name: 'Sopa de letras' }).click();
+  await page.locator('#title').fill('Naturaleza');
+  await page.locator('#question').fill('Encuentra las palabras');
+  await page.locator('.find-word').nth(0).fill('agua');
+  await page.locator('.find-word').nth(1).fill('tierra');
+  await page.locator('.find-word').nth(2).fill('planta');
+  await page.locator('.find-word').nth(3).fill('animal');
+  await page.getByRole('button', { name: 'Previsualizar' }).click({ force: true });
+  await expect(page.locator('#savePreview')).toBeVisible();
+  await expect.poll(() => page.frames().length).toBeGreaterThan(1);
+  const player = page.frames().find((frame) => frame !== page.mainFrame());
+  await expect(player.locator('.h5p-find-the-words')).toBeVisible();
+  await expect(player.getByText('agua', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Guardar' }).click();
+  await expect(page.locator('#download')).toBeVisible();
+});
+
 test('envía a Commons el resultado real de un Quiz H5P', async ({ page }) => {
   let scorePayload;
   await page.route('**/play/api/commons/score', async (route) => {

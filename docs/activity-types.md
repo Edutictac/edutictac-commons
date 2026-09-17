@@ -9,7 +9,7 @@
 | Clasificar | 2 | Implementado | `H5P.DragQuestion 1.15` |
 | Ordenar | 2 | Implementado | `H5P.DragQuestion 1.15` |
 | Rellenar huecos (`Fill in the Blanks`) | 2 | Implementado | `H5P.Blanks 1.14` |
-| Sopa de letras (`Find the Words`) | 3 | Planificado | `H5P.FindTheWords 1.4` |
+| Sopa de letras (`Find the Words`) | 3 | Implementado | `H5P.FindTheWords 1.4` |
 | Arrastrar al texto (`Drag Text`) | 3 | Planificado | `H5P.DragText 1.10` |
 | Marcar palabras (`Mark the Words`) | 3 | Planificado | `H5P.MarkTheWords 1.11` |
 | Tarjetas de estudio (`Dialog Cards`) | 3 | Planificado | `H5P.Dialogcards 1.9` |
@@ -94,14 +94,19 @@ está limitado a 5.000 caracteres y no admite HTML proporcionado por usuarios.
 Es una actividad de creación ultrarrápida (2 minutos) óptima para definiciones,
 lenguas y vocabulario.
 
-## Sopa de letras (Find the Words) — Planificado
+## Sopa de letras (Find the Words) — Implementado
 
 El formulario solicita título, descripción y una lista de entre 4 y 12 palabras.
-El motor oficial `H5P.FindTheWords` 1.4 calcula dinámicamente la cuadrícula,
-distribuye las palabras en horizontal/vertical y rellena las casillas vacías con
-letras aleatorias. Al ser una generación completamente automática a partir de una
-lista de texto, el alumnado crea un juego completo y altamente motivador en apenas
-1 minuto sin configurar coordenadas ni tableros.
+El motor `H5P.FindTheWords` 1.4 calcula dinámicamente la cuadrícula, distribuye
+las palabras en varias direcciones y rellena las casillas vacías con letras
+aleatorias. Play fija estas opciones con defaults sencillos, muestra siempre la
+lista de palabras y limita cada palabra a 15 letras. El alumnado crea un juego
+completo en apenas 1 minuto sin configurar coordenadas ni tableros.
+
+La librería declara MIT en su `library.json`, pero el repositorio de origen
+incluye GPL-3.0 para el conjunto. Por prudencia Play conserva el fichero de
+licencia y documenta esta dependencia como GPL-3.0; antes de una release se debe
+confirmar la licencia global del producto.
 
 ## Arrastrar palabras al texto (Drag Text) — Planificado
 

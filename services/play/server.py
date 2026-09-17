@@ -204,6 +204,24 @@ def activity_language(payload: dict) -> str:
 
 def activity_content(activity: dict) -> dict:
     t = H5P_TEXT.get(str(activity.get("language") or "es"), H5P_TEXT["es"])
+    if activity.get("type") == "find-words":
+        return {
+            "taskDescription": safe_text(activity["question"]),
+            "wordList": ",".join(activity["words"]),
+            "behaviour": {
+                "orientations": {"horizontal": True, "horizontalBack": True, "vertical": True, "verticalUp": True, "diagonal": True, "diagonalBack": True, "diagonalUp": True, "diagonalUpBack": True},
+                "fillPool": "abcdefghijklmnopqrstuvwxyz",
+                "preferOverlap": True,
+                "showVocabulary": True,
+                "enableShowSolution": True,
+                "enableRetry": True,
+            },
+            "l10n": {
+                "check": t["check"], "tryAgain": t["retryShort"], "showSolution": t["showSolution"],
+                "found": t.get("foundWords", "@found de @totalWords encontradas"), "timeSpent": t.get("timeSpent", "Tiempo"),
+                "score": t["scoreBar"], "wordListHeader": t.get("findWordsHeader", "Busca las palabras"),
+            },
+        }
     if activity.get("type") == "fill-blanks":
         return {
             "text": t.get("fillInstructions", "Completa las palabras que faltan."),
@@ -374,9 +392,18 @@ def package_files(activity: dict) -> dict[str, bytes]:
             {"machineName": "H5P.TextUtilities", "majorVersion": 1, "minorVersion": 3},
         ]
         is_true_false = False
+    elif activity.get("type") == "find-words":
+        main_library = "H5P.FindTheWords"
+        dependencies = [
+            {"machineName": "H5P.FindTheWords", "majorVersion": 1, "minorVersion": 4},
+            {"machineName": "H5P.Timer", "majorVersion": 0, "minorVersion": 4},
+            {"machineName": "H5P.JoubelUI", "majorVersion": 1, "minorVersion": 3},
+            {"machineName": "FontAwesome", "majorVersion": 4, "minorVersion": 5},
+        ]
+        is_true_false = False
     else:
         is_true_false = activity.get("type") == "true-false"
-    if activity.get("type") not in {"memory", "matching", "classify", "ordering", "fill-blanks"}:
+    if activity.get("type") not in {"memory", "matching", "classify", "ordering", "fill-blanks", "find-words"}:
         main_library = "H5P.TrueFalse" if is_true_false else "H5P.MultiChoice"
         dependencies = [
             {"machineName": "H5P.TrueFalse", "majorVersion": 1, "minorVersion": 8},
@@ -510,6 +537,27 @@ def validate_activity(payload: dict) -> tuple[dict | None, list[str]]:
         if errors:
             return None, errors
         return {"type": activity_type, "title": title[:200], "question": question[:2000], "text": text, "language": language, **metadata}, []
+    if activity_type == "find-words":
+        words = payload.get("words")
+        if not title:
+            errors.append("Escribe un título.")
+        if not question:
+            errors.append("Escribe una descripción.")
+        if not isinstance(words, list) or not 4 <= len(words) <= 12:
+            errors.append("Añade entre 4 y 12 palabras.")
+            words = []
+        cleaned_words = []
+        for word in words:
+            value = str(word).strip().lower()
+            if value and re.fullmatch(r"[a-záéíóúüñ]+", value) and value not in cleaned_words:
+                cleaned_words.append(value)
+        if len(cleaned_words) != len(words):
+            errors.append("Usa palabras únicas, solo con letras y sin números ni símbolos.")
+        if any(len(word) > 15 for word in cleaned_words):
+            errors.append("Cada palabra puede tener como máximo 15 letras.")
+        if errors:
+            return None, errors
+        return {"type": activity_type, "title": title[:200], "question": question[:2000], "words": cleaned_words, "answers": [], "language": language, **metadata}, []
     if activity_type != "multiple-choice":
         errors.append("Tipo de actividad no disponible.")
         return None, errors

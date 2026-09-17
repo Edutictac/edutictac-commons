@@ -19,6 +19,11 @@ licencias compatibles (MIT para DragQuestion/AdvancedText y MIT para jQuery UI).
 distribuye bajo MIT. `H5P.TextUtilities` 1.3 declara dominio público en su
 `library.json`. Ambas librerías se incluyen para Rellenar huecos.
 
+`H5P.FindTheWords` 1.4 procede de `jithin-space/h5p-find-the-words`. Su
+`library.json` declara MIT, mientras que el repositorio de origen incluye
+GPL-3.0 para el conjunto; se conserva `LICENSE-GPL-3.0` junto a la librería y
+se debe revisar la licencia global del producto antes de publicar una release.
+
 El reproductor `h5p-standalone` 3.8.2 se distribuye bajo MIT. Sus recursos
 están en `assets/`; el aviso de licencia se conserva en la documentación del
 paquete upstream.
