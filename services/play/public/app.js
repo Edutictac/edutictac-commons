@@ -271,7 +271,7 @@ renderPlayer = async function (id) {
     const frameDocument = iframe?.contentDocument;
     if (!iframe || !frameDocument) return;
     const content = frameDocument.querySelector('.h5p-crossword');
-    const height = Math.max(content?.scrollHeight || frameDocument.body.scrollHeight || 0, 420);
+    const height = Math.max(content?.scrollHeight || frameDocument.body?.scrollHeight || 0, 420);
     iframe.style.height = `${height + 8}px`;
   };
   window.setTimeout(resizeCrossword, 100);
