@@ -189,3 +189,13 @@ El valor diferencial de Play frente a Lumi es radicalmente distinto:
 Para contenidos complejos donde el docente requiera todo el potencial técnico de
 H5P, la recomendación de Commons es enlazar o complementar con Lumi, mientras
 que Play se consolida como el taller ágil de creación para el alumnado y el aula.
+
+## Actividades compuestas: Modo Reto (QuestionSet)
+
+Para permitir que el alumnado agrupe varias actividades sencillas en un único
+paquete exportable y evaluable, Play incorpora en su planificación el soporte de
+**actividades compuestas mediante `H5P.QuestionSet`**.
+
+El diseño técnico completo de este contenedor, su integración con xAPI para
+calificaciones globales y el flujo de autoría por pasos están documentados en
+[`composite-activities.md`](composite-activities.md).

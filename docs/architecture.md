@@ -25,16 +25,21 @@ los adaptadores H5P.
 
 ```text
 activity-types/
-  multiple-choice/   # Fase 1
-  true-false/        # Fase 2
-  memory/            # Fase 2
-  matching/          # Fase 2
-  fill-blanks/       # Fase 2
+  multiple-choice/   # Fase 1 (implementado)
+  true-false/        # Fase 2 (implementado)
+  memory/            # Fase 2 (implementado)
+  matching/          # Fase 2 (implementado)
+  classify/          # Fase 2 (implementado)
+  ordering/          # Fase 2 (implementado)
+  fill-blanks/       # Fase 2 (implementado)
+  find-words/        # Fase 3 (implementado)
+  compound/          # Fase 3 (en diseño, H5P.QuestionSet)
 ```
 
-Cada módulo definirá formulario, validación, transformación a `content.json`,
+Cada módulo define formulario, validación, transformación a `content.json`,
 preview y metadatos. El exportador común solo recibe el documento validado y
-las dependencias runtime fijadas por el adaptador.
+las dependencias runtime fijadas por el adaptador. Para agrupar varias
+actividades en un único paquete H5P evaluable, ver [`composite-activities.md`](composite-activities.md).
 
 ## Integración futura
 
