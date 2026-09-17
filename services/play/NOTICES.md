@@ -36,6 +36,11 @@ son `H5P.JoubelUI`, `H5P.Question` y `FontAwesome`.
 se distribuye bajo MIT. Sus dependencias locales son `H5P.JoubelUI`,
 `H5P.Audio`, `H5P.Components` y `FontAwesome`.
 
+`H5P.Crossword` 0.7 procede de `otacke/h5p-crossword` y se distribuye bajo
+MIT. Sus dependencias locales son `H5P.Question`, `H5P.JoubelUI` y `H5P.Image`.
+`H5P.Image` 1.1 procede de `h5p/h5p-image`; su aviso MIT se conserva en el
+README incluido junto a la librería.
+
 El reproductor `h5p-standalone` 3.8.2 se distribuye bajo MIT. Sus recursos
 están en `assets/`; el aviso de licencia se conserva en la documentación del
 paquete upstream.

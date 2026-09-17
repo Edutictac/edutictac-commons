@@ -13,7 +13,7 @@
 | Arrastrar al texto (`Drag Text`) | 3 | Implementado | `H5P.DragText 1.10` |
 | Marcar palabras (`Mark the Words`) | 3 | Implementado | `H5P.MarkTheWords 1.11` |
 | Tarjetas de estudio (`Dialog Cards`) | 3 | Implementado | `H5P.Dialogcards 1.9` |
-| Crucigrama (`Crossword`) | 3 | Planificado | `H5P.Crossword 1.1` |
+| Crucigrama (`Crossword`) | 3 | Implementado | `H5P.Crossword 0.7` |
 
 ## Contrato conceptual
 
@@ -136,13 +136,13 @@ El adaptador genera `H5P.Dialogcards` 1.9 en modo repaso normal, con navegación
 y volteo animado. No exige imágenes ni audio, convirtiéndose en el método más
 directo para estudiar fórmulas, vocabulario de idiomas o fechas.
 
-## Crucigrama (Crossword) — Planificado
+## Crucigrama (Crossword) — Implementado
 
 El formulario solicita una lista de entre 4 y 10 palabras con su pista correspondiente.
-El generador `H5P.Crossword` 1.1 calcula automáticamente los cruces e intersecciones,
-generando la cuadrícula con numeración y pistas horizontales/verticales. Permite
-al alumnado crear juegos de repaso completos de una unidad didáctica en menos de
-5 minutos sin requerir conocimientos de maquetación.
+El generador `H5P.Crossword` 0.7 calcula automáticamente los cruces e intersecciones,
+generando la cuadrícula con numeración y pistas horizontales/verticales. Play no
+expone posición, orientación, imágenes ni pistas avanzadas. Permite al alumnado
+crear juegos de repaso completos de una unidad didáctica en menos de 5 minutos.
 
 ## Criterio para nuevos tipos
 

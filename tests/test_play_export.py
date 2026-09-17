@@ -327,6 +327,25 @@ def test_dialog_cards_h5p_export():
         process.wait(timeout=3)
 
 
+def test_crossword_h5p_export():
+    data_dir = Path(tempfile.mkdtemp(prefix="edutictac-play-test-"))
+    process = subprocess.Popen(["python3", "server.py"], cwd=Path(__file__).parents[1] / "services" / "play", env={**os.environ, "PORT": "18114", "PLAY_DATA_DIR": str(data_dir)}, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    try:
+        time.sleep(0.25)
+        payload = json.dumps({"type": "crossword", "title": "Naturaleza", "question": "Resuelve el crucigrama", "words": [{"answer": "planeta", "clue": "Cuerpo que gira alrededor de una estrella"}, {"answer": "oceano", "clue": "Gran extensión de agua salada"}, {"answer": "montana", "clue": "Elevación natural del terreno"}, {"answer": "bosque", "clue": "Lugar poblado de árboles"}]}).encode()
+        request = urllib.request.Request("http://127.0.0.1:18114/api/activities", data=payload, headers={"Content-Type": "application/json"}, method="POST")
+        activity = json.loads(urllib.request.urlopen(request).read())
+        package = urllib.request.urlopen(f"http://127.0.0.1:18114/api/activities/{activity['id']}/download").read()
+        with zipfile.ZipFile(io.BytesIO(package)) as archive:
+            names = set(archive.namelist())
+            assert {"h5p.json", "content/content.json", "H5P.Crossword-0.7/library.json", "H5P.Image-1.1/library.json"} <= names
+            assert json.loads(archive.read("h5p.json"))["mainLibrary"] == "H5P.Crossword"
+            assert json.loads(archive.read("content/content.json"))["words"][0]["answer"] == "planeta"
+    finally:
+        process.terminate()
+        process.wait(timeout=3)
+
+
 def test_memory_card_image_is_served_for_player():
     data_dir = Path(tempfile.mkdtemp(prefix="edutictac-play-test-"))
     process = subprocess.Popen(

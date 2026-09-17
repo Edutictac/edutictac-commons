@@ -252,6 +252,17 @@ def activity_content(activity: dict) -> dict:
             "dialogs": [{"text": safe_text(card["front"]), "answer": safe_text(card["back"])} for card in activity["cards"]],
             "behaviour": {"enableRetry": True, "disableBackwardsNavigation": False, "scaleTextNotCard": False, "randomCards": False, "maxProficiency": 5, "quickProgression": False},
         }
+    if activity.get("type") == "crossword":
+        return {
+            "taskDescription": safe_text(activity["question"]),
+            "words": [{"answer": safe_text(word["answer"]), "clue": safe_text(word["clue"])} for word in activity["words"]],
+            "solutionWord": "",
+            "overallFeedback": [{"from": 0, "to": 99, "feedback": t["tryHarder"]}, {"from": 100, "to": 100, "feedback": t["allCorrect"]}],
+            "theme": {"backgroundColor": "#176b5c"},
+            "behaviour": {"poolSize": 0, "enableInstantFeedback": False, "scoreWords": True, "applyPenalties": False, "enableRetry": True, "enableSolutionsButton": True, "keepCorrectAnswers": False, "addExtraMarkerForEmptyCells": True},
+            "l10n": {"across": "Horizontal", "down": "Vertical", "checkAnswer": t["check"], "submitAnswer": t["submit"], "tryAgain": t["retryShort"], "showSolution": t["showSolution"], "couldNotGenerateCrossword": "No se ha podido generar el crucigrama.", "couldNotGenerateCrosswordTooFewWords": "Necesitas al menos dos palabras.", "probematicWords": "No se han podido colocar algunas palabras: @words", "extraClue": "Pista adicional", "closeWindow": "Cerrar"},
+            "a11y": {"crosswordGrid": "Cuadrícula del crucigrama.", "column": "Columna", "row": "Fila", "across": "Horizontal", "down": "Vertical", "empty": "Vacía", "resultFor": "Resultado para: @clue", "correct": "Correcta", "wrong": "Incorrecta", "point": "punto", "solutionFor": "La solución para @clue es: @solution", "extraClueFor": "Abrir pista adicional para @clue", "letterSevenOfNine": "Letra @position de @length", "lettersWord": "Palabra de @length letras", "check": t["a11yCheck"], "submitAndcheck": t["a11yCheck"], "showSolution": t["a11yShowSolution"], "retry": t["a11yRetry"], "yourResult": t["scoreBar"]},
+        }
     if activity.get("type") == "fill-blanks":
         return {
             "text": t.get("fillInstructions", "Completa las palabras que faltan."),
@@ -461,9 +472,18 @@ def package_files(activity: dict) -> dict[str, bytes]:
             {"machineName": "H5P.Components", "majorVersion": 1, "minorVersion": 0},
         ]
         is_true_false = False
+    elif activity.get("type") == "crossword":
+        main_library = "H5P.Crossword"
+        dependencies = [
+            {"machineName": "H5P.Crossword", "majorVersion": 0, "minorVersion": 7},
+            {"machineName": "H5P.Question", "majorVersion": 1, "minorVersion": 5},
+            {"machineName": "H5P.JoubelUI", "majorVersion": 1, "minorVersion": 3},
+            {"machineName": "H5P.Image", "majorVersion": 1, "minorVersion": 1},
+        ]
+        is_true_false = False
     else:
         is_true_false = activity.get("type") == "true-false"
-    if activity.get("type") not in {"memory", "matching", "classify", "ordering", "fill-blanks", "find-words", "drag-text", "mark-words", "dialog-cards"}:
+    if activity.get("type") not in {"memory", "matching", "classify", "ordering", "fill-blanks", "find-words", "drag-text", "mark-words", "dialog-cards", "crossword"}:
         main_library = "H5P.TrueFalse" if is_true_false else "H5P.MultiChoice"
         dependencies = [
             {"machineName": "H5P.TrueFalse", "majorVersion": 1, "minorVersion": 8},
@@ -655,6 +675,28 @@ def validate_activity(payload: dict) -> tuple[dict | None, list[str]]:
         if errors:
             return None, errors
         return {"type": activity_type, "title": title[:200], "question": question[:2000], "cards": cleaned_cards, "answers": [], "language": language, **metadata}, []
+    if activity_type == "crossword":
+        words = payload.get("words")
+        if not title:
+            errors.append("Escribe un título.")
+        if not question:
+            errors.append("Escribe una descripción.")
+        if not isinstance(words, list) or not 4 <= len(words) <= 10:
+            errors.append("Añade entre 4 y 10 palabras con sus pistas.")
+            words = []
+        cleaned_words = []
+        for word in words:
+            answer = str(word.get("answer", "")).strip().lower() if isinstance(word, dict) else ""
+            clue = str(word.get("clue", "")).strip()[:300] if isinstance(word, dict) else ""
+            if answer and clue and re.fullmatch(r"[a-záéíóúüñ]+", answer):
+                cleaned_words.append({"answer": answer[:20], "clue": clue})
+        if len(cleaned_words) != len(words):
+            errors.append("Cada palabra debe tener una pista y solo contener letras.")
+        if len({word["answer"] for word in cleaned_words}) != len(cleaned_words):
+            errors.append("No repitas palabras.")
+        if errors:
+            return None, errors
+        return {"type": activity_type, "title": title[:200], "question": question[:2000], "words": cleaned_words, "answers": [], "language": language, **metadata}, []
     if activity_type != "multiple-choice":
         errors.append("Tipo de actividad no disponible.")
         return None, errors

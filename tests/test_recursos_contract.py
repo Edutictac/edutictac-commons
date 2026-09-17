@@ -84,6 +84,15 @@ def test_dialog_cards_activity_can_be_published():
     assert payload["metadata"]["type"] == "dialog-cards"
 
 
+def test_crossword_activity_can_be_published():
+    payload = build_publish_payload(
+        {"id": "Cross123", "type": "crossword", "title": "Repaso", "visibility": "public"},
+        public_base_url="https://example.test",
+    )
+
+    assert payload["metadata"]["type"] == "crossword"
+
+
 def test_unknown_type_cannot_be_published():
     with pytest.raises(RecursosContractError, match="unsupported"):
         build_publish_payload(

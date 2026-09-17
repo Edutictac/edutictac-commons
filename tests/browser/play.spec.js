@@ -206,6 +206,28 @@ test('crear y reproducir tarjetas de estudio', async ({ page }) => {
   await expect(page.locator('#download')).toBeVisible();
 });
 
+test('crear y reproducir un crucigrama', async ({ page }) => {
+  await page.goto('/play/');
+  await page.getByRole('button', { name: 'Crucigrama' }).click();
+  await page.locator('#title').fill('Naturaleza');
+  await page.locator('#question').fill('Resuelve el crucigrama');
+  await page.locator('.crossword-answer').nth(0).fill('planeta');
+  await page.locator('.crossword-clue').nth(0).fill('Cuerpo que gira alrededor de una estrella');
+  await page.locator('.crossword-answer').nth(1).fill('oceano');
+  await page.locator('.crossword-clue').nth(1).fill('Gran extensión de agua salada');
+  await page.locator('.crossword-answer').nth(2).fill('montana');
+  await page.locator('.crossword-clue').nth(2).fill('Elevación natural del terreno');
+  await page.locator('.crossword-answer').nth(3).fill('bosque');
+  await page.locator('.crossword-clue').nth(3).fill('Lugar poblado de árboles');
+  await page.getByRole('button', { name: 'Previsualizar' }).click({ force: true });
+  await expect(page.locator('#savePreview')).toBeVisible();
+  await expect.poll(() => page.frames().length).toBeGreaterThan(1);
+  const player = page.frames().find((frame) => frame !== page.mainFrame());
+  await expect(player.locator('.h5p-crossword')).toBeVisible();
+  await page.getByRole('button', { name: 'Guardar' }).click();
+  await expect(page.locator('#download')).toBeVisible();
+});
+
 test('envía a Commons el resultado real de un Quiz H5P', async ({ page }) => {
   let scorePayload;
   await page.route('**/play/api/commons/score', async (route) => {
