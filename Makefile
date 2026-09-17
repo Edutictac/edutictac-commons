@@ -4,7 +4,7 @@ COMPOSE = $(DOCKER) compose --env-file $(ENV_FILE) -f compose.yml
 COMPOSE_EXAMPLE = $(DOCKER) compose --env-file .env.example -f compose.yml
 
 .PHONY: init doctor up up-pulled up-example down build logs ps test-flow test-play-commons test-eduhoot-flow test-reset-flow bootstrap-demo release-check backup backup-check backup-auto backup-prune backup-timer-install backup-timer-status backup-timer-uninstall restore reset images check-images check-updates update-images rollback-images export-images load-images push-images
-.PHONY: test-i18n test-installation test-play test-moodle up-recursos test-recursos test-teacher-resources
+.PHONY: test-i18n test-installation test-play test-moodle up-recursos up-authentik test-recursos test-teacher-resources
 
 init:
 	@test -f .env || cp .env.example .env
@@ -54,6 +54,10 @@ test-moodle:
 up-recursos: init
 	mkdir -p data/recursos-api
 	RECURSOS_API_URL=$${RECURSOS_API_URL:-http://recursos-api:8004} PLAY_INGEST_TOKEN=$${PLAY_INGEST_TOKEN:-local-play-ingest-token} PLAY_PUBLIC_URL=$${PLAY_PUBLIC_URL:-http://localhost:8084} COMPOSE_PROFILES=recursos $(COMPOSE) up --build -d id-api recursos-api recursos play
+
+up-authentik: init
+	@echo "Comprueba AUTHENTIK_PG_PASS y AUTHENTIK_SECRET_KEY en .env antes de continuar."
+	$(DOCKER) compose --env-file $(ENV_FILE) --profile authentik -f compose.yml up -d authentik-postgresql authentik-server authentik-worker
 
 test-recursos:
 	./scripts/test-recursos-flow.sh

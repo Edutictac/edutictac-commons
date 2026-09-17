@@ -13,6 +13,21 @@ en Authentik.
 
 ## Configuración
 
+El repositorio incluye un perfil Compose opcional (`authentik`) para el
+laboratorio local. No se inicia por defecto y no incluye Redis: la composición
+actual de Authentik utiliza PostgreSQL, `server` y `worker`.
+
+```bash
+cp .env.example .env
+# Cambiar AUTHENTIK_PG_PASS y AUTHENTIK_SECRET_KEY en .env
+COMPOSE_PROFILES=authentik docker compose up -d authentik-postgresql authentik-server authentik-worker
+```
+
+La primera pantalla queda disponible en `http://localhost:9000/`. Los puertos
+se cambian con `AUTHENTIK_PORT` y `AUTHENTIK_HTTPS_PORT`. Los datos de
+Authentik se guardan en el volumen Docker `authentik_database` y en
+`data/authentik/`; ambos deben incluirse en la estrategia de backup del centro.
+
 En `.env`:
 
 ```dotenv
