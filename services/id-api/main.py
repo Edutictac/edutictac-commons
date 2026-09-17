@@ -88,14 +88,36 @@ def oidc_discovery_url() -> str:
 
 
 if OIDC_ISSUER_URL and OIDC_CLIENT_ID and OIDC_CLIENT_SECRET:
-    oauth.register(
-        name="authentik",
-        client_id=OIDC_CLIENT_ID,
-        client_secret=OIDC_CLIENT_SECRET,
-        server_metadata_url=oidc_discovery_url(),
-        authorize_url=OIDC_AUTHORIZATION_URL or None,
-        client_kwargs={"scope": OIDC_SCOPES},
-    )
+    # In Docker, Authentik may only be reachable through its service name.
+    # Keep the issuer and browser authorization endpoint public, but use the
+    # private network for token, userinfo and JWKS requests.
+    if OIDC_DISCOVERY_URL:
+        internal_root = OIDC_DISCOVERY_URL.split("/application/o/", 1)[0]
+        public_root = OIDC_ISSUER_URL.split("/application/o/", 1)[0]
+        application_path = "/application/o/" + OIDC_ISSUER_URL.split("/application/o/", 1)[1]
+        oidc_metadata = {
+            "issuer": OIDC_ISSUER_URL + "/",
+            "authorization_endpoint": OIDC_AUTHORIZATION_URL or f"{public_root}/application/o/authorize/",
+            "token_endpoint": f"{internal_root}/application/o/token/",
+            "userinfo_endpoint": f"{internal_root}/application/o/userinfo/",
+            "jwks_uri": f"{internal_root}{application_path}/jwks/",
+        }
+        oauth.register(
+            name="authentik",
+            client_id=OIDC_CLIENT_ID,
+            client_secret=OIDC_CLIENT_SECRET,
+            client_kwargs={"scope": OIDC_SCOPES},
+            **oidc_metadata,
+        )
+    else:
+        oauth.register(
+            name="authentik",
+            client_id=OIDC_CLIENT_ID,
+            client_secret=OIDC_CLIENT_SECRET,
+            server_metadata_url=oidc_discovery_url(),
+            authorize_url=OIDC_AUTHORIZATION_URL or None,
+            client_kwargs={"scope": OIDC_SCOPES},
+        )
 
 
 def oidc_enabled() -> bool:
