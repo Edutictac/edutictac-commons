@@ -166,8 +166,9 @@ l'alumnat pot completar-la amb la mateixa identitat pseudònima.
 **Resultat:** la v1 es pot portar a una màquina neta.
 
 - [ ] Revisar `IMAGE_REGISTRY`, `IMAGE_TAG` i `VERSION`.
-- [ ] Exportar imatges amb `make export-images`.
-- [ ] Provar `make load-images` en un entorn net o simulat.
+- [x] Exportar imatges amb `make export-images`.
+- [x] Provar `make load-images` en un entorn simulat local; queda pendent una
+  màquina neta real.
 - [ ] Publicar instruccions de `docker compose pull` amb registre propi.
 - [ ] Mantindre canals de versió sense usar `latest`.
 - [x] Provar el flux de reset amb restauració (`CONFIRM_RESET_TEST=1 make

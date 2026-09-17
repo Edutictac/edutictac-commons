@@ -30,6 +30,7 @@ images="
 ${registry}/commons-id-api:${image_tag}
 ${registry}/commons-portal:${image_tag}
 ${registry}/commons-admin:${image_tag}
+${registry}/commons-play:${image_tag}
 "
 
 case ",${profiles}," in

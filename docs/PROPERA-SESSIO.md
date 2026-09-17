@@ -15,6 +15,10 @@ Treball recomanat:
 2. Executar `make release-check` amb el perfil EduHoot actiu.
 3. Generar paquet amb `make export-images`.
 4. Provar `make load-images` en un entorn net o simulat.
+
+El exportador inclou també `commons-play`. Abans de usar `make up-pulled` en un
+centre, cal publicar aquesta imatge amb `make push-images`; el registre actual
+encara no conté `commons-play:0.1.1-alpha`.
 5. Documentar el flux final de `docker compose pull` contra
    `registry.edutictac.es`.
 
