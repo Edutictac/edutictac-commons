@@ -791,7 +791,13 @@ async function launchPlayAssignment(assignment) {
     method: "POST",
     body: JSON.stringify({ assignment_id: assignment.id }),
   });
-  const url = new URL(`/play/${encodeURIComponent(assignment.activity_id)}`, playBaseUrl());
+  const playUrl = new URL(playBaseUrl());
+  const activityId = encodeURIComponent(assignment.activity_id);
+  // The standalone Play service serves activities at /<id>. The /play/<id>
+  // prefix is only used when Commons is reached through its reverse proxy.
+  const directPlay = playUrl.port === "8084" || playUrl.port === "18084";
+  const path = directPlay ? `/${activityId}` : `/play/${activityId}`;
+  const url = new URL(path, playUrl);
   url.searchParams.set("launch_token", launch.token);
   window.location.href = url.toString();
 }

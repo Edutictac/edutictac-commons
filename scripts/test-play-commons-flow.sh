@@ -33,6 +33,7 @@ db_path = os.environ.get("EDUTICTAC_ID_DB", "/data/id.db")
 group_id = os.environ.get("TEST_GROUP_ID", "")
 if group_id:
     conn = sqlite3.connect(db_path)
+    conn.execute("DELETE FROM activity_assignments WHERE group_id = ?", (group_id,))
     conn.execute("DELETE FROM groups WHERE id = ?", (group_id,))
     conn.commit()
     conn.close()

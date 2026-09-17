@@ -18,7 +18,7 @@ test('el botón de Play usa el puerto del servicio Play local', async ({ page })
   await page.route('http://127.0.0.1:18084/**', (route) => route.abort());
 
   await page.goto('/student.html');
-  const playRequest = page.waitForRequest((request) => request.url().startsWith('http://127.0.0.1:18084/play/'));
+  const playRequest = page.waitForRequest((request) => request.url().startsWith('http://127.0.0.1:18084/Ab12Cd34'));
   await page.getByRole('button', { name: /Abrir actividad|Obrir activitat|Open activity/ }).click();
-  expect((await playRequest).url()).toBe('http://127.0.0.1:18084/play/Ab12Cd34?launch_token=launch-test-token');
+  expect((await playRequest).url()).toBe('http://127.0.0.1:18084/Ab12Cd34?launch_token=launch-test-token');
 });
