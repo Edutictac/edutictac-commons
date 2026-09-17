@@ -1,7 +1,9 @@
 # Propera sessió de treball
 
 > Estat: Play té Modo Reto, importació d'activitats des del banc, catàleg
-> controlat i exportació H5P validada. La distribució local també està provada.
+> controlat i exportació H5P validada. Commons ja té permisos compartits de
+> grup i gestió visual de docents col·laboradors. La distribució local també
+> està provada.
 > Pendent extern: publicar `commons-play:0.1.1-alpha` al registre.
 > Data: 2026-09-17
 
@@ -9,6 +11,10 @@
 
 Commits recents:
 
+- `d3522c3 Complete teacher group member management`: gestión visual inicial
+  de docentes colaboradores en los grupos.
+- `a0f3a34 Connect shared group access across teacher views`: permisos de
+  membresía aplicados a panel, credenciales, asignaciones y resultados.
 - `6e3f9e7 Add challenge bank and controlled catalog`: Modo Reto, banc,
   propietat/visibilitat, catàleg controlat, etiquetes multilingües, exportació
   H5P i documentació.
@@ -27,11 +33,11 @@ Verificacions completades:
 Pròxima reanudació:
 
 1. Publicar `commons-play:0.1.1-alpha` amb `make push-images` quan s'autoritze el
-   canvi en el registre.
-2. Repetir `make check-images` y documentar `docker compose pull`.
-3. Continuar con Authentik/OIDC y sustituir el token provisional del catálogo
-   por permisos de profesorado.
-4. Después completar cistella, Recursos e itinerarios.
+   canvi en el registre. La prova del 2026-09-17 ha tornat `denied`.
+2. Repetir `make check-images` i documentar `docker compose pull`.
+3. Continuar amb Authentik/OIDC i substituir el token provisional del catàleg
+   per permisos de professorat.
+4. Després completar cistella, Recursos i itineraris.
 
 La línea de vídeos queda aparcada y no forma parte del siguiente bloque.
 
