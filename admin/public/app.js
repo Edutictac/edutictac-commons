@@ -5,6 +5,7 @@ const apiStatus = document.getElementById("apiStatus");
 const statusOutput = document.getElementById("statusOutput");
 const actionOutput = document.getElementById("actionOutput");
 const restoreBackupSelect = document.getElementById("restoreBackupSelect");
+const rollbackBackupSelect = document.getElementById("rollbackBackupSelect");
 
 const t = window.i18nAdmin.t;
 
@@ -83,6 +84,26 @@ function populateBackupSelect(backups) {
   restoreBackupSelect.disabled = false;
 }
 
+function populateRollbackSelect(backups) {
+  rollbackBackupSelect.textContent = "";
+  const usable = backups.filter((backup) => backup.update && !backup.error);
+  if (!usable.length) {
+    const option = document.createElement("option");
+    option.value = "";
+    option.textContent = t("images.rollbackNone");
+    rollbackBackupSelect.appendChild(option);
+    rollbackBackupSelect.disabled = true;
+    return;
+  }
+  usable.forEach((backup) => {
+    const option = document.createElement("option");
+    option.value = backup.name;
+    option.textContent = `${backup.name} (→ ${backup.update.previous_image_tag})`;
+    rollbackBackupSelect.appendChild(option);
+  });
+  rollbackBackupSelect.disabled = false;
+}
+
 function renderStatus(data) {
   const lines = [];
   lines.push(t("status.stackVersion", { version: data.stack_version }));
@@ -159,6 +180,7 @@ async function loadStatus() {
     const data = await resp.json();
     apiStatus.textContent = t("status.connected");
     populateBackupSelect(data.backups || []);
+    populateRollbackSelect(data.backups || []);
     setOutput(statusOutput, renderStatus(data), false);
   } catch (err) {
     setOutput(statusOutput, `${t("common.errorLabel")} ${err.message}`, true);
@@ -264,6 +286,20 @@ document.getElementById("imagesUpdateBtn").addEventListener("click", () => {
     return;
   }
   runJsonAction("/api/images/update", {});
+});
+
+document.getElementById("imagesRollbackBtn").addEventListener("click", () => {
+  const backup = rollbackBackupSelect.value;
+  if (!backup) {
+    setOutput(actionOutput, t("images.rollbackNone"), true);
+    return;
+  }
+  const typed = window.prompt(t("images.rollbackPrompt", { backup }));
+  if (typed !== t("images.rollbackConfirmWord")) {
+    setOutput(actionOutput, t("images.rollbackCancelled"), false);
+    return;
+  }
+  runJsonAction("/api/images/rollback", { backup });
 });
 
 apiStatus.textContent = t("status.checking");

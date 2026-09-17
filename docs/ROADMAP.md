@@ -130,7 +130,8 @@ backup recent i verificable**.
 - [x] Automatitzar comparació de canal/versió disponible contra la instal·lada
   (`make check-updates`, endpoint `/api/updates`).
 - [x] Definir canals `stable`, `testing` i `dev`.
-- [ ] Rollback assistit des del panell.
+- [x] Rollback assistit des del panell; crea un backup de seguretat, recupera
+  els tags anteriors i verifica salut i flux funcional.
 
 ### Fita 4 — EduHoot com a primera activitat integrada
 

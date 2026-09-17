@@ -310,12 +310,12 @@ Base implementada:
 - Panell `/admin`: botó "Actualitzar imatges", amb confirmació forta, que
   llança `scripts/update-images.sh` en el host via `systemd-run --user`, i
   botó "Comprovar actualitzacions" via `/api/updates`.
-- Rollback manual documentat en `docs/INVENTARI.md`: restaurar el backup acabat
-  de crear i tornar a fixar `IMAGE_TAG`/`EDUHOOT_TAG` al tag anterior.
+- Rollback assistit implementat en `scripts/rollback-images.sh` i disponible
+  des del panell `/admin`; restaura tags d'imatges, no dades, i crea un backup
+  de seguretat abans de reiniciar.
 
-Queda pendent:
-
-- rollback assistit des del panell.
+Queda pendent provar el rollback assistit en una màquina neta amb dues versions
+publicades del registre.
 
 ## Primer canvi concret
 

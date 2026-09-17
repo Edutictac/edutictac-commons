@@ -144,6 +144,7 @@ En qualsevol entorn que no siga demo local cal canviar
 | `make check-images` | comprova que les imatges configurades existeixen al registre Docker/OCI |
 | `make check-updates` | consulta tags remots i compara la versió instal·lada amb el candidat del canal configurat |
 | `make update-images` | crea i verifica backup, aplica el candidat del canal en `.env`, descarrega imatges, reinicia amb `--no-build`, comprova salut i executa `test-flow` |
+| `make rollback-images BACKUP=commons-<stamp>` | crea un backup de seguretat i torna als tags d'imatge guardats en el backup d'una actualització; no restaura dades |
 | `make export-images` | genera un arxiu `.tar` amb imatges pròpies |
 | `make load-images ARCHIVE=...` | carrega imatges des d'un `.tar` |
 | `make push-images` | publica imatges al registre configurat |

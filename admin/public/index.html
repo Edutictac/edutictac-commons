@@ -74,6 +74,13 @@
           <button id="imagesCheckBtn" type="button" class="secondary" data-i18n="images.check">Comprovar actualitzacions</button>
           <button id="imagesUpdateBtn" type="button" class="danger" data-i18n="images.update">Actualitzar imatges</button>
         </div>
+        <label>
+          <span data-i18n="images.rollbackLabel">Versió anterior per rollback</span>
+          <select id="rollbackBackupSelect"></select>
+        </label>
+        <div class="actions">
+          <button id="imagesRollbackBtn" type="button" class="danger" data-i18n="images.rollback">Tornar a la versió anterior</button>
+        </div>
         <div id="actionOutput" class="output empty">Els resultats de les accions apareixeran ací.</div>
       </section>
     </main>

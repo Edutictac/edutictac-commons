@@ -110,6 +110,12 @@ def list_backups(limit=20):
                 entry["stack_version"] = manifest.get("stack_version")
                 entry["warnings"] = manifest.get("warnings", [])
                 entry["services"] = [s.get("name") for s in manifest.get("services", [])]
+                update_path = d / "update.json"
+                if update_path.is_file():
+                    try:
+                        entry["update"] = json.loads(update_path.read_text())
+                    except (OSError, json.JSONDecodeError):
+                        entry["update_error"] = "update.json il·legible"
             except (OSError, json.JSONDecodeError) as exc:
                 entry["error"] = f"manifest il·legible: {exc}"
         else:
@@ -272,6 +278,25 @@ def action_update_images(payload):
 
 
 ACTIONS["/api/images/update"] = action_update_images
+
+
+def action_rollback_images(payload):
+    name = str(payload.get("backup", ""))
+    if not BACKUP_NAME_RE.match(name):
+        return False, "Backup invalid: selecciona una carpeta commons-YYYYmmddTHHMMSSZ", 400
+    backup_dir = BACKUPS_DIR / name
+    if not backup_dir.is_dir() or not (backup_dir / "update.json").is_file():
+        return False, f"El backup no contiene una actualización reversible: {name}", 400
+    repo_dir = os.environ.get("REPO_DIR", str(APP_DIR))
+    rollback_script = str(Path(repo_dir) / "scripts" / "rollback-images.sh")
+    unit_name = f"edutictac-commons-rollback-{datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S')}"
+    return run_script(
+        "systemd-run", "--user", "--collect", f"--unit={unit_name}",
+        f"--property=WorkingDirectory={repo_dir}", "/bin/sh", rollback_script, name,
+    )
+
+
+ACTIONS["/api/images/rollback"] = action_rollback_images
 
 
 class Handler(BaseHTTPRequestHandler):

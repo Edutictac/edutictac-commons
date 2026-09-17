@@ -41,6 +41,32 @@ echo
 echo "== Verificacio del backup =="
 ./scripts/backup-check.sh
 
+update_backup="$(python3 - <<'PY'
+from pathlib import Path
+
+backups = sorted((path for path in Path("backups").glob("commons-*") if path.is_dir()), reverse=True)
+print(backups[0].name if backups else "")
+PY
+)"
+if [ -z "$update_backup" ]; then
+  echo "No s'ha pogut identificar el backup creat per a l'actualització."
+  exit 1
+fi
+previous_image_tag="${previous_image_tag:-$(cat VERSION)}"
+previous_eduhoot_tag="${previous_eduhoot_tag:-1.0.2}"
+python3 - "$update_backup" "$previous_image_tag" "$previous_eduhoot_tag" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+backup = Path("backups") / sys.argv[1]
+(backup / "update.json").write_text(json.dumps({
+    "previous_image_tag": sys.argv[2],
+    "previous_eduhoot_tag": sys.argv[3],
+}, indent=2) + "\n")
+PY
+echo "Tags anteriors guardats en $update_backup/update.json"
+
 echo
 echo "== Deteccio de versions disponibles =="
 updates_json="$(python3 ./scripts/check-updates.py --json)"
