@@ -24,7 +24,9 @@ sin Recursos. La instalación de producción continúa usando el servicio
 funcionar en una instalación local o de intranet.
 
 La API actual de Recursos expone el índice federado (`GET /api/resources`),
-favoritos, valoraciones, propuestas y autenticación. El repositorio
+favoritos, valoraciones, propuestas y autenticación. També exposa
+`GET /api/teacher/favorites`, que resol els favorits del docent OIDC a recursos
+complets del catàleg sense exposar la identitat a l'índex públic. El repositori
 `recursos-api` ya incorpora el endpoint de ingesta autenticada para Play y está
 probado en el perfil Docker local; todavía no se ha activado en producción.
 

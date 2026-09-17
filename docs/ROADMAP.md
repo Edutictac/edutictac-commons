@@ -227,8 +227,10 @@ d'activitat que EduHoot sol.
   docent abans d'incorporar-los al catàleg.
 - [x] Preparar el banc de Play per a propietat i visibilitat: activitats
   públiques anònimes, privades per identitat fiable i estat de classe reservat.
-- [ ] Cistella de recursos al tauler: endpoint `GET /api/teacher/favorites`
-  (sessió docent) que resol els preferits a recurs complet.
+- [x] Crear en `recursos-api` l'endpoint `GET /api/teacher/favorites`
+  (sessió OIDC docent) que resol els preferits a recurs complet.
+- [ ] Integrar la cistella de favorits en el tauler docent Commons i conservar
+  la sessió OIDC compartida entre portal i Recursos.
 - [x] Cercador local del Banc de recursos al tauler docent i assignació de
   recursos Play al grup seleccionat, conservant l'`activity_id` per al tauler
   de resultats.
