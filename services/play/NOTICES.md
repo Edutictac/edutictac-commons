@@ -28,6 +28,10 @@ se debe revisar la licencia global del producto antes de publicar una release.
 distribuye bajo MIT. Sus dependencias locales son `jQuery.ui`, `H5P.JoubelUI`,
 `H5P.Question`, `H5P.Components` y `FontAwesome`.
 
+`H5P.MarkTheWords` 1.11 procede del repositorio oficial
+`h5p/h5p-mark-the-words` y se distribuye bajo MIT. Sus dependencias locales
+son `H5P.JoubelUI`, `H5P.Question` y `FontAwesome`.
+
 El reproductor `h5p-standalone` 3.8.2 se distribuye bajo MIT. Sus recursos
 están en `assets/`; el aviso de licencia se conserva en la documentación del
 paquete upstream.

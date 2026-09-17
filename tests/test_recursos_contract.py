@@ -66,6 +66,15 @@ def test_drag_text_activity_can_be_published():
     assert payload["metadata"]["type"] == "drag-text"
 
 
+def test_mark_words_activity_can_be_published():
+    payload = build_publish_payload(
+        {"id": "Mark1234", "type": "mark-words", "title": "Gramática", "visibility": "public"},
+        public_base_url="https://example.test",
+    )
+
+    assert payload["metadata"]["type"] == "mark-words"
+
+
 def test_unknown_type_cannot_be_published():
     with pytest.raises(RecursosContractError, match="unsupported"):
         build_publish_payload(

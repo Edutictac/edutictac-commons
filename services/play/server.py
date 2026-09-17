@@ -233,6 +233,19 @@ def activity_content(activity: dict) -> dict:
             "contains": t.get("containsDropZone", "La zona @index contiene @draggable."), "ariaDraggableIndex": t.get("ariaDraggable", "Elemento @index de @count."),
             "tipLabel": t.get("tipLabel", "Pista"), "behaviour": {"enableRetry": True, "enableSolutionsButton": True, "enableCheckButton": True, "applyPenalties": True},
         }
+    if activity.get("type") == "mark-words":
+        return {
+            "taskDescription": safe_text(activity["question"]),
+            "textField": safe_text(activity["text"]),
+            "overallFeedback": [{"from": 0, "to": 99, "feedback": t["tryHarder"]}, {"from": 100, "to": 100, "feedback": t["allCorrect"]}],
+            "behaviour": {"enableRetry": True, "enableSolutionsButton": True, "enableCheckButton": True, "showScorePoints": True},
+            "checkAnswerButton": t["check"], "submitAnswerButton": t["submit"], "tryAgainButton": t["retryShort"], "showSolutionButton": t["showSolution"],
+            "correctAnswer": t["correctAnswer"], "incorrectAnswer": t["wrongAnswer"], "missedAnswer": t.get("shouldCheck", "Respuesta no marcada"),
+            "scoreBarLabel": t["scoreBar"], "a11yCheck": t["a11yCheck"], "a11yShowSolution": t["a11yShowSolution"], "a11yRetry": t["a11yRetry"],
+            "a11yFullTextLabel": t.get("fullText", "Texto completo"), "a11yClickableTextLabel": t.get("clickableText", "Texto seleccionable"),
+            "a11ySolutionModeHeader": t.get("solutionMode", "Solución"), "a11yCheckingHeader": t.get("checkingMode", "Comprobación"),
+            "displaySolutionDescription": t.get("displaySolution", "La actividad muestra la solución."),
+        }
     if activity.get("type") == "fill-blanks":
         return {
             "text": t.get("fillInstructions", "Completa las palabras que faltan."),
@@ -423,9 +436,18 @@ def package_files(activity: dict) -> dict[str, bytes]:
             {"machineName": "H5P.Components", "majorVersion": 1, "minorVersion": 0},
         ]
         is_true_false = False
+    elif activity.get("type") == "mark-words":
+        main_library = "H5P.MarkTheWords"
+        dependencies = [
+            {"machineName": "H5P.MarkTheWords", "majorVersion": 1, "minorVersion": 11},
+            {"machineName": "FontAwesome", "majorVersion": 4, "minorVersion": 5},
+            {"machineName": "H5P.JoubelUI", "majorVersion": 1, "minorVersion": 3},
+            {"machineName": "H5P.Question", "majorVersion": 1, "minorVersion": 5},
+        ]
+        is_true_false = False
     else:
         is_true_false = activity.get("type") == "true-false"
-    if activity.get("type") not in {"memory", "matching", "classify", "ordering", "fill-blanks", "find-words", "drag-text"}:
+    if activity.get("type") not in {"memory", "matching", "classify", "ordering", "fill-blanks", "find-words", "drag-text", "mark-words"}:
         main_library = "H5P.TrueFalse" if is_true_false else "H5P.MultiChoice"
         dependencies = [
             {"machineName": "H5P.TrueFalse", "majorVersion": 1, "minorVersion": 8},
@@ -581,6 +603,17 @@ def validate_activity(payload: dict) -> tuple[dict | None, list[str]]:
             return None, errors
         return {"type": activity_type, "title": title[:200], "question": question[:2000], "words": cleaned_words, "answers": [], "language": language, **metadata}, []
     if activity_type == "drag-text":
+        text = str(payload.get("text", "")).strip()
+        if not title:
+            errors.append("Escribe un título.")
+        if not question:
+            errors.append("Escribe una descripción.")
+        if len(text) < 3 or len(text) > 5000 or not re.search(r"\*[^*]+\*", text):
+            errors.append("Escribe un texto con al menos una palabra entre asteriscos.")
+        if errors:
+            return None, errors
+        return {"type": activity_type, "title": title[:200], "question": question[:2000], "text": text, "answers": [], "language": language, **metadata}, []
+    if activity_type == "mark-words":
         text = str(payload.get("text", "")).strip()
         if not title:
             errors.append("Escribe un título.")

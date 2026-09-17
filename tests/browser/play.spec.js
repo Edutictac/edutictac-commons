@@ -170,6 +170,21 @@ test('crear y reproducir una actividad de arrastrar palabras', async ({ page }) 
   await expect(page.locator('#download')).toBeVisible();
 });
 
+test('crear y reproducir una actividad de marcar palabras', async ({ page }) => {
+  await page.goto('/play/');
+  await page.getByRole('button', { name: 'Marcar palabras' }).click();
+  await page.locator('#title').fill('Gramática');
+  await page.locator('#question').fill('Señala los adjetivos');
+  await page.locator('#markWordsText').fill('El *rápido* guepardo cruzó la *seca* llanura.');
+  await page.getByRole('button', { name: 'Previsualizar' }).click({ force: true });
+  await expect(page.locator('#savePreview')).toBeVisible();
+  await expect.poll(() => page.frames().length).toBeGreaterThan(1);
+  const player = page.frames().find((frame) => frame !== page.mainFrame());
+  await expect(player.locator('.h5p-mark-the-words')).toBeVisible();
+  await page.getByRole('button', { name: 'Guardar' }).click();
+  await expect(page.locator('#download')).toBeVisible();
+});
+
 test('envía a Commons el resultado real de un Quiz H5P', async ({ page }) => {
   let scorePayload;
   await page.route('**/play/api/commons/score', async (route) => {

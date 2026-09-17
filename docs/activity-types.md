@@ -11,7 +11,7 @@
 | Rellenar huecos (`Fill in the Blanks`) | 2 | Implementado | `H5P.Blanks 1.14` |
 | Sopa de letras (`Find the Words`) | 3 | Implementado | `H5P.FindTheWords 1.4` |
 | Arrastrar al texto (`Drag Text`) | 3 | Implementado | `H5P.DragText 1.10` |
-| Marcar palabras (`Mark the Words`) | 3 | Planificado | `H5P.MarkTheWords 1.11` |
+| Marcar palabras (`Mark the Words`) | 3 | Implementado | `H5P.MarkTheWords 1.11` |
 | Tarjetas de estudio (`Dialog Cards`) | 3 | Planificado | `H5P.Dialogcards 1.9` |
 | Crucigrama (`Crossword`) | 3 | Planificado | `H5P.Crossword 1.1` |
 
@@ -118,13 +118,14 @@ expone distractores ni configuraciones avanzadas. Es la alternativa táctil
 preferente para dispositivos móviles o alumnado que aún escribe con lentitud en
 teclado.
 
-## Marcar las palabras (Mark the Words) — Planificado
+## Marcar las palabras (Mark the Words) — Implementado
 
 El formulario solicita una consigna y un texto con palabras objetivo señaladas entre
 asteriscos (p. ej. `Señala los adjetivos: El *rápido* guepardo corrió por la
 *seca* llanura`). El adaptador genera `H5P.MarkTheWords` 1.11, permitiendo al
 jugador hacer clic directamente sobre cualquier palabra del texto para
-seleccionarla. Es un formato nativo para aprendizaje gramatical, ortográfico y de
+seleccionarla. Play fija comprobación, solución y reintento, sin mostrar feedback
+avanzado. Es un formato nativo para aprendizaje gramatical, ortográfico y de
 comprensión lectora.
 
 ## Tarjetas de estudio / Flashcards (Dialog Cards) — Planificado
