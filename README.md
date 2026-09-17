@@ -168,7 +168,9 @@ Si no pots entrar com a alumne, usa una targeta acabada de generar en el portal:
 ## Notes
 
 - Aquest stack és per desenvolupament i demostració.
-- No conté Authentik encara; el docent usa token local.
+- El laboratorio ya incluye Authentik/OIDC para el acceso docente; el token
+  local se conserva solo como compatibilidad técnica para pruebas y servicios
+  internos.
 - No inclou dades reals ni s'ha de connectar a producció.
 - El paquet `edutictac-community` està vendorizat dins de `services/id-api/vendor/` per evitar dependències Git durant el build.
 - `make bootstrap-demo` accepta variables com `DEMO_COUNT=12`, `DEMO_TENANT_ID=centre-prova` o `DEMO_TITLE="Repte inicial"`.

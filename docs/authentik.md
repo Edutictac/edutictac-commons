@@ -73,6 +73,25 @@ En la demo local, el proveedor incluye el mapping `EduTicTac Commons roles`:
 `alumno` por defecto. En un centro real se recomienda reemplazar esta regla
 por grupos gestionados desde Authentik.
 
+## Arranque del entorno local
+
+Cuando el perfil Authentik está configurado mediante `pass`, hay que arrancar
+Commons con el wrapper para que `id-api` reciba las variables OIDC:
+
+```sh
+./scripts/up-authentik-pass.sh up -d
+```
+
+Un `docker compose up -d` directo puede recrear `id-api` usando los valores
+vacíos de `.env` y dejar temporalmente `GET /api/auth/oidc/status` con
+`enabled: false`. La comprobación rápida es:
+
+```sh
+curl http://127.0.0.1:8082/api/auth/oidc/status
+```
+
+Debe devolver `enabled: true` en el entorno de laboratorio.
+
 ```json
 {"roles": ["profesor"]}
 ```
