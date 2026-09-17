@@ -46,9 +46,11 @@ Treball recomanat:
 3. Generar paquet amb `make export-images`.
 4. Provar `make load-images` en un entorn net o simulat.
 
-El exportador inclou també `commons-play`. Abans de usar `make up-pulled` en un
-centre, cal publicar aquesta imatge amb `make push-images`; el registre actual
-encara no conté `commons-play:0.1.1-alpha`.
+El exportador inclou també `commons-play`. La publicació del 2026-09-17 no es
+va poder completar perquè el registre va respondre `denied` al primer `push`;
+cal renovar o configurar permisos d'escriptura per a `registry.edutictac.es`.
+Abans de usar `make up-pulled` en un centre, cal publicar `commons-play` i
+repetir `make check-images`.
 5. Documentar el flux final de `docker compose pull` contra
    `registry.edutictac.es`.
 

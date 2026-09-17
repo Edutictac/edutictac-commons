@@ -19,6 +19,7 @@ export IMAGE_REGISTRY="$registry" IMAGE_TAG="$tag" EDUHOOT_TAG="$eduhoot_tag"
 portal_image="${registry}/commons-portal:${tag}"
 id_image="${registry}/commons-id-api:${tag}"
 admin_image="${registry}/commons-admin:${tag}"
+play_image="${registry}/commons-play:${tag}"
 eduhoot_image="${registry}/eduhoot:${eduhoot_tag}"
 
 if [ "${INCLUDE_EDUHOOT:-0}" = "1" ]; then
@@ -30,6 +31,7 @@ fi
 ${DOCKER:-docker} push "$id_image"
 ${DOCKER:-docker} push "$portal_image"
 ${DOCKER:-docker} push "$admin_image"
+${DOCKER:-docker} push "$play_image"
 if [ "${INCLUDE_EDUHOOT:-0}" = "1" ]; then
   ${DOCKER:-docker} push "$eduhoot_image"
 fi
@@ -38,6 +40,7 @@ echo "Imatges publicades:"
 echo "- $id_image"
 echo "- $portal_image"
 echo "- $admin_image"
+echo "- $play_image"
 if [ "${INCLUDE_EDUHOOT:-0}" = "1" ]; then
   echo "- $eduhoot_image"
 fi
