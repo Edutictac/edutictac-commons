@@ -5,12 +5,13 @@
 La prueba verifica la compatibilidad básica entre EduTicTac Play y el Moodle
 instalado en `debiandesktop`:
 
-1. crea un Quiz de prueba mediante la API de Play;
+1. crea un Modo Reto compuesto de prueba mediante la API de Play;
 2. descarga el paquete `.h5p` generado;
 3. inicia sesión en Moodle con una cuenta técnica;
 4. entra en el banco de contenido de un curso de pruebas;
 5. sube el archivo H5P;
-6. comprueba que Moodle lo importa y reproduce la pregunta y las respuestas.
+6. comprueba que Moodle lo importa y reproduce la primera pregunta y la
+   navegación hacia el segundo paso.
 
 El test está en [`tests/browser/moodle-h5p.spec.js`](../tests/browser/moodle-h5p.spec.js)
 y usa [`playwright.moodle.config.js`](../playwright.moodle.config.js).
@@ -70,11 +71,11 @@ se puede eliminar al terminar las pruebas.
 
 ## Resultado validado
 
-La prueba se ha ejecutado correctamente en la instancia local:
+La prueba se ha ejecutado correctamente en la instancia local de DebianDesktop:
 
 ```text
 1 passed
-EduTicTac Play exporta e importa un H5P en Moodle
+EduTicTac Play exporta e importa un H5P compuesto en Moodle
 ```
 
 La comprobación final no depende del nombre que Moodle asigne al fichero. Se
@@ -85,8 +86,11 @@ embebido muestra la pregunta de prueba y sus respuestas.
 
 - La prueba utiliza la interfaz web y depende de los textos localizados de
   Moodle; si cambia la versión o el idioma, pueden cambiar los selectores.
-- Comprueba importación y reproducción, no calificación, xAPI ni integración
+- Comprueba importación y reproducción de Question Set, no calificación, xAPI ni integración
   con el libro de calificaciones.
+- Para esta instancia Moodle se han fijado `H5P.QuestionSet 1.20.31` y
+  `H5P.Video 1.6.2`; versiones más nuevas pueden exigir una API H5P Core que
+  la instalación no tenga disponible.
 - El curso y la cuenta son datos de una instalación de pruebas, no fixtures
   portables de producción.
 - No se deben ejecutar pruebas destructivas contra cursos reales.

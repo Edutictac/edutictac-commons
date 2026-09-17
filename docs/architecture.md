@@ -33,13 +33,16 @@ activity-types/
   ordering/          # Fase 2 (implementado)
   fill-blanks/       # Fase 2 (implementado)
   find-words/        # Fase 3 (implementado)
-  compound/          # Fase 3 (en diseño, H5P.QuestionSet)
+  compound/          # Actividad compuesta H5P.QuestionSet (Modo Reto)
 ```
 
 Cada módulo define formulario, validación, transformación a `content.json`,
 preview y metadatos. El exportador común solo recibe el documento validado y
 las dependencias runtime fijadas por el adaptador. Para agrupar varias
 actividades en un único paquete H5P evaluable, ver [`composite-activities.md`](composite-activities.md).
+El editor del Modo Reto también puede buscar actividades guardadas compatibles
+en el banco y añadirlas como copias independientes, conservando `sourceActivityId`
+para futuras relaciones con Commons y sus resultados.
 
 ## Integración futura
 

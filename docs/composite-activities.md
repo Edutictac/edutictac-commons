@@ -30,6 +30,10 @@ H5P dispone de dos librerías oficiales de agregación con licencias libres (MIT
 Para mantener el principio rector de sencillez e inmediatez en Play, el contenedor
 principal seleccionado es **`H5P.QuestionSet` (Modo Reto)**.
 
+La versión vendorizada actualmente es `1.20.31`, con `H5P.Video 1.6.2` como
+dependencia compatible con Moodle/AULES. Ambas librerías se distribuyen bajo
+MIT y se conservan en `services/play/h5p-libraries/`.
+
 ---
 
 ## 3. Experiencia de autoría para el alumnado (UX)
@@ -51,6 +55,13 @@ no se introducirán árboles complejos ni configuraciones técnicas avanzadas:
    - Orden aleatorio de las preguntas (opcional, desactivado por defecto).
 4. **Acciones por paso:** Reordenar (mover antes/después) y eliminar paso.
 
+Además, el botón **«Añadir desde el banco»** permite buscar actividades ya
+guardadas y convertirlas en un paso del reto. Solo se muestran tipos compatibles
+con `H5P.QuestionSet`. Al añadir una actividad se copia su contenido completo al
+reto y se conserva `sourceActivityId` como referencia de procedencia. La copia
+es intencionada: una edición posterior de la actividad original no altera un reto
+ya creado ni sus resultados.
+
 ---
 
 ## 4. Estructura de datos en Play
@@ -68,6 +79,7 @@ coherencia que los tipos individuales:
   "activities": [
     {
       "type": "multiple-choice",
+      "sourceActivityId": "a8F3kP2x",
       "question": "¿En qué capa ocurre el clima?",
       "answers": [
         {"text": "Troposfera", "correct": true},
@@ -177,19 +189,25 @@ modificar el bus de eventos del cliente.
 
 ## 7. Fases de implementación técnica
 
-1. **Fase 1 — Dependencias locales:** Incorporar la librería `H5P.QuestionSet-1.20`
-   y sus ficheros de idioma en `services/play/h5p-libraries/`.
-2. **Fase 2 — Backend (`server.py`):**
+1. **Fase 1 — Dependencias locales:** ✅ Incorporada `H5P.QuestionSet-1.20`
+   y `H5P.Video-1.6` en `services/play/h5p-libraries/`.
+2. **Fase 2 — Backend (`server.py`):** ✅ Implementado:
    - Adaptador `type == "compound"` en `validate_activity()` (mínimo 2, máximo 10
      actividades hijas válidas).
    - Ensamblador de `questions` en `activity_content()`.
    - Generación de `subContentId` (UUIDv4) para cada subcontenido.
    - Cálculo de la unión de `preloadedDependencies` en `package_files()`.
-3. **Fase 3 — Frontend (`app.js` e `index.html`):**
+3. **Fase 3 — Frontend (`app.js` e `index.html`):** ✅ Implementado un editor
+   sencillo por pasos. Cada paso permite Quiz, Verdadero/Falso, Completar,
+   Arrastrar palabras, Marcar palabras, Relacionar, Clasificar u Ordenar.
+   Memory, Tarjetas y Crucigrama siguen siendo actividades atómicas porque no
+   forman parte del contrato de preguntas de QuestionSet.
    - Tarjeta *"Reto / Cuestionario"* en la pantalla inicial de Play.
    - Barra de navegación entre actividades (`[Paso 1] [Paso 2] [+]`).
    - Sincronización del borrador en `localStorage`.
-4. **Fase 4 — Pruebas y despliegue:**
-   - Pruebas unitarias de exportación `.h5p` compuesto en `tests/test_play_export.py`.
-   - Pruebas end-to-end con Playwright simulando la resolución completa de un reto.
-   - Despliegue al VPS en `edutictac.es/play/`.
+4. **Fase 4 — Pruebas y despliegue:** ✅ Prueba de exportación `.h5p` compuesto
+   en `tests/test_play_export.py` y prueba end-to-end de creación,
+   previsualización, reproducción y guardado en Playwright (escritorio y
+   móvil). La importación en el Moodle local de DebianDesktop ya está validada
+   con `npm run test:moodle`; AULES/producción queda pendiente por depender de
+   su versión y catálogo de librerías.

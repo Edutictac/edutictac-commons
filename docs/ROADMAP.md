@@ -195,6 +195,19 @@ d'activitat que EduHoot sol.
   stack (perfil Compose propi, persistència a `data/recursos-*`).
 - [ ] Integrar la identitat docent (Authentik/OIDC) al Banc de recursos perquè
   els preferits queden al compte.
+- [ ] Crear un catàleg controlat de categories i etiquetes per a les activitats:
+  l'alumnat només podrà seleccionar valors tancats i el professorat podrà
+  crear, editar, activar o desactivar els valors del seu centre o espai.
+- [x] Definir el contracte inicial del catàleg amb identificadors estables i
+  etiquetes `es`, `ca` i `en`, mantenint el token local com a permís provisional.
+- [ ] Aplicar el catàleg controlat als camps de matèria, etapa, nivell i
+  etiquetes, amb identificadors estables, noms traduïbles i filtres coherents
+  entre Play, Commons i `recursos`.
+- [ ] Preparar la migració de metadades lliures existents: conservar el text
+  original, proposar coincidències i enviar els valors no reconeguts a revisió
+  docent abans d'incorporar-los al catàleg.
+- [x] Preparar el banc de Play per a propietat i visibilitat: activitats
+  públiques anònimes, privades per identitat fiable i estat de classe reservat.
 - [ ] Cistella de recursos al tauler: endpoint `GET /api/teacher/favorites`
   (sessió docent) que resol els preferits a recurs complet.
 - [x] Cercador local del Banc de recursos al tauler docent i assignació de
@@ -217,6 +230,10 @@ d'activitat que EduHoot sol.
   Play durant el MVP i, posteriorment, visor o redirecció a `recursos`.
 - [x] Associar l'activitat de Play amb el `resource_id` de `recursos`, incloent
   actualització, retirada, permisos i sincronització sense duplicar fitxers.
+- [x] Agrupar activitats compatibles en un únic Modo Reto `H5P.QuestionSet`,
+  amb exportació H5P, reproducció paginada i qualificació agregada.
+- [x] Afegir activitats ja guardades des del banc com a passos del Modo Reto,
+  conservant una còpia estable i `sourceActivityId` per a la traçabilitat.
 
 El detall del contracte i les decisions de propietat del recurs estan en
 `docs/resources-integration.md`. Aquesta integració és posterior al MVP i no

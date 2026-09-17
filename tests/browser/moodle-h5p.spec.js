@@ -13,10 +13,24 @@ test('EduTicTac Play exporta e importa un H5P en Moodle', async ({ page, request
   const created = await request.post(`${playUrl}/api/activities`, {
     data: {
       title,
-      question: '¿Cuál es una herramienta libre?',
-      answers: [
-        { text: 'Moodle', correct: true },
-        { text: 'Una respuesta de prueba', correct: false },
+      type: 'compound',
+      question: 'Completa las dos pruebas del reto.',
+      activities: [
+        {
+          type: 'multiple-choice',
+          title: 'Quiz de software libre',
+          question: '¿Cuál es una herramienta libre?',
+          answers: [
+            { text: 'Moodle', correct: true },
+            { text: 'Una respuesta de prueba', correct: false },
+          ],
+        },
+        {
+          type: 'true-false',
+          title: 'Verdadero o falso',
+          question: 'Moodle puede instalarse en un servidor propio.',
+          correct: true,
+        },
       ],
     },
   });
@@ -53,4 +67,5 @@ test('EduTicTac Play exporta e importa un H5P en Moodle', async ({ page, request
   await expect.poll(() => page.frames().some((frame) => frame.url() === 'about:blank')).toBeTruthy();
   const h5pFrame = page.frames().find((frame) => frame.url() === 'about:blank');
   await expect(h5pFrame.getByText('¿Cuál es una herramienta libre?')).toBeVisible();
+  await expect(h5pFrame.getByRole('link', { name: /siguiente|next/i })).toBeVisible();
 });

@@ -111,14 +111,15 @@ Por tanto, la promesa del MVP será:
 - se puede reproducir en Play y en un reproductor H5P compatible;
 - Moodle/AULES podrá importarlo cuando tenga habilitado `H5P.MultiChoice` y
   sus dependencias, o cuando su administrador las instale;
-- la compatibilidad se verificará con una instancia de prueba de Moodle antes
-  de marcar una release como compatible.
+- la compatibilidad del paquete compuesto se ha verificado con una instancia
+  de prueba de Moodle en DebianDesktop; AULES/producción debe comprobarse con
+  su versión concreta y catálogo de librerías.
 
 No se debe afirmar compatibilidad universal sin probar la versión concreta de
 Moodle/AULES, las políticas de subida y la versión instalada de las
 librerías.
 
-## Validación prevista
+## Validación realizada
 
 No se ha encontrado un validador universal e independiente que garantice
 compatibilidad con todos los LMS. Se combinarán tres comprobaciones:
@@ -126,6 +127,10 @@ compatibilidad con todos los LMS. Se combinarán tres comprobaciones:
 1. validación propia de JSON, nombres, dependencias y rutas seguras;
 2. inspección del ZIP y ausencia de rutas peligrosas/duplicadas;
 3. reproducción real con `h5p-standalone` y prueba de importación en Moodle.
+
+La importación de un `H5P.QuestionSet` con Quiz y Verdadero/Falso se ha
+validado en el Moodle local de DebianDesktop mediante `npm run test:moodle`.
+La prueba confirma la primera pregunta y el enlace al segundo paso.
 
 El [H5P CLI](https://github.com/h5p/h5p-cli) se estudiará como herramienta de
 desarrollo para empaquetar/verificar librerías, pero el exportador de la

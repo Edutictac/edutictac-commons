@@ -67,7 +67,214 @@ const CROSSWORD_I18N = { es: { crossword: 'Crucigrama', crosswordHelp: 'Crea un 
 function addCrosswordWord(answer = '', clue = '') { const row = document.createElement('div'); row.className = 'answer-row'; row.innerHTML = `<input class="crossword-answer" maxlength="20" required aria-label="${state.t.crosswordAnswer}" placeholder="${state.t.crosswordAnswerPlaceholder}"><input class="crossword-clue" maxlength="300" required aria-label="${state.t.crosswordClue}" placeholder="${state.t.crosswordCluePlaceholder}"><button type="button" class="remove" aria-label="Eliminar">×</button>`; row.querySelector('.crossword-answer').value = answer; row.querySelector('.crossword-clue').value = clue; row.querySelector('.remove').addEventListener('click', () => row.remove()); $('crosswordWords').append(row); }
 function initCrosswordUi() { const labels = CROSSWORD_I18N[state.lang] || CROSSWORD_I18N.es; state.t = { ...state.t, ...labels, errors: { ...(state.t.errors || {}), crossword: labels.crosswordError, crosswordUnique: labels.crosswordUnique } }; if (!$('crosswordField')) { const field = document.createElement('fieldset'); field.id = 'crosswordField'; field.className = 'hidden'; field.innerHTML = `<legend>${state.t.crosswordList}</legend><div id="crosswordWords"></div><button type="button" class="button secondary" id="addCrosswordWord">${state.t.addCrosswordWord}</button>`; $('formError').before(field); $('addCrosswordWord').addEventListener('click', () => addCrosswordWord()); [['planeta', 'Cuerpo que gira alrededor de una estrella'], ['océano', 'Gran extensión de agua salada'], ['montaña', 'Elevación natural del terreno'], ['bosque', 'Lugar poblado de árboles']].forEach((word) => addCrosswordWord(...word)); } if (!document.querySelector('[data-type="crossword"]')) { const card = document.createElement('button'); card.className = 'type-card'; card.dataset.type = 'crossword'; card.innerHTML = `<span class="type-icon">▦</span><strong>${state.t.crossword}</strong><small>${state.t.crosswordHelp}</small>`; document.querySelector('.type-grid').append(card); card.addEventListener('click', () => { setEditorType('crossword'); show('editor'); }); } if (![...$('libraryType').options].some((option) => option.value === 'crossword')) { const option = document.createElement('option'); option.value = 'crossword'; option.textContent = state.t.crossword; $('libraryType').append(option); } const watcher = window.setInterval(() => { if (state.activity?.type === 'crossword' && document.querySelectorAll('.crossword-answer').length === 4 && state.activity.words) { $('crosswordWords').innerHTML = ''; state.activity.words.forEach((word) => addCrosswordWord(word.answer, word.clue)); window.clearInterval(watcher); } }, 100); window.setTimeout(() => window.clearInterval(watcher), 5000); }
 document.addEventListener('DOMContentLoaded', () => window.setTimeout(initCrosswordUi, 240));
+const COMPOUND_I18N = {
+  es: { card: 'Modo reto', help: 'Agrupa varias actividades en un solo juego', editor: 'Crea tu reto', steps: 'Pasos del reto', add: '+ Añadir paso', remove: 'Eliminar paso', type: 'Tipo de actividad', stepTitle: 'Título del paso', stepQuestion: 'Pregunta o instrucción', answers: 'Respuestas (una por línea; empieza con * la correcta)', text: 'Texto con palabras entre *asteriscos*', pairs: 'Relaciones (una por línea: concepto | relación)', categories: 'Categorías (separadas por comas)', items: 'Elementos (una línea: texto | número de posición/categoría)', pass: 'Porcentaje mínimo para superar', random: 'Mezclar los pasos', error: 'Añade entre 2 y 10 pasos completos.' },
+  ca: { card: 'Mode repte', help: 'Agrupa diverses activitats en un sol joc', editor: 'Crea el teu repte', steps: 'Passos del repte', add: '+ Afegir pas', remove: 'Eliminar pas', type: "Tipus d'activitat", stepTitle: 'Títol del pas', stepQuestion: 'Pregunta o instrucció', answers: 'Respostes (una per línia; comença amb * la correcta)', text: 'Text amb paraules entre *asteriscs*', pairs: 'Relacions (una línia: concepte | relació)', categories: 'Categories (separades per comes)', items: 'Elements (una línia: text | número de posició/categoria)', pass: 'Percentatge mínim per superar', random: 'Barrejar els passos', error: 'Afig entre 2 i 10 passos complets.' },
+  en: { card: 'Challenge mode', help: 'Group several activities into one game', editor: 'Create your challenge', steps: 'Challenge steps', add: '+ Add step', remove: 'Remove step', type: 'Activity type', stepTitle: 'Step title', stepQuestion: 'Question or instruction', answers: 'Answers (one per line; start the correct one with *)', text: 'Text with words between *asterisks*', pairs: 'Pairs (one per line: concept | relation)', categories: 'Categories (comma separated)', items: 'Items (one line: text | position/category number)', pass: 'Minimum pass percentage', random: 'Shuffle steps', error: 'Add 2 to 10 complete steps.' },
+};
+const COMPOUND_TYPES = ['multiple-choice', 'true-false', 'fill-blanks', 'drag-text', 'mark-words', 'matching', 'classify', 'ordering'];
+const COMPOUND_LABELS = { 'multiple-choice': 'Quiz', 'true-false': 'Verdadero/Falso', 'fill-blanks': 'Completar', 'drag-text': 'Arrastrar palabras', 'mark-words': 'Marcar palabras', matching: 'Relacionar', classify: 'Clasificar', ordering: 'Ordenar' };
+function compoundLabels() { return COMPOUND_I18N[state.lang] || COMPOUND_I18N.es; }
+function compoundDetails(type, values = {}) {
+  const labels = compoundLabels();
+  if (type === 'multiple-choice') return `<label><span>${labels.answers}</span><textarea class="compound-answers" rows="4">${escapeHtml(values.answers || '*Respuesta correcta\\nOtra respuesta')}</textarea></label>`;
+  if (type === 'true-false') return `<label><span>Respuesta correcta</span><select class="compound-correct"><option value="true"${values.correct !== false ? ' selected' : ''}>Verdadero</option><option value="false"${values.correct === false ? ' selected' : ''}>Falso</option></select></label>`;
+  if (['fill-blanks', 'drag-text', 'mark-words'].includes(type)) return `<label><span>${labels.text}</span><textarea class="compound-text" rows="3">${escapeHtml(values.text || '')}</textarea></label>`;
+  if (type === 'matching') return `<label><span>${labels.pairs}</span><textarea class="compound-pairs" rows="3">${escapeHtml(values.pairs || 'España | Madrid\\nItalia | Roma')}</textarea></label>`;
+  return `<label><span>${labels.categories}</span><input class="compound-categories" value="${escapeHtml(values.categories || '1, 2')}"></label><label><span>${labels.items}</span><textarea class="compound-items" rows="3">${escapeHtml(values.items || 'Primero | 0\\nSegundo | 1\\nTercero | 2')}</textarea></label>`;
+}
+function compoundStep(values = {}) {
+  const labels = compoundLabels();
+  const section = document.createElement('article'); section.className = 'compound-step';
+  section.innerHTML = `<div class="section-heading"><strong class="compound-step-number"></strong><button type="button" class="button secondary compound-remove">${labels.remove}</button></div><label><span>${labels.type}</span><select class="compound-type">${COMPOUND_TYPES.map((type) => `<option value="${type}"${values.type === type ? ' selected' : ''}>${COMPOUND_LABELS[type]}</option>`).join('')}</select></label><label><span>${labels.stepTitle}</span><input class="compound-title" maxlength="200" value="${escapeHtml(values.title || '')}" required></label><label><span>${labels.stepQuestion}</span><textarea class="compound-question" maxlength="2000" required>${escapeHtml(values.question || '')}</textarea></label><div class="compound-details"></div>`;
+  const refresh = () => { const type = section.querySelector('.compound-type').value; const old = { answers: section.querySelector('.compound-answers')?.value, correct: section.querySelector('.compound-correct')?.value !== 'false', text: section.querySelector('.compound-text')?.value, pairs: section.querySelector('.compound-pairs')?.value, categories: section.querySelector('.compound-categories')?.value, items: section.querySelector('.compound-items')?.value }; section.querySelector('.compound-details').innerHTML = compoundDetails(type, old); };
+  section.querySelector('.compound-type').addEventListener('change', refresh); section.querySelector('.compound-remove').addEventListener('click', () => { section.remove(); numberCompoundSteps(); }); refresh(); $('compoundSteps').append(section); numberCompoundSteps(); return section;
+}
+function numberCompoundSteps() { document.querySelectorAll('.compound-step-number').forEach((node, index) => { node.textContent = `${index + 1}.`; }); }
+function readCompoundSteps() { return [...document.querySelectorAll('.compound-step')].map((section) => { const type = section.querySelector('.compound-type').value; const child = { type, title: section.querySelector('.compound-title').value.trim(), question: section.querySelector('.compound-question').value.trim(), language: state.lang }; if (type === 'multiple-choice') child.answers = section.querySelector('.compound-answers').value.split('\n').map((text) => ({ text: text.replace(/^\*/, '').trim(), correct: text.trim().startsWith('*') })).filter((answer) => answer.text); else if (type === 'true-false') child.correct = section.querySelector('.compound-correct').value === 'true'; else if (['fill-blanks', 'drag-text', 'mark-words'].includes(type)) child.text = section.querySelector('.compound-text').value.trim(); else if (type === 'matching') child.pairs = section.querySelector('.compound-pairs').value.split('\n').map((line) => line.split('|')).filter((pair) => pair.length === 2).map((pair) => ({ left: pair[0].trim(), right: pair[1].trim() })); else { child.categories = section.querySelector('.compound-categories').value.split(',').map((name) => ({ name: name.trim() })).filter((category) => category.name); child.items = section.querySelector('.compound-items').value.split('\n').map((line) => line.split('|')).filter((item) => item.length === 2).map((item) => ({ text: item[0].trim(), category: Number(item[1]) })); } return child; }); }
+function initCompoundUi() { const labels = compoundLabels(); if (!$('compoundField')) { const field = document.createElement('fieldset'); field.id = 'compoundField'; field.className = 'hidden'; field.innerHTML = `<legend>${labels.steps}</legend><div id="compoundSteps"></div><button type="button" class="button secondary" id="addCompoundStep">${labels.add}</button><label><span>${labels.pass}</span><input id="compoundPass" type="number" min="0" max="100" value="60"></label><label class="choice"><input id="compoundRandom" type="checkbox"> <span>${labels.random}</span></label>`; $('formError').before(field); $('addCompoundStep').addEventListener('click', () => compoundStep()); } if (!document.querySelector('[data-type="compound"]')) { const card = document.createElement('button'); card.className = 'type-card'; card.dataset.type = 'compound'; card.innerHTML = `<span class="type-icon">➜</span><strong>${labels.card}</strong><small>${labels.help}</small>`; document.querySelector('.type-grid').append(card); card.addEventListener('click', () => { setEditorType('compound'); if (!$('compoundSteps').children.length) { compoundStep(); compoundStep(); } show('editor'); }); } }
+const originalReadForm = readForm; const originalValidate = validate; const originalSetEditorType = setEditorType;
+readForm = function () { if (state.type !== 'compound') return originalReadForm(); return { type: 'compound', language: state.lang, title: $('title').value.trim(), question: $('question').value.trim(), passPercentage: Number($('compoundPass').value || 60), randomQuestions: $('compoundRandom').checked, activities: readCompoundSteps() }; };
+validate = function (activity) { if (activity.type !== 'compound') return originalValidate(activity); const labels = compoundLabels(); const errors = []; if (!activity.title) errors.push(state.t.errors.title); if (!activity.question) errors.push(state.t.errors.question); if (activity.activities.length < 2 || activity.activities.length > 10) errors.push(labels.error); return errors; };
+setEditorType = function (type) { originalSetEditorType(type); $('compoundField')?.classList.toggle('hidden', type !== 'compound'); if (type === 'compound') $('editorTitle').textContent = compoundLabels().editor; };
+document.addEventListener('DOMContentLoaded', () => window.setTimeout(initCompoundUi, 260));
+document.addEventListener('DOMContentLoaded', () => window.setTimeout(() => { if (state.activity?.type === 'compound' && $('compoundSteps') && !$('compoundSteps').children.length) { state.activity.activities.forEach((child) => compoundStep(child)); $('compoundPass').value = state.activity.passPercentage || 60; $('compoundRandom').checked = Boolean(state.activity.randomQuestions); } }, 800));
+
+const CATALOG_LABELS = {
+  es: { legend: 'Clasificación', subject: 'Materia', stage: 'Etapa educativa', level: 'Nivel', tags: 'Etiquetas' },
+  ca: { legend: 'Classificació', subject: 'Matèria', stage: 'Etapa educativa', level: 'Nivell', tags: 'Etiquetes' },
+  en: { legend: 'Classification', subject: 'Subject', stage: 'Educational stage', level: 'Level', tags: 'Tags' },
+};
+function initCatalogUi() {
+  if ($('catalogField')) return;
+  const labels = CATALOG_LABELS[state.lang] || CATALOG_LABELS.es;
+  const field = document.createElement('fieldset');
+  field.id = 'catalogField';
+  field.innerHTML = `<legend>${labels.legend}</legend><label><span>${labels.subject}</span><select id="subject"><option value=""></option></select></label><label><span>${labels.stage}</span><select id="educationalStage"><option value=""></option></select></label><label><span>${labels.level}</span><select id="educationalLevel"><option value=""></option></select></label><label><span>${labels.tags}</span><select id="activityTags" multiple size="4"></select></label>`;
+  $('formError').before(field);
+  fetch(`${BASE}/api/catalog`).then((response) => response.ok ? response.json() : null).then((catalog) => {
+    if (!catalog) return;
+    const labelsById = catalog.labels || {};
+    const fill = (id, key, values) => { const select = $(id); (values || []).forEach((value) => { const option = document.createElement('option'); option.value = value; option.textContent = labelsById[value]?.[state.lang] || value; select.append(option); }); };
+    fill('subject', 'subjects', catalog.subjects); fill('educationalStage', 'educational_stages', catalog.educational_stages); fill('educationalLevel', 'levels', catalog.levels); fill('activityTags', 'tags', catalog.tags);
+  }).catch(() => {});
+}
+document.addEventListener('DOMContentLoaded', () => window.setTimeout(initCatalogUi, 300));
+const readFormWithCatalog = readForm;
+readForm = function () {
+  const activity = readFormWithCatalog();
+  if ($('subject')) activity.subject = $('subject').value;
+  if ($('educationalStage')) activity.educational_stage = $('educationalStage').value;
+  if ($('educationalLevel')) activity.educational_level = $('educationalLevel').value;
+  if ($('activityTags')) activity.tags = [...$('activityTags').selectedOptions].map((option) => option.value);
+  return activity;
+};
+
+function initCatalogAdminUi() {
+  const admin = document.querySelector('.library-admin');
+  if (!admin || $('catalogAdminEditor')) return;
+  const editor = document.createElement('div');
+  editor.id = 'catalogAdminEditor';
+  editor.innerHTML = '<fieldset><legend>Catálogo controlado</legend><p class="muted">Una opción por línea. El alumnado solo podrá elegir estos valores.</p><label><span>Materias</span><textarea id="catalogSubjects" rows="3"></textarea></label><label><span>Etapas educativas</span><textarea id="catalogStages" rows="3"></textarea></label><label><span>Niveles</span><textarea id="catalogLevels" rows="2"></textarea></label><label><span>Etiquetas</span><textarea id="catalogTags" rows="3"></textarea></label><button id="catalogSave" type="button" class="button secondary">Guardar catálogo</button><p id="catalogStatus" class="muted" role="status"></p></fieldset>';
+  admin.append(editor);
+  const fields = { catalogSubjects: 'subjects', catalogStages: 'educational_stages', catalogLevels: 'levels', catalogTags: 'tags' };
+  let labelData = {};
+  const load = async () => {
+    const response = await fetch(`${BASE}/api/catalog`);
+    if (!response.ok) return;
+    const catalog = await response.json();
+    labelData = catalog.labels || {};
+    Object.entries(fields).forEach(([id, key]) => { $(id).value = (catalog[key] || []).join('\n'); });
+  };
+  $('catalogSave').addEventListener('click', async () => {
+    const token = getLibraryToken();
+    if (!token) { $('catalogStatus').textContent = 'Guarda primero el token de administración.'; return; }
+    const catalog = Object.fromEntries(Object.entries(fields).map(([id, key]) => [key, $(id).value.split('\n').map((value) => value.trim()).filter(Boolean)]));
+    catalog.labels = labelData;
+    const response = await fetch(`${BASE}/api/catalog`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Admin-Token': token }, body: JSON.stringify(catalog) });
+    $('catalogStatus').textContent = response.ok ? 'Catálogo guardado.' : 'No se ha podido guardar el catálogo.';
+    if (response.ok) load();
+  });
+  load();
+}
+document.addEventListener('DOMContentLoaded', () => window.setTimeout(initCatalogAdminUi, 350));
+
+// Importar actividades guardadas convierte el banco en una fuente sencilla de pasos.
+// Se incrusta una copia del contenido: editar la actividad original no modifica un reto ya creado.
+const compoundBankLabels = {
+  es: { add: '+ Añadir desde el banco', title: 'Añadir una actividad guardada', search: 'Buscar por título', loading: 'Cargando actividades…', empty: 'No hay actividades compatibles guardadas.', close: 'Cerrar', addOne: 'Añadir', copied: 'Copiada al reto', source: 'Copia del banco' },
+  ca: { add: '+ Afegir des del banc', title: 'Afegir una activitat guardada', search: 'Buscar per títol', loading: 'Carregant activitats…', empty: 'No hi ha activitats compatibles guardades.', close: 'Tancar', addOne: 'Afegir', copied: 'Copiada al repte', source: 'Còpia del banc' },
+  en: { add: '+ Add from the bank', title: 'Add a saved activity', search: 'Search by title', loading: 'Loading activities…', empty: 'No compatible saved activities.', close: 'Close', addOne: 'Add', copied: 'Copied to challenge', source: 'Bank copy' },
+};
+function bankLabels() { return compoundBankLabels[state.lang] || compoundBankLabels.es; }
+function bankStepValues(activity) {
+  const values = { ...activity, sourceActivityId: activity.id };
+  if (activity.type === 'multiple-choice' && Array.isArray(activity.answers)) values.answers = activity.answers.map((answer) => `${answer.correct ? '*' : ''}${answer.text}`).join('\n');
+  if (activity.type === 'matching' && Array.isArray(activity.pairs)) values.pairs = activity.pairs.map((pair) => `${pair.left} | ${pair.right}`).join('\n');
+  if (['classify', 'ordering'].includes(activity.type)) {
+    if (Array.isArray(activity.categories)) values.categories = activity.categories.map((category) => category.name).join(', ');
+    if (Array.isArray(activity.items)) values.items = activity.items.map((item) => `${item.text} | ${item.category}`).join('\n');
+  }
+  return values;
+}
+const originalCompoundDetails = compoundDetails;
+compoundDetails = function (type, values = {}) {
+  const normalized = bankStepValues(values);
+  return originalCompoundDetails(type, normalized);
+};
+const originalCompoundStep = compoundStep;
+compoundStep = function (values = {}) {
+  const section = originalCompoundStep(values);
+  if (values.sourceActivityId) {
+    const marker = document.createElement('small');
+    marker.className = 'compound-source';
+    marker.textContent = `${bankLabels().source}: ${values.sourceActivityId}`;
+    section.querySelector('.section-heading').append(marker);
+    section.dataset.sourceActivityId = values.sourceActivityId;
+  }
+  return section;
+};
+const originalReadCompoundSteps = readCompoundSteps;
+readCompoundSteps = function () {
+  const steps = originalReadCompoundSteps();
+  document.querySelectorAll('.compound-step').forEach((section, index) => {
+    if (section.dataset.sourceActivityId) steps[index].sourceActivityId = section.dataset.sourceActivityId;
+  });
+  return steps;
+};
+function openCompoundBank() {
+  const labels = bankLabels();
+  let dialog = $('compoundBankDialog');
+  if (!dialog) {
+    dialog = document.createElement('dialog');
+    dialog.id = 'compoundBankDialog';
+    dialog.innerHTML = `<form method="dialog" class="bank-dialog"><div class="section-heading"><h2>${labels.title}</h2><button type="submit" class="button secondary">${labels.close}</button></div><label><span>${labels.search}</span><input id="compoundBankSearch" type="search"></label><div id="compoundBankList" class="bank-list"></div></form>`;
+    document.body.append(dialog);
+  }
+  const search = $('compoundBankSearch');
+  const list = $('compoundBankList');
+  let loadSequence = 0;
+  const load = async () => {
+    const sequence = ++loadSequence;
+    list.innerHTML = `<p class="library-status">${labels.loading}</p>`;
+    const query = new URLSearchParams({ limit: '100', q: search.value.trim() });
+    const response = await fetch(`${BASE}/api/activities?${query}`);
+    if (sequence !== loadSequence) return;
+    if (!response.ok) { list.textContent = labels.empty; return; }
+    const page = await response.json();
+    if (sequence !== loadSequence) return;
+    const items = page.items.filter((item) => COMPOUND_TYPES.includes(item.type));
+    list.innerHTML = '';
+    if (!items.length) { list.innerHTML = `<p class="library-status">${labels.empty}</p>`; return; }
+    items.forEach((item) => {
+      const card = document.createElement('article');
+      card.className = 'library-card';
+      card.innerHTML = `<div><h3>${escapeHtml(item.title || '')}</h3><p class="library-meta">${escapeHtml(COMPOUND_LABELS[item.type] || item.type)}</p></div><button type="button" class="button" data-bank-id="${escapeHtml(item.id)}">${labels.addOne}</button>`;
+      card.querySelector('button').addEventListener('click', async () => {
+        const detail = await fetch(`${BASE}/api/activities/${item.id}`);
+        if (!detail.ok) return;
+        const activity = await detail.json();
+        if (document.querySelectorAll('.compound-step').length >= 10) return;
+        compoundStep(bankStepValues(activity));
+        dialog.close();
+        $('formError').textContent = labels.copied;
+      });
+      list.append(card);
+    });
+  };
+  search.oninput = load;
+  dialog.showModal();
+  load();
+}
+const originalInitCompoundUi = initCompoundUi;
+initCompoundUi = function () {
+  originalInitCompoundUi();
+  const labels = bankLabels();
+  const add = $('addCompoundFromBank');
+  if (!add) {
+    const button = document.createElement('button');
+    button.type = 'button'; button.id = 'addCompoundFromBank'; button.className = 'button secondary'; button.textContent = labels.add;
+    $('addCompoundStep').after(button);
+    button.addEventListener('click', openCompoundBank);
+  }
+};
 const originalLoadI18n = loadI18n;
 loadI18n = async () => { await originalLoadI18n(); await consumeLaunch(); await flushQueuedResults(); window.addEventListener('online', flushQueuedResults); };
 document.addEventListener('DOMContentLoaded', () => $('publishRecursos')?.addEventListener('click', publishRecursos));
 document.addEventListener('DOMContentLoaded', () => { const timer = window.setInterval(() => { if (state.activity) { recursosSyncUi(state.activity.recursos); window.clearInterval(timer); } }, 100); window.setTimeout(() => window.clearInterval(timer), 5000); });
+const renderPlayerWithResponsiveCrossword = renderPlayer;
+renderPlayer = async function (id) {
+  await renderPlayerWithResponsiveCrossword(id);
+  if (state.activity?.type !== 'crossword') return;
+  const resizeCrossword = () => {
+    const iframe = document.querySelector('#h5p-container iframe');
+    const frameDocument = iframe?.contentDocument;
+    if (!iframe || !frameDocument) return;
+    const content = frameDocument.querySelector('.h5p-crossword');
+    const height = Math.max(content?.scrollHeight || frameDocument.body.scrollHeight || 0, 420);
+    iframe.style.height = `${height + 8}px`;
+  };
+  window.setTimeout(resizeCrossword, 100);
+  window.setTimeout(resizeCrossword, 500);
+  window.addEventListener('resize', resizeCrossword, { passive: true });
+};

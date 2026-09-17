@@ -51,6 +51,27 @@ nuevos enlaces para compartir usarán `/play/{id}`.
 GET /api/activities?limit=20&offset=0&type=&language=&subject=&educational_stage=&license=&tag=&q=
 ```
 
+## Catálogo controlado
+
+```http
+GET /api/catalog
+POST /api/catalog
+Authorization: Bearer <EDUTICTAC_PLAY_ADMIN_TOKEN>
+```
+
+`GET /api/catalog` devuelve los valores cerrados disponibles para `subjects`,
+`educational_stages`, `levels` y `tags`. El formulario de Play usa estos valores
+para que el alumnado no introduzca metadatos libres. `POST /api/catalog` permite
+actualizar el catálogo durante esta fase mediante el token de administración;
+la futura integración con Authentik sustituirá este permiso por el rol de
+profesorado/administración del espacio educativo. La respuesta incluye también
+`labels`, un mapa de identificador a textos `es`, `ca` y `en`; los identificadores
+se mantienen estables aunque cambie el texto mostrado.
+
+La validación controlada se activa con `PLAY_CONTROLLED_CATALOG=1` (valor por
+defecto). Los campos vacíos siguen siendo válidos para conservar compatibilidad
+con actividades antiguas; los valores no incluidos en el catálogo se rechazan.
+
 Devuelve las actividades guardadas de más reciente a más antigua:
 
 ```json
@@ -66,6 +87,7 @@ Devuelve las actividades guardadas de más reciente a más antigua:
       "description": "",
       "subject": "",
       "educational_stage": "",
+      "educational_level": "",
       "license": "CC BY-SA",
       "author_pseudonym": "",
       "tags": []
@@ -109,8 +131,17 @@ GET /h5p-libraries/{library}/{file}
 
 Están disponibles `GET /api/activities` (paginado y con filtros),
 `GET /api/activities/{id}` y `GET /api/activities/{id}/download`. Deberá
-añadirse autorización antes de exponer actividades privadas o de clase; hoy
-todas las guardadas son públicas y el borrado exige el token de administración.
+añadirse el adaptador OIDC de Commons para producir la identidad confiable. Las
+peticiones anónimas solo reciben actividades `public`; una identidad confiable
+puede recibir además sus propias actividades `private`. El estado `class` queda
+reservado para la futura autorización por grupos. El borrado continúa exigiendo
+el token de administración.
+
+La identidad no se acepta desde el JSON de creación. En despliegues integrados,
+un proxy OIDC puede establecer la cabecera configurada en
+`PLAY_TRUSTED_IDENTITY_HEADER`; ese proxy debe eliminar cualquier cabecera del
+cliente antes de añadir la identidad validada. El propietario se guarda en
+`owner_id` y no se incluye en los resúmenes públicos.
 
 ## Integración futura con `recursos`
 

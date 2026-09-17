@@ -26,6 +26,13 @@ sin registrarse.
 Este modo no promete sincronización ni recuperación tras borrar los datos del
 navegador.
 
+En el servidor, las actividades anónimas de la demo siguen siendo públicas para
+mantener las URLs compartibles. Cuando se configura una identidad confiable,
+Play guarda el propietario en `owner_id`, aplica `private` por defecto mediante
+`PLAY_DEFAULT_VISIBILITY` y filtra el banco: cada identidad ve sus actividades
+privadas y las públicas. `PLAY_TRUSTED_IDENTITY_HEADER` solo debe usarse detrás
+de un proxy que valide OIDC y elimine la cabecera original del cliente.
+
 ### Modo integrado con Commons
 
 Cuando la actividad forma parte de un itinerario o asignación de Commons:

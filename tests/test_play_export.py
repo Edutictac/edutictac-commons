@@ -76,6 +76,48 @@ def test_multiple_choice_h5p_export():
         process.wait(timeout=3)
 
 
+def test_compound_question_set_h5p_export():
+    data_dir = Path(tempfile.mkdtemp(prefix="edutictac-play-test-"))
+    process = subprocess.Popen(
+        ["python3", "server.py"],
+        cwd=Path(__file__).parents[1] / "services" / "play",
+        env={**os.environ, "PORT": "18110", "PLAY_DATA_DIR": str(data_dir)},
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    try:
+        time.sleep(0.25)
+        payload = json.dumps({
+            "type": "compound",
+            "title": "Reto de ciencias",
+            "question": "Supera las dos pruebas.",
+            "passPercentage": 60,
+            "activities": [
+                {"type": "multiple-choice", "title": "Quiz", "question": "¿Cuál vuela?", "sourceActivityId": "a8F3kP2x", "answers": [
+                    {"text": "Águila", "correct": True}, {"text": "Gato", "correct": False},
+                ]},
+                {"type": "true-false", "title": "Verdadero o falso", "question": "El agua moja.", "correct": True},
+            ],
+        }).encode()
+        request = urllib.request.Request("http://127.0.0.1:18110/api/activities", data=payload, headers={"Content-Type": "application/json"}, method="POST")
+        activity = json.loads(urllib.request.urlopen(request).read())
+        assert activity["activities"][0]["sourceActivityId"] == "a8F3kP2x"
+        package = urllib.request.urlopen(f"http://127.0.0.1:18110/api/activities/{activity['id']}/download").read()
+        with zipfile.ZipFile(io.BytesIO(package)) as archive:
+            names = set(archive.namelist())
+            assert {"h5p.json", "content/content.json", "H5P.QuestionSet-1.20/library.json", "H5P.Video-1.6/library.json"} <= names
+            manifest = json.loads(archive.read("h5p.json"))
+            assert manifest["mainLibrary"] == "H5P.QuestionSet"
+            assert {item["machineName"] for item in manifest["preloadedDependencies"]} >= {"H5P.MultiChoice", "H5P.TrueFalse"}
+            content = json.loads(archive.read("content/content.json"))
+            assert content["passPercentage"] == 60
+            assert [question["library"] for question in content["questions"]] == ["H5P.MultiChoice 1.16", "H5P.TrueFalse 1.8"]
+            assert all(len(question["subContentId"]) == 36 for question in content["questions"])
+    finally:
+        process.terminate()
+        process.wait(timeout=3)
+
+
 def test_activity_keeps_catalogue_metadata():
     data_dir = Path(tempfile.mkdtemp(prefix="edutictac-play-test-"))
     process = subprocess.Popen(
@@ -462,6 +504,36 @@ def test_list_activities_is_paginated():
         process.wait(timeout=3)
 
 
+def test_private_activities_are_scoped_to_trusted_identity():
+    data_dir = Path(tempfile.mkdtemp(prefix="edutictac-play-test-"))
+    process = subprocess.Popen(
+        ["python3", "server.py"],
+        cwd=Path(__file__).parents[1] / "services" / "play",
+        env={**os.environ, "PORT": "18115", "PLAY_DATA_DIR": str(data_dir), "PLAY_DEFAULT_VISIBILITY": "private", "PLAY_TRUSTED_IDENTITY_HEADER": "X-Play-Identity"},
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    try:
+        time.sleep(0.25)
+        payload = json.dumps({
+            "type": "multiple-choice", "title": "Privada", "question": "¿Pregunta?",
+            "answers": [{"text": "Sí", "correct": True}, {"text": "No", "correct": False}],
+        }).encode()
+        create = urllib.request.Request("http://127.0.0.1:18115/api/activities", data=payload, headers={"Content-Type": "application/json", "X-Play-Identity": "student-1"}, method="POST")
+        activity = json.loads(urllib.request.urlopen(create).read())
+        assert activity["visibility"] == "private"
+        assert activity["owner_id"] == "student-1"
+        anonymous = json.loads(urllib.request.urlopen("http://127.0.0.1:18115/api/activities").read())
+        assert anonymous["total"] == 0
+        owner = urllib.request.Request("http://127.0.0.1:18115/api/activities", headers={"X-Play-Identity": "student-1"})
+        assert json.loads(urllib.request.urlopen(owner).read())["total"] == 1
+        other = urllib.request.Request("http://127.0.0.1:18115/api/activities", headers={"X-Play-Identity": "student-2"})
+        assert json.loads(urllib.request.urlopen(other).read())["total"] == 0
+    finally:
+        process.terminate()
+        process.wait(timeout=3)
+
+
 def test_delete_activity_requires_admin_token():
     data_dir = Path(tempfile.mkdtemp(prefix="edutictac-play-test-"))
     process = subprocess.Popen(
@@ -483,6 +555,31 @@ def test_delete_activity_requires_admin_token():
         with pytest.raises(urllib.error.HTTPError) as missing:
             urllib.request.urlopen(url)
         assert missing.value.code == 404
+    finally:
+        process.terminate()
+        process.wait(timeout=3)
+
+
+def test_catalog_can_be_updated_by_admin():
+    data_dir = Path(tempfile.mkdtemp(prefix="edutictac-play-test-"))
+    process = subprocess.Popen(
+        ["python3", "server.py"],
+        cwd=Path(__file__).parents[1] / "services" / "play",
+        env={**os.environ, "PORT": "18116", "PLAY_DATA_DIR": str(data_dir), "EDUTICTAC_PLAY_ADMIN_TOKEN": "catalog-token"},
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    try:
+        time.sleep(0.25)
+        payload = json.dumps({"subjects": ["ciencias"], "educational_stages": ["primaria"], "levels": ["basico"], "tags": ["repaso"]}).encode()
+        forbidden = urllib.request.Request("http://127.0.0.1:18116/api/catalog", data=payload, headers={"Content-Type": "application/json"}, method="POST")
+        with pytest.raises(urllib.error.HTTPError) as error:
+            urllib.request.urlopen(forbidden)
+        assert error.value.code == 403
+        update = urllib.request.Request("http://127.0.0.1:18116/api/catalog", data=payload, headers={"Content-Type": "application/json", "X-Admin-Token": "catalog-token"}, method="POST")
+        assert json.loads(urllib.request.urlopen(update).read())["subjects"] == ["ciencias"]
+        catalog = json.loads(urllib.request.urlopen("http://127.0.0.1:18116/api/catalog").read())
+        assert catalog["tags"] == ["repaso"]
     finally:
         process.terminate()
         process.wait(timeout=3)

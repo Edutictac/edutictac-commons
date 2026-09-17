@@ -10,6 +10,7 @@ import secrets
 import shutil
 import tempfile
 import time
+import uuid
 import zipfile
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -36,11 +37,80 @@ PLAY_ADMIN_TOKEN = os.environ.get("EDUTICTAC_PLAY_ADMIN_TOKEN", "").strip()
 RECURSOS_API_URL = os.environ.get("RECURSOS_API_URL", "").rstrip("/")
 RECURSOS_INGEST_TOKEN = os.environ.get("PLAY_INGEST_TOKEN", "").strip()
 PLAY_PUBLIC_URL = os.environ.get("PLAY_PUBLIC_URL", "").rstrip("/")
+PLAY_DEFAULT_VISIBILITY = os.environ.get("PLAY_DEFAULT_VISIBILITY", "public").strip().lower()
+# Solo debe configurarse detrás de un proxy que elimine y vuelva a establecer
+# esta cabecera a partir de una identidad OIDC validada.
+PLAY_TRUSTED_IDENTITY_HEADER = os.environ.get("PLAY_TRUSTED_IDENTITY_HEADER", "").strip()
+PLAY_CONTROLLED_CATALOG = os.environ.get("PLAY_CONTROLLED_CATALOG", "1").strip().lower() not in {"0", "false", "no"}
 ID_RE = re.compile(r"^[A-Za-z0-9]{8}$")
 PREVIEW_RE = re.compile(r"^preview-[A-Za-z0-9]{8}$")
 PREVIEWS: dict[str, dict] = {}
 LAUNCH_CONTEXTS: dict[str, dict] = {}
 ACTIVITY_ID_PATTERN = r"(?:[A-Za-z0-9]{8}|preview-[A-Za-z0-9]{8})"
+
+COMPOUND_CHILD_TYPES = {
+    "multiple-choice",
+    "true-false",
+    "fill-blanks",
+    "drag-text",
+    "mark-words",
+    "matching",
+    "classify",
+    "ordering",
+}
+VISIBILITIES = {"private", "class", "public"}
+CATALOG_DEFAULTS = {
+    "subjects": ["ciencias", "lenguas", "matematicas", "sociales", "arte", "tecnologia", "educacion-fisica", "tutoria"],
+    "educational_stages": ["infantil", "primaria", "secundaria", "bachillerato", "fp", "adultos"],
+    "levels": ["inicial", "basico", "intermedio", "avanzado"],
+    "tags": ["ciencias", "repaso", "vocabulario", "comprension", "calculo", "creatividad", "investigacion"],
+}
+CATALOG_LABELS_DEFAULT = {
+    "ciencias": {"es": "Ciencias", "ca": "Ciències", "en": "Science"},
+    "lenguas": {"es": "Lenguas", "ca": "Llengües", "en": "Languages"},
+    "matematicas": {"es": "Matemáticas", "ca": "Matemàtiques", "en": "Mathematics"},
+    "sociales": {"es": "Ciencias sociales", "ca": "Ciències socials", "en": "Social sciences"},
+    "arte": {"es": "Arte", "ca": "Art", "en": "Art"},
+    "tecnologia": {"es": "Tecnología", "ca": "Tecnologia", "en": "Technology"},
+    "educacion-fisica": {"es": "Educación física", "ca": "Educació física", "en": "Physical education"},
+    "tutoria": {"es": "Tutoría", "ca": "Tutoria", "en": "Tutoring"},
+    "infantil": {"es": "Infantil", "ca": "Infantil", "en": "Early years"},
+    "primaria": {"es": "Primaria", "ca": "Primària", "en": "Primary"},
+    "secundaria": {"es": "Secundaria", "ca": "Secundària", "en": "Secondary"},
+    "bachillerato": {"es": "Bachillerato", "ca": "Batxillerat", "en": "Sixth form"},
+    "fp": {"es": "FP", "ca": "FP", "en": "Vocational training"},
+    "adultos": {"es": "Personas adultas", "ca": "Persones adultes", "en": "Adult education"},
+    "inicial": {"es": "Inicial", "ca": "Inicial", "en": "Beginner"},
+    "basico": {"es": "Básico", "ca": "Bàsic", "en": "Basic"},
+    "intermedio": {"es": "Intermedio", "ca": "Intermedi", "en": "Intermediate"},
+    "avanzado": {"es": "Avanzado", "ca": "Avançat", "en": "Advanced"},
+    "ciencias": {"es": "Ciencias", "ca": "Ciències", "en": "Science"},
+    "repaso": {"es": "Repaso", "ca": "Repàs", "en": "Revision"},
+    "vocabulario": {"es": "Vocabulario", "ca": "Vocabulari", "en": "Vocabulary"},
+    "comprension": {"es": "Comprensión", "ca": "Comprensió", "en": "Comprehension"},
+    "calculo": {"es": "Cálculo", "ca": "Càlcul", "en": "Calculation"},
+    "creatividad": {"es": "Creatividad", "ca": "Creativitat", "en": "Creativity"},
+    "investigacion": {"es": "Investigación", "ca": "Investigació", "en": "Research"},
+}
+
+
+def h5p_library_for_activity(activity: dict) -> str:
+    """Return the exact child library version accepted by QuestionSet."""
+
+    activity_type = activity.get("type")
+    if activity_type == "multiple-choice":
+        return "H5P.MultiChoice 1.16"
+    if activity_type == "true-false":
+        return "H5P.TrueFalse 1.8"
+    if activity_type == "fill-blanks":
+        return "H5P.Blanks 1.14"
+    if activity_type == "drag-text":
+        return "H5P.DragText 1.10"
+    if activity_type == "mark-words":
+        return "H5P.MarkTheWords 1.11"
+    if activity_type in {"matching", "classify", "ordering"}:
+        return "H5P.DragQuestion 1.15"
+    raise ValueError(f"Unsupported QuestionSet child: {activity_type}")
 
 
 def safe_text(value: object, limit: int = 5000) -> str:
@@ -204,6 +274,45 @@ def activity_language(payload: dict) -> str:
 
 def activity_content(activity: dict) -> dict:
     t = H5P_TEXT.get(str(activity.get("language") or "es"), H5P_TEXT["es"])
+    if activity.get("type") == "compound":
+        questions = []
+        for child in activity["activities"]:
+            params = activity_content(child)
+            params["contentName"] = safe_text(child["title"], 200)
+            questions.append({
+                "library": h5p_library_for_activity(child),
+                "params": params,
+                "subContentId": str(uuid.uuid4()),
+            })
+        return {
+            "introPage": {"showIntroPage": False},
+            "progressType": "dots",
+            "passPercentage": int(activity.get("passPercentage", 60)),
+            "questions": questions,
+            "texts": {
+                "prevButton": "Anterior", "previous": "Anterior",
+                "nextButton": "Siguiente", "next": "Siguiente",
+                "finishButton": "Finalizar", "submitButton": "Enviar",
+                "textualProgress": "Pregunta @current de @total",
+                "jumpToQuestion": "Pregunta %d de %total",
+                "questionLabel": "Actividad",
+                "readSpeakerProgress": "Actividad @current de @total",
+                "unansweredText": "Sin responder", "answeredText": "Respondida",
+                "currentQuestionText": "Actividad actual", "navigationLabel": "Actividades",
+                "questionSetInstruction": "Elige la actividad que quieres mostrar",
+            },
+            "disableBackwardsNavigation": False,
+            "randomQuestions": bool(activity.get("randomQuestions", False)),
+            "endGame": {
+                "showResultPage": True, "message": "Resultados del reto",
+                "noResultMessage": "Reto terminado", "amountCorrect": "@finals de @totals correctas",
+                "scoreBarLabel": "Has conseguido @finals de @totals puntos",
+                "scoreHeader": "Puntuación", "overallFeedback": [],
+                "finishButtonText": "Finalizar", "submitButtonText": "Enviar",
+                "solutionButtonText": "Mostrar soluciones", "retryButtonText": "Reintentar",
+                "showSolutionButton": True, "showRetryButton": True, "showAnimations": False,
+            },
+        }
     if activity.get("type") == "find-words":
         return {
             "taskDescription": safe_text(activity["question"]),
@@ -402,7 +511,36 @@ def activity_content(activity: dict) -> dict:
 
 
 def package_files(activity: dict) -> dict[str, bytes]:
-    if activity.get("type") in {"matching", "classify", "ordering"}:
+    if activity.get("type") == "compound":
+        main_library = "H5P.QuestionSet"
+        dependencies = [
+            {"machineName": "H5P.QuestionSet", "majorVersion": 1, "minorVersion": 20},
+            {"machineName": "FontAwesome", "majorVersion": 4, "minorVersion": 5},
+            {"machineName": "H5P.Video", "majorVersion": 1, "minorVersion": 6},
+            {"machineName": "H5P.JoubelUI", "majorVersion": 1, "minorVersion": 3},
+        ]
+        child_dependencies = {
+            "multiple-choice": [
+                ("H5P.MultiChoice", 1, 16), ("H5P.Question", 1, 5),
+                ("H5P.Transition", 1, 0), ("H5P.FontIcons", 1, 0),
+            ],
+            "true-false": [("H5P.TrueFalse", 1, 8), ("H5P.Question", 1, 5), ("H5P.FontIcons", 1, 0)],
+            "fill-blanks": [("H5P.Blanks", 1, 14), ("H5P.Question", 1, 5), ("H5P.TextUtilities", 1, 3)],
+            "drag-text": [("H5P.DragText", 1, 10), ("jQuery.ui", 1, 10), ("H5P.Question", 1, 5)],
+            "mark-words": [("H5P.MarkTheWords", 1, 11), ("H5P.Question", 1, 5)],
+            "matching": [("H5P.DragQuestion", 1, 15), ("jQuery.ui", 1, 10), ("H5P.AdvancedText", 1, 1)],
+            "classify": [("H5P.DragQuestion", 1, 15), ("jQuery.ui", 1, 10), ("H5P.AdvancedText", 1, 1)],
+            "ordering": [("H5P.DragQuestion", 1, 15), ("jQuery.ui", 1, 10), ("H5P.AdvancedText", 1, 1)],
+        }
+        existing = {(item["machineName"], item["majorVersion"], item["minorVersion"]) for item in dependencies}
+        for child in activity["activities"]:
+            for machine_name, major, minor in child_dependencies[child["type"]]:
+                key = (machine_name, major, minor)
+                if key not in existing:
+                    dependencies.append({"machineName": machine_name, "majorVersion": major, "minorVersion": minor})
+                    existing.add(key)
+        is_true_false = False
+    elif activity.get("type") in {"matching", "classify", "ordering"}:
         main_library = "H5P.DragQuestion"
         dependencies = [
             {"machineName": "H5P.DragQuestion", "majorVersion": 1, "minorVersion": 15},
@@ -483,7 +621,7 @@ def package_files(activity: dict) -> dict[str, bytes]:
         is_true_false = False
     else:
         is_true_false = activity.get("type") == "true-false"
-    if activity.get("type") not in {"memory", "matching", "classify", "ordering", "fill-blanks", "find-words", "drag-text", "mark-words", "dialog-cards", "crossword"}:
+    if activity.get("type") not in {"compound", "memory", "matching", "classify", "ordering", "fill-blanks", "find-words", "drag-text", "mark-words", "dialog-cards", "crossword"}:
         main_library = "H5P.TrueFalse" if is_true_false else "H5P.MultiChoice"
         dependencies = [
             {"machineName": "H5P.TrueFalse", "majorVersion": 1, "minorVersion": 8},
@@ -534,6 +672,43 @@ def validate_activity(payload: dict) -> tuple[dict | None, list[str]]:
     language = activity_language(payload)
     metadata, metadata_errors = activity_metadata(payload)
     errors.extend(metadata_errors)
+    if activity_type == "compound":
+        if not title:
+            errors.append("Escribe un título para el reto.")
+        if not question:
+            errors.append("Escribe una descripción para el reto.")
+        raw_activities = payload.get("activities")
+        if not isinstance(raw_activities, list) or not 2 <= len(raw_activities) <= 10:
+            errors.append("Añade entre 2 y 10 actividades al reto.")
+            raw_activities = []
+        cleaned_activities = []
+        for child in raw_activities:
+            if not isinstance(child, dict) or str(child.get("type", "")) not in COMPOUND_CHILD_TYPES:
+                errors.append("El reto solo admite actividades educativas compatibles.")
+                continue
+            child_payload = {**child, "language": child.get("language") or language}
+            cleaned_child, child_errors = validate_activity(child_payload)
+            if child_errors or cleaned_child is None:
+                errors.extend([f"Paso {len(cleaned_activities) + 1}: {error}" for error in child_errors])
+                continue
+            source_id = str(child.get("sourceActivityId", "")).strip()
+            if ID_RE.fullmatch(source_id):
+                cleaned_child["sourceActivityId"] = source_id
+            cleaned_activities.append(cleaned_child)
+        try:
+            pass_percentage = int(payload.get("passPercentage", 60))
+        except (TypeError, ValueError):
+            pass_percentage = 60
+        if not 0 <= pass_percentage <= 100:
+            errors.append("El porcentaje para superar el reto debe estar entre 0 y 100.")
+        if errors:
+            return None, errors
+        return {
+            "type": "compound", "format": "question-set", "title": title[:200],
+            "question": question[:2000], "language": language,
+            "passPercentage": pass_percentage, "randomQuestions": bool(payload.get("randomQuestions", False)),
+            "activities": cleaned_activities, "answers": [], **metadata,
+        }, []
     if activity_type == "true-false":
         if not title:
             errors.append("Escribe un título.")
@@ -726,10 +901,19 @@ def activity_metadata(payload: dict) -> tuple[dict, list[str]]:
     """Keep optional catalogue metadata without accepting arbitrary HTML."""
 
     errors = []
+    catalog = read_catalog()
+    subject = str(payload.get("subject", "")).strip()[:120]
+    educational_stage = str(payload.get("educational_stage", "")).strip()[:120]
+    level = str(payload.get("educational_level", "")).strip()[:120]
+    if PLAY_CONTROLLED_CATALOG:
+        for field, value, catalog_key in (("subject", subject, "subjects"), ("educational_stage", educational_stage, "educational_stages"), ("educational_level", level, "levels")):
+            if value and value.lower() not in catalog[catalog_key]:
+                errors.append(f"Valor no disponible en el catálogo: {field}.")
     metadata = {
         "description": str(payload.get("description", "")).strip()[:2000],
-        "subject": str(payload.get("subject", "")).strip()[:120],
-        "educational_stage": str(payload.get("educational_stage", "")).strip()[:120],
+        "subject": subject,
+        "educational_stage": educational_stage,
+        "educational_level": level,
         "license": str(payload.get("license", "CC BY-SA") or "CC BY-SA").strip()[:80],
         "author_pseudonym": str(payload.get("author_pseudonym", "")).strip()[:120],
     }
@@ -740,11 +924,62 @@ def activity_metadata(payload: dict) -> tuple[dict, list[str]]:
         errors.append("Las etiquetas deben ser una lista.")
         tags = []
     metadata["tags"] = list(dict.fromkeys(str(tag).strip()[:80] for tag in tags if str(tag).strip()))[:20]
+    if PLAY_CONTROLLED_CATALOG:
+        unknown_tags = [tag for tag in metadata["tags"] if tag.lower() not in catalog["tags"]]
+        if unknown_tags:
+            errors.append("Hay etiquetas que no están disponibles en el catálogo.")
     return metadata, errors
+
+
+def read_catalog() -> dict[str, list[str]]:
+    file = DATA_DIR / "catalog.json"
+    try:
+        value = json.loads(file.read_text(encoding="utf-8"))
+    except (FileNotFoundError, json.JSONDecodeError):
+        value = CATALOG_DEFAULTS
+    if isinstance(value, dict) and isinstance(value.get("values"), dict):
+        value = value["values"]
+    return {key: sorted(set(str(item).strip().lower() for item in value.get(key, []) if str(item).strip())) for key in CATALOG_DEFAULTS}
+
+
+def read_catalog_labels() -> dict[str, dict[str, str]]:
+    file = DATA_DIR / "catalog.json"
+    try:
+        value = json.loads(file.read_text(encoding="utf-8"))
+    except (FileNotFoundError, json.JSONDecodeError):
+        return CATALOG_LABELS_DEFAULT
+    labels = value.get("labels", {}) if isinstance(value, dict) else {}
+    return labels if isinstance(labels, dict) else CATALOG_LABELS_DEFAULT
+
+
+def save_catalog(value: dict) -> dict[str, list[str]]:
+    catalog = {key: sorted(set(str(item).strip().lower() for item in value.get(key, []) if str(item).strip()))[:200] for key in CATALOG_DEFAULTS}
+    labels = value.get("labels", {})
+    if not isinstance(labels, dict):
+        labels = {}
+    labels = {str(key): {str(language): str(label).strip()[:120] for language, label in item.items() if language in LANGUAGES and str(label).strip()} for key, item in labels.items() if isinstance(item, dict)}
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    (DATA_DIR / "catalog.json").write_text(json.dumps({"values": catalog, "labels": labels}, ensure_ascii=False, indent=2), encoding="utf-8")
+    return {**catalog, "labels": labels}
 
 
 class Handler(BaseHTTPRequestHandler):
     server_version = "EduTicTacPlay/0.1"
+
+    def identity_id(self) -> str:
+        """Return the identity supplied by a configured trusted auth adapter."""
+
+        if not PLAY_TRUSTED_IDENTITY_HEADER:
+            return ""
+        value = self.headers.get(PLAY_TRUSTED_IDENTITY_HEADER, "").strip()
+        return value[:160] if re.fullmatch(r"[A-Za-z0-9._:@/-]{1,160}", value) else ""
+
+    def can_access_activity(self, activity: dict) -> bool:
+        visibility = activity.get("visibility", "public")
+        if visibility == "public":
+            return True
+        identity = self.identity_id()
+        return bool(identity and activity.get("owner_id") == identity)
 
     def send_json(self, status: int, payload: dict) -> None:
         body = json.dumps(payload, ensure_ascii=False).encode()
@@ -765,6 +1000,9 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/api/health":
             self.send_json(HTTPStatus.OK, {"status": "ok", "service": "edutictac-play"})
             return
+        if path == "/api/catalog":
+            self.send_json(HTTPStatus.OK, {**read_catalog(), "labels": read_catalog_labels()})
+            return
         if path == "/api/activities":
             query = parse_qs(urlparse(self.path).query)
             try:
@@ -784,6 +1022,7 @@ class Handler(BaseHTTPRequestHandler):
                 "tag": query.get("tag", [""])[0],
                 "q": query.get("q", [""])[0],
             }
+            filters["identity_id"] = self.identity_id()
             items, total = list_activities(filters)
             self.send_json(HTTPStatus.OK, {
                 "items": [activity_summary(activity) for activity in items],
@@ -796,7 +1035,7 @@ class Handler(BaseHTTPRequestHandler):
         match = re.fullmatch(rf"/api/activities/({ACTIVITY_ID_PATTERN})", path)
         if match:
             activity = read_activity(match.group(1))
-            if activity:
+            if activity and self.can_access_activity(activity):
                 self.send_json(HTTPStatus.OK, activity)
             else:
                 self.send_json(HTTPStatus.NOT_FOUND, {"error": "Actividad no encontrada."})
@@ -804,7 +1043,7 @@ class Handler(BaseHTTPRequestHandler):
         match = re.fullmatch(rf"/api/activities/({ACTIVITY_ID_PATTERN})/download", path)
         if match:
             activity = read_activity(match.group(1))
-            if not activity:
+            if not activity or not self.can_access_activity(activity):
                 self.send_json(HTTPStatus.NOT_FOUND, {"error": "Actividad no encontrada."})
                 return
             self.download_package(activity)
@@ -812,7 +1051,7 @@ class Handler(BaseHTTPRequestHandler):
         match = re.fullmatch(rf"/api/activities/({ACTIVITY_ID_PATTERN})/h5p/(.+)", path)
         if match:
             activity = read_activity(match.group(1))
-            if not activity:
+            if not activity or not self.can_access_activity(activity):
                 self.send_error(HTTPStatus.NOT_FOUND)
                 return
             files = package_files(activity)
@@ -867,6 +1106,9 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self) -> None:  # noqa: N802
         route = self.normalize_path(self.path)
+        if route == "/api/catalog":
+            self.update_catalog()
+            return
         if route == "/api/commons/launch":
             self.consume_commons_launch()
             return
@@ -900,10 +1142,34 @@ class Handler(BaseHTTPRequestHandler):
             self.send_json(HTTPStatus.CREATED, activity)
             return
         activity["id"] = new_id()
-        activity["visibility"] = "public"
+        requested_visibility = str(payload.get("visibility", PLAY_DEFAULT_VISIBILITY)).strip().lower()
+        if requested_visibility not in VISIBILITIES:
+            self.send_json(HTTPStatus.UNPROCESSABLE_ENTITY, {"errors": ["Visibilidad no válida."]})
+            return
+        identity = self.identity_id()
+        activity["visibility"] = requested_visibility if identity else "public"
+        if identity:
+            activity["owner_id"] = identity
         activity["createdAt"] = __import__("datetime").datetime.now(__import__("datetime").timezone.utc).isoformat()
         save_activity(activity)
         self.send_json(HTTPStatus.CREATED, activity)
+
+    def update_catalog(self) -> None:
+        if not self.admin_authorized():
+            self.send_json(HTTPStatus.FORBIDDEN, {"error": "Catálogo no autorizado."})
+            return
+        try:
+            length = int(self.headers.get("Content-Length", "0"))
+            if length > 32 * 1024:
+                raise ValueError("El catálogo es demasiado grande.")
+            payload = json.loads(self.rfile.read(length))
+            if not isinstance(payload, dict):
+                raise ValueError("El catálogo no es válido.")
+            catalog = save_catalog(payload)
+        except (ValueError, json.JSONDecodeError):
+            self.send_json(HTTPStatus.BAD_REQUEST, {"error": "Catálogo no válido."})
+            return
+        self.send_json(HTTPStatus.OK, catalog)
 
     def publish_recursos_activity(self) -> None:
         if not RECURSOS_API_URL or not RECURSOS_INGEST_TOKEN or not PLAY_PUBLIC_URL:
@@ -1216,6 +1482,9 @@ def read_activity(activity_id: str) -> dict | None:
 
 
 def activity_matches(activity: dict, filters: dict) -> bool:
+    identity = filters.get("identity_id", "")
+    if activity.get("visibility", "public") != "public" and activity.get("owner_id") != identity:
+        return False
     for key in ("type", "language", "subject", "educational_stage", "license"):
         value = filters.get(key)
         if value and str(activity.get(key, "")).lower() != value.lower():
@@ -1259,9 +1528,11 @@ def activity_summary(activity: dict) -> dict:
         "description": activity.get("description", ""),
         "subject": activity.get("subject", ""),
         "educational_stage": activity.get("educational_stage", ""),
+        "educational_level": activity.get("educational_level", ""),
         "license": activity.get("license", ""),
         "author_pseudonym": activity.get("author_pseudonym", ""),
         "tags": activity.get("tags", []),
+        "visibility": activity.get("visibility", "public"),
     }
 
 

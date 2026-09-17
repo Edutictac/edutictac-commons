@@ -5,6 +5,11 @@ Las librerías H5P runtime vendorizadas en `h5p-libraries/` conservan sus
 usa `H5P.MultiChoice`, `H5P.TrueFalse`, `H5P.MemoryGame`, `H5P.DragQuestion`, `H5P.AdvancedText`, `H5P.Question`, `H5P.JoubelUI`, `H5P.Transition`,
 `H5P.FontIcons` y `FontAwesome`.
 
+`H5P.QuestionSet` 1.20.31 y `H5P.Video` 1.6.2 proceden de los repositorios
+oficiales `h5p/h5p-question-set` y `h5p/h5p-video`, respectivamente, y se
+distribuyen bajo MIT. QuestionSet se usa como contenedor de actividades
+compatibles y emite la calificación agregada del reto mediante xAPI.
+
 `H5P.TrueFalse` 1.8 procede del repositorio oficial `h5p/h5p-true-false` y se
 distribuye bajo MIT. Se conservan sus metadatos, scripts, estilos y SVG.
 

@@ -19,6 +19,50 @@ test('crear, previsualizar, guardar y reproducir un quiz', async ({ page }) => {
   await expect(page).toHaveURL(/\/play\/[A-Za-z0-9]{8}$/);
 });
 
+test('crear y reproducir un reto con varias actividades', async ({ page }) => {
+  await page.goto('/play/');
+  await page.getByRole('button', { name: 'Modo reto' }).click();
+  await page.locator('#title').fill('Reto de ciencias');
+  await page.locator('#question').fill('Supera estas dos pruebas');
+  await page.locator('.compound-step').nth(0).locator('.compound-title').fill('Quiz');
+  await page.locator('.compound-step').nth(0).locator('.compound-question').fill('¿Cuál vuela?');
+  await page.locator('.compound-step').nth(0).locator('.compound-answers').fill('*Águila\nGato');
+  await page.locator('.compound-step').nth(1).locator('.compound-type').selectOption('true-false');
+  await page.locator('.compound-step').nth(1).locator('.compound-title').fill('Verdadero o falso');
+  await page.locator('.compound-step').nth(1).locator('.compound-question').fill('El agua moja.');
+  await page.getByRole('button', { name: 'Previsualizar' }).click();
+  await expect(page.locator('#savePreview')).toBeVisible();
+  await expect.poll(() => page.frames().length).toBeGreaterThan(1);
+  const player = page.frames().find((frame) => frame !== page.mainFrame());
+  await expect(player.getByText('¿Cuál vuela?')).toBeVisible();
+  await expect(player.getByRole('link', { name: /Siguiente/ })).toBeVisible();
+  await page.getByRole('button', { name: 'Guardar' }).click();
+  await expect(page.locator('#download')).toBeVisible();
+});
+
+test('añadir una actividad guardada desde el banco a un reto', async ({ page, request }) => {
+  const title = `Actividad del banco ${Date.now()}`;
+  const response = await request.post('/play/api/activities', {
+    data: {
+      type: 'multiple-choice',
+      title,
+      question: '¿Qué planeta habitamos?',
+      answers: [{ text: 'La Tierra', correct: true }, { text: 'Marte', correct: false }],
+    },
+  });
+  expect(response.ok()).toBeTruthy();
+
+  await page.goto('/play/');
+  await page.getByRole('button', { name: 'Modo reto' }).click();
+  await page.getByRole('button', { name: 'Añadir desde el banco' }).click();
+  await expect(page.locator('#compoundBankDialog')).toBeVisible();
+  await page.locator('#compoundBankSearch').fill(title);
+  await page.locator('#compoundBankList article').filter({ hasText: title }).getByRole('button', { name: 'Añadir' }).click();
+  await expect(page.locator('.compound-step')).toHaveCount(3);
+  await expect(page.locator('.compound-step').last().locator('.compound-title')).toHaveValue(title);
+  await expect(page.locator('.compound-step').last()).toContainText('Copia del banco');
+});
+
 test('crear, previsualizar, guardar y reproducir un verdadero/falso', async ({ page }) => {
   await page.goto('/play/');
   await page.getByRole('button', { name: 'Verdadero/Falso' }).click();
@@ -226,6 +270,27 @@ test('crear y reproducir un crucigrama', async ({ page }) => {
   await expect(player.locator('.h5p-crossword')).toBeVisible();
   await page.getByRole('button', { name: 'Guardar' }).click();
   await expect(page.locator('#download')).toBeVisible();
+});
+
+test('el crucigrama mantiene una cuadrícula usable en tablet', async ({ page }) => {
+  await page.setViewportSize({ width: 810, height: 1080 });
+  await page.goto('/play/');
+  await page.getByRole('button', { name: 'Crucigrama' }).click();
+  await page.locator('#title').fill('Crucigrama tablet');
+  await page.locator('#question').fill('Resuelve');
+  for (const [index, word, clue] of [
+    [0, 'planeta', 'Cuerpo'], [1, 'oceano', 'Agua'], [2, 'montana', 'Tierra'], [3, 'bosque', 'Arboles'],
+  ]) {
+    await page.locator('.crossword-answer').nth(index).fill(word);
+    await page.locator('.crossword-clue').nth(index).fill(clue);
+  }
+  await page.getByRole('button', { name: 'Previsualizar' }).click({ force: true });
+  await expect(page.locator('#savePreview')).toBeVisible();
+  await expect.poll(() => page.frames().length).toBeGreaterThan(1);
+  const player = page.frames().find((frame) => frame !== page.mainFrame());
+  await expect(player.locator('.h5p-crossword')).toBeVisible();
+  await expect.poll(() => page.locator('iframe').evaluate((iframe) => iframe.clientHeight)).toBeGreaterThan(700);
+  await expect.poll(() => player.locator('.h5p-crossword-grid').evaluate((grid) => grid.clientWidth)).toBeGreaterThan(500);
 });
 
 test('envía a Commons el resultado real de un Quiz H5P', async ({ page }) => {

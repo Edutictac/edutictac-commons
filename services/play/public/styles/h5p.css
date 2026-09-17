@@ -1398,6 +1398,23 @@ button.h5p-core-cancel-button:focus {
   padding-top: 4.5em;
 }
 
+/* H5P.Crossword 0.7 uses a named container query. h5p-standalone renders
+ * the activity in an isolated frame without that host container, so provide
+ * the same compact layout explicitly for tablets and phones. */
+.h5p-crossword .h5p-crossword-content {
+  flex-direction: column !important;
+}
+
+.h5p-crossword .h5p-crossword-table-wrapper,
+.h5p-crossword .h5p-crossword-input-container {
+  width: 100% !important;
+  height: auto !important;
+}
+
+.h5p-crossword .h5p-crossword-table-wrapper {
+  margin-right: 0 !important;
+}
+
 .h5p-content:has(.h5p-theme) .h5p-popup-dialog.h5p-reuse-dialog .h5p-inner > h2 {
   box-shadow: none;
 }
