@@ -56,12 +56,27 @@ intern de l'ecosistema EduTicTac:
 4. EduHoot integrat en el flux com a primera activitat real;
 5. documentació i kit mínim de privacitat;
 6. còpies de seguretat i restauració provades;
-7. paquet d'imatges versionat i actualitzable.
+7. paquet d'imatges versionat i actualitzable;
+8. instal·lador `.deb` per a Ubuntu amd64 amb configuració inicial automàtica.
 
-Aquesta v1.0 és el **mínim entregable** de la primera fase 4D. Els ítems que
-l'eixamplen (Authentik, Banc de recursos/cistella, SSO docent a EduHoot) es
-mantenen a banda en la secció «v2 — més enllà del nucli finançat», per no
-mesclar-los amb l'abast finançat.
+Aquesta v1.0 és el **mínim entregable** de la primera fase 4D. Authentik ja
+forma part de la distribució instal·lable perquè permet deixar operatiu el
+tauler docent des de la primera arrencada. El Banc de recursos avançat, la
+cistella i el SSO docent dins d'EduHoot continuen a la secció «v2».
+
+## Estat per tancar la v1
+
+El producte i el paquet ja estan implementats. Només queden dos bloquejos de
+lliurament:
+
+1. provar `edutictac-commons_0.1.1~alpha4_amd64.deb` en una màquina neta real,
+   incloent-hi activació, OIDC, flux docent → alumnat → EduHoot i restauració;
+2. publicar el `.deb` com a artefacte descarregable (release o repositori
+   APT). Ara mateix només es genera localment en `dist/`.
+
+La validació de traduccions del portal i la reorganització d'usabilitat del
+tauler docent ja estan incorporades. El tancament formal requereix repetir el
+`release-check` després de la prova d'instal·lació neta.
 
 ## Fites
 
@@ -166,16 +181,21 @@ l'alumnat pot completar-la amb la mateixa identitat pseudònima.
 
 **Resultat:** la v1 es pot portar a una màquina neta.
 
-- [ ] Revisar `IMAGE_REGISTRY`, `IMAGE_TAG` i `VERSION`.
+- [x] Revisar `IMAGE_REGISTRY`, `IMAGE_TAG` i `VERSION` per a la distribució
+  alpha actual.
 - [x] Exportar imatges amb `make export-images`.
 - [x] Provar `make load-images` en un entorn simulat local; queda pendent una
   màquina neta real.
-- [ ] Publicar instruccions de `docker compose pull` amb registre propi.
-- [ ] Mantindre canals de versió sense usar `latest`.
+- [x] Publicar instruccions de `docker compose pull` amb registre propi en la
+  documentació d'instal·lació i operació.
+- [x] Mantindre canals de versió sense usar `latest`.
 - [x] Provar el flux de reset amb restauració (`CONFIRM_RESET_TEST=1 make
   test-reset-flow`): backup previ, dades temporals, reset buit i restore.
-- [ ] Publicar un paquet `.deb` per a Ubuntu amd64 amb dependències,
-  configuració inicial, servei systemd i comprovació postinstal·lació.
+- [ ] Validar en una màquina neta el paquet `.deb` per a Ubuntu amd64 amb
+  dependències, configuració inicial, servei systemd i comprovació
+  postinstal·lació.
+- [ ] Publicar el `.deb` `0.1.1~alpha4` com a artefacte descarregable o en un
+  repositori APT.
 
 ## v2 — més enllà del nucli finançat
 
@@ -185,14 +205,19 @@ roadmap 4D).
 
 ### Fita v2-1 — Authentik (identitat docent i d'administració)
 
+La base d'Authentik ja està incorporada a la v1 instal·lable. Aquesta fita v2
+conserva les millores d'integració que encara no són necessàries per al nucli.
+
 - [x] Afegir al `id-api` el flux OIDC opcional Authorization Code amb Authentik.
 - [x] Mantindre el mode codi + PIN quan OIDC no estiga configurat.
 - [x] Crear sessió local signada i mapejar `alumno`, `profesor` i
   `administrador` sense guardar noms ni correus.
 - [x] Documentar issuer, callback, property mapping, claims i llicències.
-- [x] Desplegar **Authentik (OIDC)** a l'stack de laboratori com a identitat
-  docent i d'administració — cobreix el tauler del professorat i l'accés al
-  Banc de recursos; queda activar-lo en producció.
+- [x] Desplegar **Authentik (OIDC)** a l'stack i preparar-ne el bootstrap
+  automàtic en el paquet `.deb`, amb aplicació/proveïdor Commons i activació
+  inicial d'un sol ús.
+- [ ] Validar l'activació OIDC del paquet en una màquina neta i activar-lo en
+  una instal·lació de centre.
 - [ ] Connectar la identitat OIDC pseudònima amb Portal, Play, Recursos i
   EduHoot.
 - [x] Provar el flux complet contra una instància Authentik del laboratori per
