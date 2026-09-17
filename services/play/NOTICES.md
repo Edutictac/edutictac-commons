@@ -32,6 +32,10 @@ distribuye bajo MIT. Sus dependencias locales son `jQuery.ui`, `H5P.JoubelUI`,
 `h5p/h5p-mark-the-words` y se distribuye bajo MIT. Sus dependencias locales
 son `H5P.JoubelUI`, `H5P.Question` y `FontAwesome`.
 
+`H5P.Dialogcards` 1.9 procede del repositorio oficial `h5p/h5p-dialogcards` y
+se distribuye bajo MIT. Sus dependencias locales son `H5P.JoubelUI`,
+`H5P.Audio`, `H5P.Components` y `FontAwesome`.
+
 El reproductor `h5p-standalone` 3.8.2 se distribuye bajo MIT. Sus recursos
 están en `assets/`; el aviso de licencia se conserva en la documentación del
 paquete upstream.

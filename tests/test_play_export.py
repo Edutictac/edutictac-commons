@@ -308,6 +308,25 @@ def test_mark_words_h5p_export():
         process.wait(timeout=3)
 
 
+def test_dialog_cards_h5p_export():
+    data_dir = Path(tempfile.mkdtemp(prefix="edutictac-play-test-"))
+    process = subprocess.Popen(["python3", "server.py"], cwd=Path(__file__).parents[1] / "services" / "play", env={**os.environ, "PORT": "18113", "PLAY_DATA_DIR": str(data_dir)}, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    try:
+        time.sleep(0.25)
+        payload = json.dumps({"type": "dialog-cards", "title": "Repaso", "question": "Estudia estos conceptos", "cards": [{"front": "Capital de Francia", "back": "París"}, {"front": "Planeta rojo", "back": "Marte"}, {"front": "2 + 2", "back": "4"}]}).encode()
+        request = urllib.request.Request("http://127.0.0.1:18113/api/activities", data=payload, headers={"Content-Type": "application/json"}, method="POST")
+        activity = json.loads(urllib.request.urlopen(request).read())
+        package = urllib.request.urlopen(f"http://127.0.0.1:18113/api/activities/{activity['id']}/download").read()
+        with zipfile.ZipFile(io.BytesIO(package)) as archive:
+            names = set(archive.namelist())
+            assert {"h5p.json", "content/content.json", "H5P.Dialogcards-1.9/library.json", "H5P.Audio-1.5/library.json"} <= names
+            assert json.loads(archive.read("h5p.json"))["mainLibrary"] == "H5P.Dialogcards"
+            assert json.loads(archive.read("content/content.json"))["dialogs"][0]["answer"] == "París"
+    finally:
+        process.terminate()
+        process.wait(timeout=3)
+
+
 def test_memory_card_image_is_served_for_player():
     data_dir = Path(tempfile.mkdtemp(prefix="edutictac-play-test-"))
     process = subprocess.Popen(

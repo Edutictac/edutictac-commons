@@ -185,6 +185,27 @@ test('crear y reproducir una actividad de marcar palabras', async ({ page }) => 
   await expect(page.locator('#download')).toBeVisible();
 });
 
+test('crear y reproducir tarjetas de estudio', async ({ page }) => {
+  await page.goto('/play/');
+  await page.getByRole('button', { name: 'Tarjetas de estudio' }).click();
+  await page.locator('#title').fill('Repaso');
+  await page.locator('#question').fill('Estudia estos conceptos');
+  await page.locator('.dialog-front').nth(0).fill('Capital de Francia');
+  await page.locator('.dialog-back').nth(0).fill('París');
+  await page.locator('.dialog-front').nth(1).fill('Planeta rojo');
+  await page.locator('.dialog-back').nth(1).fill('Marte');
+  await page.locator('.dialog-front').nth(2).fill('2 + 2');
+  await page.locator('.dialog-back').nth(2).fill('4');
+  await page.getByRole('button', { name: 'Previsualizar' }).click({ force: true });
+  await expect(page.locator('#savePreview')).toBeVisible();
+  await expect.poll(() => page.frames().length).toBeGreaterThan(1);
+  const player = page.frames().find((frame) => frame !== page.mainFrame());
+  await expect(player.locator('.h5p-dialogcards')).toBeVisible();
+  await expect(player.getByText('Capital de Francia')).toBeVisible();
+  await page.getByRole('button', { name: 'Guardar' }).click();
+  await expect(page.locator('#download')).toBeVisible();
+});
+
 test('envía a Commons el resultado real de un Quiz H5P', async ({ page }) => {
   let scorePayload;
   await page.route('**/play/api/commons/score', async (route) => {

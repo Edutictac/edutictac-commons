@@ -12,7 +12,7 @@
 | Sopa de letras (`Find the Words`) | 3 | Implementado | `H5P.FindTheWords 1.4` |
 | Arrastrar al texto (`Drag Text`) | 3 | Implementado | `H5P.DragText 1.10` |
 | Marcar palabras (`Mark the Words`) | 3 | Implementado | `H5P.MarkTheWords 1.11` |
-| Tarjetas de estudio (`Dialog Cards`) | 3 | Planificado | `H5P.Dialogcards 1.9` |
+| Tarjetas de estudio (`Dialog Cards`) | 3 | Implementado | `H5P.Dialogcards 1.9` |
 | Crucigrama (`Crossword`) | 3 | Planificado | `H5P.Crossword 1.1` |
 
 ## Contrato conceptual
@@ -128,13 +128,13 @@ seleccionarla. Play fija comprobación, solución y reintento, sin mostrar feedb
 avanzado. Es un formato nativo para aprendizaje gramatical, ortográfico y de
 comprensión lectora.
 
-## Tarjetas de estudio / Flashcards (Dialog Cards) — Planificado
+## Tarjetas de estudio / Flashcards (Dialog Cards) — Implementado
 
 El formulario solicita un título y entre 3 y 15 fichas de doble cara: *Anverso*
 (pregunta, concepto o palabra) y *Reverso* (respuesta, definición o traducción).
-El adaptador genera `H5P.Dialogcards` 1.9 configurado en modo repaso y
-autoevaluación con volteo animado. No exige imágenes ni audio, convirtiéndose en
-el método más directo para estudiar fórmulas, vocabulario de idiomas o fechas.
+El adaptador genera `H5P.Dialogcards` 1.9 en modo repaso normal, con navegación
+y volteo animado. No exige imágenes ni audio, convirtiéndose en el método más
+directo para estudiar fórmulas, vocabulario de idiomas o fechas.
 
 ## Crucigrama (Crossword) — Planificado
 

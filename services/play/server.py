@@ -246,6 +246,12 @@ def activity_content(activity: dict) -> dict:
             "a11ySolutionModeHeader": t.get("solutionMode", "Solución"), "a11yCheckingHeader": t.get("checkingMode", "Comprobación"),
             "displaySolutionDescription": t.get("displaySolution", "La actividad muestra la solución."),
         }
+    if activity.get("type") == "dialog-cards":
+        return {
+            "title": safe_text(activity["title"]), "description": safe_text(activity["question"]), "mode": "normal",
+            "dialogs": [{"text": safe_text(card["front"]), "answer": safe_text(card["back"])} for card in activity["cards"]],
+            "behaviour": {"enableRetry": True, "disableBackwardsNavigation": False, "scaleTextNotCard": False, "randomCards": False, "maxProficiency": 5, "quickProgression": False},
+        }
     if activity.get("type") == "fill-blanks":
         return {
             "text": t.get("fillInstructions", "Completa las palabras que faltan."),
@@ -445,9 +451,19 @@ def package_files(activity: dict) -> dict[str, bytes]:
             {"machineName": "H5P.Question", "majorVersion": 1, "minorVersion": 5},
         ]
         is_true_false = False
+    elif activity.get("type") == "dialog-cards":
+        main_library = "H5P.Dialogcards"
+        dependencies = [
+            {"machineName": "H5P.Dialogcards", "majorVersion": 1, "minorVersion": 9},
+            {"machineName": "FontAwesome", "majorVersion": 4, "minorVersion": 5},
+            {"machineName": "H5P.JoubelUI", "majorVersion": 1, "minorVersion": 3},
+            {"machineName": "H5P.Audio", "majorVersion": 1, "minorVersion": 5},
+            {"machineName": "H5P.Components", "majorVersion": 1, "minorVersion": 0},
+        ]
+        is_true_false = False
     else:
         is_true_false = activity.get("type") == "true-false"
-    if activity.get("type") not in {"memory", "matching", "classify", "ordering", "fill-blanks", "find-words", "drag-text", "mark-words"}:
+    if activity.get("type") not in {"memory", "matching", "classify", "ordering", "fill-blanks", "find-words", "drag-text", "mark-words", "dialog-cards"}:
         main_library = "H5P.TrueFalse" if is_true_false else "H5P.MultiChoice"
         dependencies = [
             {"machineName": "H5P.TrueFalse", "majorVersion": 1, "minorVersion": 8},
@@ -624,6 +640,21 @@ def validate_activity(payload: dict) -> tuple[dict | None, list[str]]:
         if errors:
             return None, errors
         return {"type": activity_type, "title": title[:200], "question": question[:2000], "text": text, "answers": [], "language": language, **metadata}, []
+    if activity_type == "dialog-cards":
+        cards = payload.get("cards")
+        if not title:
+            errors.append("Escribe un título.")
+        if not question:
+            errors.append("Escribe una descripción.")
+        if not isinstance(cards, list) or not 3 <= len(cards) <= 15:
+            errors.append("Añade entre 3 y 15 tarjetas.")
+            cards = []
+        cleaned_cards = [{"front": str(card.get("front", "")).strip()[:500], "back": str(card.get("back", "")).strip()[:500]} for card in cards if isinstance(card, dict) and str(card.get("front", "")).strip() and str(card.get("back", "")).strip()]
+        if len(cleaned_cards) != len(cards):
+            errors.append("Cada tarjeta debe tener anverso y reverso.")
+        if errors:
+            return None, errors
+        return {"type": activity_type, "title": title[:200], "question": question[:2000], "cards": cleaned_cards, "answers": [], "language": language, **metadata}, []
     if activity_type != "multiple-choice":
         errors.append("Tipo de actividad no disponible.")
         return None, errors
