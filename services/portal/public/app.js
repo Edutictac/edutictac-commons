@@ -289,6 +289,17 @@ async function loadResources() {
   }
 }
 
+async function loadFavoriteResources() {
+  const output = $("resourcesOutput");
+  if (!output) return;
+  output.textContent = t("teacher.resourcesLoading");
+  try {
+    renderResources(await api("/resources-api/teacher/favorites?limit=48", { method: "GET" }));
+  } catch (error) {
+    setEmpty(output, t("teacher.favoritesUnavailable"));
+  }
+}
+
 async function assignResource(resource) {
   if (!state.group) throw new Error("Selecciona primer un grup.");
   const assignment = await api("/api/teacher/activity-assignments", {
@@ -884,6 +895,11 @@ bind("loadRanking", loadRanking);
 if (has("searchResources")) {
   $("searchResources").addEventListener("click", () => {
     loadResources();
+  });
+}
+if (has("loadFavoriteResources")) {
+  $("loadFavoriteResources").addEventListener("click", () => {
+    loadFavoriteResources();
   });
 }
 if (has("resourceSearch")) {
