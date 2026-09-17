@@ -211,6 +211,8 @@ d'activitat que EduHoot sol.
   funcionar també sense identitat, guardant els borradors en el navegador.
 - [x] Afegir una modalitat visual de classificació basada en H5P Drag and Drop,
   amb editor simplificat, previsualització, reproducció i exportació `.h5p`.
+- [x] Afegir una modalitat d'ordenació per a seqüències i cronologies, basada
+  en la mateixa biblioteca H5P i amb límits adequats per a mòbil.
 - [x] Definir l'enllaç canònic configurable de les activitats: visor autònom de
   Play durant el MVP i, posteriorment, visor o redirecció a `recursos`.
 - [x] Associar l'activitat de Play amb el `resource_id` de `recursos`, incloent

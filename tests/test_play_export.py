@@ -213,6 +213,24 @@ def test_classify_h5p_export():
         process.wait(timeout=3)
 
 
+def test_ordering_h5p_export():
+    data_dir = Path(tempfile.mkdtemp(prefix="edutictac-play-test-"))
+    process = subprocess.Popen(["python3", "server.py"], cwd=Path(__file__).parents[1] / "services" / "play", env={**os.environ, "PORT": "18107", "PLAY_DATA_DIR": str(data_dir)}, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    try:
+        time.sleep(0.25)
+        payload = json.dumps({"type": "ordering", "title": "Ciclo", "question": "Ordena el proceso", "categories": [{"name": "1"}, {"name": "2"}, {"name": "3"}], "items": [{"text": "Nace", "category": 0}, {"text": "Crece", "category": 1}, {"text": "Se reproduce", "category": 2}]}).encode()
+        request = urllib.request.Request("http://127.0.0.1:18107/api/activities", data=payload, headers={"Content-Type": "application/json"}, method="POST")
+        activity = json.loads(urllib.request.urlopen(request).read())
+        package = urllib.request.urlopen(f"http://127.0.0.1:18107/api/activities/{activity['id']}/download").read()
+        with zipfile.ZipFile(io.BytesIO(package)) as archive:
+            content = json.loads(archive.read("content/content.json"))
+            assert json.loads(archive.read("h5p.json"))["mainLibrary"] == "H5P.DragQuestion"
+            assert [zone["correctElements"] for zone in content["question"]["task"]["dropZones"]] == [[0], [1], [2]]
+    finally:
+        process.terminate()
+        process.wait(timeout=3)
+
+
 def test_memory_card_image_is_served_for_player():
     data_dir = Path(tempfile.mkdtemp(prefix="edutictac-play-test-"))
     process = subprocess.Popen(

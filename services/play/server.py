@@ -204,7 +204,7 @@ def activity_language(payload: dict) -> str:
 
 def activity_content(activity: dict) -> dict:
     t = H5P_TEXT.get(str(activity.get("language") or "es"), H5P_TEXT["es"])
-    if activity.get("type") == "classify":
+    if activity.get("type") in {"classify", "ordering"}:
         elements = []
         drop_zones = []
         for index, item in enumerate(activity["items"]):
@@ -331,7 +331,7 @@ def activity_content(activity: dict) -> dict:
 
 
 def package_files(activity: dict) -> dict[str, bytes]:
-    if activity.get("type") in {"matching", "classify"}:
+    if activity.get("type") in {"matching", "classify", "ordering"}:
         main_library = "H5P.DragQuestion"
         dependencies = [
             {"machineName": "H5P.DragQuestion", "majorVersion": 1, "minorVersion": 15},
@@ -354,7 +354,7 @@ def package_files(activity: dict) -> dict[str, bytes]:
         is_true_false = False
     else:
         is_true_false = activity.get("type") == "true-false"
-    if activity.get("type") not in {"memory", "matching", "classify"}:
+    if activity.get("type") not in {"memory", "matching", "classify", "ordering"}:
         main_library = "H5P.TrueFalse" if is_true_false else "H5P.MultiChoice"
         dependencies = [
             {"machineName": "H5P.TrueFalse", "majorVersion": 1, "minorVersion": 8},
@@ -446,15 +446,16 @@ def validate_activity(payload: dict) -> tuple[dict | None, list[str]]:
         if errors:
             return None, errors
         return {"type": activity_type, "title": title[:200], "question": question[:2000], "pairs": cleaned, "language": language, **metadata}, []
-    if activity_type == "classify":
+    if activity_type in {"classify", "ordering"}:
         categories = payload.get("categories")
         items = payload.get("items")
         if not title:
             errors.append("Escribe un título.")
         if not question:
             errors.append("Escribe una descripción.")
-        if not isinstance(categories, list) or not 2 <= len(categories) <= 4:
-            errors.append("Añade entre 2 y 4 categorías.")
+        max_categories = 12 if activity_type == "ordering" else 4
+        if not isinstance(categories, list) or not 2 <= len(categories) <= max_categories:
+            errors.append(f"Añade entre 2 y {max_categories} categorías.")
             categories = []
         cleaned_categories = [{"name": str(category.get("name", "")).strip()[:120]} for category in categories if isinstance(category, dict) and str(category.get("name", "")).strip()]
         if len(cleaned_categories) != len(categories):

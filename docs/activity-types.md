@@ -7,6 +7,7 @@
 | Memory | 2 | Implementado |
 | Matching / Relacionar | 2 | Implementado |
 | Clasificar | 2 | Implementado |
+| Ordenar | 2 | Implementado |
 | Fill in the Blanks | 2 | Pendiente |
 | Ordenar | 2 | Pendiente de evaluar |
 
@@ -69,6 +70,13 @@ datos en `H5P.DragQuestion` con una zona de destino por categoría y elementos
 arrastrables. Las coordenadas, penalizaciones, reintento y mensajes de
 accesibilidad son valores internos; el alumnado solo ve la actividad de
 clasificación.
+
+## Ordenar actual
+
+El mismo editor se presenta como una secuencia sencilla: el alumnado escribe
+los elementos y los coloca en posiciones numeradas. Internamente se genera un
+`H5P.DragQuestion` con una zona de destino por posición. Se limita a entre 3 y
+12 elementos para mantener una actividad breve y manejable en móvil.
 
 ## Criterio para nuevos tipos
 

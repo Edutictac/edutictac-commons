@@ -100,6 +100,27 @@ test('crear y reproducir una actividad de clasificar', async ({ page }) => {
   await expect(page).toHaveURL(/\/play\/[A-Za-z0-9]{8}$/);
 });
 
+test('crear y reproducir una actividad de ordenar', async ({ page }) => {
+  await page.goto('/play/');
+  await page.getByRole('button', { name: 'Ordenar' }).click();
+  await page.locator('#title').fill('Ciclo de una planta');
+  await page.locator('#question').fill('Ordena las fases');
+  await page.locator('.classify-text').nth(0).fill('Semilla');
+  await page.locator('.classify-category').nth(0).selectOption('0');
+  await page.locator('.classify-text').nth(1).fill('Planta');
+  await page.locator('.classify-category').nth(1).selectOption('1');
+  await page.locator('.classify-text').nth(2).fill('Flor');
+  await page.locator('.classify-category').nth(2).selectOption('2');
+  await page.getByRole('button', { name: 'Previsualizar' }).click({ force: true });
+  await expect(page.locator('#savePreview')).toBeVisible();
+  await expect.poll(() => page.frames().length).toBeGreaterThan(1);
+  const player = page.frames().find((frame) => frame !== page.mainFrame());
+  await expect(player.getByRole('button', { name: '1', exact: true })).toBeVisible();
+  await expect(player.getByRole('button', { name: '2', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Guardar' }).click();
+  await expect(page.locator('#download')).toBeVisible();
+});
+
 test('envía a Commons el resultado real de un Quiz H5P', async ({ page }) => {
   let scorePayload;
   await page.route('**/play/api/commons/score', async (route) => {
