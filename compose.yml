@@ -3,6 +3,9 @@ services:
     image: ${IMAGE_REGISTRY:-edutictac}/commons-id-api:${IMAGE_TAG:-0.1.1-alpha}
     build:
       context: ./services/id-api
+      # BuildKit puede heredar un DNS aislado que no resuelve PyPI en algunos
+      # hosts; la red del host solo se usa durante la construcción.
+      network: host
     user: "${PUID:-1000}:${PGID:-1000}"
     environment:
       EDUTICTAC_ID_DB: ${EDUTICTAC_ID_DB:-/data/id.db}
