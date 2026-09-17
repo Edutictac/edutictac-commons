@@ -1,9 +1,39 @@
 # Propera sessió de treball
 
-> Estat: Fites 4 i 5 tancades en documentació i proves: EduHoot té test
-> funcional reproduïble i el kit mínim de privacitat per a centres està creat.
-> Pendent principal: Fita 6, distribució en entorn net i publicació de paquet.
-> Data: 2026-09-15
+> Estat: Play té Modo Reto, importació d'activitats des del banc, catàleg
+> controlat i exportació H5P validada. La distribució local també està provada.
+> Pendent extern: publicar `commons-play:0.1.1-alpha` al registre.
+> Data: 2026-09-17
+
+## Estat guardat del projecte
+
+Commits recents:
+
+- `6e3f9e7 Add challenge bank and controlled catalog`: Modo Reto, banc,
+  propietat/visibilitat, catàleg controlat, etiquetes multilingües, exportació
+  H5P i documentació.
+- `c5dc7d5 Include Play in image distribution checks`: els paquets offline i
+  `make check-images` inclouen també `commons-play`.
+
+Verificacions completades:
+
+- `make release-check`: correcte.
+- 29 proves Python de Play/Recursos: correctes.
+- 8 proves Playwright de Play: correctes.
+- `make export-images`: correcte.
+- `make load-images`: correcte en simulació local.
+- repositori net després del commit `c5dc7d5`.
+
+Pròxima reanudació:
+
+1. Publicar `commons-play:0.1.1-alpha` amb `make push-images` quan s'autoritze el
+   canvi en el registre.
+2. Repetir `make check-images` y documentar `docker compose pull`.
+3. Continuar con Authentik/OIDC y sustituir el token provisional del catálogo
+   por permisos de profesorado.
+4. Después completar cistella, Recursos e itinerarios.
+
+La línea de vídeos queda aparcada y no forma parte del siguiente bloque.
 
 ## Objectiu immediat actual
 
