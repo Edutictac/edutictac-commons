@@ -76,3 +76,27 @@ Antes de implementar un tipo se comprobará que existe un tipo H5P mantenido y
 con licencia compatible, que sus dependencias pueden servirse localmente, que
 Moodle/AULES puede reconocerlas y que el formulario reducido aporta una
 experiencia claramente más sencilla.
+
+## Alcance frente a editores H5P completos (Lumi)
+
+[Lumi](https://lumi.education) (`Lumieducation/H5P-Nodejs-library`, GPL-3.0)
+ya ofrece un editor H5P **oficial y completo** (los ~50 tipos de contenido,
+formularios semánticos reales, exportación H5P/HTML/SCORM), tanto en
+escritorio como en `Lumi Cloud` (versión online gratuita con cuenta, alojada
+en servidores de Lumi Education UG). Para "cualquier tipo de contenido H5P
+con todas sus opciones", ese problema ya está resuelto y no tiene sentido
+reconstruirlo tipo a tipo dentro de Play.
+
+El valor diferencial de Play frente a Lumi es otro: formulario reducido de
+2 minutos sin conocimientos de H5P, sin cuenta, cero dependencias externas
+(Python estándar) e integración nativa con la identidad y el itinerario de
+Commons (`/api/commons/score`, catálogo `recursos`). Por eso el catálogo de
+tipos de Play se mantiene **deliberadamente corto y curado** (Multiple
+Choice, True/False, Memory, Matching, Clasificar); `Fill in the Blanks` y
+`Ordenar` quedan aparcados salvo demanda real del profesorado, y no se prevé
+seguir añadiendo tipos solo por paridad con H5P/Lumi.
+
+Si en el futuro el profesorado necesita un tipo de contenido más avanzado
+(vídeo interactivo, escenario ramificado, presentación...), la recomendación
+es enlazar desde Commons a una instancia de Lumi (self-hosted o `Lumi Cloud`)
+en vez de ampliar el editor propio de Play.
