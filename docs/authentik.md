@@ -32,6 +32,8 @@ En `.env`:
 
 ```dotenv
 EDUTICTAC_ID_OIDC_ISSUER_URL=https://auth.example/application/o/commons/
+EDUTICTAC_ID_OIDC_DISCOVERY_URL=
+EDUTICTAC_ID_OIDC_AUTHORIZATION_URL=
 EDUTICTAC_ID_OIDC_CLIENT_ID=
 EDUTICTAC_ID_OIDC_CLIENT_SECRET=
 EDUTICTAC_ID_OIDC_REDIRECT_URL=https://commons.example/api/auth/oidc/callback
@@ -44,9 +46,27 @@ no necesariamente la raíz de Authentik. La aplicación utiliza su discovery en
 `<issuer>/.well-known/openid-configuration`. La URL de callback debe coincidir
 exactamente con una URI permitida en Authentik.
 
+En una instalación con contenedores, el descubrimiento puede apuntar al nombre
+interno `http://authentik-server:9000/.../.well-known/openid-configuration`.
+La URL de autorización debe seguir siendo accesible desde el navegador; por
+eso se puede indicar por separado con `EDUTICTAC_ID_OIDC_AUTHORIZATION_URL`.
+En Authentik moderno es `/application/o/authorize/` (sin el slug); el slug se
+usa para el issuer y para el descubrimiento.
+
 En Authentik se recomienda crear una aplicación con proveedor
 `OAuth2/OpenID Connect`, cliente confidencial y flujo Authorization Code. Se
 debe configurar una property mapping propia que devuelva, por ejemplo:
+
+En la demo local de Debian Desktop ya existe la aplicación `EduTicTac Commons`
+con slug `edutictac-commons`. Sus valores sensibles se guardan en `pass`, no
+en Git. Para reiniciar el conjunto conservando OIDC se puede usar:
+
+```bash
+./scripts/up-authentik-pass.sh
+```
+
+El script está pensado para la demo local; en otro centro se deben sustituir
+las URLs por las del despliegue correspondiente.
 
 ```json
 {"roles": ["profesor"]}

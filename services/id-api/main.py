@@ -52,6 +52,8 @@ RATE_WINDOW = 60
 RATE_MAX = 12
 PIN_HASH_ITERATIONS = int(os.environ.get("EDUTICTAC_ID_PIN_HASH_ITERATIONS", "210000"))
 OIDC_ISSUER_URL = os.environ.get("EDUTICTAC_ID_OIDC_ISSUER_URL", "").strip().rstrip("/")
+OIDC_DISCOVERY_URL = os.environ.get("EDUTICTAC_ID_OIDC_DISCOVERY_URL", "").strip()
+OIDC_AUTHORIZATION_URL = os.environ.get("EDUTICTAC_ID_OIDC_AUTHORIZATION_URL", "").strip()
 OIDC_CLIENT_ID = os.environ.get("EDUTICTAC_ID_OIDC_CLIENT_ID", "").strip()
 OIDC_CLIENT_SECRET = os.environ.get("EDUTICTAC_ID_OIDC_CLIENT_SECRET", "")
 OIDC_REDIRECT_URL = os.environ.get("EDUTICTAC_ID_OIDC_REDIRECT_URL", "").strip()
@@ -76,6 +78,8 @@ oauth = OAuth()
 
 
 def oidc_discovery_url() -> str:
+    if OIDC_DISCOVERY_URL:
+        return OIDC_DISCOVERY_URL
     if not OIDC_ISSUER_URL:
         return ""
     if OIDC_ISSUER_URL.endswith("/.well-known/openid-configuration"):
@@ -89,6 +93,7 @@ if OIDC_ISSUER_URL and OIDC_CLIENT_ID and OIDC_CLIENT_SECRET:
         client_id=OIDC_CLIENT_ID,
         client_secret=OIDC_CLIENT_SECRET,
         server_metadata_url=oidc_discovery_url(),
+        authorize_url=OIDC_AUTHORIZATION_URL or None,
         client_kwargs={"scope": OIDC_SCOPES},
     )
 
