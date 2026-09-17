@@ -11,6 +11,7 @@ from __future__ import annotations
 import csv
 import hashlib
 import hmac
+import logging
 import io
 import json
 import os
@@ -63,6 +64,7 @@ OIDC_COOKIE = "edutictac_oidc"
 OIDC_ROLE_ORDER = ("administrador", "profesor", "alumno")
 
 app = FastAPI(title="EduTicTac ID API")
+logger = logging.getLogger("edutictac.id.oidc")
 
 # Authlib uses this short-lived signed session only for the OIDC state/nonce
 # exchange. The resulting application session is our own signed cookie below.
@@ -122,6 +124,13 @@ if OIDC_ISSUER_URL and OIDC_CLIENT_ID and OIDC_CLIENT_SECRET:
 
 def oidc_enabled() -> bool:
     return bool(OIDC_ISSUER_URL and OIDC_CLIENT_ID and OIDC_CLIENT_SECRET and OIDC_REDIRECT_URL)
+
+
+def oidc_accepted_issuers() -> list[str]:
+    accepted = {OIDC_ISSUER_URL, f"{OIDC_ISSUER_URL}/"}
+    if OIDC_DISCOVERY_URL:
+        accepted.add(f"{OIDC_DISCOVERY_URL.split('/.well-known/', 1)[0].rstrip('/')}/")
+    return sorted(value for value in accepted if value)
 
 
 def normalize_role(value: Any) -> str | None:
@@ -652,14 +661,20 @@ async def oidc_callback(request: Request):
         raise HTTPException(status_code=503, detail="OIDC is not configured")
     require_secret()
     try:
-        token = await oauth.authentik.authorize_access_token(request)
+        token = await oauth.authentik.authorize_access_token(
+            request,
+            claims_options={"iss": {"essential": True, "values": oidc_accepted_issuers()}},
+        )
     except Exception as exc:
         # Do not expose provider responses or token details to the browser.
+        logger.exception("OIDC authentication failed: %s", type(exc).__name__)
         raise HTTPException(status_code=401, detail="OIDC authentication failed") from exc
     claims = token.get("userinfo") or {}
     if not isinstance(claims, dict) or not claims.get("sub"):
         raise HTTPException(status_code=401, detail="OIDC identity missing")
-    if str(claims.get("iss", OIDC_ISSUER_URL)).rstrip("/") != OIDC_ISSUER_URL:
+    if str(claims.get("iss", "")).rstrip("/") not in {
+        issuer.rstrip("/") for issuer in oidc_accepted_issuers()
+    }:
         raise HTTPException(status_code=401, detail="OIDC issuer mismatch")
     response = RedirectResponse(url="/", status_code=303)
     set_oidc_cookie(response, claims, oidc_role(claims))
