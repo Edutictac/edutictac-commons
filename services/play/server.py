@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import html
 import json
 import os
@@ -974,6 +975,11 @@ class Handler(BaseHTTPRequestHandler):
         value = self.headers.get(PLAY_TRUSTED_IDENTITY_HEADER, "").strip()
         return value[:160] if re.fullmatch(r"[A-Za-z0-9._:@/-]{1,160}", value) else ""
 
+    def creator_hash(self) -> str:
+        """Hash of the anonymous creator key sent by the browser via header."""
+
+        return creator_key_hash(self.headers.get("X-Play-Creator", ""))
+
     def can_access_activity(self, activity: dict) -> bool:
         visibility = activity.get("visibility", "public")
         if visibility == "public":
@@ -1023,9 +1029,10 @@ class Handler(BaseHTTPRequestHandler):
                 "q": query.get("q", [""])[0],
             }
             filters["identity_id"] = self.identity_id()
+            creator_hash = self.creator_hash()
             items, total = list_activities(filters)
             self.send_json(HTTPStatus.OK, {
-                "items": [activity_summary(activity) for activity in items],
+                "items": [activity_summary(activity, creator_hash) for activity in items],
                 "total": total,
                 "limit": limit,
                 "offset": offset,
@@ -1036,7 +1043,7 @@ class Handler(BaseHTTPRequestHandler):
         if match:
             activity = read_activity(match.group(1))
             if activity and self.can_access_activity(activity):
-                self.send_json(HTTPStatus.OK, activity)
+                self.send_json(HTTPStatus.OK, public_activity(activity, self.creator_hash()))
             else:
                 self.send_json(HTTPStatus.NOT_FOUND, {"error": "Actividad no encontrada."})
             return
@@ -1096,10 +1103,16 @@ class Handler(BaseHTTPRequestHandler):
         if not match:
             self.send_json(HTTPStatus.NOT_FOUND, {"error": "Ruta no encontrada."})
             return
-        if not self.admin_authorized():
+        activity = read_activity(match.group(1))
+        authorized = self.admin_authorized()
+        if not authorized:
+            creator_hash = self.creator_hash()
+            owner_hash = str(activity.get("owner_key_hash", "")) if activity else ""
+            authorized = bool(creator_hash and owner_hash and secrets.compare_digest(owner_hash, creator_hash))
+        if not authorized:
             self.send_json(HTTPStatus.FORBIDDEN, {"error": "Borrado no autorizado."})
             return
-        if not delete_activity(match.group(1)):
+        if not activity or not delete_activity(match.group(1)):
             self.send_json(HTTPStatus.NOT_FOUND, {"error": "Actividad no encontrada."})
             return
         self.send_json(HTTPStatus.OK, {"deleted": match.group(1)})
@@ -1150,9 +1163,12 @@ class Handler(BaseHTTPRequestHandler):
         activity["visibility"] = requested_visibility if identity else "public"
         if identity:
             activity["owner_id"] = identity
+        creator_hash = self.creator_hash()
+        if creator_hash:
+            activity["owner_key_hash"] = creator_hash
         activity["createdAt"] = __import__("datetime").datetime.now(__import__("datetime").timezone.utc).isoformat()
         save_activity(activity)
-        self.send_json(HTTPStatus.CREATED, activity)
+        self.send_json(HTTPStatus.CREATED, public_activity(activity, creator_hash))
 
     def update_catalog(self) -> None:
         if not self.admin_authorized():
@@ -1517,7 +1533,28 @@ def list_activities(filters: dict) -> tuple[list[dict], int]:
     return matches[offset:offset + filters["limit"]], len(matches)
 
 
-def activity_summary(activity: dict) -> dict:
+def creator_key_hash(value: str) -> str:
+    """Return the sha256 of a valid anonymous creator key, or an empty string."""
+
+    if not re.fullmatch(r"[A-Za-z0-9_-]{16,128}", value or ""):
+        return ""
+    return hashlib.sha256(value.encode()).hexdigest()
+
+
+def is_owned(activity: dict, creator_hash: str) -> bool:
+    if not creator_hash:
+        return False
+    owner_hash = str(activity.get("owner_key_hash", ""))
+    return bool(owner_hash and secrets.compare_digest(owner_hash, creator_hash))
+
+
+def public_activity(activity: dict, creator_hash: str = "") -> dict:
+    result = {key: value for key, value in activity.items() if key != "owner_key_hash"}
+    result["owned"] = is_owned(activity, creator_hash)
+    return result
+
+
+def activity_summary(activity: dict, creator_hash: str = "") -> dict:
     return {
         "id": activity.get("id"),
         "type": activity.get("type"),
@@ -1533,6 +1570,7 @@ def activity_summary(activity: dict) -> dict:
         "author_pseudonym": activity.get("author_pseudonym", ""),
         "tags": activity.get("tags", []),
         "visibility": activity.get("visibility", "public"),
+        "owned": is_owned(activity, creator_hash),
     }
 
 

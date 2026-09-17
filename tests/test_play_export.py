@@ -560,6 +560,50 @@ def test_delete_activity_requires_admin_token():
         process.wait(timeout=3)
 
 
+def test_creator_can_delete_own_activity_without_admin_token():
+    data_dir = Path(tempfile.mkdtemp(prefix="edutictac-play-test-"))
+    process = subprocess.Popen(
+        ["python3", "server.py"],
+        cwd=Path(__file__).parents[1] / "services" / "play",
+        env={**os.environ, "PORT": "18117", "PLAY_DATA_DIR": str(data_dir)},
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    key = "creator-key-0123456789abcdef"
+    try:
+        time.sleep(0.25)
+        payload = json.dumps({
+            "type": "multiple-choice", "title": "Mía", "question": "¿Pregunta?",
+            "answers": [{"text": "Sí", "correct": True}, {"text": "No", "correct": False}],
+        }).encode()
+        create = urllib.request.Request(
+            "http://127.0.0.1:18117/api/activities", data=payload,
+            headers={"Content-Type": "application/json", "X-Play-Creator": key}, method="POST",
+        )
+        activity = json.loads(urllib.request.urlopen(create).read())
+        assert activity["owned"] is True
+        assert "owner_key_hash" not in activity
+
+        listed = json.loads(urllib.request.urlopen(urllib.request.Request("http://127.0.0.1:18117/api/activities", headers={"X-Play-Creator": key})).read())
+        assert listed["items"][0]["owned"] is True
+        anonymous = json.loads(urllib.request.urlopen("http://127.0.0.1:18117/api/activities").read())
+        assert anonymous["items"][0]["owned"] is False
+        assert "owner_key_hash" not in anonymous["items"][0]
+
+        url = f"http://127.0.0.1:18117/api/activities/{activity['id']}"
+        with pytest.raises(urllib.error.HTTPError) as forbidden:
+            urllib.request.urlopen(urllib.request.Request(url, method="DELETE"))
+        assert forbidden.value.code == 403
+        with pytest.raises(urllib.error.HTTPError) as wrong:
+            urllib.request.urlopen(urllib.request.Request(url, method="DELETE", headers={"X-Play-Creator": "wrong-key-0123456789abcdef"}))
+        assert wrong.value.code == 403
+        deleted = json.loads(urllib.request.urlopen(urllib.request.Request(url, method="DELETE", headers={"X-Play-Creator": key})).read())
+        assert deleted["deleted"] == activity["id"]
+    finally:
+        process.terminate()
+        process.wait(timeout=3)
+
+
 def test_catalog_can_be_updated_by_admin():
     data_dir = Path(tempfile.mkdtemp(prefix="edutictac-play-test-"))
     process = subprocess.Popen(
