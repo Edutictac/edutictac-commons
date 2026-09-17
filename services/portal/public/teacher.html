@@ -90,6 +90,25 @@
 
         <div class="panel">
           <div class="panel-heading">
+            <p class="eyebrow" data-i18n="teacher.sharedAccess">Col·laboració</p>
+            <h3 data-i18n="teacher.membersTitle">Docents amb accés al grup seleccionat</h3>
+          </div>
+          <p class="hint" data-i18n="teacher.membersHint">Afig un identificador docent pseudònim d'Authentik. Només el propietari pot canviar membres.</p>
+          <div class="grid-fields">
+            <label>
+              <span data-i18n="teacher.memberIdLabel">Identificador docent</span>
+              <input id="memberTeacherId" type="text" placeholder="oidc:..." data-i18n-placeholder="teacher.memberIdPlaceholder" autocomplete="off">
+            </label>
+            <div class="actions">
+              <button id="addGroupMember" type="button" class="secondary" data-i18n="teacher.addMember">Afegir docent</button>
+              <button id="loadGroupMembers" type="button" class="secondary" data-i18n="teacher.loadMembers">Veure membres</button>
+            </div>
+          </div>
+          <div id="membersOutput" class="output empty" data-i18n="teacher.membersEmpty">Selecciona un grup per gestionar la col·laboració.</div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-heading">
             <p class="eyebrow" data-i18n="teacher.resourcesBank">Banc de recursos</p>
             <h3 data-i18n="teacher.resourcesTitle">Buscar i assignar activitats</h3>
           </div>

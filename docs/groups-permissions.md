@@ -21,6 +21,10 @@ POST   /api/teacher/groups/{group_id}/members
 DELETE /api/teacher/groups/{group_id}/members/{teacher_id}
 ```
 
+El tauler docent inclou una gestió inicial per seleccionar un grup, consultar
+els seus membres i afegir docents col·laboradors. La identificació es demana
+com a valor pseudònim (`oidc:...`) i no com a nom o correu.
+
 El cos del `POST` és:
 
 ```json
@@ -43,5 +47,6 @@ l'administració. Això evita que un docent col·laborador puga modificar la
 composició del grup, però li permet treballar amb les activitats i resultats
 que té assignats.
 
-Queda per a la següent iteració afegir la gestió visual de membres al tauler i
-connectar aquesta informació amb classes i itineraris de la capa Commons.
+Queda per a la següent iteració afegir la retirada visual de membres, millorar
+la descoberta de l'identificador OIDC i connectar aquesta informació amb
+classes i itineraris de la capa Commons.

@@ -69,7 +69,7 @@ function setEmpty(node, content) {
 
 function setTeacherSession(active) {
   state.teacher = active;
-  ["teacherSummary", "refreshDashboard", "createBatch", "createEduhootAssignment", "teacherLogout"].forEach((id) => {
+  ["teacherSummary", "refreshDashboard", "createBatch", "createEduhootAssignment", "teacherLogout", "addGroupMember", "loadGroupMembers"].forEach((id) => {
     const node = $(id);
     if (node) {
       node.disabled = !active;
@@ -559,6 +559,36 @@ async function revokeIdentity(identityId) {
   );
 }
 
+async function loadGroupMembers() {
+  if (!state.teacher) throw new Error(t("teacher.errors.loginFirst"));
+  if (!state.group) throw new Error(t("teacher.errors.selectGroupFirst"));
+  const data = await api(`/api/teacher/groups/${encodeURIComponent(state.group.id)}/members`, { method: "GET" });
+  const members = data.members || [];
+  setOutput(
+    $("membersOutput"),
+    members.length
+      ? table(members, [
+          { key: "teacher_id", label: t("teacher.memberIdLabel") },
+          { key: "role", label: t("common.status") },
+          { key: "created_at", label: t("common.date") },
+        ])
+      : `<p>${t("common.tableEmpty")}</p>`,
+  );
+}
+
+async function addGroupMember() {
+  if (!state.teacher) throw new Error(t("teacher.errors.loginFirst"));
+  if (!state.group) throw new Error(t("teacher.errors.selectGroupFirst"));
+  const teacherId = $("memberTeacherId").value.trim();
+  if (!teacherId) throw new Error(t("teacher.errors.enterMemberId"));
+  await api(`/api/teacher/groups/${encodeURIComponent(state.group.id)}/members`, {
+    method: "POST",
+    body: JSON.stringify({ teacher_id: teacherId, role: "teacher" }),
+  });
+  $("memberTeacherId").value = "";
+  await loadGroupMembers();
+}
+
 async function studentLogin() {
   const publicCode = $("studentCode").value.trim().toUpperCase();
   const pin = $("studentPin").value.trim();
@@ -814,6 +844,8 @@ bind("teacherSummary", teacherSummary, "teacherOutput");
 bind("refreshDashboard", refreshDashboard, "teacherOutput");
 bind("createBatch", createBatch, "teacherOutput");
 bind("createEduhootAssignment", createEduhootAssignment, "resultsOutput");
+bind("addGroupMember", addGroupMember, "membersOutput");
+bind("loadGroupMembers", loadGroupMembers, "membersOutput");
 bind("studentLogin", studentLogin, "studentOutput");
 bind("studentLogout", studentLogout, "studentOutput");
 bind("loadResults", loadResults);
