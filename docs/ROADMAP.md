@@ -197,6 +197,10 @@ roadmap 4D).
   a Commons/Portal i Recursos.
 - [ ] Afegir classes/grups i permisos compartits.
 
+La primera migració de dades i els endpoints de membresía estan implementats
+i documentats en `docs/groups-permissions.md`; queda connectar-los a totes les
+consultes del tauler i al flux d'assignacions.
+
 ### Fita v2-2 — Banc de recursos (cistella i recorregut)
 
 **Resultat:** el professorat pot triar activitats del Banc de recursos des del

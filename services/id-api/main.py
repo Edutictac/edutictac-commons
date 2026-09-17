@@ -275,6 +275,14 @@ def init_db() -> None:
                 updated_at TEXT NOT NULL
             );
 
+            CREATE TABLE IF NOT EXISTS group_memberships (
+                group_id TEXT NOT NULL REFERENCES groups(id) ON DELETE CASCADE,
+                teacher_id TEXT NOT NULL,
+                role TEXT NOT NULL DEFAULT 'teacher',
+                created_at TEXT NOT NULL,
+                PRIMARY KEY (group_id, teacher_id)
+            );
+
             CREATE TABLE IF NOT EXISTS app_launch_tokens (
                 id TEXT PRIMARY KEY,
                 token_hash TEXT NOT NULL UNIQUE,
@@ -313,6 +321,14 @@ def init_db() -> None:
             """
             CREATE INDEX IF NOT EXISTS idx_scores_assignment
                 ON scores(assignment_id, score DESC, created_at ASC)
+            """
+        )
+        conn.execute(
+            """
+            INSERT OR IGNORE INTO group_memberships (group_id, teacher_id, role, created_at)
+            SELECT id, created_by_teacher_id, 'owner', created_at
+            FROM groups
+            WHERE created_by_teacher_id <> ''
             """
         )
         if "result_id" not in score_columns:
@@ -464,6 +480,23 @@ def is_teacher(request: Request) -> bool:
         return False
 
 
+def is_oidc_admin(request: Request) -> bool:
+    session = oidc_cookie(request)
+    return bool(session and session.get("role") == "administrador")
+
+
+def require_group_owner(request: Request, group_id: str) -> str:
+    teacher_id = require_teacher(request)
+    with get_conn() as conn:
+        row = conn.execute(
+            "SELECT created_by_teacher_id FROM groups WHERE id = ?",
+            (group_id,),
+        ).fetchone()
+    if not row or (row["created_by_teacher_id"] != teacher_id and not is_oidc_admin(request)):
+        raise HTTPException(status_code=404, detail="group not found")
+    return teacher_id
+
+
 def current_identity(request: Request) -> dict[str, Any] | None:
     cookie = parse_cookie(request.cookies.get(SESSION_COOKIE))
     if not cookie or not cookie.get("sid"):
@@ -528,6 +561,27 @@ class GroupIn(BaseModel):
     def _tenant(cls, value: str) -> str:
         tenant = re.sub(r"[^a-z0-9_-]+", "-", (value or "default").lower()).strip("-")
         return tenant[:48] or "default"
+
+
+class GroupMemberIn(BaseModel):
+    teacher_id: str = Field(min_length=3, max_length=128)
+    role: str = "teacher"
+
+    @field_validator("teacher_id")
+    @classmethod
+    def _teacher_id(cls, value: str) -> str:
+        value = (value or "").strip()
+        if not re.fullmatch(r"(?:oidc:)?[A-Za-z0-9:_-]{3,128}", value):
+            raise ValueError("invalid teacher_id")
+        return value
+
+    @field_validator("role")
+    @classmethod
+    def _role(cls, value: str) -> str:
+        value = (value or "teacher").strip().lower()
+        if value not in {"teacher", "owner"}:
+            raise ValueError("role must be teacher or owner")
+        return value
 
 
 class BatchIn(GroupIn):
@@ -723,7 +777,60 @@ def create_group(payload: GroupIn, request: Request) -> dict[str, Any]:
             """,
             (group_id, group_code, payload.tenant_id, teacher_id, ts, ts),
         )
+        conn.execute(
+            "INSERT INTO group_memberships (group_id, teacher_id, role, created_at) VALUES (?, ?, 'owner', ?)",
+            (group_id, teacher_id, ts),
+        )
     return {"id": group_id, "group_code": group_code, "tenant_id": payload.tenant_id}
+
+
+@app.get("/api/teacher/groups/{group_id}/members")
+def group_members(group_id: str, request: Request) -> dict[str, Any]:
+    require_group_owner(request, group_id)
+    with get_conn() as conn:
+        rows = conn.execute(
+            "SELECT teacher_id, role, created_at FROM group_memberships WHERE group_id = ? ORDER BY role DESC, created_at",
+            (group_id,),
+        ).fetchall()
+    return {"group_id": group_id, "members": [dict(row) for row in rows]}
+
+
+@app.post("/api/teacher/groups/{group_id}/members", status_code=201)
+def add_group_member(group_id: str, payload: GroupMemberIn, request: Request) -> dict[str, Any]:
+    require_group_owner(request, group_id)
+    ts = iso_now()
+    with get_conn() as conn:
+        conn.execute(
+            "INSERT INTO group_memberships (group_id, teacher_id, role, created_at) VALUES (?, ?, ?, ?) "
+            "ON CONFLICT(group_id, teacher_id) DO UPDATE SET role = excluded.role",
+            (group_id, payload.teacher_id, payload.role, ts),
+        )
+        row = conn.execute(
+            "SELECT teacher_id, role, created_at FROM group_memberships WHERE group_id = ? AND teacher_id = ?",
+            (group_id, payload.teacher_id),
+        ).fetchone()
+    return {"group_id": group_id, "member": dict(row)}
+
+
+@app.delete("/api/teacher/groups/{group_id}/members/{teacher_id}")
+def remove_group_member(group_id: str, teacher_id: str, request: Request) -> dict[str, bool]:
+    require_group_owner(request, group_id)
+    if not re.fullmatch(r"(?:oidc:)?[A-Za-z0-9:_-]{3,128}", teacher_id):
+        raise HTTPException(status_code=400, detail="invalid teacher_id")
+    with get_conn() as conn:
+        row = conn.execute(
+            "SELECT role FROM group_memberships WHERE group_id = ? AND teacher_id = ?",
+            (group_id, teacher_id),
+        ).fetchone()
+        if not row:
+            raise HTTPException(status_code=404, detail="member not found")
+        if row["role"] == "owner":
+            raise HTTPException(status_code=400, detail="group owner cannot be removed")
+        conn.execute(
+            "DELETE FROM group_memberships WHERE group_id = ? AND teacher_id = ?",
+            (group_id, teacher_id),
+        )
+    return {"ok": True}
 
 
 @app.post("/api/identities/batch", status_code=201)
@@ -743,6 +850,10 @@ def create_batch(payload: BatchIn, request: Request) -> dict[str, Any]:
             VALUES (?, ?, ?, ?, ?, ?)
             """,
             (group_id, group_code, payload.tenant_id, teacher_id, ts, ts),
+        )
+        conn.execute(
+            "INSERT INTO group_memberships (group_id, teacher_id, role, created_at) VALUES (?, ?, 'owner', ?)",
+            (group_id, teacher_id, ts),
         )
         for _ in range(payload.count):
             for _attempt in range(200):
