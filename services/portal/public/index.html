@@ -37,12 +37,38 @@
         <span data-i18n="home.studentCard.description">Entrar amb codi + PIN, veure recorregut i completar activitats.</span>
       </a>
 
+      <section class="app-entry" aria-labelledby="appsTitle">
+        <p class="eyebrow" data-i18n="home.appsEyebrow">Aplicaciones</p>
+        <h2 id="appsTitle" data-i18n="home.appsTitle">Acceso directo</h2>
+        <div class="app-entry-grid">
+          <a class="app-link play-link" id="playHomeLink" href="/play/">
+            <span aria-hidden="true">🎮</span>
+            <strong data-i18n="home.playLink">EduTicTac Play</strong>
+            <small data-i18n="home.playDescription">Crear y jugar actividades educativas.</small>
+          </a>
+          <a class="app-link resources-link" id="resourcesHomeLink" href="/recursos/">
+            <span aria-hidden="true">📚</span>
+            <strong data-i18n="home.resourcesLink">Recursos</strong>
+            <small data-i18n="home.resourcesDescription">Explorar el banco de recursos.</small>
+          </a>
+          <a class="app-link eduhoot-link" id="eduhootHomeLink" href="/eduhoot/">
+            <span aria-hidden="true">⚡</span>
+            <strong data-i18n="home.eduhootLink">EduHoot</strong>
+            <small data-i18n="home.eduhootDescription">Crear y jugar cuestionarios.</small>
+          </a>
+        </div>
+      </section>
+
       <a class="role-card" id="authentikHomeLink" href="http://localhost:9000/">
         <span class="eyebrow" data-i18n="common.identity">Identitat</span>
         <strong data-i18n="home.authentikCard.title">Authentik</strong>
         <span data-i18n="home.authentikCard.description">Gestionar l'accés comú del centre.</span>
       </a>
     </main>
+
+    <footer class="admin-entry">
+      <a id="adminHomeLink" href="http://127.0.0.1:8091/" data-i18n="home.adminLink">Administración</a>
+    </footer>
 
     <script src="/app.js"></script>
   </body>

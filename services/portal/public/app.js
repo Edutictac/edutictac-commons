@@ -43,6 +43,31 @@ function setAuthentikLinks() {
   });
 }
 
+function setApplicationLinks() {
+  const directPorts = {
+    "8082": { play: "8084", recursos: "8086", eduhoot: "8090", admin: "8091" },
+    "18082": { play: "18084", recursos: "18086", eduhoot: "18090", admin: "18091" },
+  };
+  const ports = directPorts[window.location.port];
+  const links = ports
+    ? {
+        playHomeLink: `${window.location.protocol}//${window.location.hostname}:${ports.play}/`,
+        resourcesHomeLink: `${window.location.protocol}//${window.location.hostname}:${ports.recursos}/`,
+        eduhootHomeLink: `${window.location.protocol}//${window.location.hostname}:${ports.eduhoot}/`,
+        adminHomeLink: `${window.location.protocol}//${window.location.hostname}:${ports.admin}/`,
+      }
+    : {
+        playHomeLink: `${window.location.origin}/play/`,
+        resourcesHomeLink: `${window.location.origin}/recursos/`,
+        eduhootHomeLink: `${window.location.origin}/eduhoot/`,
+        adminHomeLink: `${window.location.origin}/admin/`,
+      };
+  Object.entries(links).forEach(([id, url]) => {
+    const link = $(id);
+    if (link) link.href = url;
+  });
+}
+
 function saveState() {
   localStorage.setItem(
     STORAGE_KEY,
@@ -1025,6 +1050,7 @@ window.addEventListener("edutictac:langchange", () => {
 
 restoreState();
 setAuthentikLinks();
+setApplicationLinks();
 if (has("teacherOidcLogin")) {
   setTeacherSession(false);
 }

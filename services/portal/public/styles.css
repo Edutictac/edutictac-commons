@@ -169,6 +169,60 @@ html.i18n-pending body {
   box-shadow: 0 8px 24px rgba(29, 42, 46, 0.08);
 }
 
+.app-entry {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 8px;
+  padding: 6px 0;
+}
+
+.app-entry-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.app-link {
+  display: grid;
+  gap: 6px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 16px;
+  color: var(--ink);
+  text-decoration: none;
+  background: #fff;
+}
+
+.app-link > span {
+  font-size: 26px;
+}
+
+.app-link small {
+  color: var(--muted);
+}
+
+.app-link:hover {
+  border-color: var(--accent);
+  background: var(--soft);
+}
+
+.admin-entry {
+  padding: 0 clamp(18px, 4vw, 56px) 24px;
+  text-align: right;
+}
+
+.admin-entry a {
+  color: var(--muted);
+  font-size: 12px;
+  text-decoration: none;
+}
+
+.admin-entry a:hover {
+  color: var(--accent-dark);
+  text-decoration: underline;
+}
+
 .student-card:hover {
   border-color: #5b6fbd;
 }
@@ -176,6 +230,12 @@ html.i18n-pending body {
 .single-layout {
   display: grid;
   padding: 24px clamp(18px, 4vw, 56px);
+}
+
+@media (max-width: 700px) {
+  .app-entry-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .role-layout {
