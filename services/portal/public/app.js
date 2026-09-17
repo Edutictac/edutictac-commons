@@ -430,7 +430,7 @@ function studentDashboard(assignments) {
           ? `<button class="compact secondary" type="button" data-launch-play-assignment="${escapeHtml(assignment.id)}">${t("student.openPlay")}</button>`
           : assignment.app_id === "resource"
             ? assignment.launch_url
-              ? `<a class="compact secondary" href="${escapeHtml(accessibleResourceUrl(assignment.launch_url))}" target="_blank" rel="noopener noreferrer">${t("student.openResource")}</a>`
+              ? `<a class="button-link compact secondary" href="${escapeHtml(accessibleResourceUrl(assignment.launch_url))}" target="_blank" rel="noopener noreferrer">${t("student.openResource")}</a>`
               : `<button class="compact secondary" type="button" data-launch-resource-assignment="${escapeHtml(assignment.id)}">${t("student.openResource")}</button>`
         : "",
   }));
