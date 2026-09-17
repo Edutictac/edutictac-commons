@@ -68,6 +68,11 @@ en Git. Para reiniciar el conjunto conservando OIDC se puede usar:
 El script está pensado para la demo local; en otro centro se deben sustituir
 las URLs por las del despliegue correspondiente.
 
+En la demo local, el proveedor incluye el mapping `EduTicTac Commons roles`:
+`akadmin` recibe `administrador` y `profesor`, y el resto de usuarios recibe
+`alumno` por defecto. En un centro real se recomienda reemplazar esta regla
+por grupos gestionados desde Authentik.
+
 ```json
 {"roles": ["profesor"]}
 ```
