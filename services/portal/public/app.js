@@ -35,6 +35,22 @@ const $ = (id) => document.getElementById(id);
 const has = (id) => Boolean($(id));
 const t = window.i18nPortal.t;
 
+function accessibleResourceUrl(rawUrl) {
+  if (!rawUrl) return "";
+  try {
+    const url = new URL(rawUrl, window.location.origin);
+    const localResourceHost = ["localhost", "127.0.0.1", "::1"].includes(url.hostname);
+    const remoteBrowser = !["localhost", "127.0.0.1", "::1"].includes(window.location.hostname);
+    if (localResourceHost && remoteBrowser) {
+      url.hostname = window.location.hostname;
+      if (url.port === "8086" && window.location.port === "18082") url.port = "18086";
+    }
+    return url.toString();
+  } catch {
+    return "";
+  }
+}
+
 function setAuthentikLinks() {
   const url = `${window.location.protocol}//${window.location.hostname}:9000/`;
   ["authentikHomeLink", "authentikNavLink"].forEach((id) => {
@@ -342,7 +358,7 @@ async function assignResource(resource) {
         app_id: resource.provider === PLAY_APP ? PLAY_APP : "resource",
         activity_id: resourceActivityId(resource),
         title: resource.title || resource.external_id,
-        launch_url: resource.play_url || resource.source_url || resource.reuse_url || resource.download_url || "",
+        launch_url: accessibleResourceUrl(resource.play_url || resource.source_url || resource.reuse_url || resource.download_url || ""),
       }),
   });
   state.assignment = assignment.assignment;
@@ -412,8 +428,10 @@ function studentDashboard(assignments) {
         ? `<button class="compact secondary" type="button" data-launch-eduhoot-assignment="${escapeHtml(assignment.id)}">${t("student.openEduhoot")}</button>`
         : [PLAY_APP, "play"].includes(String(assignment.app_id || "").toLowerCase())
           ? `<button class="compact secondary" type="button" data-launch-play-assignment="${escapeHtml(assignment.id)}">${t("student.openPlay")}</button>`
-          : assignment.app_id === "resource" && assignment.launch_url
-            ? `<a class="compact secondary" href="${escapeHtml(assignment.launch_url)}" target="_blank" rel="noopener noreferrer">${t("student.openResource")}</a>`
+          : assignment.app_id === "resource"
+            ? assignment.launch_url
+              ? `<a class="compact secondary" href="${escapeHtml(accessibleResourceUrl(assignment.launch_url))}" target="_blank" rel="noopener noreferrer">${t("student.openResource")}</a>`
+              : `<button class="compact secondary" type="button" data-launch-resource-assignment="${escapeHtml(assignment.id)}">${t("student.openResource")}</button>`
         : "",
   }));
   return `
@@ -830,6 +848,18 @@ async function launchPlayAssignment(assignment) {
   window.location.href = url.toString();
 }
 
+async function launchResourceAssignment(assignment) {
+  let url = accessibleResourceUrl(assignment.launch_url);
+  if (!url) {
+    const query = new URLSearchParams({ q: assignment.activity_id, limit: "50" });
+    const data = await api(`/resources-api/resources?${query}`, { method: "GET" });
+    const resource = (data.items || []).find((item) => item.external_id === assignment.activity_id);
+    url = accessibleResourceUrl(resource?.play_url || resource?.source_url || resource?.reuse_url || resource?.download_url);
+  }
+  if (!url) throw new Error("No se ha encontrado la URL de este recurso.");
+  window.open(url, "_blank", "noopener,noreferrer");
+}
+
 async function loadResults() {
   if (!state.assignment) {
     throw new Error(t("teacher.errors.selectActivityFirst"));
@@ -987,6 +1017,16 @@ document.addEventListener("click", (event) => {
     launchPlayAssignment(assignment).catch((error) => {
       setOutput($("studentOutput"), `<p><strong>${t("common.errorLabel")}</strong> ${escapeHtml(error.message)}</p>${studentDashboard(state.studentAssignments)}`);
     });
+  }
+
+  const resourceLaunchButton = event.target.closest("[data-launch-resource-assignment]");
+  if (resourceLaunchButton) {
+    const assignment = state.studentAssignments.find((item) => item.id === resourceLaunchButton.dataset.launchResourceAssignment);
+    if (!assignment) return;
+    launchResourceAssignment(assignment).catch((error) => {
+      setOutput($("studentOutput"), `<p><strong>${t("common.errorLabel")}</strong> ${escapeHtml(error.message)}</p>${studentDashboard(state.studentAssignments)}`);
+    });
+    return;
   }
 
   const resourceButton = event.target.closest("[data-assign-resource]");
