@@ -567,10 +567,20 @@ async function loadGroupMembers() {
   setOutput(
     $("membersOutput"),
     members.length
-      ? table(members, [
+      ? table(members.map((member) => ({
+          ...member,
+          action: member.role === "owner"
+            ? ""
+            : `<button class="compact danger" type="button" data-remove-member="${escapeHtml(member.teacher_id)}">${t("teacher.removeMember")}</button>`,
+        })), [
           { key: "teacher_id", label: t("teacher.memberIdLabel") },
           { key: "role", label: t("common.status") },
           { key: "created_at", label: t("common.date") },
+          {
+            key: "action",
+            label: "",
+            html: true,
+          },
         ])
       : `<p>${t("common.tableEmpty")}</p>`,
   );
@@ -586,6 +596,16 @@ async function addGroupMember() {
     body: JSON.stringify({ teacher_id: teacherId, role: "teacher" }),
   });
   $("memberTeacherId").value = "";
+  await loadGroupMembers();
+}
+
+async function removeGroupMember(teacherId) {
+  if (!state.teacher) throw new Error(t("teacher.errors.loginFirst"));
+  if (!state.group) throw new Error(t("teacher.errors.selectGroupFirst"));
+  if (!window.confirm(t("teacher.confirmRemoveMember", { id: teacherId }))) return;
+  await api(`/api/teacher/groups/${encodeURIComponent(state.group.id)}/members/${encodeURIComponent(teacherId)}`, {
+    method: "DELETE",
+  });
   await loadGroupMembers();
 }
 
@@ -795,6 +815,16 @@ document.addEventListener("click", (event) => {
     revokeIdentity(revokeButton.dataset.revokeIdentity).catch((error) => {
       if (has("teacherOutput")) {
         setOutput($("teacherOutput"), `<p><strong>${t("common.errorLabel")}</strong> ${escapeHtml(error.message)}</p>`);
+      }
+    });
+    return;
+  }
+
+  const removeMemberButton = event.target.closest("[data-remove-member]");
+  if (removeMemberButton) {
+    removeGroupMember(removeMemberButton.dataset.removeMember).catch((error) => {
+      if (has("membersOutput")) {
+        setOutput($("membersOutput"), `<p><strong>${t("common.errorLabel")}</strong> ${escapeHtml(error.message)}</p>`);
       }
     });
     return;
