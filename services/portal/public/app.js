@@ -454,16 +454,6 @@ async function refreshTeacherSession() {
   }
 }
 
-async function teacherLogin() {
-  const token = $("teacherToken").value.trim();
-  await api("/api/teacher/login", {
-    method: "POST",
-    body: JSON.stringify({ token }),
-  });
-  setTeacherSession(true);
-  await refreshDashboard();
-}
-
 function teacherOidcLogin() {
   window.location.href = "/api/auth/oidc/login";
 }
@@ -941,7 +931,6 @@ document.addEventListener("click", (event) => {
   }
 });
 
-bind("teacherLogin", teacherLogin, "teacherOutput");
 bind("teacherOidcLogin", teacherOidcLogin);
 bind("teacherLogout", teacherLogout, "teacherOutput");
 bind("teacherSummary", teacherSummary, "teacherOutput");
@@ -991,7 +980,7 @@ window.addEventListener("edutictac:langchange", () => {
 
 restoreState();
 setAuthentikLinks();
-if (has("teacherLogin")) {
+if (has("teacherOidcLogin")) {
   setTeacherSession(false);
 }
 if (has("teacherOutput")) {
@@ -1018,6 +1007,6 @@ if (has("resultsOutput")) {
 refreshStudentSession().catch(() => {});
 checkHealth();
 checkOidc();
-if (has("teacherLogin")) {
+if (has("teacherOidcLogin")) {
   refreshTeacherSession();
 }

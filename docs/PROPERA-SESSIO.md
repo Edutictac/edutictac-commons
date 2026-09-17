@@ -4,6 +4,8 @@
 > controlat i exportació H5P validada. Commons ja té permisos compartits de
 > grup i gestió visual de docents col·laboradors. La distribució local també
 > està provada.
+> El tauler docent usa Authentik com a única entrada visible; s'han eliminat
+> les dades locals de demostració.
 > Pendent extern: publicar `commons-play:0.1.1-alpha` al registre.
 > Data: 2026-09-17
 
