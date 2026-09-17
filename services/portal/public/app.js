@@ -18,6 +18,7 @@ const state = {
   identities: [],
   assignment: null,
   assignments: [],
+  itineraries: [],
   student: null,
   studentAssignments: [],
   resources: [],
@@ -69,7 +70,7 @@ function setEmpty(node, content) {
 
 function setTeacherSession(active) {
   state.teacher = active;
-  ["teacherSummary", "refreshDashboard", "createBatch", "createEduhootAssignment", "teacherLogout", "addGroupMember", "loadGroupMembers"].forEach((id) => {
+  ["teacherSummary", "refreshDashboard", "createBatch", "createEduhootAssignment", "teacherLogout", "addGroupMember", "loadGroupMembers", "createItinerary", "loadItineraries"].forEach((id) => {
     const node = $(id);
     if (node) {
       node.disabled = !active;
@@ -316,6 +317,54 @@ async function assignResource(resource) {
   setOutput($("resourcesOutput"), `<p>Recurs assignat: <strong>${escapeHtml(assignment.assignment.title)}</strong>.</p>`);
 }
 
+function renderItineraries(data) {
+  const output = $("itinerariesOutput");
+  if (!output) return;
+  state.itineraries = data.itineraries || [];
+  if (!state.itineraries.length) {
+    setEmpty(output, t("teacher.itinerariesEmptyList"));
+    return;
+  }
+  setOutput(output, `<div class="cards">${state.itineraries.map((itinerary) => `
+    <article class="card">
+      <strong>${escapeHtml(itinerary.title)}</strong>
+      <small>${t("teacher.itinerarySteps", { count: itinerary.items.length })}</small>
+      <ol>${itinerary.items.map((item) => `<li>${escapeHtml(state.assignments.find((a) => a.id === item.assignment_id)?.title || item.assignment_id)}</li>`).join("")}</ol>
+      ${state.assignment ? `<button class="compact secondary" type="button" data-add-itinerary-item="${escapeHtml(itinerary.id)}">${t("teacher.addSelectedActivity")}</button>` : `<small>${t("teacher.selectAssignmentHint")}</small>`}
+    </article>`).join("")}</div>`);
+}
+
+async function loadItineraries() {
+  if (!state.teacher) throw new Error(t("teacher.errors.loginFirst"));
+  if (!state.group) throw new Error(t("teacher.errors.selectGroupFirst"));
+  const data = await api(`/api/teacher/itineraries?group_id=${encodeURIComponent(state.group.id)}`, { method: "GET" });
+  renderItineraries(data);
+}
+
+async function createItinerary() {
+  if (!state.teacher) throw new Error(t("teacher.errors.loginFirst"));
+  if (!state.group) throw new Error(t("teacher.errors.selectGroupFirst"));
+  const title = $("itineraryTitle").value.trim();
+  if (!title) throw new Error(t("teacher.errors.enterItineraryTitle"));
+  await api("/api/teacher/itineraries", {
+    method: "POST",
+    body: JSON.stringify({ title, group_id: state.group.id }),
+  });
+  $("itineraryTitle").value = "";
+  await loadItineraries();
+}
+
+async function addSelectedActivityToItinerary(itineraryId) {
+  if (!state.assignment) throw new Error(t("teacher.errors.selectActivityFirst"));
+  const itinerary = state.itineraries.find((item) => item.id === itineraryId);
+  const position = itinerary ? itinerary.items.length : 0;
+  await api(`/api/teacher/itineraries/${encodeURIComponent(itineraryId)}/items`, {
+    method: "POST",
+    body: JSON.stringify({ assignment_id: state.assignment.id, position }),
+  });
+  await loadItineraries();
+}
+
 function studentDashboard(assignments) {
   const completed = assignments.filter((assignment) => assignment.completed).length;
   const total = assignments.length;
@@ -476,6 +525,9 @@ async function refreshDashboard() {
   }
   const [summary] = await loadTeacherData();
   setOutput($("teacherOutput"), teacherDashboard(summary, state.assignments));
+  if (state.group && has("itinerariesOutput")) {
+    await loadItineraries();
+  }
 }
 
 async function createBatch() {
@@ -808,6 +860,9 @@ document.addEventListener("click", (event) => {
         `<p>${t("teacher.activitySelected")} <strong>${escapeHtml(assignment.title || assignment.activity_id)}</strong>.</p>`,
       );
     }
+    if (has("itinerariesOutput")) {
+      loadItineraries().catch(() => {});
+    }
     return;
   }
 
@@ -837,6 +892,14 @@ document.addEventListener("click", (event) => {
       if (has("membersOutput")) {
         setOutput($("membersOutput"), `<p><strong>${t("common.errorLabel")}</strong> ${escapeHtml(error.message)}</p>`);
       }
+    });
+    return;
+  }
+
+  const addItineraryItemButton = event.target.closest("[data-add-itinerary-item]");
+  if (addItineraryItemButton) {
+    addSelectedActivityToItinerary(addItineraryItemButton.dataset.addItineraryItem).catch((error) => {
+      if (has("itinerariesOutput")) setOutput($("itinerariesOutput"), `<p><strong>${t("common.errorLabel")}</strong> ${escapeHtml(error.message)}</p>`);
     });
     return;
   }
@@ -891,6 +954,8 @@ bind("studentLogin", studentLogin, "studentOutput");
 bind("studentLogout", studentLogout, "studentOutput");
 bind("loadResults", loadResults);
 bind("loadRanking", loadRanking);
+bind("createItinerary", createItinerary, "itinerariesOutput");
+bind("loadItineraries", loadItineraries, "itinerariesOutput");
 
 if (has("searchResources")) {
   $("searchResources").addEventListener("click", () => {

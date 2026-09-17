@@ -133,6 +133,25 @@
           </div>
           <div id="resultsOutput" class="output empty">Els resultats apareixeran ací.</div>
         </div>
+
+        <div class="panel">
+          <div class="panel-heading">
+            <p class="eyebrow" data-i18n="teacher.itineraries">Itineraris</p>
+            <h3 data-i18n="teacher.itinerariesTitle">Crear un recorregut per al grup</h3>
+          </div>
+          <div class="grid-fields">
+            <label>
+              <span data-i18n="teacher.itineraryTitleLabel">Títol de l'itinerari</span>
+              <input id="itineraryTitle" type="text" placeholder="Repàs de ciències" data-i18n-placeholder="teacher.itineraryTitlePlaceholder">
+            </label>
+            <div class="actions">
+              <button id="createItinerary" type="button" data-i18n="teacher.createItinerary">Crear itinerari</button>
+              <button id="loadItineraries" type="button" class="secondary" data-i18n="teacher.loadItineraries">Actualitzar itineraris</button>
+            </div>
+          </div>
+          <p class="hint" data-i18n="teacher.itineraryHint">Selecciona una activitat i després afegix-la a un itinerari.</p>
+          <div id="itinerariesOutput" class="output empty" data-i18n="teacher.itinerariesEmpty">Selecciona un grup per veure els itineraris.</div>
+        </div>
       </section>
     </main>
 
