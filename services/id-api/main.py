@@ -20,6 +20,7 @@ import secrets
 import sqlite3
 from datetime import datetime, timedelta, timezone
 from typing import Any
+from urllib.parse import urlparse
 
 from fastapi import FastAPI, HTTPException, Query, Request, Response
 from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse
@@ -268,6 +269,7 @@ def init_db() -> None:
                 app_id TEXT NOT NULL,
                 activity_id TEXT NOT NULL,
                 title TEXT NOT NULL DEFAULT '',
+                launch_url TEXT NOT NULL DEFAULT '',
                 group_id TEXT NOT NULL REFERENCES groups(id) ON DELETE CASCADE,
                 created_by_teacher_id TEXT NOT NULL DEFAULT '',
                 active INTEGER NOT NULL DEFAULT 1,
@@ -339,6 +341,9 @@ def init_db() -> None:
         score_columns = {row["name"] for row in conn.execute("PRAGMA table_info(scores)").fetchall()}
         if "assignment_id" not in score_columns:
             conn.execute("ALTER TABLE scores ADD COLUMN assignment_id TEXT DEFAULT ''")
+        assignment_columns = {row["name"] for row in conn.execute("PRAGMA table_info(activity_assignments)").fetchall()}
+        if "launch_url" not in assignment_columns:
+            conn.execute("ALTER TABLE activity_assignments ADD COLUMN launch_url TEXT NOT NULL DEFAULT ''")
         conn.execute(
             """
             CREATE INDEX IF NOT EXISTS idx_scores_assignment
@@ -703,6 +708,7 @@ class ActivityAssignmentIn(BaseModel):
     app_id: str
     activity_id: str
     title: str = ""
+    launch_url: str = Field(default="", max_length=2048)
 
 
 class ItineraryIn(BaseModel):
@@ -729,12 +735,23 @@ def normalize_activity_id(raw: str) -> str:
     return activity_id
 
 
+def normalize_launch_url(raw: str) -> str:
+    launch_url = (raw or "").strip()
+    if not launch_url:
+        return ""
+    parsed = urlparse(launch_url)
+    if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+        raise HTTPException(status_code=400, detail="invalid launch_url")
+    return launch_url
+
+
 def public_assignment(row: sqlite3.Row) -> dict[str, Any]:
     return {
         "id": row["id"],
         "app_id": row["app_id"],
         "activity_id": row["activity_id"],
         "title": row["title"],
+        "launch_url": row["launch_url"] if "launch_url" in row.keys() else "",
         "group_id": row["group_id"],
         "created_by_teacher_id": row["created_by_teacher_id"],
         "active": bool(row["active"]),
@@ -1239,6 +1256,7 @@ def create_activity_assignment(payload: ActivityAssignmentIn, request: Request) 
     app_id = normalize_app_id(payload.app_id)
     activity_id = normalize_activity_id(payload.activity_id)
     title = (payload.title or "").strip()[:160]
+    launch_url = normalize_launch_url(payload.launch_url)
     assignment_id = secrets.token_urlsafe(14)
     ts = iso_now()
     with get_conn() as conn:
@@ -1254,10 +1272,10 @@ def create_activity_assignment(payload: ActivityAssignmentIn, request: Request) 
         conn.execute(
             """
             INSERT INTO activity_assignments
-                (id, app_id, activity_id, title, group_id, created_by_teacher_id, active, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?)
+                (id, app_id, activity_id, title, launch_url, group_id, created_by_teacher_id, active, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, ?)
             """,
-            (assignment_id, app_id, activity_id, title, payload.group_id, teacher_id, ts, ts),
+            (assignment_id, app_id, activity_id, title, launch_url, payload.group_id, teacher_id, ts, ts),
         )
         row = conn.execute(
             "SELECT * FROM activity_assignments WHERE id = ?",

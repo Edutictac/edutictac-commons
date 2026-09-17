@@ -22,3 +22,31 @@ test('el botón de Play usa el puerto del servicio Play local', async ({ page })
   await page.getByRole('button', { name: /Abrir actividad|Obrir activitat|Open activity/ }).click();
   expect((await playRequest).url()).toBe('http://127.0.0.1:18084/Ab12Cd34?launch_token=launch-test-token');
 });
+
+test('las actividades asignadas desde Recursos muestran un enlace de apertura', async ({ page }) => {
+  const identity = { id: 'test-student', public_code: 'TEST01', avatar_icon: '🚀' };
+  await page.route('**/api/**', (route) => {
+    const path = new URL(route.request().url()).pathname;
+    if (path === '/api/auth/me') return route.fulfill({ json: { identity } });
+    if (path === '/api/student/dashboard') {
+      return route.fulfill({ json: {
+        identity,
+        assignments: [{
+          id: 'resource-assignment-1',
+          app_id: 'resource',
+          activity_id: 'recurso-1',
+          title: 'Recurso externo',
+          launch_url: 'https://recursos.example.test/recurso-1',
+          completed: false,
+        }],
+      } });
+    }
+    return route.fulfill({ status: 401, json: { detail: 'test unauthenticated' } });
+  });
+
+  await page.goto('/student.html');
+  await expect(page.getByRole('link', { name: /Abrir recurso|Obrir recurs|Open resource/ })).toHaveAttribute(
+    'href',
+    'https://recursos.example.test/recurso-1',
+  );
+});

@@ -312,12 +312,13 @@ async function assignResource(resource) {
   if (!state.group) throw new Error("Selecciona primer un grup.");
   const assignment = await api("/api/teacher/activity-assignments", {
     method: "POST",
-    body: JSON.stringify({
-      group_id: state.group.id,
-      app_id: resource.provider === PLAY_APP ? PLAY_APP : "resource",
-      activity_id: resourceActivityId(resource),
-      title: resource.title || resource.external_id,
-    }),
+      body: JSON.stringify({
+        group_id: state.group.id,
+        app_id: resource.provider === PLAY_APP ? PLAY_APP : "resource",
+        activity_id: resourceActivityId(resource),
+        title: resource.title || resource.external_id,
+        launch_url: resource.play_url || resource.source_url || resource.reuse_url || resource.download_url || "",
+      }),
   });
   state.assignment = assignment.assignment;
   await loadTeacherData();
@@ -386,6 +387,8 @@ function studentDashboard(assignments) {
         ? `<button class="compact secondary" type="button" data-launch-eduhoot-assignment="${escapeHtml(assignment.id)}">${t("student.openEduhoot")}</button>`
         : assignment.app_id === PLAY_APP
           ? `<button class="compact secondary" type="button" data-launch-play-assignment="${escapeHtml(assignment.id)}">${t("student.openPlay")}</button>`
+          : assignment.app_id === "resource" && assignment.launch_url
+            ? `<a class="compact secondary" href="${escapeHtml(assignment.launch_url)}" target="_blank" rel="noopener noreferrer">${t("student.openResource")}</a>`
         : "",
   }));
   return `
