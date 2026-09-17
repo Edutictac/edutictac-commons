@@ -10,7 +10,7 @@
 | Ordenar | 2 | Implementado | `H5P.DragQuestion 1.15` |
 | Rellenar huecos (`Fill in the Blanks`) | 2 | Implementado | `H5P.Blanks 1.14` |
 | Sopa de letras (`Find the Words`) | 3 | Implementado | `H5P.FindTheWords 1.4` |
-| Arrastrar al texto (`Drag Text`) | 3 | Planificado | `H5P.DragText 1.10` |
+| Arrastrar al texto (`Drag Text`) | 3 | Implementado | `H5P.DragText 1.10` |
 | Marcar palabras (`Mark the Words`) | 3 | Planificado | `H5P.MarkTheWords 1.11` |
 | Tarjetas de estudio (`Dialog Cards`) | 3 | Planificado | `H5P.Dialogcards 1.9` |
 | Crucigrama (`Crossword`) | 3 | Planificado | `H5P.Crossword 1.1` |
@@ -108,13 +108,15 @@ incluye GPL-3.0 para el conjunto. Por prudencia Play conserva el fichero de
 licencia y documenta esta dependencia como GPL-3.0; antes de una release se debe
 confirmar la licencia global del producto.
 
-## Arrastrar palabras al texto (Drag Text) — Planificado
+## Arrastrar palabras al texto (Drag Text) — Implementado
 
 Comparte con *Rellenar huecos* la misma sintaxis de autoría basada en asteriscos
 (`*palabra*`), pero el adaptador produce `H5P.DragText` 1.10. Durante el juego, las
-palabras correctas y los distractores se presentan como fichas arrastrables hacia
-las lagunas del texto. Es la alternativa táctil preferente para dispositivos móviles
-o alumnado de primaria que aún escribe con lentitud en teclado.
+palabras correctas se presentan como fichas arrastrables hacia las lagunas del
+texto. Play fija reintento, solución y comprobación con defaults educativos; no
+expone distractores ni configuraciones avanzadas. Es la alternativa táctil
+preferente para dispositivos móviles o alumnado que aún escribe con lentitud en
+teclado.
 
 ## Marcar las palabras (Mark the Words) — Planificado
 

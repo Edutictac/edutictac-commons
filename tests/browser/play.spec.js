@@ -155,6 +155,21 @@ test('crear y reproducir una sopa de letras', async ({ page }) => {
   await expect(page.locator('#download')).toBeVisible();
 });
 
+test('crear y reproducir una actividad de arrastrar palabras', async ({ page }) => {
+  await page.goto('/play/');
+  await page.getByRole('button', { name: 'Arrastrar palabras' }).click();
+  await page.locator('#title').fill('Planetas');
+  await page.locator('#question').fill('Completa la frase');
+  await page.locator('#dragTextText').fill('La Tierra gira alrededor del *Sol*.');
+  await page.getByRole('button', { name: 'Previsualizar' }).click({ force: true });
+  await expect(page.locator('#savePreview')).toBeVisible();
+  await expect.poll(() => page.frames().length).toBeGreaterThan(1);
+  const player = page.frames().find((frame) => frame !== page.mainFrame());
+  await expect(player.locator('.h5p-drag-text')).toBeVisible();
+  await page.getByRole('button', { name: 'Guardar' }).click();
+  await expect(page.locator('#download')).toBeVisible();
+});
+
 test('envía a Commons el resultado real de un Quiz H5P', async ({ page }) => {
   let scorePayload;
   await page.route('**/play/api/commons/score', async (route) => {

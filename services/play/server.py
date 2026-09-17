@@ -222,6 +222,17 @@ def activity_content(activity: dict) -> dict:
                 "score": t["scoreBar"], "wordListHeader": t.get("findWordsHeader", "Busca las palabras"),
             },
         }
+    if activity.get("type") == "drag-text":
+        return {
+            "taskDescription": safe_text(activity["question"]),
+            "textField": safe_text(activity["text"]),
+            "distractors": "",
+            "overallFeedback": [{"from": 0, "to": 99, "feedback": t["tryHarder"]}, {"from": 100, "to": 100, "feedback": t["allCorrect"]}],
+            "checkAnswer": t["check"], "submitAnswer": t["submit"], "tryAgain": t["retryShort"], "showSolution": t["showSolution"],
+            "dropZoneIndex": t.get("dropZoneIndex", "Zona @index."), "empty": t.get("emptyDropZone", "La zona @index está vacía."),
+            "contains": t.get("containsDropZone", "La zona @index contiene @draggable."), "ariaDraggableIndex": t.get("ariaDraggable", "Elemento @index de @count."),
+            "tipLabel": t.get("tipLabel", "Pista"), "behaviour": {"enableRetry": True, "enableSolutionsButton": True, "enableCheckButton": True, "applyPenalties": True},
+        }
     if activity.get("type") == "fill-blanks":
         return {
             "text": t.get("fillInstructions", "Completa las palabras que faltan."),
@@ -401,9 +412,20 @@ def package_files(activity: dict) -> dict[str, bytes]:
             {"machineName": "FontAwesome", "majorVersion": 4, "minorVersion": 5},
         ]
         is_true_false = False
+    elif activity.get("type") == "drag-text":
+        main_library = "H5P.DragText"
+        dependencies = [
+            {"machineName": "H5P.DragText", "majorVersion": 1, "minorVersion": 10},
+            {"machineName": "FontAwesome", "majorVersion": 4, "minorVersion": 5},
+            {"machineName": "jQuery.ui", "majorVersion": 1, "minorVersion": 10},
+            {"machineName": "H5P.JoubelUI", "majorVersion": 1, "minorVersion": 3},
+            {"machineName": "H5P.Question", "majorVersion": 1, "minorVersion": 5},
+            {"machineName": "H5P.Components", "majorVersion": 1, "minorVersion": 0},
+        ]
+        is_true_false = False
     else:
         is_true_false = activity.get("type") == "true-false"
-    if activity.get("type") not in {"memory", "matching", "classify", "ordering", "fill-blanks", "find-words"}:
+    if activity.get("type") not in {"memory", "matching", "classify", "ordering", "fill-blanks", "find-words", "drag-text"}:
         main_library = "H5P.TrueFalse" if is_true_false else "H5P.MultiChoice"
         dependencies = [
             {"machineName": "H5P.TrueFalse", "majorVersion": 1, "minorVersion": 8},
@@ -558,6 +580,17 @@ def validate_activity(payload: dict) -> tuple[dict | None, list[str]]:
         if errors:
             return None, errors
         return {"type": activity_type, "title": title[:200], "question": question[:2000], "words": cleaned_words, "answers": [], "language": language, **metadata}, []
+    if activity_type == "drag-text":
+        text = str(payload.get("text", "")).strip()
+        if not title:
+            errors.append("Escribe un título.")
+        if not question:
+            errors.append("Escribe una descripción.")
+        if len(text) < 3 or len(text) > 5000 or not re.search(r"\*[^*]+\*", text):
+            errors.append("Escribe un texto con al menos una palabra entre asteriscos.")
+        if errors:
+            return None, errors
+        return {"type": activity_type, "title": title[:200], "question": question[:2000], "text": text, "answers": [], "language": language, **metadata}, []
     if activity_type != "multiple-choice":
         errors.append("Tipo de actividad no disponible.")
         return None, errors

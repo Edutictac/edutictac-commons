@@ -24,6 +24,10 @@ distribuye bajo MIT. `H5P.TextUtilities` 1.3 declara dominio público en su
 GPL-3.0 para el conjunto; se conserva `LICENSE-GPL-3.0` junto a la librería y
 se debe revisar la licencia global del producto antes de publicar una release.
 
+`H5P.DragText` 1.10 procede del repositorio oficial `h5p/h5p-drag-text` y se
+distribuye bajo MIT. Sus dependencias locales son `jQuery.ui`, `H5P.JoubelUI`,
+`H5P.Question`, `H5P.Components` y `FontAwesome`.
+
 El reproductor `h5p-standalone` 3.8.2 se distribuye bajo MIT. Sus recursos
 están en `assets/`; el aviso de licencia se conserva en la documentación del
 paquete upstream.
