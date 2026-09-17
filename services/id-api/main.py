@@ -275,6 +275,24 @@ def init_db() -> None:
                 updated_at TEXT NOT NULL
             );
 
+            CREATE TABLE IF NOT EXISTS itineraries (
+                id TEXT PRIMARY KEY,
+                title TEXT NOT NULL,
+                group_id TEXT NOT NULL REFERENCES groups(id) ON DELETE CASCADE,
+                created_by_teacher_id TEXT NOT NULL,
+                active INTEGER NOT NULL DEFAULT 1,
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+            );
+
+            CREATE TABLE IF NOT EXISTS itinerary_items (
+                itinerary_id TEXT NOT NULL REFERENCES itineraries(id) ON DELETE CASCADE,
+                assignment_id TEXT NOT NULL REFERENCES activity_assignments(id) ON DELETE CASCADE,
+                position INTEGER NOT NULL DEFAULT 0,
+                created_at TEXT NOT NULL,
+                PRIMARY KEY(itinerary_id, assignment_id)
+            );
+
             CREATE TABLE IF NOT EXISTS group_memberships (
                 group_id TEXT NOT NULL REFERENCES groups(id) ON DELETE CASCADE,
                 teacher_id TEXT NOT NULL,
@@ -301,6 +319,10 @@ def init_db() -> None:
                 ON activity_assignments(created_by_teacher_id, created_at DESC);
             CREATE INDEX IF NOT EXISTS idx_assignments_group
                 ON activity_assignments(group_id, active);
+            CREATE INDEX IF NOT EXISTS idx_itineraries_group
+                ON itineraries(group_id, active, updated_at DESC);
+            CREATE INDEX IF NOT EXISTS idx_itinerary_items_order
+                ON itinerary_items(itinerary_id, position);
             CREATE INDEX IF NOT EXISTS idx_sessions_identity
                 ON student_sessions(identity_id);
             CREATE INDEX IF NOT EXISTS idx_identities_public_code
@@ -678,6 +700,16 @@ class ActivityAssignmentIn(BaseModel):
     title: str = ""
 
 
+class ItineraryIn(BaseModel):
+    title: str = Field(min_length=1, max_length=160)
+    group_id: str = Field(min_length=1, max_length=128)
+
+
+class ItineraryItemIn(BaseModel):
+    assignment_id: str = Field(min_length=1, max_length=128)
+    position: int = Field(default=0, ge=0, le=10000)
+
+
 def normalize_app_id(raw: str) -> str:
     app_id = re.sub(r"[^a-z0-9_-]+", "-", (raw or "").lower()).strip("-")[:64]
     if not app_id:
@@ -703,6 +735,22 @@ def public_assignment(row: sqlite3.Row) -> dict[str, Any]:
         "active": bool(row["active"]),
         "created_at": row["created_at"],
         "updated_at": row["updated_at"],
+    }
+
+
+def public_itinerary(row: sqlite3.Row, items: list[sqlite3.Row] | None = None) -> dict[str, Any]:
+    return {
+        "id": row["id"],
+        "title": row["title"],
+        "group_id": row["group_id"],
+        "created_by_teacher_id": row["created_by_teacher_id"],
+        "active": bool(row["active"]),
+        "created_at": row["created_at"],
+        "updated_at": row["updated_at"],
+        "items": [
+            {"assignment_id": item["assignment_id"], "position": item["position"]}
+            for item in (items or [])
+        ],
     }
 
 
@@ -983,7 +1031,11 @@ def student_dashboard(request: Request) -> dict[str, Any]:
                 a.*,
                 COUNT(s.id) AS attempts,
                 MAX(s.score) AS best_score,
-                MAX(s.created_at) AS last_score_at
+                MAX(s.created_at) AS last_score_at,
+                (SELECT ii.position FROM itinerary_items ii
+                 JOIN itineraries it ON it.id = ii.itinerary_id
+                 WHERE ii.assignment_id = a.id AND it.group_id = a.group_id AND it.active = 1
+                 ORDER BY ii.position LIMIT 1) AS itinerary_position
             FROM activity_assignments a
             LEFT JOIN scores s
                 ON s.assignment_id = a.id
@@ -991,7 +1043,8 @@ def student_dashboard(request: Request) -> dict[str, Any]:
             WHERE a.group_id = ?
               AND a.active = 1
             GROUP BY a.id
-            ORDER BY a.created_at DESC, a.title, a.app_id, a.activity_id
+            ORDER BY itinerary_position IS NULL, itinerary_position,
+                     a.created_at DESC, a.title, a.app_id, a.activity_id
             """,
             (identity["id"], identity["group_id"]),
         ).fetchall()
@@ -1004,6 +1057,7 @@ def student_dashboard(request: Request) -> dict[str, Any]:
                 "best_score": row["best_score"],
                 "last_score_at": row["last_score_at"],
                 "completed": int(row["attempts"] or 0) > 0,
+                "itinerary_position": row["itinerary_position"],
             }
             for row in rows
         ],
@@ -1188,6 +1242,82 @@ def teacher_activity_assignments(
             params,
         ).fetchall()
     return {"assignments": [public_assignment(row) for row in rows]}
+
+
+@app.post("/api/teacher/itineraries", status_code=201)
+def create_itinerary(payload: ItineraryIn, request: Request) -> dict[str, Any]:
+    teacher_id = require_group_access(request, payload.group_id)
+    itinerary_id = secrets.token_urlsafe(12)
+    ts = iso_now()
+    with get_conn() as conn:
+        conn.execute(
+            """
+            INSERT INTO itineraries (id, title, group_id, created_by_teacher_id, active, created_at, updated_at)
+            VALUES (?, ?, ?, ?, 1, ?, ?)
+            """,
+            (itinerary_id, payload.title.strip(), payload.group_id, teacher_id, ts, ts),
+        )
+        row = conn.execute("SELECT * FROM itineraries WHERE id = ?", (itinerary_id,)).fetchone()
+    return {"itinerary": public_itinerary(row)}
+
+
+@app.get("/api/teacher/itineraries")
+def teacher_itineraries(request: Request, group_id: str = "") -> dict[str, Any]:
+    teacher_id = require_teacher(request)
+    params: list[Any] = [teacher_id, teacher_id]
+    where = """WHERE i.active = 1 AND (i.created_by_teacher_id = ? OR EXISTS (
+        SELECT 1 FROM group_memberships m WHERE m.group_id = i.group_id AND m.teacher_id = ?
+    ))"""
+    if group_id:
+        where += " AND i.group_id = ?"
+        params.append(group_id)
+    with get_conn() as conn:
+        rows = conn.execute(
+            f"SELECT i.* FROM itineraries i {where} ORDER BY i.updated_at DESC, i.title",
+            params,
+        ).fetchall()
+        result = []
+        for row in rows:
+            items = conn.execute(
+                "SELECT assignment_id, position FROM itinerary_items WHERE itinerary_id = ? ORDER BY position, assignment_id",
+                (row["id"],),
+            ).fetchall()
+            result.append(public_itinerary(row, items))
+    return {"itineraries": result}
+
+
+@app.post("/api/teacher/itineraries/{itinerary_id}/items", status_code=201)
+def add_itinerary_item(itinerary_id: str, payload: ItineraryItemIn, request: Request) -> dict[str, Any]:
+    teacher_id = require_teacher(request)
+    ts = iso_now()
+    with get_conn() as conn:
+        itinerary = conn.execute(
+            """SELECT i.* FROM itineraries i WHERE i.id = ? AND i.active = 1 AND
+            (i.created_by_teacher_id = ? OR EXISTS (
+                SELECT 1 FROM group_memberships m WHERE m.group_id = i.group_id AND m.teacher_id = ?
+            ))""",
+            (itinerary_id, teacher_id, teacher_id),
+        ).fetchone()
+        if not itinerary:
+            raise HTTPException(status_code=404, detail="itinerary not found")
+        assignment = conn.execute(
+            "SELECT id FROM activity_assignments WHERE id = ? AND group_id = ? AND active = 1",
+            (payload.assignment_id, itinerary["group_id"]),
+        ).fetchone()
+        if not assignment:
+            raise HTTPException(status_code=404, detail="assignment not found")
+        conn.execute(
+            """INSERT INTO itinerary_items (itinerary_id, assignment_id, position, created_at)
+            VALUES (?, ?, ?, ?) ON CONFLICT(itinerary_id, assignment_id)
+            DO UPDATE SET position = excluded.position""",
+            (itinerary_id, payload.assignment_id, payload.position, ts),
+        )
+        conn.execute("UPDATE itineraries SET updated_at = ? WHERE id = ?", (ts, itinerary_id))
+        items = conn.execute(
+            "SELECT assignment_id, position FROM itinerary_items WHERE itinerary_id = ? ORDER BY position, assignment_id",
+            (itinerary_id,),
+        ).fetchall()
+    return {"itinerary": public_itinerary(itinerary, items)}
 
 
 @app.get("/api/teacher/activity-assignments/{assignment_id}/results")

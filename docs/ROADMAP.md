@@ -234,8 +234,12 @@ d'activitat que EduHoot sol.
 - [x] Cercador local del Banc de recursos al tauler docent i assignació de
   recursos Play al grup seleccionat, conservant l'`activity_id` per al tauler
   de resultats.
-- [ ] Assignar recursos de la cistella als recorreguts; qualsevol recurs és
-  assignable, només els d'app (JClic/H5P/EduHoot) generen puntuació i resultats.
+- [x] Preparar en `id-api` el modelo mínimo de itinerarios sobre asignaciones
+  existentes, con orden estable y compatibilidad con el dashboard del
+  alumnado.
+- [ ] Assignar recursos de la cistella als recorreguts des del tauler; qualsevol
+  recurs és assignable, només els d'app (JClic/H5P/EduHoot) generen puntuació i
+  resultats.
 - [ ] Migració de preferits anònims → OIDC (diferida mentre no hi haja comptes
   reals al Banc de recursos).
 - [x] Integrar EduTicTac Play amb `recursos`: enviar activitats H5P públiques i
