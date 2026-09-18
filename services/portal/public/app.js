@@ -198,6 +198,11 @@ function setEmpty(node, content) {
 
 function setTeacherSession(active) {
   state.teacher = active;
+  const loginButton = $("teacherOidcLogin");
+  if (loginButton) {
+    loginButton.classList.toggle("hidden", active);
+    loginButton.setAttribute("aria-hidden", active ? "true" : "false");
+  }
   ["teacherSummary", "refreshDashboard", "createBatch", "teacherLogout", "addGroupMember", "loadGroupMembers", "createItinerary", "loadItineraries", "addGroupIdentities", "deleteGroup", "assignFavoriteResources"].forEach((id) => {
     const node = $(id);
     if (node) {
