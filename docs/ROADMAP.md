@@ -307,12 +307,41 @@ estiguen disponibles.
 El contracte de resultats, assignacions i funcionament local-first de Play està
 en `docs/play-commons-integration.md`.
 
-### Fita v2-3 — SSO docent a EduHoot
+### Fita v2-3 — Catàleg compartit de la xarxa de centres
+
+**Resultat:** els centres poden rebre una còpia local del catàleg comú i
+compartir activitats seleccionades amb la resta de la xarxa sense dependre en
+temps real de `edutictac.es`.
+
+- [ ] Crear el repositori independent `edutictac-content` com a font de
+  continguts publicats, separat del codi de Commons i de les dades privades
+  dels centres.
+- [ ] Importar-hi el catàleg inicial d'activitats i recursos que ja existeix a
+  `edutictac.es`, conservant identificadors, metadades, idioma, llicència i
+  autoria.
+- [ ] Definir un manifest versionat amb identificadors estables, revisions,
+  hashes SHA-256, dependències i fitxers de Recursos/EduHoot.
+- [ ] Publicar les versions en `contenido.edutictac.es` mitjançant HTTPS com a
+  artefactes estàtics servits per Nginx o emmagatzematge compatible amb S3.
+- [ ] Afegir en Administració dues accions independents: «Sincronitzar
+  Recursos» i «Sincronitzar EduHoot».
+- [ ] Fer la sincronització idempotent, amb descàrrega temporal, validació del
+  manifest, actualització atòmica, informe de canvis i última versió vàlida
+  local.
+- [ ] Permetre proposar des de Play i EduHoot activitats per compartir amb la
+  xarxa, mantenint privades per defecte les activitats de centre, docent i
+  alumnat.
+- [ ] Incorporar revisió, moderació, llicència, centre d'origen i retirada de
+  continguts publicats.
+- [ ] Documentar el flux de publicació, sincronització, rollback i treball
+  sense connexió amb el repositori central.
+
+### Fita v2-4 — SSO docent a EduHoot
 
 - [ ] Permetre l'accés del professorat a EduHoot amb Authentik/OIDC (crear i
   gestionar qüestionaris), en lloc del flux actual per tokens.
 
-### Fita v2-4 — Visor net de vídeos i col·lecció docent
+### Fita v2-5 — Visor net de vídeos i col·lecció docent
 
 **Resultat:** el professorat pot guardar vídeos de YouTube en una col·lecció
 catalogada, preparar-los en una interfície neta per a l'aula i assignar-los a
@@ -345,13 +374,13 @@ publicitat servida pel reproductor.
 - [ ] Incloure els vídeos i metadades en la política de backup/restauració i en
   la documentació de privacitat per a centres.
 
-### Fita v2-5 — LRS complet (xAPI)
+### Fita v2-6 — LRS complet (xAPI)
 
 - [ ] Desplegar `lrsql` (LRS) com a mòdul de l'stack i connectar-hi el Learning
   Bridge (normalització JClic/H5P) i el SDK client per al progrés docent, més
   enllà de la prova de concepte finançada.
 
-### Fita v2-6 — Configuració de desplegament
+### Fita v2-7 — Configuració de desplegament
 
 - [ ] Permetre configurar des del panell d'administració els ports publicats
   pel host, amb detecció de conflictes, reinici controlat, còpia de la
