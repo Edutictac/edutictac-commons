@@ -121,9 +121,10 @@ for line in path.read_text(encoding="utf-8").splitlines():
         env[key] = value
 
 name = env.get("EDUTICTAC_MDNS_NAME", "edutictac")
+public_name = name if name.endswith(".local") else f"{name}.local"
 portal_port = env.get("PORTAL_PORT", "80")
-portal_base = f"http://{name}" if portal_port == "80" else f"http://{name}:{portal_port}"
-authentik_base = f"http://{name}:{env.get('AUTHENTIK_PORT', '9000')}"
+portal_base = f"http://{public_name}" if portal_port == "80" else f"http://{public_name}:{portal_port}"
+authentik_base = f"http://{public_name}:{env.get('AUTHENTIK_PORT', '9000')}"
 values = {
     "EDUTICTAC_ID_OIDC_ISSUER_URL": f"{authentik_base}/application/o/edutictac-commons",
     "EDUTICTAC_ID_OIDC_DISCOVERY_URL": "http://authentik-server:9000/application/o/edutictac-commons/.well-known/openid-configuration",
