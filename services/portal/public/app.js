@@ -60,6 +60,8 @@ function setAuthentikLinks() {
     const link = $(id);
     if (link) link.href = url;
   });
+  const changePasswordLink = $("changePasswordLink");
+  if (changePasswordLink) changePasswordLink.href = `${url}if/user/`;
 }
 
 function showOidcSetupNotice() {
@@ -607,17 +609,16 @@ function studentProfileCard(message = "") {
 async function checkIdentityStatus() {
   const statusNode = $("apiStatus");
   if (!statusNode) return;
+  const sessionMenu = $("sessionMenu");
   statusNode.textContent = t("common.session.checking");
-  statusNode.disabled = true;
-  statusNode.dataset.authenticated = "false";
+  if (sessionMenu) sessionMenu.dataset.authenticated = "false";
   statusNode.classList.remove("error");
   try {
     const data = await api("/api/auth/me", { method: "GET" });
     const identity = data.identity || {};
     const name = identity.username || identity.public_code || identity.id || "—";
     statusNode.textContent = t("common.session.user", { name });
-    statusNode.disabled = false;
-    statusNode.dataset.authenticated = "true";
+    if (sessionMenu) sessionMenu.dataset.authenticated = "true";
     statusNode.title = t("common.session.logoutHint");
   } catch (error) {
     statusNode.textContent = error.status === 401
@@ -630,9 +631,9 @@ async function checkIdentityStatus() {
 
 async function logoutSession() {
   const statusNode = $("apiStatus");
-  if (!statusNode || statusNode.dataset.authenticated !== "true") return;
+  const sessionMenu = $("sessionMenu");
+  if (!statusNode || !sessionMenu || sessionMenu.dataset.authenticated !== "true") return;
   if (!window.confirm(t("common.session.logoutConfirm"))) return;
-  statusNode.disabled = true;
   await Promise.allSettled([
     api("/api/auth/oidc/logout", { method: "POST" }),
     api("/api/teacher/logout", { method: "POST" }),
@@ -1201,7 +1202,7 @@ document.addEventListener("click", (event) => {
 });
 
 bind("teacherOidcLogin", teacherOidcLogin);
-bind("apiStatus", logoutSession);
+bind("logoutSessionButton", logoutSession);
 bind("teacherLogout", teacherLogout, "teacherOutput");
 bind("teacherSummary", teacherSummary, "teacherOutput");
 bind("refreshDashboard", refreshDashboard, "teacherOutput");

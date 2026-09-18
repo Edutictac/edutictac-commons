@@ -20,7 +20,13 @@
         <a id="authentikNavLink" href="http://localhost:9000/" data-i18n="common.identity">Identitat</a>
       </nav>
       <div class="topbar-actions">
-        <button id="apiStatus" type="button" class="status" disabled>Comprovant sessió...</button>
+        <details id="sessionMenu" class="session-menu">
+          <summary id="apiStatus" class="status">Comprovant sessió...</summary>
+          <div class="session-menu__items">
+            <a id="changePasswordLink" href="#" target="_blank" rel="noopener" data-i18n="common.session.changePassword">Cambiar contraseña</a>
+            <button id="logoutSessionButton" type="button" data-i18n="common.session.logout">Salir de la sesión</button>
+          </div>
+        </details>
         <div class="lang-switcher" role="group" aria-label="Idioma" data-i18n-title="common.lang.label">
           <button type="button" data-lang="ca" title="Català">CA</button>
           <button type="button" data-lang="va" title="Valencià">VA</button>

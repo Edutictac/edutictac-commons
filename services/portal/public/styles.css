@@ -73,8 +73,57 @@ h3 {
   white-space: nowrap;
 }
 
-.status:not(:disabled) {
+.session-menu {
+  position: relative;
+}
+
+.session-menu:not([data-authenticated="true"]) .session-menu__items {
+  display: none;
+}
+
+.session-menu summary {
+  list-style: none;
+  cursor: default;
+}
+
+.session-menu summary::-webkit-details-marker {
+  display: none;
+}
+
+.session-menu[data-authenticated="true"] summary {
   cursor: pointer;
+}
+
+.session-menu__items {
+  position: absolute;
+  z-index: 10;
+  top: calc(100% + 8px);
+  right: 0;
+  display: grid;
+  min-width: 190px;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(29, 42, 46, 0.14);
+}
+
+.session-menu__items a,
+.session-menu__items button {
+  padding: 9px 10px;
+  border: 0;
+  border-radius: 5px;
+  color: var(--ink);
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.session-menu__items a:hover,
+.session-menu__items button:hover {
+  background: var(--soft);
 }
 
 .status.error {
