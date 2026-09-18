@@ -20,7 +20,7 @@
         <a id="authentikNavLink" href="http://localhost:9000/" data-i18n="common.identity">Identitat</a>
       </nav>
       <div class="topbar-actions">
-        <span id="apiStatus" class="status">Comprovant API...</span>
+        <button id="apiStatus" type="button" class="status" disabled>Comprovant sessió...</button>
         <div class="lang-switcher" role="group" aria-label="Idioma" data-i18n-title="common.lang.label">
           <button type="button" data-lang="ca" title="Català">CA</button>
           <button type="button" data-lang="va" title="Valencià">VA</button>
@@ -46,7 +46,6 @@
 
           <div class="actions teacher-auth-actions">
             <button id="teacherOidcLogin" type="button" class="secondary" data-i18n="common.login">Entrar</button>
-            <button id="teacherLogout" type="button" class="secondary" data-i18n="common.logout">Eixir</button>
             <button id="teacherSummary" type="button" class="secondary" data-i18n="teacher.summary">Resum</button>
             <button id="refreshDashboard" type="button" class="secondary" data-i18n="teacher.refreshDashboard">Actualitzar tauler</button>
           </div>

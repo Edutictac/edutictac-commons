@@ -608,18 +608,36 @@ async function checkIdentityStatus() {
   const statusNode = $("apiStatus");
   if (!statusNode) return;
   statusNode.textContent = t("common.session.checking");
+  statusNode.disabled = true;
+  statusNode.dataset.authenticated = "false";
   statusNode.classList.remove("error");
   try {
     const data = await api("/api/auth/me", { method: "GET" });
     const identity = data.identity || {};
     const name = identity.username || identity.public_code || identity.id || "—";
     statusNode.textContent = t("common.session.user", { name });
+    statusNode.disabled = false;
+    statusNode.dataset.authenticated = "true";
+    statusNode.title = t("common.session.logoutHint");
   } catch (error) {
     statusNode.textContent = error.status === 401
       ? t("common.session.signedOut")
       : t("common.session.unavailable");
     statusNode.classList.toggle("error", error.status !== 401);
+    statusNode.title = "";
   }
+}
+
+async function logoutSession() {
+  const statusNode = $("apiStatus");
+  if (!statusNode || statusNode.dataset.authenticated !== "true") return;
+  if (!window.confirm(t("common.session.logoutConfirm"))) return;
+  statusNode.disabled = true;
+  await Promise.allSettled([
+    api("/api/auth/oidc/logout", { method: "POST" }),
+    api("/api/teacher/logout", { method: "POST" }),
+  ]);
+  window.location.reload();
 }
 
 async function checkOidc() {
@@ -1183,6 +1201,7 @@ document.addEventListener("click", (event) => {
 });
 
 bind("teacherOidcLogin", teacherOidcLogin);
+bind("apiStatus", logoutSession);
 bind("teacherLogout", teacherLogout, "teacherOutput");
 bind("teacherSummary", teacherSummary, "teacherOutput");
 bind("refreshDashboard", refreshDashboard, "teacherOutput");
