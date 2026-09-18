@@ -38,6 +38,13 @@ const $ = (id) => document.getElementById(id);
 const has = (id) => Boolean($(id));
 const t = window.i18nPortal.t;
 
+// Guarda temporalment (només en memòria del navegador) els lots d'identitats
+// acabats de generar, mentre el PIN encara és en clar, perquè es puguen
+// imprimir o exportar. El backend mai torna a exposar el PIN després
+// d'aquest moment (vore `services/id-api/main.py`, comentari a
+// `export_codes_csv`), així que aquestes dades no es persisteixen enlloc.
+const pendingBatches = new Map();
+
 function accessibleResourceUrl(rawUrl) {
   if (!rawUrl) return "";
   try {
@@ -275,6 +282,67 @@ function credentialCards(identities) {
         .join("")}
     </div>
   `;
+}
+
+function batchActions(identities, groupCode) {
+  if (!identities.length) return "";
+  const batchId = `batch-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  pendingBatches.set(batchId, { identities, groupCode });
+  return `
+    <div class="export-actions" aria-label="${t("teacher.exports")}">
+      <button type="button" class="secondary" data-print-batch="${batchId}">${t("teacher.printBatch")}</button>
+      <button type="button" class="secondary" data-download-batch-csv="${batchId}">${t("teacher.downloadBatchCsv")}</button>
+    </div>
+  `;
+}
+
+function printBatchCards(identities, groupCode) {
+  const win = window.open("", "_blank");
+  if (!win) return;
+  const cards = identities
+    .map(
+      (item) => `
+        <article>
+          <h2>EduTicTac</h2>
+          <p>Codi</p>
+          <strong>${escapeHtml(item.public_code)}</strong>
+          <p>PIN</p>
+          <em>${escapeHtml(item.pin)}</em>
+          <small>${t("common.useAsStudent")}</small>
+        </article>
+      `,
+    )
+    .join("");
+  win.document.write(`<!doctype html>
+<html lang="ca">
+<meta charset="utf-8">
+<title>Targetes EduTicTac ${escapeHtml(groupCode || "")}</title>
+<style>
+body{font-family:Arial,sans-serif;margin:16px;color:#111}
+main{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+article{border:1px dashed #555;padding:10px;min-height:130px;break-inside:avoid}
+h2{font-size:18px;margin:0 0 8px}p{margin:6px 0 2px}strong{font-size:28px}em{display:block;font-style:normal;font-size:22px;color:#555}small{display:block;margin-top:10px}
+@media print{body{margin:8mm}}
+</style>
+<main>${cards}</main>
+</html>`);
+  win.document.close();
+  win.focus();
+  win.addEventListener("load", () => win.print());
+}
+
+function downloadBatchCsv(identities, groupCode) {
+  const rows = [["codi", "pin"], ...identities.map((item) => [item.public_code, item.pin])];
+  const csv = rows.map((row) => row.map((value) => `"${String(value).replaceAll('"', '""')}"`).join(",")).join("\r\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `edutictac-${groupCode || "grup"}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
 }
 
 function groupLinks(group) {
@@ -759,6 +827,7 @@ async function createBatch() {
       <p>${t("teacher.groupCreated")} <strong>${escapeHtml(batch.group.group_code)}</strong></p>
       <p>${t("teacher.pickCardHint")}</p>
       ${groupLinks(batch.group)}
+      ${batchActions(batch.identities, batch.group.group_code)}
       ${credentialCards(batch.identities)}
     `,
   );
@@ -773,7 +842,10 @@ async function addGroupIdentities() {
     body: JSON.stringify({ count, pin_length: 4 }),
   });
   const [summary, assignmentData, identityData] = await loadTeacherData();
-  setOutput($("teacherOutput"), `<p>${t("teacher.identitiesAdded", { count: batch.identities.length })}</p>${credentialCards(batch.identities)}${teacherDashboard(summary, assignmentData.assignments || [], identityData.identities || [])}`);
+  setOutput(
+    $("teacherOutput"),
+    `<p>${t("teacher.identitiesAdded", { count: batch.identities.length })}</p>${batchActions(batch.identities, state.group.group_code)}${credentialCards(batch.identities)}${teacherDashboard(summary, assignmentData.assignments || [], identityData.identities || [])}`,
+  );
 }
 
 async function deleteGroup() {
@@ -1066,6 +1138,20 @@ document.addEventListener("click", (event) => {
       $("studentPin").value = card.dataset.pin;
       setOutput($("studentOutput"), `<p>${t("common.credentialLoaded")}</p>`);
     }
+    return;
+  }
+
+  const printBatchButton = event.target.closest("[data-print-batch]");
+  if (printBatchButton) {
+    const batch = pendingBatches.get(printBatchButton.dataset.printBatch);
+    if (batch) printBatchCards(batch.identities, batch.groupCode);
+    return;
+  }
+
+  const downloadBatchButton = event.target.closest("[data-download-batch-csv]");
+  if (downloadBatchButton) {
+    const batch = pendingBatches.get(downloadBatchButton.dataset.downloadBatchCsv);
+    if (batch) downloadBatchCsv(batch.identities, batch.groupCode);
     return;
   }
 

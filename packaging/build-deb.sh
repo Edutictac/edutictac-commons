@@ -3,7 +3,7 @@ set -euo pipefail
 
 repo_dir="$(cd "$(dirname "$0")/.." && pwd)"
 output_dir="${OUTPUT_DIR:-$repo_dir/dist}"
-package_version="${DEB_VERSION:-0.1.1~alpha16}"
+package_version="${DEB_VERSION:-0.1.1~alpha17}"
 package_name="edutictac-commons"
 stage_dir="$(mktemp -d)"
 trap 'rm -rf "$stage_dir"' EXIT
