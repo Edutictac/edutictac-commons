@@ -140,7 +140,9 @@ function setApplicationLinks() {
     "8082": { play: "8084", recursos: "8086", eduhoot: "8090", admin: "8091" },
     "18082": { play: "18084", recursos: "18086", eduhoot: "18090", admin: "18091" },
   };
-  const ports = directPorts[window.location.port];
+  const localPackageHost = window.location.hostname === "edutictac.local"
+    || /^\d{1,3}(?:\.\d{1,3}){3}$/.test(window.location.hostname);
+  const ports = directPorts[window.location.port] || (localPackageHost ? directPorts["80"] : null);
   const links = ports
     ? {
         playHomeLink: `${window.location.protocol}//${window.location.hostname}:${ports.play}/`,
