@@ -151,6 +151,9 @@ services:
       ID_API_HEALTH_URL: http://id-api:8005/api/health
       ID_API_ME_URL: http://id-api:8005/api/auth/me
       ADMIN_OIDC_USERNAME: ${ADMIN_OIDC_USERNAME:-akadmin}
+      AUTHENTIK_API_URL: ${AUTHENTIK_API_URL:-http://authentik-server:9000/api/v3}
+      AUTHENTIK_API_TOKEN: ${AUTHENTIK_API_TOKEN:-}
+      AUTHENTIK_TEACHER_GROUP: ${AUTHENTIK_TEACHER_GROUP:-profesor}
     volumes:
       - /run/user/${PUID:-1000}/bus:/run/user/${PUID:-1000}/bus
       # systemctl --user parla amb el manager per un socket local directe

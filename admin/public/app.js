@@ -3,6 +3,7 @@ const API_PREFIX = window.location.pathname.startsWith("/admin/") ? "/admin" : "
 const apiStatus = document.getElementById("apiStatus");
 const statusOutput = document.getElementById("statusOutput");
 const actionOutput = document.getElementById("actionOutput");
+const teacherOutput = document.getElementById("teacherOutput");
 const restoreBackupSelect = document.getElementById("restoreBackupSelect");
 const rollbackBackupSelect = document.getElementById("rollbackBackupSelect");
 
@@ -15,6 +16,33 @@ function setOutput(el, text, isError) {
     el.classList.add("error");
   }
 }
+
+document.getElementById("teacherForm").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  setOutput(teacherOutput, t("teachers.creating"), false);
+  const payload = {
+    username: document.getElementById("teacherUsername").value.trim(),
+    name: document.getElementById("teacherName").value.trim(),
+    email: document.getElementById("teacherEmail").value.trim(),
+  };
+  try {
+    const response = await apiFetch("/api/teachers", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`);
+    const teacher = data.teacher;
+    setOutput(teacherOutput, t("teachers.created", {
+      username: teacher.username,
+      password: teacher.temporary_password,
+    }), false);
+    event.target.reset();
+  } catch (error) {
+    setOutput(teacherOutput, `${t("common.errorLabel")} ${error.message}`, true);
+  }
+});
 
 async function apiFetch(path, options) {
   const resp = await fetch(`${API_PREFIX}${path}`, Object.assign({ credentials: "same-origin" }, options));

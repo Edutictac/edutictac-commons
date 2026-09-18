@@ -13,6 +13,14 @@ entries:
     state: present
     identifiers:
       name: administrador
+
+  - id: edutictac-teacher-group
+    model: authentik_core.group
+    state: present
+    identifiers:
+      name: profesor
+    attrs:
+      name: profesor
     attrs:
       name: administrador
 

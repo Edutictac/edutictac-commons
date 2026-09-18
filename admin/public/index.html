@@ -37,6 +37,31 @@
         </div>
       </section>
 
+      <section class="panel" aria-labelledby="teacherTitle">
+        <div class="panel-heading">
+          <p class="eyebrow" data-i18n="teachers.label">Profesorado</p>
+          <h2 id="teacherTitle" data-i18n="teachers.title">Dar de alta un docente</h2>
+        </div>
+        <form id="teacherForm">
+          <label>
+            <span data-i18n="teachers.username">Usuario</span>
+            <input id="teacherUsername" required autocomplete="off" pattern="[A-Za-z0-9][A-Za-z0-9._-]{2,149}">
+          </label>
+          <label>
+            <span data-i18n="teachers.name">Nombre completo</span>
+            <input id="teacherName" required autocomplete="name">
+          </label>
+          <label>
+            <span data-i18n="teachers.email">Correo electrónico</span>
+            <input id="teacherEmail" type="email" autocomplete="email">
+          </label>
+          <div class="actions">
+            <button type="submit" data-i18n="teachers.create">Crear docente</button>
+          </div>
+        </form>
+        <div id="teacherOutput" class="output empty" data-i18n="teachers.help">La contraseña temporal aparecerá una sola vez.</div>
+      </section>
+
       <section class="panel" aria-labelledby="statusTitle">
         <div class="panel-heading">
           <p class="eyebrow" data-i18n="status.label">Estat</p>

@@ -11,10 +11,12 @@ scripts ja existents al repo.
 import json
 import os
 import re
+import secrets
 import socket
 import subprocess
 import sys
 import urllib.error
+import urllib.parse
 import urllib.request
 from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -28,6 +30,9 @@ VERSION_FILE = APP_DIR / "VERSION"
 PORT = int(os.environ.get("ADMIN_INTERNAL_PORT", "8091"))
 ID_API_ME_URL = os.environ.get("ID_API_ME_URL", "http://id-api:8005/api/auth/me")
 ADMIN_OIDC_USERNAME = os.environ.get("ADMIN_OIDC_USERNAME", "akadmin").strip().lower()
+AUTHENTIK_API_URL = os.environ.get("AUTHENTIK_API_URL", "http://authentik-server:9000/api/v3").rstrip("/")
+AUTHENTIK_API_TOKEN = os.environ.get("AUTHENTIK_API_TOKEN", "").strip()
+AUTHENTIK_TEACHER_GROUP = os.environ.get("AUTHENTIK_TEACHER_GROUP", "profesor").strip()
 
 PORTAL_HEALTH_URL = os.environ.get("PORTAL_HEALTH_URL", "http://portal/api/health")
 ID_API_HEALTH_URL = os.environ.get("ID_API_HEALTH_URL", "http://id-api:8005/api/health")
@@ -192,6 +197,70 @@ def run_script(*args, timeout=SCRIPT_TIMEOUT):
         return False, str(exc)
     output = proc.stdout + proc.stderr
     return proc.returncode == 0, output
+
+
+def authentik_api(path, method="GET", payload=None):
+    if not AUTHENTIK_API_TOKEN:
+        raise RuntimeError("API de Authentik no configurada")
+    body = None
+    headers = {
+        "Accept": "application/json",
+        "Authorization": f"Bearer {AUTHENTIK_API_TOKEN}",
+    }
+    if payload is not None:
+        body = json.dumps(payload).encode("utf-8")
+        headers["Content-Type"] = "application/json"
+    request = urllib.request.Request(
+        f"{AUTHENTIK_API_URL}/{path.lstrip('/')}",
+        data=body,
+        headers=headers,
+        method=method,
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=8) as response:
+            raw = response.read()
+            return response.status, json.loads(raw.decode("utf-8")) if raw else {}
+    except urllib.error.HTTPError as exc:
+        detail = exc.read().decode("utf-8", errors="replace")[:500]
+        raise RuntimeError(f"Authentik HTTP {exc.code}: {detail}") from exc
+
+
+def create_teacher(payload):
+    username = str(payload.get("username", "")).strip().lower()
+    name = str(payload.get("name", "")).strip()
+    email = str(payload.get("email", "")).strip().lower()
+    if not re.fullmatch(r"[a-z0-9][a-z0-9._-]{2,149}", username):
+        raise ValueError("El usuario debe tener entre 3 y 150 caracteres y solo usar letras, números, punto, guion o guion bajo")
+    if not name or len(name) > 150:
+        raise ValueError("El nombre es obligatorio y no puede superar 150 caracteres")
+    if email and (len(email) > 254 or not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", email)):
+        raise ValueError("El correo no es válido")
+
+    _, groups = authentik_api(f"core/groups/?name={urllib.parse.quote(AUTHENTIK_TEACHER_GROUP)}")
+    results = groups.get("results", [])
+    if results:
+        group_pk = results[0]["pk"]
+    else:
+        _, group = authentik_api("core/groups/", "POST", {"name": AUTHENTIK_TEACHER_GROUP, "is_superuser": False})
+        group_pk = group["pk"]
+
+    _, user = authentik_api("core/users/", "POST", {
+        "username": username,
+        "name": name,
+        "email": email,
+        "is_active": True,
+        "type": "internal",
+    })
+    temporary_password = secrets.token_urlsafe(12)
+    authentik_api(f"core/users/{user['pk']}/set_password/", "POST", {"password": temporary_password})
+    authentik_api(f"core/groups/{group_pk}/add_user/", "POST", {"pk": user["pk"]})
+    return {
+        "username": username,
+        "name": name,
+        "email": email,
+        "group": AUTHENTIK_TEACHER_GROUP,
+        "temporary_password": temporary_password,
+    }
 
 
 ACTIONS = {
@@ -387,6 +456,16 @@ class Handler(BaseHTTPRequestHandler):
             return
         if not self._is_authorized():
             self._send_json(401, {"error": "no autoritzat"})
+            return
+        if self.path == "/api/teachers":
+            try:
+                teacher = create_teacher(self._read_json_body())
+            except ValueError as exc:
+                self._send_json(400, {"error": str(exc)})
+            except (RuntimeError, KeyError) as exc:
+                self._send_json(502, {"error": str(exc)})
+            else:
+                self._send_json(201, {"ok": True, "teacher": teacher})
             return
         action = ACTIONS.get(self.path)
         if action is None:
