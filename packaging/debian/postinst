@@ -233,6 +233,13 @@ chown -R "$target_uid:$target_gid" "$APP_DIR/data"
 chown "$target_uid:$target_gid" "$APP_DIR/backups" "$APP_DIR/dist"
 chmod 700 "$APP_DIR/data" "$APP_DIR/backups"
 
+if command -v docker >/dev/null 2>&1 && ! docker compose version >/dev/null 2>&1; then
+    echo "Aviso: falta el complemento Docker Compose v2 ('docker compose')." >&2
+    echo "El servicio no arrancara hasta instalarlo. En Ubuntu/LliureX:" >&2
+    echo "  sudo apt install docker-compose-v2" >&2
+    echo "Despues reinicia el servicio: sudo systemctl restart $SERVICE" >&2
+fi
+
 if command -v systemctl >/dev/null 2>&1; then
     systemctl daemon-reload
     systemctl enable "$SERVICE" >/dev/null 2>&1 || true
