@@ -34,8 +34,10 @@ El token docent de demo és el valor de `EDUTICTAC_ID_TEACHER_TOKEN` en `.env` (
 |---|---:|---|
 | `portal` | 80 | Portal demo i proxy `/api/` |
 | `id-api` | 8005 | Credencial pseudònima d'alumnat |
-| `eduhoot` | 3000 | Activitat quiz (opcional, `COMPOSE_PROFILES=eduhoot`) |
+| `eduhoot` | 3000 | Activitat quiz amb SSO Authentik (opcional, `COMPOSE_PROFILES=eduhoot`) |
 | `eduhoot-mongo` | 27017 | Base de dades d'EduHoot (opcional) |
+| `recursos-api` | 8004 | API del banc de recursos (opcional, `COMPOSE_PROFILES=recursos`) |
+| `recursos` | 80 | Interfície del banc de recursos (opcional) |
 | `admin` | 8091 | Panell `/admin`: estat operatiu i backups (sempre actiu) |
 | `play` | 8084 | Editor simplificat d'activitats H5P (Fase 1) |
 
@@ -148,7 +150,9 @@ make load-images ARCHIVE=dist/edutictac-commons-images-0.1.0-alpha.tar
 ```
 
 L'arxiu d'imatges inclou les imatges pròpies versionades del stack:
-`commons-id-api`, `commons-portal` i `commons-admin`.
+`commons-id-api`, `commons-portal`, `commons-admin` i `commons-play`. Si el
+perfil `recursos` està actiu, també inclou `recursos-api` i `recursos`.
+Per generar-la amb Recursos, usa `COMPOSE_PROFILES=recursos make export-images`.
 
 Els objectius `up`, `down`, `build`, `logs`, `ps`, `reset`, `restore`,
 `check-images`, `check-updates` i `update-images` accepten també

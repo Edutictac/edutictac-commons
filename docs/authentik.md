@@ -49,6 +49,11 @@ El issuer debe ser el de la aplicación/proveedor OIDC concreto de Authentik,
 no necesariamente la raíz de Authentik. La aplicación utiliza su discovery en
 `<issuer>/.well-known/openid-configuration`. La URL de callback debe coincidir
 exactamente con una URI permitida en Authentik.
+En una instalación con el módulo Recursos activo, el mismo proveedor OIDC
+también incluye `RECURSOS_OIDC_REDIRECT_URI` (`/api/auth/callback`) como URI
+de redirección permitida.
+EduHoot utiliza ese mismo cliente y añade `EDUHOOT_AUTHENTIK_REDIRECT_URI`
+(`/api/auth/authentik/callback`) al proveedor.
 
 En una instalación con contenedores, el descubrimiento puede apuntar al nombre
 interno `http://authentik-server:9000/.../.well-known/openid-configuration`.

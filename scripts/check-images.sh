@@ -24,6 +24,7 @@ docker_cmd="${DOCKER:-docker}"
 registry="$(env_value IMAGE_REGISTRY edutictac)"
 image_tag="$(env_value IMAGE_TAG "$(cat VERSION 2>/dev/null || echo 0.1.0-alpha)")"
 eduhoot_tag="$(env_value EDUHOOT_TAG 0.1.0)"
+recursos_tag="$(env_value RECURSOS_TAG local)"
 profiles="$(env_value COMPOSE_PROFILES "")"
 
 images="
@@ -36,6 +37,12 @@ ${registry}/commons-play:${image_tag}
 case ",${profiles}," in
   *,eduhoot,*) images="${images}
 ${registry}/eduhoot:${eduhoot_tag}" ;;
+esac
+
+case ",${profiles}," in
+  *,recursos,*) images="${images}
+${registry}/recursos-api:${recursos_tag}
+${registry}/recursos:${recursos_tag}" ;;
 esac
 
 echo "Registre: ${registry}"

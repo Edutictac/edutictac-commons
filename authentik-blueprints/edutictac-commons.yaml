@@ -63,6 +63,10 @@ entries:
       redirect_uris:
         - url: !Env EDUTICTAC_ID_OIDC_REDIRECT_URL
           matching_mode: strict
+        - url: !Env RECURSOS_OIDC_REDIRECT_URI
+          matching_mode: strict
+        - url: !Env EDUHOOT_AUTHENTIK_REDIRECT_URI
+          matching_mode: strict
 
   - id: edutictac-commons-application
     model: authentik_core.application

@@ -8,7 +8,7 @@ SERVICE=edutictac-commons.service
 MDNS_CONF=/etc/avahi/avahi-daemon.conf
 
 step_num=0
-step_total=6
+step_total=7
 step() {
     step_num=$((step_num + 1))
     echo ""
@@ -152,13 +152,25 @@ public_name = name if name.endswith(".local") else f"{name}.local"
 portal_port = env.get("PORTAL_PORT", "80")
 portal_base = f"http://{public_name}" if portal_port == "80" else f"http://{public_name}:{portal_port}"
 authentik_base = f"http://{public_name}:{env.get('AUTHENTIK_PORT', '9000')}"
+authentik_issuer = f"{authentik_base}/application/o/edutictac-commons"
+authentik_discovery = "http://authentik-server:9000/application/o/edutictac-commons/.well-known/openid-configuration"
+authentik_authorization = f"{authentik_base}/application/o/authorize/"
+authentik_token = "http://authentik-server:9000/application/o/token/"
+authentik_userinfo = "http://authentik-server:9000/application/o/userinfo/"
 values = {
-    "EDUTICTAC_ID_OIDC_ISSUER_URL": f"{authentik_base}/application/o/edutictac-commons",
-    "EDUTICTAC_ID_OIDC_DISCOVERY_URL": "http://authentik-server:9000/application/o/edutictac-commons/.well-known/openid-configuration",
-    "EDUTICTAC_ID_OIDC_AUTHORIZATION_URL": f"{authentik_base}/application/o/authorize/",
+    "EDUTICTAC_ID_OIDC_ISSUER_URL": authentik_issuer,
+    "EDUTICTAC_ID_OIDC_DISCOVERY_URL": authentik_discovery,
+    "EDUTICTAC_ID_OIDC_AUTHORIZATION_URL": authentik_authorization,
     "EDUTICTAC_ID_OIDC_REDIRECT_URL": f"{portal_base}/api/auth/oidc/callback",
     "RECURSOS_APP_URL": f"http://{public_name}:8086",
     "RECURSOS_OIDC_REDIRECT_URI": f"http://{public_name}:8086/api/auth/callback",
+    "EDUHOOT_AUTHENTIK_ISSUER": authentik_issuer,
+    "EDUHOOT_AUTHENTIK_DISCOVERY_URL": authentik_discovery,
+    "EDUHOOT_AUTHENTIK_AUTHORIZATION_URL": authentik_authorization,
+    "EDUHOOT_AUTHENTIK_TOKEN_URL": authentik_token,
+    "EDUHOOT_AUTHENTIK_USERINFO_URL": authentik_userinfo,
+    "EDUHOOT_AUTHENTIK_CLIENT_ID": env.get("EDUTICTAC_ID_OIDC_CLIENT_ID", ""),
+    "EDUHOOT_AUTHENTIK_CLIENT_SECRET": env.get("EDUTICTAC_ID_OIDC_CLIENT_SECRET", ""),
     "PLAY_PUBLIC_URL": f"http://{public_name}:8084",
     "EDUHOOT_PUBLIC_BASE_URL": f"http://{public_name}:8090",
     "EDUHOOT_AUTHENTIK_REDIRECT_URI": f"http://{public_name}:8090/api/auth/authentik/callback",
@@ -174,6 +186,13 @@ replace_if = {
     "PLAY_PUBLIC_URL": {"", "http://localhost:8084"},
     "EDUHOOT_PUBLIC_BASE_URL": {"", "http://localhost:8090"},
     "EDUHOOT_AUTHENTIK_REDIRECT_URI": {"", "http://localhost:8090/api/auth/authentik/callback"},
+    "EDUHOOT_AUTHENTIK_ISSUER": {""},
+    "EDUHOOT_AUTHENTIK_DISCOVERY_URL": {""},
+    "EDUHOOT_AUTHENTIK_AUTHORIZATION_URL": {""},
+    "EDUHOOT_AUTHENTIK_TOKEN_URL": {""},
+    "EDUHOOT_AUTHENTIK_USERINFO_URL": {""},
+    "EDUHOOT_AUTHENTIK_CLIENT_ID": {""},
+    "EDUHOOT_AUTHENTIK_CLIENT_SECRET": {""},
     "PLAY_ALLOWED_HOSTS": {"", "play.local.test,localhost"},
 }
 lines = path.read_text(encoding="utf-8").splitlines()
@@ -273,6 +292,23 @@ if command -v systemctl >/dev/null 2>&1; then
         echo "Revisa el registre del servei i executa: systemctl start $SERVICE" >&2
     fi
 fi
+
+profiles="$(grep '^COMPOSE_PROFILES=' "$ENV_FILE" 2>/dev/null | tail -n 1 | cut -d= -f2- || true)"
+case ",$profiles," in
+    *,authentik,*)
+        if command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1; then
+            step "Reiniciant Authentik per a recarregar el blueprint OIDC..."
+            if ! (
+                cd "$APP_DIR" &&
+                docker compose --env-file "$ENV_FILE" -f compose.yml \
+                    restart authentik-server authentik-worker
+            ); then
+                echo "Avís: no s'ha pogut reiniciar Authentik automàticament." >&2
+                echo "Revisa el servei i executa: sudo systemctl restart $SERVICE" >&2
+            fi
+        fi
+        ;;
+esac
 
 AUTHENTIK_API_TOKEN="$(python3 - "$ENV_FILE" <<'PY'
 import sys
