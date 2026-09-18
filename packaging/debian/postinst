@@ -8,7 +8,7 @@ SERVICE=edutictac-commons.service
 MDNS_CONF=/etc/avahi/avahi-daemon.conf
 
 step_num=0
-step_total=8
+step_total=7
 step() {
     step_num=$((step_num + 1))
     echo ""
@@ -304,22 +304,8 @@ if command -v systemctl >/dev/null 2>&1; then
     fi
 fi
 
-profiles="$(grep '^COMPOSE_PROFILES=' "$ENV_FILE" 2>/dev/null | tail -n 1 | cut -d= -f2- || true)"
-case ",$profiles," in
-    *,authentik,*)
-        if command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1; then
-            step "Reiniciant Authentik per a recarregar el blueprint OIDC..."
-            if ! (
-                cd "$APP_DIR" &&
-                docker compose --env-file "$ENV_FILE" -f compose.yml \
-                    restart authentik-server authentik-worker
-            ); then
-                echo "Avís: no s'ha pogut reiniciar Authentik automàticament." >&2
-                echo "Revisa el servei i executa: sudo systemctl restart $SERVICE" >&2
-            fi
-        fi
-        ;;
-esac
+# systemctl restart already recreates the stack. A second restart here can
+# interrupt first-run migrations before the blueprint has been applied.
 
 AUTHENTIK_API_TOKEN="$(python3 - "$ENV_FILE" <<'PY'
 import sys

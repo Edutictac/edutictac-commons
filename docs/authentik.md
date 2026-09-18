@@ -111,6 +111,27 @@ aceptan sus equivalentes ingleses). Si llegan varios, se aplica la prioridad
 `EDUTICTAC_ID_OIDC_ROLE_CLAIM`; así puede usarse `groups` si el centro ya tiene
 ese mapping.
 
+## Compatibilitat de la imatge d'Authentik
+
+El perfil usa la imatge fixada `ghcr.io/goauthentik/server:2026.8.3`. Eixa
+versió té dos problemes de cicle de vida que impedien arrancar Authentik en una
+instal·lació nova:
+
+- la connexió del lifecycle quedava amb una transacció oberta abans de les
+  migracions de Django, cosa que podia bloquejar canvis d'esquema;
+- la migració històrica `tenant_to_brand` renombrava la taula moderna de
+  tenants (sense columna `domain`) quan una instal·lació nova s'interrompia.
+
+El directori `authentik-compat/2026.8.3/` conté dos fitxers de la pròpia imatge
+amb eixos dos arreglos (`migrate.py` i `tenant_to_brand.py`). El `compose.yml`
+els munta damunt de la imatge, tant en `authentik-server` com en
+`authentik-worker`. El `postinst` no reinicia Authentik: `systemctl restart` ja
+recrea l'stack i un segon reinici podia interrompre les migracions de la
+primera arrancada.
+
+En canviar `AUTHENTIK_TAG`, revisa o elimina eixos overrides (vegeu
+`authentik-compat/2026.8.3/README.md`).
+
 ## Endpoints
 
 * `GET /api/auth/oidc/status`: indica si OIDC está configurado, sin revelar

@@ -251,6 +251,7 @@ services:
     image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2026.8.3}
     profiles: ["authentik"]
     command: server
+    # Compatibility fixes for the pinned 2026.8.3 lifecycle migrations.
     depends_on:
       authentik-postgresql:
         condition: service_healthy
@@ -268,6 +269,8 @@ services:
     volumes:
       - ./data/authentik:/data
       - ./data/authentik-templates:/templates
+      - ./authentik-compat/2026.8.3/migrate.py:/lifecycle/migrate.py:ro
+      - ./authentik-compat/2026.8.3/tenant_to_brand.py:/lifecycle/system_migrations/tenant_to_brand.py:ro
     restart: unless-stopped
 
   authentik-worker:
@@ -296,6 +299,8 @@ services:
       - ./data/authentik:/data
       - ./data/authentik-templates:/templates
       - ./authentik-blueprints/edutictac-commons.yaml:/blueprints/edutictac-commons.yaml:ro
+      - ./authentik-compat/2026.8.3/migrate.py:/lifecycle/migrate.py:ro
+      - ./authentik-compat/2026.8.3/tenant_to_brand.py:/lifecycle/system_migrations/tenant_to_brand.py:ro
     restart: unless-stopped
 
 volumes:
