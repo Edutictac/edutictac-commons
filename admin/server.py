@@ -39,6 +39,8 @@ CONTENT_CATALOG_BASE_URL = os.environ.get("CONTENT_CATALOG_BASE_URL", "").strip(
 CONTENT_SYNC_DIR = os.environ.get("CONTENT_SYNC_DIR", "/app/content-sync").strip()
 RESOURCES_API_URL = os.environ.get("RESOURCES_API_URL", "http://recursos-api:8004").rstrip("/")
 RESOURCES_IMPORT_TOKEN = os.environ.get("RESOURCES_IMPORT_TOKEN", "").strip()
+EDUHOOT_API_URL = os.environ.get("EDUHOOT_API_URL", "http://eduhoot:3000").rstrip("/")
+EDUHOOT_RESOURCES_TOKEN = os.environ.get("EDUHOOT_RESOURCES_TOKEN", "").strip()
 
 PORTAL_HEALTH_URL = os.environ.get("PORTAL_HEALTH_URL", "http://portal/api/health")
 ID_API_HEALTH_URL = os.environ.get("ID_API_HEALTH_URL", "http://id-api:8005/api/health")
@@ -382,13 +384,33 @@ def action_content_sync(channel):
                 )
                 with urllib.request.urlopen(request, timeout=120) as response:
                     imported = json.loads(response.read().decode("utf-8"))
+                if imported.get("errors", 0):
+                    raise ValueError("el índice rechazó algunos recursos; revisa el catálogo")
+            elif channel == "eduhoot":
+                if not EDUHOOT_RESOURCES_TOKEN:
+                    raise ValueError("EDUHOOT_RESOURCES_TOKEN no está configurado")
+                catalog_path = Path(result["path"]) / "eduhoot" / "quizzes.json"
+                catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+                request = urllib.request.Request(
+                    f"{EDUHOOT_API_URL}/api/integrations/recursos/import-catalog",
+                    data=json.dumps(catalog, ensure_ascii=False).encode("utf-8"),
+                    method="POST",
+                    headers={"Authorization": f"Bearer {EDUHOOT_RESOURCES_TOKEN}",
+                             "Content-Type": "application/json"},
+                )
+                with urllib.request.urlopen(request, timeout=120) as response:
+                    imported = json.loads(response.read().decode("utf-8"))
+                if not imported.get("ok") or imported.get("failed", 0):
+                    raise ValueError("EduHoot no ha completado la importación")
         except urllib.error.HTTPError as exc:
-            detail = exc.read(512).decode("utf-8", errors="replace")
-            return False, f"Sincronización de {channel} fallida: API de Recursos HTTP {exc.code} ({detail})", 502
+            return False, f"Sincronización de {channel} fallida: API de importación HTTP {exc.code}", 502
         except (OSError, RuntimeError, ValueError, json.JSONDecodeError) as exc:
             return False, f"Sincronización de {channel} fallida: {exc}", 502
         suffix = ""
-        if imported is not None:
+        if channel == "eduhoot" and imported is not None:
+            suffix = (f" EduHoot local: {imported['imported']} cuestionarios importados, "
+                      f"{imported['skipped']} ya existentes.")
+        elif imported is not None:
             suffix = (
                 f" Índice actualizado: {imported['total']} recursos "
                 f"({imported['created']} nuevos, {imported['updated']} modificados)."

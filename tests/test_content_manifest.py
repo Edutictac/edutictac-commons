@@ -20,7 +20,8 @@ def example_manifest():
 def test_example_manifest_is_valid():
     payload = MODULE.validate(ROOT / "content/manifest.example.json")
     assert payload["schema_version"] == 1
-    assert payload["items"][0]["channel"] == "eduhoot"
+    channels = {item["channel"] for item in payload["items"]}
+    assert channels == {"resources", "eduhoot"}
 
 
 def test_manifest_rejects_duplicate_channel_ids(tmp_path):

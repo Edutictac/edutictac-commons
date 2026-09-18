@@ -8,6 +8,11 @@ El repositori de continguts publicarà un `manifest.json` versionat i fitxers
 associats. Commons podrà descarregar una versió, validar-la i importar per
 separat els canals `resources` i `eduhoot`.
 
+Cada canal publica un únic fitxer agregat: `resources/catalog.json` i
+`eduhoot/quizzes.json`. L'importador de Commons els envia sencers als serveis
+corresponents (`recursos-api` i EduHoot local), de manera que el manifest només
+cal que referencie eixos dos artefactes (un ítem per canal).
+
 ## Contracte mínim
 
 Cada entrada del manifest té:

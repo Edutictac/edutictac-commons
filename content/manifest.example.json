@@ -5,23 +5,34 @@
   "source": "edutictac-content",
   "items": [
     {
-      "id": "eduhoot:example-repas",
-      "channel": "eduhoot",
-      "title": "Repaso de ejemplo",
-      "description": "Actividad de ejemplo para validar el contrato.",
-      "language": "es",
+      "id": "resources:catalog",
+      "channel": "resources",
+      "title": "Catàleg federat de recursos",
+      "description": "Índex complet de recursos publicats per la xarxa de centres.",
+      "language": "ca",
       "license": "CC BY-SA 4.0",
       "revision": 1,
       "artifact": {
-        "path": "eduhoot/example-repas.json",
+        "path": "resources/catalog.json",
         "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
         "media_type": "application/json"
       },
-      "metadata": {
-        "subject": "general",
-        "educational_stage": "general",
-        "tags": ["ejemplo"]
-      }
+      "metadata": {}
+    },
+    {
+      "id": "eduhoot:catalog",
+      "channel": "eduhoot",
+      "title": "Catàleg de qüestionaris EduHoot",
+      "description": "Qüestionaris publicats per la xarxa de centres per importar-los a EduHoot local.",
+      "language": "ca",
+      "license": "CC BY-SA 4.0",
+      "revision": 1,
+      "artifact": {
+        "path": "eduhoot/quizzes.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "media_type": "application/json"
+      },
+      "metadata": {}
     }
   ]
 }
