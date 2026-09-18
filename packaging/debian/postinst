@@ -7,6 +7,16 @@ EXAMPLE_FILE="$APP_DIR/.env.example"
 SERVICE=edutictac-commons.service
 MDNS_CONF=/etc/avahi/avahi-daemon.conf
 
+step_num=0
+step_total=6
+step() {
+    step_num=$((step_num + 1))
+    echo ""
+    echo "==> [$step_num/$step_total] $1"
+}
+
+step "Generant la configuració (.env) amb claus i contrasenyes úniques..."
+
 had_existing_env=1
 if [ ! -f "$ENV_FILE" ]; then
     had_existing_env=0
@@ -124,6 +134,8 @@ PY
     echo "Avís: el port 80 ja està ocupat; Commons utilitzarà el port 8082." >&2
 fi
 
+step "Configurant les URLs públiques i el nom mDNS (edutictac.local)..."
+
 python3 - "$ENV_FILE" <<'PY'
 from pathlib import Path
 import sys
@@ -230,6 +242,8 @@ if command -v gtk-update-icon-cache >/dev/null 2>&1; then
     gtk-update-icon-cache -f /usr/share/icons/hicolor >/dev/null 2>&1 || true
 fi
 
+step "Preparant els directoris de dades i còpies de seguretat..."
+
 mkdir -p "$APP_DIR/data" "$APP_DIR/data/play" "$APP_DIR/data/recursos-api" \
     "$APP_DIR/data/authentik" "$APP_DIR/data/authentik-templates" \
     "$APP_DIR/data/content-sync" \
@@ -240,12 +254,16 @@ chown -R "$target_uid:$target_gid" "$APP_DIR/data"
 chown "$target_uid:$target_gid" "$APP_DIR/backups" "$APP_DIR/dist"
 chmod 700 "$APP_DIR/data" "$APP_DIR/backups"
 
+step "Comprovant Docker Compose..."
+
 if command -v docker >/dev/null 2>&1 && ! docker compose version >/dev/null 2>&1; then
     echo "Avís: falta el complement Docker Compose v2 ('docker compose')." >&2
     echo "El servei no arrencarà fins que s'instal·le. En Ubuntu/LliureX:" >&2
     echo "  sudo apt install docker-compose-v2" >&2
     echo "Després reinicia el servei: sudo systemctl restart $SERVICE" >&2
 fi
+
+step "Activant i arrencant el servei (pot trigar uns minuts mentre es descarreguen les imatges Docker)..."
 
 if command -v systemctl >/dev/null 2>&1; then
     systemctl daemon-reload
@@ -268,6 +286,8 @@ PY
 )"
 
 if [ -n "$AUTHENTIK_API_TOKEN" ] && command -v docker >/dev/null 2>&1; then
+    step "Esperant que Authentik estiga llest per crear el token d'API d'administració (fins a 60 s)..."
+
     authentik_attempt=0
     while [ "$authentik_attempt" -lt 30 ]; do
         if (
