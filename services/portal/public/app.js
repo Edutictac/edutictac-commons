@@ -639,6 +639,7 @@ async function logoutSession() {
   await Promise.allSettled([
     api("/api/auth/oidc/logout", { method: "POST" }),
     api("/api/teacher/logout", { method: "POST" }),
+    api("/api/auth/logout", { method: "POST" }),
   ]);
   window.location.reload();
 }
@@ -887,6 +888,7 @@ async function studentLogin() {
   });
   state.student = login.identity;
   setStudentSession(true);
+  await checkIdentityStatus();
   await loadStudentDashboard();
 }
 
@@ -895,6 +897,7 @@ async function studentLogout() {
   state.student = null;
   state.studentAssignments = [];
   setStudentSession(false);
+  await checkIdentityStatus();
   setOutput(
     $("studentOutput"),
     `<p>${t("student.logoutMessage")}</p>`,
@@ -907,10 +910,12 @@ async function refreshStudentSession() {
     const data = await api("/api/auth/me", { method: "GET" });
     state.student = data.identity;
     setStudentSession(true);
+    await checkIdentityStatus();
     await loadStudentDashboard();
   } catch (error) {
     state.student = null;
     setStudentSession(false);
+    await checkIdentityStatus();
     setOutput(
       $("studentOutput"),
       `<p>${t("student.loginPrompt")}</p>`,
