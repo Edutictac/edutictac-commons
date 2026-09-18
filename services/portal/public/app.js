@@ -158,6 +158,8 @@ function setApplicationLinks() {
     const link = $(id);
     if (link) link.href = url;
   });
+  const teacherResourcesLink = $("teacherResourcesLink");
+  if (teacherResourcesLink) teacherResourcesLink.href = links.resourcesHomeLink;
 }
 
 function saveState() {
