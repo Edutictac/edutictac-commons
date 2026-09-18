@@ -31,6 +31,7 @@ const state = {
   studentAssignments: [],
   showStudentHistory: false,
   resources: [],
+  basket: [],
 };
 
 const $ = (id) => document.getElementById(id);
@@ -193,7 +194,7 @@ function setEmpty(node, content) {
 
 function setTeacherSession(active) {
   state.teacher = active;
-  ["teacherSummary", "refreshDashboard", "createBatch", "createEduhootAssignment", "teacherLogout", "addGroupMember", "loadGroupMembers", "createItinerary", "loadItineraries", "addGroupIdentities", "deleteGroup"].forEach((id) => {
+  ["teacherSummary", "refreshDashboard", "createBatch", "teacherLogout", "addGroupMember", "loadGroupMembers", "createItinerary", "loadItineraries", "addGroupIdentities", "deleteGroup", "assignFavoriteResources"].forEach((id) => {
     const node = $(id);
     if (node) {
       node.disabled = !active;
@@ -383,7 +384,13 @@ function resourceActivityId(resource) {
   return resource.external_id;
 }
 
-function renderResources(data) {
+function resourceAppId(resource) {
+  if (resource.provider === PLAY_APP) return PLAY_APP;
+  if (resource.provider === EDUHOOT_APP) return EDUHOOT_APP;
+  return "resource";
+}
+
+function renderResources(data, { basket = false } = {}) {
   const output = $("resourcesOutput");
   if (!output) return;
   state.resources = data.items || [];
@@ -391,7 +398,8 @@ function renderResources(data) {
     setEmpty(output, t("teacher.resourcesEmpty"));
     return;
   }
-  setOutput(output, `<div class="cards">${state.resources.map((resource) => `
+  const basketHint = basket ? `<p class="hint">${t("teacher.basketHint", { count: state.resources.length })}</p>` : "";
+  setOutput(output, `${basketHint}<div class="cards">${state.resources.map((resource) => `
     <article class="card">
       <strong>${escapeHtml(resource.title || resource.external_id)}</strong>
       <small>${escapeHtml(resource.provider || resource.format || "recurs")} · ${escapeHtml(resource.subject || "")}</small>
@@ -407,6 +415,7 @@ async function loadResources() {
   if (search) query.set("q", search);
   output.textContent = t("teacher.resourcesLoading");
   try {
+    state.basket = [];
     renderResources(await api(`/resources-api/resources?${query}`, { method: "GET" }));
   } catch (error) {
     setEmpty(output, t("teacher.resourcesUnavailable"));
@@ -418,10 +427,37 @@ async function loadFavoriteResources() {
   if (!output) return;
   output.textContent = t("teacher.resourcesLoading");
   try {
-    renderResources(await api("/resources-api/teacher/favorites?limit=48", { method: "GET" }));
+    const data = await api("/resources-api/teacher/favorites?limit=48", { method: "GET" });
+    state.basket = data.items || [];
+    renderResources(data, { basket: true });
   } catch (error) {
     setEmpty(output, t("teacher.favoritesUnavailable"));
   }
+}
+
+async function assignFavoriteResources() {
+  if (!state.teacher) throw new Error(t("teacher.errors.loginFirst"));
+  if (!state.group) throw new Error(t("teacher.errors.selectGroupFirst"));
+  if (!state.basket.length) throw new Error(t("teacher.errors.emptyBasket"));
+  const output = $("resourcesOutput");
+  if (output) output.textContent = t("teacher.assigningBasket");
+  let lastAssignment = null;
+  for (const resource of state.basket) {
+    const result = await api("/api/teacher/activity-assignments", {
+      method: "POST",
+      body: JSON.stringify({
+        group_id: state.group.id,
+        app_id: resourceAppId(resource),
+        activity_id: resourceActivityId(resource),
+        title: resource.title || resource.external_id,
+        launch_url: accessibleResourceUrl(resource.play_url || resource.source_url || resource.reuse_url || resource.download_url || ""),
+      }),
+    });
+    lastAssignment = result.assignment;
+  }
+  state.assignment = lastAssignment;
+  await loadTeacherData();
+  setOutput(output, `<p>${t("teacher.basketAssigned", { count: state.basket.length })}</p>`);
 }
 
 async function assignResource(resource) {
@@ -430,7 +466,7 @@ async function assignResource(resource) {
     method: "POST",
       body: JSON.stringify({
         group_id: state.group.id,
-        app_id: resource.provider === PLAY_APP ? PLAY_APP : "resource",
+        app_id: resourceAppId(resource),
         activity_id: resourceActivityId(resource),
         title: resource.title || resource.external_id,
         launch_url: accessibleResourceUrl(resource.play_url || resource.source_url || resource.reuse_url || resource.download_url || ""),
@@ -505,7 +541,9 @@ function studentDashboard(assignments) {
         : [PLAY_APP, "play"].includes(String(assignment.app_id || "").toLowerCase())
           ? `<button class="compact secondary" type="button" data-launch-play-assignment="${escapeHtml(assignment.id)}">${t("student.openPlay")}</button>`
           : assignment.app_id === "resource"
-            ? assignment.launch_url
+            ? String(assignment.activity_id || "").startsWith("teacher-upload:")
+              ? `<button class="compact secondary" type="button" data-launch-document-assignment="${escapeHtml(assignment.id)}">${t("student.openResource")}</button>`
+              : assignment.launch_url
               ? `<a class="button-link compact secondary" href="${escapeHtml(accessibleResourceUrl(assignment.launch_url))}" target="_blank" rel="noopener noreferrer">${t("student.openResource")}</a>`
               : `<button class="compact secondary" type="button" data-launch-resource-assignment="${escapeHtml(assignment.id)}">${t("student.openResource")}</button>`
         : "",
@@ -711,36 +749,6 @@ async function deleteGroup() {
   await refreshDashboard();
 }
 
-async function createEduhootAssignment() {
-  if (!state.teacher) {
-    throw new Error(t("teacher.errors.loginFirst"));
-  }
-  if (!state.group) {
-    throw new Error(t("teacher.errors.selectGroupFirst"));
-  }
-  const activityId = $("eduhootActivityId").value.trim();
-  if (!activityId) {
-    throw new Error(t("teacher.errors.enterEduhootId"));
-  }
-  const title = $("eduhootActivityTitle").value.trim() || `EduHoot ${activityId}`;
-  const created = await api("/api/teacher/activity-assignments", {
-    method: "POST",
-    body: JSON.stringify({
-      group_id: state.group.id,
-      app_id: EDUHOOT_APP,
-      activity_id: activityId,
-      title,
-    }),
-  });
-  state.assignment = created.assignment;
-  state.assignments = [created.assignment, ...state.assignments.filter((item) => item.id !== created.assignment.id)];
-  saveState();
-  setOutput(
-    $("resultsOutput"),
-    `<p>${t("teacher.eduhootAssigned")} <strong>${escapeHtml(state.group.group_code)}</strong>: <strong>${escapeHtml(title)}</strong>.</p>`,
-  );
-}
-
 async function regeneratePin(identityId) {
   if (!state.teacher) {
     throw new Error(t("teacher.errors.loginFirst"));
@@ -943,6 +951,17 @@ async function launchResourceAssignment(assignment) {
   window.open(url, "_blank", "noopener,noreferrer");
 }
 
+async function launchDocumentAssignment(assignment) {
+  if (!state.student) throw new Error(t("student.errors.loginFirst"));
+  const launch = await api("/api/student/launch-token", {
+    method: "POST",
+    body: JSON.stringify({ assignment_id: assignment.id }),
+  });
+  const url = new URL(`/api/student/activity-assignments/${encodeURIComponent(assignment.id)}/resource`, window.location.origin);
+  url.searchParams.set("launch_token", launch.token);
+  window.open(url.toString(), "_blank", "noopener,noreferrer");
+}
+
 async function loadResults() {
   if (!state.assignment) {
     throw new Error(t("teacher.errors.selectActivityFirst"));
@@ -1119,6 +1138,16 @@ document.addEventListener("click", (event) => {
     return;
   }
 
+  const documentLaunchButton = event.target.closest("[data-launch-document-assignment]");
+  if (documentLaunchButton) {
+    const assignment = state.studentAssignments.find((item) => item.id === documentLaunchButton.dataset.launchDocumentAssignment);
+    if (!assignment) return;
+    launchDocumentAssignment(assignment).catch((error) => {
+      setOutput($("studentOutput"), `<p><strong>${t("common.errorLabel")}</strong> ${escapeHtml(error.message)}</p>${studentDashboard(state.studentAssignments)}`);
+    });
+    return;
+  }
+
   const resourceButton = event.target.closest("[data-assign-resource]");
   if (resourceButton) {
     const resource = state.resources.find((item) => item.external_id === resourceButton.dataset.assignResource);
@@ -1136,7 +1165,7 @@ bind("teacherLogout", teacherLogout, "teacherOutput");
 bind("teacherSummary", teacherSummary, "teacherOutput");
 bind("refreshDashboard", refreshDashboard, "teacherOutput");
 bind("createBatch", createBatch, "teacherOutput");
-bind("createEduhootAssignment", createEduhootAssignment, "resultsOutput");
+bind("assignFavoriteResources", assignFavoriteResources, "resourcesOutput");
 bind("addGroupMember", addGroupMember, "membersOutput");
 bind("loadGroupMembers", loadGroupMembers, "membersOutput");
 bind("studentLogin", studentLogin, "studentOutput");

@@ -47,9 +47,14 @@ El progreso y las puntuaciones siguen asociados a `assignment_id`, por lo que
 el tablero docente puede consultar resultados sin cambios y una actividad no
 se copia al moverla de posición.
 
+## Estado de la interfaz
+
+El panel docente ya permite reunir recursos en la cesta y asignarlos al grupo
+con una sola acción. Las asignaciones de Recursos, EduHoot y Play conservan su
+identificador original y pueden añadirse al itinerario.
+
 ## Próximos pasos
 
-- editor visual de itinerarios en el panel docente;
-- añadir recursos desde la cistella con una sola acción;
+- editor visual más completo de itinerarios en el panel docente;
 - permitir varios itinerarios por grupo y selección del itinerario activo;
 - mostrar el título del itinerario en el dashboard del alumnado.

@@ -1,11 +1,11 @@
-# Integración futura de EduTicTac Play con `recursos`
+# Integración de EduTicTac Play con `recursos`
 
 ## Objetivo
 
-Las actividades H5P creadas en Play deberán poder incorporarse posteriormente
-al módulo `recursos`, que ya dispone de su propio visor H5P. Esta integración no
-forma parte del MVP inmediato: primero se estabilizan los tipos de actividad,
-la exportación y la importación en Moodle.
+Las actividades H5P creadas en Play pueden incorporarse al módulo `recursos`,
+que ya dispone de su propio catálogo. Desde el panel docente se seleccionan
+como cualquier otro recurso y se añaden a la cesta, sin copiar manualmente sus
+identificadores.
 
 ## Estado comprobado
 

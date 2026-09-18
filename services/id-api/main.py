@@ -18,6 +18,7 @@ import os
 import re
 import secrets
 import sqlite3
+import httpx
 from datetime import datetime, timedelta, timezone
 from typing import Any
 from urllib.parse import urlparse
@@ -65,6 +66,7 @@ SETUP_TOKEN = os.environ.get("EDUTICTAC_SETUP_TOKEN", "").strip()
 AUTHENTIK_BOOTSTRAP_PASSWORD = os.environ.get("EDUTICTAC_AUTHENTIK_BOOTSTRAP_PASSWORD", "")
 OIDC_COOKIE = "edutictac_oidc"
 OIDC_ROLE_ORDER = ("administrador", "profesor", "alumno")
+RESOURCES_API_URL = os.environ.get("EDUTICTAC_RESOURCES_API_URL", "http://recursos-api:8004").rstrip("/")
 
 app = FastAPI(title="EduTicTac ID API")
 logger = logging.getLogger("edutictac.id.oidc")
@@ -1234,6 +1236,68 @@ def create_student_launch_token(payload: LaunchTokenIn, request: Request) -> dic
         "expires_at": expires_at.isoformat(),
         "assignment": public_assignment(assignment),
     }
+
+
+@app.get("/api/student/activity-assignments/{assignment_id}/resource")
+def student_document_resource(assignment_id: str, launch_token: str, request: Request) -> Response:
+    """Proxy de documentos: exige sesión de alumno, asignación y token de lanzamiento."""
+    identity = current_identity(request)
+    if not identity:
+        raise HTTPException(status_code=401, detail="not authenticated")
+    token_hash = hash_launch_token((launch_token or "").strip())
+    now = now_utc()
+    with get_conn() as conn:
+        row = conn.execute(
+            """
+            SELECT t.*, a.group_id, a.active AS assignment_active, i.active AS identity_active
+            FROM app_launch_tokens t
+            JOIN activity_assignments a ON a.id = t.assignment_id
+            JOIN student_identities i ON i.id = t.identity_id
+            WHERE t.token_hash = ? AND t.assignment_id = ?
+            """,
+            (token_hash, assignment_id),
+        ).fetchone()
+    expires_at = datetime.fromisoformat(row["expires_at"]) if row else now
+    if (
+        not row
+        or row["identity_id"] != identity["id"]
+        or row["app_id"] != "resource"
+        or not row["activity_id"].startswith("teacher-upload:")
+        or row["consumed_at"]
+        or expires_at <= now
+        or not row["assignment_active"]
+        or not row["identity_active"]
+        or row["group_id"] != identity["group_id"]
+    ):
+        raise HTTPException(status_code=401, detail="invalid launch token")
+
+    document_id = row["activity_id"][len("teacher-upload:"):]
+    try:
+        upstream = httpx.get(
+            f"{RESOURCES_API_URL}/api/documents/{document_id}/download",
+            headers={"Authorization": f"Bearer {APP_TOKEN}"},
+            timeout=30,
+        )
+    except httpx.HTTPError as exc:
+        logger.exception("resources document proxy failed")
+        raise HTTPException(status_code=502, detail="document service unavailable") from exc
+    if upstream.status_code == 404:
+        raise HTTPException(status_code=404, detail="document not found")
+    if upstream.status_code >= 400:
+        raise HTTPException(status_code=502, detail="document service rejected the request")
+    with get_conn() as conn:
+        conn.execute(
+            "UPDATE app_launch_tokens SET consumed_at = ? WHERE id = ?",
+            (now.isoformat(), row["id"]),
+        )
+    return Response(
+        content=upstream.content,
+        media_type=upstream.headers.get("content-type", "application/octet-stream"),
+        headers={
+            "Content-Disposition": upstream.headers.get("content-disposition", "inline"),
+            "Cache-Control": "private, no-store",
+        },
+    )
 
 
 @app.post("/api/auth/logout")

@@ -49,10 +49,12 @@ Documentación complementaria de Play: [arquitectura](docs/architecture.md),
 [instalación](docs/installation.md), [desarrollo](docs/development.md),
 [tipos de actividad](docs/activity-types.md), [API](docs/api.md),
 [seguridad](docs/security.md), [privacidad](docs/privacy.md) e
-[integración futura con Authentik](docs/authentik.md) y [prueba de importación
+[integración con Authentik](docs/authentik.md) y [prueba de importación
 H5P en Moodle](docs/moodle-h5p-test.md).
-La integración futura con el módulo `recursos` está descrita en
+La integración con el módulo `recursos` está descrita en
 [resources-integration.md](docs/resources-integration.md).
+La guía práctica para el profesorado está en
+[docs/GUIA-DOCENTE.md](docs/GUIA-DOCENTE.md).
 
 ## Panell d'administració
 

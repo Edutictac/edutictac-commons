@@ -84,23 +84,6 @@
                 <button id="deleteGroup" type="button" class="danger" data-i18n="teacher.deleteGroup">Eliminar grupo</button>
               </div>
             </div>
-            <div class="subsection-heading">
-              <p class="eyebrow" data-i18n="teacher.eduhootSection">EduHoot</p>
-              <h3 data-i18n="teacher.assignEduhootTitle">Asignar un cuestionario</h3>
-            </div>
-            <div class="grid-fields">
-              <label>
-                <span data-i18n="teacher.eduhootActivityId">ID de actividad EduHoot</span>
-                <input id="eduhootActivityId" type="text" placeholder="local-... o ID del quiz" data-i18n-placeholder="teacher.eduhootIdPlaceholder">
-              </label>
-              <label>
-                <span data-i18n="teacher.eduhootTitle">Título de EduHoot</span>
-                <input id="eduhootActivityTitle" type="text" placeholder="Repaso inicial" data-i18n-placeholder="teacher.eduhootTitlePlaceholder">
-              </label>
-            </div>
-            <div class="actions">
-              <button id="createEduhootAssignment" type="button" class="secondary" data-i18n="teacher.assignEduhoot">Asignar EduHoot</button>
-            </div>
           </div>
         </details>
 
@@ -128,14 +111,15 @@
         <details class="panel teacher-collapsible">
           <summary class="panel-summary">
             <span class="eyebrow" data-i18n="teacher.resourcesBank">Banco de recursos</span>
-            <strong data-i18n="teacher.resourcesTitle">Buscar y asignar actividades</strong>
+            <strong data-i18n="teacher.resourcesTitle">Buscar actividades y gestionar la cesta</strong>
           </summary>
           <div class="panel-content">
           <div class="grid-fields">
             <label><span data-i18n="teacher.resourcesSearch">Cerca</span><input id="resourceSearch" type="search" placeholder="Títol, matèria o etiqueta" data-i18n-placeholder="teacher.resourcesPlaceholder"></label>
             <div class="actions">
               <button id="searchResources" type="button" class="secondary" data-i18n="teacher.resourcesButton">Buscar recursos</button>
-              <button id="loadFavoriteResources" type="button" class="secondary" data-i18n="teacher.favoritesButton">Mis favoritos</button>
+              <button id="loadFavoriteResources" type="button" class="secondary" data-i18n="teacher.favoritesButton">Abrir mi cesta</button>
+              <button id="assignFavoriteResources" type="button" data-i18n="teacher.assignBasket">Asignar cesta al grupo</button>
             </div>
           </div>
           <div id="resourcesOutput" class="output empty" data-i18n="teacher.resourcesHint">Activa el perfil Recursos per consultar el catàleg.</div>
