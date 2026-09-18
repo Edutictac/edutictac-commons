@@ -1,9 +1,32 @@
 #!/bin/sh
 set -eu
 
+APP_DIR=/opt/edutictac-commons
+ENV_FILE="$APP_DIR/.env"
+COMPOSE_FILE="$APP_DIR/compose.yml"
+STATE_DIR=/var/lib/edutictac-commons
+
 if [ "${1:-}" = remove ] || [ "${1:-}" = deconfigure ]; then
     systemctl stop edutictac-commons.service >/dev/null 2>&1 || true
     systemctl disable edutictac-commons.service >/dev/null 2>&1 || true
+
+    if command -v docker >/dev/null 2>&1 && [ -f "$ENV_FILE" ] && [ -f "$COMPOSE_FILE" ]; then
+        mkdir -p "$STATE_DIR"
+        # Guardem la llista d'imatges de l'stack per si més tard cal purgar-les
+        # (a "postrm purge" el compose.yml ja no existirà).
+        (
+            cd "$APP_DIR" &&
+            docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" config --images
+        ) > "$STATE_DIR/images.list" 2>/dev/null || true
+
+        # Aturem i eliminem contenidors i xarxa. Els volums (dades) es
+        # conserven ací: només es destrueixen si l'usuari fa "purge" (vore
+        # postrm), mai en un simple "remove".
+        (
+            cd "$APP_DIR" &&
+            docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" down --remove-orphans
+        ) >/dev/null 2>&1 || true
+    fi
 fi
 
 exit 0

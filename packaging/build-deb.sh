@@ -3,7 +3,7 @@ set -euo pipefail
 
 repo_dir="$(cd "$(dirname "$0")/.." && pwd)"
 output_dir="${OUTPUT_DIR:-$repo_dir/dist}"
-package_version="${DEB_VERSION:-0.1.1~alpha13}"
+package_version="${DEB_VERSION:-0.1.1~alpha14}"
 package_name="edutictac-commons"
 stage_dir="$(mktemp -d)"
 trap 'rm -rf "$stage_dir"' EXIT
@@ -28,6 +28,7 @@ tar -C "$repo_dir" \
 install -m 0644 "$repo_dir/packaging/debian/control" "$root_dir/DEBIAN/control"
 install -m 0755 "$repo_dir/packaging/debian/postinst" "$root_dir/DEBIAN/postinst"
 install -m 0755 "$repo_dir/packaging/debian/prerm" "$root_dir/DEBIAN/prerm"
+install -m 0755 "$repo_dir/packaging/debian/postrm" "$root_dir/DEBIAN/postrm"
 install -m 0644 "$repo_dir/packaging/edutictac-commons.service" \
   "$root_dir/lib/systemd/system/edutictac-commons.service"
 install -m 0644 "$repo_dir/packaging/debian/edutictac-commons.desktop" \

@@ -1,0 +1,38 @@
+#!/bin/sh
+set -eu
+
+APP_DIR=/opt/edutictac-commons
+STATE_DIR=/var/lib/edutictac-commons
+APT_LIST=/etc/apt/sources.list.d/edutictac.list
+APT_KEYRING=/usr/share/keyrings/edutictac.gpg
+PROJECT=edutictac-commons
+
+if [ "${1:-}" = purge ]; then
+    if command -v docker >/dev/null 2>&1; then
+        # A "prerm remove" ja s'ha fet "docker compose down" (contenidors i
+        # xarxa), però no els volums. Ara, en purgar, eliminem tot el que
+        # quede de l'stack filtrant per l'etiqueta de projecte de compose
+        # (per si el compose.yml ja no existeix o "prerm" no va poder
+        # executar-se, p. ex. Docker parat en eixe moment).
+        docker ps -aq --filter "label=com.docker.compose.project=$PROJECT" 2>/dev/null \
+            | xargs -r docker rm -f >/dev/null 2>&1 || true
+        docker volume ls -q --filter "label=com.docker.compose.project=$PROJECT" 2>/dev/null \
+            | xargs -r docker volume rm -f >/dev/null 2>&1 || true
+        docker network ls -q --filter "label=com.docker.compose.project=$PROJECT" 2>/dev/null \
+            | xargs -r docker network rm >/dev/null 2>&1 || true
+
+        if [ -f "$STATE_DIR/images.list" ]; then
+            while IFS= read -r image; do
+                [ -n "$image" ] || continue
+                docker rmi -f "$image" >/dev/null 2>&1 || true
+            done < "$STATE_DIR/images.list"
+        fi
+    fi
+
+    rm -rf "$APP_DIR" "$STATE_DIR"
+    rm -f "$APT_LIST" "$APT_KEYRING"
+
+    systemctl daemon-reload >/dev/null 2>&1 || true
+fi
+
+exit 0
