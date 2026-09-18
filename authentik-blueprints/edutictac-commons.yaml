@@ -13,6 +13,8 @@ entries:
     state: present
     identifiers:
       name: administrador
+    attrs:
+      is_superuser: true
 
   - id: edutictac-teacher-group
     model: authentik_core.group

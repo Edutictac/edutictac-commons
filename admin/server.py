@@ -37,6 +37,8 @@ AUTHENTIK_API_TOKEN = os.environ.get("AUTHENTIK_API_TOKEN", "").strip()
 AUTHENTIK_TEACHER_GROUP = os.environ.get("AUTHENTIK_TEACHER_GROUP", "profesor").strip()
 CONTENT_CATALOG_BASE_URL = os.environ.get("CONTENT_CATALOG_BASE_URL", "").strip()
 CONTENT_SYNC_DIR = os.environ.get("CONTENT_SYNC_DIR", "/app/content-sync").strip()
+RESOURCES_API_URL = os.environ.get("RESOURCES_API_URL", "http://recursos-api:8004").rstrip("/")
+RESOURCES_IMPORT_TOKEN = os.environ.get("RESOURCES_IMPORT_TOKEN", "").strip()
 
 PORTAL_HEALTH_URL = os.environ.get("PORTAL_HEALTH_URL", "http://portal/api/health")
 ID_API_HEALTH_URL = os.environ.get("ID_API_HEALTH_URL", "http://id-api:8005/api/health")
@@ -359,11 +361,41 @@ def action_content_sync(channel):
         base_url = str(payload.get("base_url", "")).strip() or CONTENT_CATALOG_BASE_URL
         try:
             result = sync_channel(channel, base_url, CONTENT_SYNC_DIR)
-        except (OSError, RuntimeError, ValueError) as exc:
+            imported = None
+            if channel == "resources":
+                catalog_path = Path(result["path"]) / "resources" / "catalog.json"
+                if not catalog_path.is_file():
+                    raise ValueError("el catálogo de recursos no contiene resources/catalog.json")
+                if not RESOURCES_IMPORT_TOKEN:
+                    raise ValueError("RESOURCES_IMPORT_TOKEN no está configurado")
+                catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+                body = json.dumps({"catalog": catalog}, ensure_ascii=False).encode("utf-8")
+                request = urllib.request.Request(
+                    f"{RESOURCES_API_URL}/api/internal/import-catalog",
+                    data=body,
+                    method="POST",
+                    headers={
+                        "Authorization": f"Bearer {RESOURCES_IMPORT_TOKEN}",
+                        "Content-Type": "application/json",
+                        "Accept": "application/json",
+                    },
+                )
+                with urllib.request.urlopen(request, timeout=120) as response:
+                    imported = json.loads(response.read().decode("utf-8"))
+        except urllib.error.HTTPError as exc:
+            detail = exc.read(512).decode("utf-8", errors="replace")
+            return False, f"Sincronización de {channel} fallida: API de Recursos HTTP {exc.code} ({detail})", 502
+        except (OSError, RuntimeError, ValueError, json.JSONDecodeError) as exc:
             return False, f"Sincronización de {channel} fallida: {exc}", 502
+        suffix = ""
+        if imported is not None:
+            suffix = (
+                f" Índice actualizado: {imported['total']} recursos "
+                f"({imported['created']} nuevos, {imported['updated']} modificados)."
+            )
         return True, (
             f"Canal {channel} sincronizado: versión {result['version']}, "
-            f"{result['items']} elementos. Copia local: {result['path']}"
+            f"{result['items']} elementos.{suffix} Copia local: {result['path']}"
         )
     return action
 

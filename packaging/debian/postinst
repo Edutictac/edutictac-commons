@@ -7,7 +7,9 @@ EXAMPLE_FILE="$APP_DIR/.env.example"
 SERVICE=edutictac-commons.service
 MDNS_CONF=/etc/avahi/avahi-daemon.conf
 
+had_existing_env=1
 if [ ! -f "$ENV_FILE" ]; then
+    had_existing_env=0
     cp "$EXAMPLE_FILE" "$ENV_FILE"
 fi
 
@@ -27,11 +29,13 @@ text = path.read_text(encoding="utf-8")
 values = {
     "REPO_DIR": "/opt/edutictac-commons",
     "IMAGE_REGISTRY": "registry.edutictac.es/edutictac",
-    "IMAGE_TAG": "0.1.1-alpha",
+    "IMAGE_TAG": "0.1.1-alpha10",
     "PORTAL_PORT": "80",
     "COMPOSE_PROFILES": "authentik,eduhoot,recursos",
-    "RECURSOS_TAG": "0.1.1-alpha",
+    "RECURSOS_TAG": "0.1.1-alpha10",
     "EDUTICTAC_MDNS_NAME": "edutictac",
+    "CONTENT_CATALOG_BASE_URL": "https://contenido.edutictac.es/releases/latest",
+    "RESOURCES_IMPORT_TOKEN": secrets.token_urlsafe(48),
     "PUID": uid,
     "PGID": gid,
     "EDUTICTAC_ID_SECRET": secrets.token_hex(32),
@@ -41,6 +45,7 @@ values = {
     "AUTHENTIK_SECRET_KEY": secrets.token_urlsafe(64),
     "EDUTICTAC_SETUP_TOKEN": secrets.token_hex(6).upper(),
     "AUTHENTIK_BOOTSTRAP_PASSWORD": secrets.token_urlsafe(18),
+    "AUTHENTIK_API_TOKEN": secrets.token_urlsafe(48),
     "ADMIN_OIDC_USERNAME": "akadmin",
     "EDUTICTAC_ID_OIDC_CLIENT_ID": "edutictac-commons",
     "EDUTICTAC_ID_OIDC_CLIENT_SECRET": secrets.token_urlsafe(48),
@@ -57,11 +62,14 @@ replace_if = {
     "COMPOSE_PROFILES": {"", "authentik", "eduhoot", "recursos"},
     "RECURSOS_TAG": {"", "local"},
     "EDUTICTAC_MDNS_NAME": {"", "edutictac"},
+    "CONTENT_CATALOG_BASE_URL": {"", "https://contenido.edutictac.es/releases/latest"},
+    "RESOURCES_IMPORT_TOKEN": {""},
     "PORTAL_PORT": {"", "8082"},
     "AUTHENTIK_PG_PASS": {"change-this-authentik-db-password", ""},
     "AUTHENTIK_SECRET_KEY": {"change-this-authentik-secret-key", ""},
     "EDUTICTAC_SETUP_TOKEN": {"", "change-this-setup-token"},
     "AUTHENTIK_BOOTSTRAP_PASSWORD": {"", "change-this-authentik-password"},
+    "AUTHENTIK_API_TOKEN": {"", "change-this-authentik-api-token"},
     "ADMIN_OIDC_USERNAME": {"", "akadmin"},
     "EDUTICTAC_ID_OIDC_CLIENT_ID": {"", "edutictac-commons"},
     "EDUTICTAC_ID_OIDC_CLIENT_SECRET": {"", "change-this-oidc-client-secret"},
@@ -97,7 +105,8 @@ PY
 
 chmod 600 "$ENV_FILE"
 
-if grep -q '^PORTAL_PORT=80$' "$ENV_FILE" && command -v ss >/dev/null 2>&1 \
+if [ "$had_existing_env" -eq 0 ] \
+    && grep -q '^PORTAL_PORT=80$' "$ENV_FILE" && command -v ss >/dev/null 2>&1 \
     && ss -ltnH | grep -Eq '(^|[[:space:]])[^[:space:]]*:80[[:space:]]'; then
     python3 - "$ENV_FILE" <<'PY'
 from pathlib import Path
@@ -138,10 +147,10 @@ values = {
     "PLAY_ALLOWED_HOSTS": f"{public_name},localhost",
 }
 replace_if = {
-    "EDUTICTAC_ID_OIDC_ISSUER_URL": {"", "https://auth.example/application/o/commons/"},
+    "EDUTICTAC_ID_OIDC_ISSUER_URL": {"", "https://auth.example/application/o/commons/", "http://edutictac:9000/application/o/edutictac-commons"},
     "EDUTICTAC_ID_OIDC_DISCOVERY_URL": {""},
-    "EDUTICTAC_ID_OIDC_AUTHORIZATION_URL": {""},
-    "EDUTICTAC_ID_OIDC_REDIRECT_URL": {"", "https://commons.example/api/auth/oidc/callback"},
+    "EDUTICTAC_ID_OIDC_AUTHORIZATION_URL": {"", "http://edutictac:9000/application/o/authorize/"},
+    "EDUTICTAC_ID_OIDC_REDIRECT_URL": {"", "https://commons.example/api/auth/oidc/callback", "http://edutictac/api/auth/oidc/callback"},
     "RECURSOS_APP_URL": {"", "http://localhost:8086"},
     "RECURSOS_OIDC_REDIRECT_URI": {"", "http://localhost:8086/api/auth/callback"},
     "PLAY_PUBLIC_URL": {"", "http://localhost:8084"},
@@ -210,6 +219,7 @@ fi
 
 mkdir -p "$APP_DIR/data" "$APP_DIR/data/play" "$APP_DIR/data/recursos-api" \
     "$APP_DIR/data/authentik" "$APP_DIR/data/authentik-templates" \
+    "$APP_DIR/data/content-sync" \
     "$APP_DIR/data/eduhoot-mongo" "$APP_DIR/data/eduhoot-uploads" \
     "$APP_DIR/data/eduhoot-logs" "$APP_DIR/backups" "$APP_DIR/dist"
 chown -R root:root "$APP_DIR"
@@ -220,10 +230,37 @@ chmod 700 "$APP_DIR/data" "$APP_DIR/backups"
 if command -v systemctl >/dev/null 2>&1; then
     systemctl daemon-reload
     systemctl enable "$SERVICE" >/dev/null 2>&1 || true
-    if ! systemctl start "$SERVICE"; then
+    if ! systemctl restart "$SERVICE"; then
         echo "Aviso: no se ha podido arrancar EduTicTac Commons." >&2
         echo "Revisa el registro del servicio y ejecuta: systemctl start $SERVICE" >&2
     fi
+fi
+
+AUTHENTIK_API_TOKEN="$(python3 - "$ENV_FILE" <<'PY'
+import sys
+from pathlib import Path
+
+for line in Path(sys.argv[1]).read_text(encoding="utf-8").splitlines():
+    if line.startswith("AUTHENTIK_API_TOKEN="):
+        print(line.split("=", 1)[1])
+        break
+PY
+)"
+
+if [ -n "$AUTHENTIK_API_TOKEN" ] && command -v docker >/dev/null 2>&1; then
+    authentik_attempt=0
+    while [ "$authentik_attempt" -lt 30 ]; do
+        if (
+            cd "$APP_DIR" &&
+            docker compose exec -T authentik-worker ak shell -c \
+                'from authentik.core.models import Token, User; import os; u=User.objects.get(username="akadmin"); g=u.groups.get(name="administrador"); g.is_superuser=True; g.save(update_fields=["is_superuser"]); Token.objects.update_or_create(identifier="edutictac-commons-admin", defaults={"user":u, "intent":"api", "key":os.environ["AUTHENTIK_API_TOKEN"], "description":"Commons admin API"})' \
+                >/dev/null 2>&1
+        ); then
+            break
+        fi
+        authentik_attempt=$((authentik_attempt + 1))
+        sleep 2
+    done
 fi
 
 if [ -n "$setup_token_notice" ]; then

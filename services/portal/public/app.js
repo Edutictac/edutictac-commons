@@ -85,10 +85,10 @@ function ensureFirstRunDialog() {
         <input id="firstRunSetupCode" name="code" autocomplete="one-time-code" required minlength="8" maxlength="64" spellcheck="false">
         <p id="firstRunSetupError" class="profile-status hidden"></p>
         <div id="firstRunSetupResult" class="hidden">
-          <p data-i18n="setup.initialCredentials">Credenciales iniciales de Authentik:</p>
+          <p data-i18n="setup.initialCredentials">Credenciales iniciales:</p>
           <p><strong data-i18n="setup.username">Usuario:</strong> <code id="firstRunSetupUser"></code><br><strong data-i18n="setup.password">Contraseña:</strong> <code id="firstRunSetupPassword"></code></p>
-          <p data-i18n="setup.changePasswordHint">Guárdalas temporalmente, entra en Authentik y cambia la contraseña inmediatamente.</p>
-          <p><a id="firstRunSetupLink" href="#" target="_blank" rel="noopener" data-i18n="setup.openAuthentik">Abrir Authentik</a></p>
+          <p data-i18n="setup.changePasswordHint">Guárdalas temporalmente, entra en el panel de acceso y cambia la contraseña inmediatamente.</p>
+          <p><a id="firstRunSetupLink" href="#" target="_blank" rel="noopener" data-i18n="setup.openAuthentik">Abrir panel de acceso</a></p>
         </div>
         <div class="actions">
           <button id="firstRunSetupSubmit" type="submit" data-i18n="setup.activate">Activar instalación</button>

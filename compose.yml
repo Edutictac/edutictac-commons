@@ -97,6 +97,7 @@ services:
       OIDC_REDIRECT_URI: ${RECURSOS_OIDC_REDIRECT_URI:-}
       OIDC_SCOPE: ${RECURSOS_OIDC_SCOPE:-openid profile}
       OIDC_ADMIN_EMAILS: ${RECURSOS_OIDC_ADMIN_EMAILS:-}
+      RESOURCES_IMPORT_TOKEN: ${RESOURCES_IMPORT_TOKEN:-}
     volumes:
       - ./data/recursos-api:/data
     expose:
@@ -156,6 +157,8 @@ services:
       AUTHENTIK_TEACHER_GROUP: ${AUTHENTIK_TEACHER_GROUP:-profesor}
       CONTENT_CATALOG_BASE_URL: ${CONTENT_CATALOG_BASE_URL:-}
       CONTENT_SYNC_DIR: /app/content-sync
+      RESOURCES_API_URL: http://recursos-api:8004
+      RESOURCES_IMPORT_TOKEN: ${RESOURCES_IMPORT_TOKEN:-}
     volumes:
       - /run/user/${PUID:-1000}/bus:/run/user/${PUID:-1000}/bus
       # systemctl --user parla amb el manager per un socket local directe
@@ -276,6 +279,7 @@ services:
       AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY:-change-this-authentik-secret-key}
       AUTHENTIK_BOOTSTRAP_PASSWORD: ${AUTHENTIK_BOOTSTRAP_PASSWORD:-}
       AUTHENTIK_BOOTSTRAP_EMAIL: ${AUTHENTIK_BOOTSTRAP_EMAIL:-admin@edutictac.local}
+      AUTHENTIK_API_TOKEN: ${AUTHENTIK_API_TOKEN:-}
       EDUTICTAC_ID_OIDC_CLIENT_ID: ${EDUTICTAC_ID_OIDC_CLIENT_ID:-}
       EDUTICTAC_ID_OIDC_CLIENT_SECRET: ${EDUTICTAC_ID_OIDC_CLIENT_SECRET:-}
       EDUTICTAC_ID_OIDC_REDIRECT_URL: ${EDUTICTAC_ID_OIDC_REDIRECT_URL:-}
