@@ -81,6 +81,8 @@ services:
       RECURSOS_COOKIE_SECURE: ${RECURSOS_COOKIE_SECURE:-0}
       RECURSOS_APP_URL: ${RECURSOS_APP_URL:-http://localhost:8086}
       PLAY_INGEST_TOKEN: ${PLAY_INGEST_TOKEN:-local-play-ingest-token}
+      EDUHOOT_RESOURCES_URL: ${EDUHOOT_RESOURCES_URL:-http://eduhoot:3000}
+      EDUHOOT_RESOURCES_TOKEN: ${EDUHOOT_RESOURCES_TOKEN:-local-eduhoot-resources-token}
       PLAY_ALLOWED_HOSTS: ${PLAY_ALLOWED_HOSTS:-play.local.test,localhost}
       EDUTICTAC_ID_API_URL: http://id-api:8005
       OIDC_ISSUER: ${EDUTICTAC_ID_OIDC_ISSUER_URL:-}
@@ -202,6 +204,7 @@ services:
       AUTHENTIK_ONLY: ${EDUHOOT_AUTHENTIK_ONLY:-1}
       PUBLIC_BASE_URL: http://localhost:${EDUHOOT_PORT:-8090}
       PUBLIC_IMPORT_SOURCE_URL: ${EDUHOOT_PUBLIC_IMPORT_SOURCE:-https://eduhoot.edutictac.es}
+      EDUHOOT_RESOURCES_TOKEN: ${EDUHOOT_RESOURCES_TOKEN:-local-eduhoot-resources-token}
     volumes:
       - ./data/eduhoot-uploads:/app/public/uploads
       - ./data/eduhoot-logs:/app/logs
