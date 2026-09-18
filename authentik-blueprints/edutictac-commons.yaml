@@ -44,6 +44,7 @@ entries:
         - !Find [authentik_providers_oauth2.scopemapping, [scope_name, openid]]
         - !Find [authentik_providers_oauth2.scopemapping, [scope_name, email]]
         - !Find [authentik_providers_oauth2.scopemapping, [scope_name, profile]]
+        - !Find [authentik_providers_oauth2.scopemapping, [scope_name, groups]]
       redirect_uris:
         - url: !Env EDUTICTAC_ID_OIDC_REDIRECT_URL
           matching_mode: strict

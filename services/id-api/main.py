@@ -883,7 +883,8 @@ async def oidc_callback(request: Request):
     claims = token.get("userinfo") or {}
     if not isinstance(claims, dict) or not claims.get("sub"):
         raise HTTPException(status_code=401, detail="OIDC identity missing")
-    if str(claims.get("iss", "")).rstrip("/") not in {
+    token_issuer = claims.get("iss") or (token.get("id_token_claims") or {}).get("iss") or OIDC_ISSUER_URL
+    if str(token_issuer).rstrip("/") not in {
         issuer.rstrip("/") for issuer in oidc_accepted_issuers()
     }:
         raise HTTPException(status_code=401, detail="OIDC issuer mismatch")
