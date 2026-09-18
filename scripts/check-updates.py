@@ -4,11 +4,13 @@
 from __future__ import annotations
 
 import argparse
+import base64
 import json
 import os
 import re
 import sys
 import urllib.error
+import urllib.parse
 import urllib.request
 from pathlib import Path
 
@@ -30,7 +32,15 @@ def read_env() -> dict[str, str]:
             env[key.strip()] = value.strip()
     except OSError:
         pass
-    for key in ["IMAGE_REGISTRY", "IMAGE_TAG", "EDUHOOT_TAG", "COMPOSE_PROFILES", "UPDATE_CHANNEL"]:
+    for key in [
+        "IMAGE_REGISTRY",
+        "IMAGE_TAG",
+        "EDUHOOT_TAG",
+        "COMPOSE_PROFILES",
+        "UPDATE_CHANNEL",
+        "REGISTRY_USERNAME",
+        "REGISTRY_PASSWORD",
+    ]:
         if os.environ.get(key):
             env[key] = os.environ[key]
     return env
@@ -44,11 +54,53 @@ def registry_url(registry: str, image: str) -> str:
     return f"https://{host}/v2/{repo}/tags/list"
 
 
-def fetch_tags(registry: str, image: str) -> list[str]:
-    url = registry_url(registry, image)
+def parse_www_authenticate(header: str) -> dict[str, str]:
+    """Parse a `Bearer realm="...",service="...",scope="..."` challenge header."""
+    params: dict[str, str] = {}
+    if not header:
+        return params
+    _, _, rest = header.partition(" ")
+    for part in rest.split(","):
+        if "=" not in part:
+            continue
+        key, value = part.split("=", 1)
+        params[key.strip()] = value.strip().strip('"')
+    return params
+
+
+def fetch_bearer_token(realm: str, service: str, scope: str, username: str, password: str) -> str:
+    params = {k: v for k, v in (("service", service), ("scope", scope)) if v}
+    url = realm + ("?" + urllib.parse.urlencode(params) if params else "")
     req = urllib.request.Request(url, headers={"Accept": "application/json"})
+    if username and password:
+        credentials = base64.b64encode(f"{username}:{password}".encode("utf-8")).decode("ascii")
+        req.add_header("Authorization", f"Basic {credentials}")
     with urllib.request.urlopen(req, timeout=10) as resp:
         data = json.loads(resp.read().decode("utf-8"))
+    return str(data.get("token") or data.get("access_token") or "")
+
+
+def fetch_tags(registry: str, image: str, username: str = "", password: str = "") -> list[str]:
+    url = registry_url(registry, image)
+    req = urllib.request.Request(url, headers={"Accept": "application/json"})
+    try:
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+    except urllib.error.HTTPError as exc:
+        if exc.code != 401:
+            raise
+        challenge = parse_www_authenticate(exc.headers.get("WWW-Authenticate", "") if exc.headers else "")
+        realm = challenge.get("realm")
+        if not realm:
+            raise
+        token = fetch_bearer_token(realm, challenge.get("service", ""), challenge.get("scope", ""), username, password)
+        if not token:
+            raise
+        req = urllib.request.Request(
+            url, headers={"Accept": "application/json", "Authorization": f"Bearer {token}"}
+        )
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
     if "results" in data:
         return [str(item.get("name", "")) for item in data.get("results", []) if item.get("name")]
     return [str(tag) for tag in data.get("tags", []) if tag]
@@ -79,9 +131,11 @@ def channel_match(tag: str, channel: str) -> bool:
     return True
 
 
-def choose_common_update(registry: str, current: str, channel: str) -> dict[str, object]:
+def choose_common_update(
+    registry: str, current: str, channel: str, username: str = "", password: str = ""
+) -> dict[str, object]:
     try:
-        tag_sets = {image: set(fetch_tags(registry, image)) for image in COMMON_IMAGES}
+        tag_sets = {image: set(fetch_tags(registry, image, username, password)) for image in COMMON_IMAGES}
     except (OSError, urllib.error.URLError, urllib.error.HTTPError, TimeoutError, json.JSONDecodeError) as exc:
         return {"current": current, "candidate": "", "update_available": False, "error": str(exc)}
 
@@ -96,9 +150,11 @@ def choose_common_update(registry: str, current: str, channel: str) -> dict[str,
     }
 
 
-def choose_single_update(registry: str, image: str, current: str, channel: str) -> dict[str, object]:
+def choose_single_update(
+    registry: str, image: str, current: str, channel: str, username: str = "", password: str = ""
+) -> dict[str, object]:
     try:
-        tags = fetch_tags(registry, image)
+        tags = fetch_tags(registry, image, username, password)
     except (OSError, urllib.error.URLError, urllib.error.HTTPError, TimeoutError, json.JSONDecodeError) as exc:
         return {"current": current, "candidate": "", "update_available": False, "error": str(exc)}
     candidates = sorted((tag for tag in tags if channel_match(tag, channel)), key=semver_key, reverse=True)
@@ -118,14 +174,18 @@ def build_status() -> dict[str, object]:
     if channel not in {"stable", "testing", "dev"}:
         channel = "testing"
     profiles = {p for p in (env.get("COMPOSE_PROFILES") or "").split(",") if p}
+    username = env.get("REGISTRY_USERNAME") or ""
+    password = env.get("REGISTRY_PASSWORD") or ""
     status: dict[str, object] = {
         "registry": registry,
         "channel": channel,
-        "commons": choose_common_update(registry, env.get("IMAGE_TAG") or "unknown", channel),
+        "commons": choose_common_update(registry, env.get("IMAGE_TAG") or "unknown", channel, username, password),
         "eduhoot": None,
     }
     if "eduhoot" in profiles:
-        status["eduhoot"] = choose_single_update(registry, "eduhoot", env.get("EDUHOOT_TAG") or "unknown", channel)
+        status["eduhoot"] = choose_single_update(
+            registry, "eduhoot", env.get("EDUHOOT_TAG") or "unknown", channel, username, password
+        )
     return status
 
 

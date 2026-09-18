@@ -150,6 +150,8 @@ services:
       IMAGE_TAG: ${IMAGE_TAG:-0.1.1-alpha}
       EDUHOOT_TAG: ${EDUHOOT_TAG:-1.0.2}
       UPDATE_CHANNEL: ${UPDATE_CHANNEL:-testing}
+      REGISTRY_USERNAME: ${REGISTRY_USERNAME:-}
+      REGISTRY_PASSWORD: ${REGISTRY_PASSWORD:-}
       PORTAL_HEALTH_URL: http://portal/api/health
       ID_API_HEALTH_URL: http://id-api:8005/api/health
       ID_API_ME_URL: http://id-api:8005/api/auth/me
