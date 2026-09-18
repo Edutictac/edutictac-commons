@@ -8,7 +8,7 @@ SERVICE=edutictac-commons.service
 MDNS_CONF=/etc/avahi/avahi-daemon.conf
 
 step_num=0
-step_total=7
+step_total=8
 step() {
     step_num=$((step_num + 1))
     echo ""
@@ -280,6 +280,17 @@ if command -v docker >/dev/null 2>&1 && ! docker compose version >/dev/null 2>&1
     echo "El servei no arrencarà fins que s'instal·le. En Ubuntu/LliureX:" >&2
     echo "  sudo apt install docker-compose-v2" >&2
     echo "Després reinicia el servei: sudo systemctl restart $SERVICE" >&2
+fi
+
+step "Carregant les imatges Docker incloses a l'instal·lador (si n'hi ha)..."
+
+bundle="$(ls "$APP_DIR"/dist/edutictac-commons-images-*.tar.gz 2>/dev/null | head -n 1 || true)"
+if [ -n "$bundle" ] && command -v docker >/dev/null 2>&1; then
+    if docker load -i "$bundle"; then
+        echo "Imatges carregades des de l'instal·lador: $(basename "$bundle")"
+    else
+        echo "Avís: no s'han pogut carregar les imatges incloses; es descarregaran del registre." >&2
+    fi
 fi
 
 step "Activant i arrencant el servei (pot trigar uns minuts mentre es descarreguen les imatges Docker)..."
