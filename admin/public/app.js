@@ -309,6 +309,14 @@ document.getElementById("imagesRollbackBtn").addEventListener("click", () => {
   runJsonAction("/api/images/rollback", { backup });
 });
 
+document.getElementById("contentResourcesSyncBtn").addEventListener("click", () => {
+  runJsonAction("/api/content-sync/resources", {});
+});
+
+document.getElementById("contentEduhootSyncBtn").addEventListener("click", () => {
+  runJsonAction("/api/content-sync/eduhoot", {});
+});
+
 apiStatus.textContent = t("status.checking");
 setOutput(statusOutput, t("status.signInToView"), false);
 statusOutput.classList.add("empty");

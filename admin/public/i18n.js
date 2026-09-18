@@ -97,6 +97,11 @@
       "images.rollbackPrompt": "Esta acción creará un backup y volverá a la versión anterior {backup}. Escribe VOLVER para continuar.",
       "images.rollbackConfirmWord": "VOLVER",
       "images.rollbackCancelled": "Rollback cancelado.",
+      "content.label": "Contenidos",
+      "content.title": "Catálogo compartido",
+      "content.help": "Descarga y valida la última versión publicada del catálogo de la red de centros.",
+      "content.resources": "Sincronizar Recursos",
+      "content.eduhoot": "Sincronizar EduHoot",
     },
     ca: {
       "common.lang.label": "Idioma",
@@ -187,6 +192,11 @@
       "images.rollbackPrompt": "Aquesta acció crearà un backup i tornarà a la versió anterior {backup}. Escriu TORNAR per continuar.",
       "images.rollbackConfirmWord": "TORNAR",
       "images.rollbackCancelled": "Rollback cancel·lat.",
+      "content.label": "Continguts",
+      "content.title": "Catàleg compartit",
+      "content.help": "Descarrega i valida l'última versió publicada del catàleg de la xarxa de centres.",
+      "content.resources": "Sincronitzar Recursos",
+      "content.eduhoot": "Sincronitzar EduHoot",
     },
     va: {
       "common.actionPlaceholder": "Els resultats de les accions apareixeran ací.",
@@ -291,6 +301,11 @@
       "images.rollbackPrompt": "This will create a backup and return to the previous version {backup}. Type RETURN to continue.",
       "images.rollbackConfirmWord": "RETURN",
       "images.rollbackCancelled": "Rollback cancelled.",
+      "content.label": "Content",
+      "content.title": "Shared catalogue",
+      "content.help": "Download and validate the latest published version of the centre network catalogue.",
+      "content.resources": "Sync Resources",
+      "content.eduhoot": "Sync EduHoot",
     },
   };
 

@@ -22,6 +22,8 @@ from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
+from content_sync import sync_channel
+
 APP_DIR = Path(__file__).resolve().parent
 PUBLIC_DIR = APP_DIR / "public"
 BACKUPS_DIR = APP_DIR / "backups"
@@ -33,6 +35,8 @@ ADMIN_OIDC_USERNAME = os.environ.get("ADMIN_OIDC_USERNAME", "akadmin").strip().l
 AUTHENTIK_API_URL = os.environ.get("AUTHENTIK_API_URL", "http://authentik-server:9000/api/v3").rstrip("/")
 AUTHENTIK_API_TOKEN = os.environ.get("AUTHENTIK_API_TOKEN", "").strip()
 AUTHENTIK_TEACHER_GROUP = os.environ.get("AUTHENTIK_TEACHER_GROUP", "profesor").strip()
+CONTENT_CATALOG_BASE_URL = os.environ.get("CONTENT_CATALOG_BASE_URL", "").strip()
+CONTENT_SYNC_DIR = os.environ.get("CONTENT_SYNC_DIR", "/app/content-sync").strip()
 
 PORTAL_HEALTH_URL = os.environ.get("PORTAL_HEALTH_URL", "http://portal/api/health")
 ID_API_HEALTH_URL = os.environ.get("ID_API_HEALTH_URL", "http://id-api:8005/api/health")
@@ -348,6 +352,24 @@ def action_update_images(payload):
 
 
 ACTIONS["/api/images/update"] = action_update_images
+
+
+def action_content_sync(channel):
+    def action(payload):
+        base_url = str(payload.get("base_url", "")).strip() or CONTENT_CATALOG_BASE_URL
+        try:
+            result = sync_channel(channel, base_url, CONTENT_SYNC_DIR)
+        except (OSError, RuntimeError, ValueError) as exc:
+            return False, f"Sincronización de {channel} fallida: {exc}", 502
+        return True, (
+            f"Canal {channel} sincronizado: versión {result['version']}, "
+            f"{result['items']} elementos. Copia local: {result['path']}"
+        )
+    return action
+
+
+ACTIONS["/api/content-sync/resources"] = action_content_sync("resources")
+ACTIONS["/api/content-sync/eduhoot"] = action_content_sync("eduhoot")
 
 
 def action_rollback_images(payload):

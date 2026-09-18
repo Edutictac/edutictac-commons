@@ -154,6 +154,8 @@ services:
       AUTHENTIK_API_URL: ${AUTHENTIK_API_URL:-http://authentik-server:9000/api/v3}
       AUTHENTIK_API_TOKEN: ${AUTHENTIK_API_TOKEN:-}
       AUTHENTIK_TEACHER_GROUP: ${AUTHENTIK_TEACHER_GROUP:-profesor}
+      CONTENT_CATALOG_BASE_URL: ${CONTENT_CATALOG_BASE_URL:-}
+      CONTENT_SYNC_DIR: /app/content-sync
     volumes:
       - /run/user/${PUID:-1000}/bus:/run/user/${PUID:-1000}/bus
       # systemctl --user parla amb el manager per un socket local directe
@@ -166,6 +168,7 @@ services:
       - ${XDG_CONFIG_HOME:-$HOME/.config}/systemd/user:/hostcfg/systemd/user
       - ./backups:/app/backups
       - ./data:/app/data:ro
+      - ./data/content-sync:/app/content-sync
     ports:
       - "127.0.0.1:${ADMIN_PORT:-8091}:8091"
     depends_on:
