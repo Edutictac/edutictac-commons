@@ -44,8 +44,8 @@ La comprovació revisa requisits locals, sintaxi bàsica del portal, artefactes 
 
 ## Revisió manual
 
-- Canvia `EDUTICTAC_ID_SECRET`, `EDUTICTAC_ID_TEACHER_TOKEN`,
-  `EDUTICTAC_ID_APP_TOKEN` i `EDUTICTAC_ADMIN_TOKEN` fora d'una demo local.
+- Canvia `EDUTICTAC_ID_SECRET`, `EDUTICTAC_ID_TEACHER_TOKEN` i
+  `EDUTICTAC_ID_APP_TOKEN` fora d'una demo local.
 - Decideix el mode d'EduHoot abans de provar amb professorat:
   `EDUHOOT_ID_AUTH_REQUIRED=0` permet nom curt o codi + PIN Commons;
   `EDUHOOT_ID_AUTH_REQUIRED=1` força codi + PIN Commons.

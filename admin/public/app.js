@@ -1,7 +1,5 @@
-const TOKEN_KEY = "edutictacAdminToken";
 const API_PREFIX = window.location.pathname.startsWith("/admin/") ? "/admin" : "";
 
-const tokenInput = document.getElementById("adminToken");
 const apiStatus = document.getElementById("apiStatus");
 const statusOutput = document.getElementById("statusOutput");
 const actionOutput = document.getElementById("actionOutput");
@@ -9,20 +7,6 @@ const restoreBackupSelect = document.getElementById("restoreBackupSelect");
 const rollbackBackupSelect = document.getElementById("rollbackBackupSelect");
 
 const t = window.i18nAdmin.t;
-
-localStorage.removeItem(TOKEN_KEY);
-
-function getToken() {
-  return sessionStorage.getItem(TOKEN_KEY) || "";
-}
-
-function setToken(token) {
-  if (token) {
-    sessionStorage.setItem(TOKEN_KEY, token);
-  } else {
-    sessionStorage.removeItem(TOKEN_KEY);
-  }
-}
 
 function setOutput(el, text, isError) {
   el.textContent = text;
@@ -33,13 +17,9 @@ function setOutput(el, text, isError) {
 }
 
 async function apiFetch(path, options) {
-  const token = getToken();
-  const headers = Object.assign({}, (options && options.headers) || {}, {
-    Authorization: `Bearer ${token}`,
-  });
-  const resp = await fetch(`${API_PREFIX}${path}`, Object.assign({}, options, { headers }));
+  const resp = await fetch(`${API_PREFIX}${path}`, Object.assign({ credentials: "same-origin" }, options));
   if (resp.status === 401) {
-    apiStatus.textContent = t("status.invalidToken");
+    apiStatus.textContent = t("status.authRequired");
     throw new Error(t("errors.unauthorized"));
   }
   return resp;
@@ -231,17 +211,15 @@ async function runJsonAction(path, payload) {
 }
 
 document.getElementById("loginBtn").addEventListener("click", () => {
-  setToken(tokenInput.value.trim());
-  loadStatus();
+  window.location.href = "/api/auth/oidc/login";
 });
 
 document.getElementById("logoutBtn").addEventListener("click", () => {
-  setToken("");
-  localStorage.removeItem(TOKEN_KEY);
-  tokenInput.value = "";
-  apiStatus.textContent = t("status.disconnected");
-  setOutput(statusOutput, t("status.enterToken"), false);
-  statusOutput.classList.add("empty");
+  fetch("/api/auth/oidc/logout", { method: "POST", credentials: "same-origin" }).finally(() => {
+    apiStatus.textContent = t("status.disconnected");
+    setOutput(statusOutput, t("status.signInToView"), false);
+    statusOutput.classList.add("empty");
+  });
 });
 
 document.getElementById("refreshBtn").addEventListener("click", loadStatus);
@@ -304,13 +282,8 @@ document.getElementById("imagesRollbackBtn").addEventListener("click", () => {
 });
 
 apiStatus.textContent = t("status.checking");
-setOutput(statusOutput, t("status.enterToken"), false);
+setOutput(statusOutput, t("status.signInToView"), false);
 statusOutput.classList.add("empty");
 setOutput(actionOutput, t("common.actionPlaceholder"), false);
 actionOutput.classList.add("empty");
-
-const savedToken = getToken();
-if (savedToken) {
-  tokenInput.value = savedToken;
-  loadStatus();
-}
+loadStatus();

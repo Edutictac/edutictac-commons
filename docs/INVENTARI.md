@@ -116,12 +116,13 @@ Variables principals:
   PIN Commons; si val `1`, exigeix codi + PIN Commons.
 - `EDUHOOT_PUBLIC_IMPORT_SOURCE`: font d'importació d'activitats públiques
   d'EduHoot; buit desactiva la funció.
-- `EDUTICTAC_ADMIN_TOKEN`: token d'accés al panell `/admin`.
+- `ADMIN_OIDC_USERNAME`: identitat Authentik autoritzada per al panell `/admin`;
+  per defecte `akadmin`.
 - `ADMIN_PORT`: port del panell `/admin` al host (només `127.0.0.1`).
 
 En qualsevol entorn que no siga demo local cal canviar
 `EDUTICTAC_ID_SECRET`, `EDUTICTAC_ID_TEACHER_TOKEN` i
-`EDUTICTAC_ID_APP_TOKEN` i `EDUTICTAC_ADMIN_TOKEN`.
+`EDUTICTAC_ID_APP_TOKEN`.
 
 ## Comandaments d'operació
 
@@ -289,10 +290,10 @@ executa `make up-pulled`.
     imatge: com `ENV` persistiria en temps d'execució i faria que
     `systemctl` tractara el contenidor com un chroot, ignorant totes les
     ordres.
-  El panell escolta només a `127.0.0.1` del host per defecte i requereix
-  `EDUTICTAC_ADMIN_TOKEN`: cal canviar el valor per defecte i, per a accés
-  remot, usar un túnel SSH o Tailscale, mai exposar-lo directament a
-  internet.
+  El panell escolta només a `127.0.0.1` del host per defecte i requereix la
+  sessió Authentik de `ADMIN_OIDC_USERNAME` (per defecte, `akadmin`); per a
+  accés remot, cal usar un túnel SSH o Tailscale, mai exposar-lo directament
+  a internet.
 
 ## Fitxers que no s'han de versionar
 

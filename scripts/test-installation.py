@@ -54,7 +54,7 @@ def main():
             "EDUTICTAC_ID_SECRET": secrets.token_hex(32),
             "EDUTICTAC_ID_TEACHER_TOKEN": secrets.token_hex(32),
             "EDUTICTAC_ID_APP_TOKEN": secrets.token_hex(32),
-            "EDUTICTAC_ADMIN_TOKEN": secrets.token_hex(32),
+            "ADMIN_OIDC_USERNAME": "akadmin",
             "EDUTICTAC_ID_COOKIE_SECURE": "0",
             "EDUHOOT_ID_AUTH_REQUIRED": "0",
             "EDUHOOT_PUBLIC_IMPORT_SOURCE": "",

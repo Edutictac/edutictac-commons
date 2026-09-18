@@ -24,7 +24,7 @@ Servicios principales:
 - Administración local: `http://127.0.0.1:8091`
 
 Antes de usar el sistema fuera de una demo, cambia los secretos de `.env`,
-especialmente `EDUTICTAC_ID_SECRET` y `EDUTICTAC_ADMIN_TOKEN`.
+especialmente `EDUTICTAC_ID_SECRET` y `ADMIN_OIDC_USERNAME`.
 
 ## Banc de recursos local opcional
 

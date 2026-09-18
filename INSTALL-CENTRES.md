@@ -62,7 +62,7 @@ PORTAL_PORT=8082
 EDUTICTAC_ID_SECRET=canvia-aquest-secret
 EDUTICTAC_ID_TEACHER_TOKEN=canvia-aquest-token-docent
 EDUTICTAC_ID_APP_TOKEN=canvia-aquest-token-intern
-EDUTICTAC_ADMIN_TOKEN=canvia-aquest-token-admin
+ADMIN_OIDC_USERNAME=akadmin
 ```
 
 No uses els valors `change-this-local-secret`, `dev-teacher`,
@@ -232,7 +232,7 @@ make restore BACKUP=backups/commons-YYYYmmddTHHMMSSZ/
 
 Totes aquestes accions, i activar/desactivar el backup automàtic diari, es
 poden fer també sense terminal des del panell `/admin`
-(`http://127.0.0.1:8091/`, token `EDUTICTAC_ADMIN_TOKEN` de `.env`) — vegeu
+(`http://127.0.0.1:8091/`, amb la sessió Authentik d'`akadmin`) — vegeu
 `README.md#panell-dadministracio`.
 
 ## Solució de problemes

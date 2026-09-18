@@ -58,15 +58,14 @@ La guía práctica para el profesorado está en
 
 ## Panell d'administració
 
-`http://127.0.0.1:8091/` — nomes accessible en local per defecte. Cal el
-token d'`EDUTICTAC_ADMIN_TOKEN` (`.env`) per entrar-hi.
+`http://127.0.0.1:8091/` — només accessible en local per defecte. L'accés es
+fa amb Authentik i està reservat a l'usuari `akadmin`.
 
 Mostra la versió instal·lada, l'estat dels serveis, l'últim backup i la
 llista de còpies disponibles, els avisos de cobertura i l'estat del timer de
 backup automàtic. Permet crear un backup, activar/desactivar backups
 automàtics i restaurar una còpia seleccionada amb confirmació forta — cap
-requereix terminal, tot es fa des del navegador. Canvia el token per defecte
-abans de fer servir el stack fora d'una demo local.
+requereix terminal: tot es fa des del navegador amb la sessió Authentik.
 
 ## Reutilització del treball existent
 

@@ -14,7 +14,7 @@
         <h1 data-i18n="admin.title">Panell d'administració</h1>
       </div>
       <div class="topbar-actions">
-        <span id="apiStatus" class="status">Comprovant token...</span>
+        <span id="apiStatus" class="status">Comprovant sessió...</span>
         <div class="lang-switcher" role="group" aria-label="Idioma" data-i18n-title="common.lang.label">
           <button type="button" data-lang="ca" title="Català">CA</button>
           <button type="button" data-lang="va" title="Valencià">VA</button>
@@ -28,14 +28,10 @@
       <section class="panel" aria-labelledby="loginTitle">
         <div class="panel-heading">
           <p class="eyebrow" data-i18n="login.access">Accés</p>
-          <h2 id="loginTitle" data-i18n="login.title">Token d'administració</h2>
+          <h2 id="loginTitle" data-i18n="login.title">Accés amb Authentik</h2>
         </div>
-        <label>
-          <span data-i18n="login.token">Token</span>
-          <input id="adminToken" type="password" autocomplete="off">
-        </label>
         <div class="actions">
-          <button id="loginBtn" type="button" data-i18n="login.enter">Entrar</button>
+          <button id="loginBtn" type="button" data-i18n="login.enter">Entrar con Authentik</button>
           <button id="logoutBtn" type="button" class="secondary" data-i18n="login.logout">Eixir</button>
           <button id="refreshBtn" type="button" class="secondary" data-i18n="login.refresh">Actualitzar</button>
         </div>

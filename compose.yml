@@ -139,7 +139,6 @@ services:
     pid: host
     user: "${PUID:-1000}:${PGID:-1000}"
     environment:
-      EDUTICTAC_ADMIN_TOKEN: ${EDUTICTAC_ADMIN_TOKEN:-change-this-admin-token}
       REPO_DIR: ${PWD}
       XDG_RUNTIME_DIR: /run/user/${PUID:-1000}
       XDG_CONFIG_HOME: /hostcfg
@@ -150,6 +149,8 @@ services:
       UPDATE_CHANNEL: ${UPDATE_CHANNEL:-testing}
       PORTAL_HEALTH_URL: http://portal/api/health
       ID_API_HEALTH_URL: http://id-api:8005/api/health
+      ID_API_ME_URL: http://id-api:8005/api/auth/me
+      ADMIN_OIDC_USERNAME: ${ADMIN_OIDC_USERNAME:-akadmin}
     volumes:
       - /run/user/${PUID:-1000}/bus:/run/user/${PUID:-1000}/bus
       # systemctl --user parla amb el manager per un socket local directe
@@ -206,7 +207,7 @@ services:
       AUTHENTIK_ROLE_CLAIM: ${EDUHOOT_AUTHENTIK_ROLE_CLAIM:-groups}
       AUTHENTIK_TEACHER_ROLES: ${EDUHOOT_AUTHENTIK_TEACHER_ROLES:-profesor,teacher,docente,administrador,admin}
       AUTHENTIK_ONLY: ${EDUHOOT_AUTHENTIK_ONLY:-1}
-      PUBLIC_BASE_URL: http://localhost:${EDUHOOT_PORT:-8090}
+      PUBLIC_BASE_URL: ${EDUHOOT_PUBLIC_BASE_URL:-http://localhost:${EDUHOOT_PORT:-8090}}
       PUBLIC_IMPORT_SOURCE_URL: ${EDUHOOT_PUBLIC_IMPORT_SOURCE:-https://eduhoot.edutictac.es}
       EDUHOOT_RESOURCES_TOKEN: ${EDUHOOT_RESOURCES_TOKEN:-local-eduhoot-resources-token}
     volumes:

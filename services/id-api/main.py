@@ -169,6 +169,7 @@ def oidc_identity(cookie: dict[str, Any]) -> dict[str, Any]:
         "id": str(cookie.get("id", "")),
         "role": str(cookie.get("role", "alumno")),
         "pseudonym": str(cookie.get("pseudonym", "")),
+        "username": str(cookie.get("username", "")),
         "provider": "authentik",
     }
 
@@ -199,6 +200,12 @@ def set_oidc_cookie(response: Response, claims: dict[str, Any], role: str) -> No
             "sub": subject,
             "id": f"oidc:{pseudonym}",
             "pseudonym": pseudonym,
+            "username": str(
+                claims.get("preferred_username")
+                or claims.get("username")
+                or claims.get("email")
+                or ""
+            ),
             "role": role,
         }),
         **cookie_kwargs(max_age=SESSION_TTL_DAYS * 24 * 60 * 60),

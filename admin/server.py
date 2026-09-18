@@ -2,12 +2,12 @@
 """Panell d'administracio operativa per a EduTicTac Commons.
 
 Nomes libreria estandard (cap dependencia pip). Serveix els fitxers
-estatics de public/ i exposa una API JSON minima, protegida per token,
+estatics de public/ i exposa una API JSON minima, protegida per la sessio
+Authentik del primer administrador autoritzat,
 per llegir l'estat del stack i disparar un conjunt tancat (allowlist) de
 scripts ja existents al repo.
 """
 
-import hmac
 import json
 import os
 import re
@@ -25,8 +25,9 @@ PUBLIC_DIR = APP_DIR / "public"
 BACKUPS_DIR = APP_DIR / "backups"
 VERSION_FILE = APP_DIR / "VERSION"
 
-ADMIN_TOKEN = os.environ.get("EDUTICTAC_ADMIN_TOKEN", "change-this-admin-token")
 PORT = int(os.environ.get("ADMIN_INTERNAL_PORT", "8091"))
+ID_API_ME_URL = os.environ.get("ID_API_ME_URL", "http://id-api:8005/api/auth/me")
+ADMIN_OIDC_USERNAME = os.environ.get("ADMIN_OIDC_USERNAME", "akadmin").strip().lower()
 
 PORTAL_HEALTH_URL = os.environ.get("PORTAL_HEALTH_URL", "http://portal/api/health")
 ID_API_HEALTH_URL = os.environ.get("ID_API_HEALTH_URL", "http://id-api:8005/api/health")
@@ -306,11 +307,20 @@ class Handler(BaseHTTPRequestHandler):
         sys.stderr.write("%s - %s\n" % (self.address_string(), fmt % args))
 
     def _is_authorized(self):
-        header = self.headers.get("Authorization", "")
-        if not header.startswith("Bearer "):
+        cookie = self.headers.get("Cookie", "")
+        if not cookie:
             return False
-        token = header[len("Bearer "):]
-        return hmac.compare_digest(token, ADMIN_TOKEN)
+        request = urllib.request.Request(ID_API_ME_URL, headers={"Cookie": cookie})
+        try:
+            with urllib.request.urlopen(request, timeout=3) as response:
+                if response.status != 200:
+                    return False
+                payload = json.loads(response.read().decode("utf-8"))
+        except (OSError, urllib.error.URLError, json.JSONDecodeError, TimeoutError):
+            return False
+        identity = payload.get("identity") or {}
+        username = str(identity.get("username", "")).strip().lower()
+        return identity.get("provider") == "authentik" and username == ADMIN_OIDC_USERNAME
 
     def _send_json(self, status, payload):
         body = json.dumps(payload).encode("utf-8")
