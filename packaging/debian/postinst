@@ -121,7 +121,7 @@ lines = path.read_text(encoding="utf-8").splitlines()
 lines = ["PORTAL_PORT=8082" if line.startswith("PORTAL_PORT=") else line for line in lines]
 path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 PY
-    echo "Aviso: el puerto 80 ya está ocupado; Commons usará el puerto 8082." >&2
+    echo "Avís: el port 80 ja està ocupat; Commons utilitzarà el port 8082." >&2
 fi
 
 python3 - "$ENV_FILE" <<'PY'
@@ -223,6 +223,13 @@ if command -v systemctl >/dev/null 2>&1 && systemctl list-unit-files avahi-daemo
     systemctl restart avahi-daemon.service >/dev/null 2>&1 || true
 fi
 
+if command -v update-desktop-database >/dev/null 2>&1; then
+    update-desktop-database /usr/share/applications >/dev/null 2>&1 || true
+fi
+if command -v gtk-update-icon-cache >/dev/null 2>&1; then
+    gtk-update-icon-cache -f /usr/share/icons/hicolor >/dev/null 2>&1 || true
+fi
+
 mkdir -p "$APP_DIR/data" "$APP_DIR/data/play" "$APP_DIR/data/recursos-api" \
     "$APP_DIR/data/authentik" "$APP_DIR/data/authentik-templates" \
     "$APP_DIR/data/content-sync" \
@@ -234,18 +241,18 @@ chown "$target_uid:$target_gid" "$APP_DIR/backups" "$APP_DIR/dist"
 chmod 700 "$APP_DIR/data" "$APP_DIR/backups"
 
 if command -v docker >/dev/null 2>&1 && ! docker compose version >/dev/null 2>&1; then
-    echo "Aviso: falta el complemento Docker Compose v2 ('docker compose')." >&2
-    echo "El servicio no arrancara hasta instalarlo. En Ubuntu/LliureX:" >&2
+    echo "Avís: falta el complement Docker Compose v2 ('docker compose')." >&2
+    echo "El servei no arrencarà fins que s'instal·le. En Ubuntu/LliureX:" >&2
     echo "  sudo apt install docker-compose-v2" >&2
-    echo "Despues reinicia el servicio: sudo systemctl restart $SERVICE" >&2
+    echo "Després reinicia el servei: sudo systemctl restart $SERVICE" >&2
 fi
 
 if command -v systemctl >/dev/null 2>&1; then
     systemctl daemon-reload
     systemctl enable "$SERVICE" >/dev/null 2>&1 || true
     if ! systemctl restart "$SERVICE"; then
-        echo "Aviso: no se ha podido arrancar EduTicTac Commons." >&2
-        echo "Revisa el registro del servicio y ejecuta: systemctl start $SERVICE" >&2
+        echo "Avís: no s'ha pogut arrencar EduTicTac Commons." >&2
+        echo "Revisa el registre del servei i executa: systemctl start $SERVICE" >&2
     fi
 fi
 
@@ -277,11 +284,29 @@ if [ -n "$AUTHENTIK_API_TOKEN" ] && command -v docker >/dev/null 2>&1; then
 fi
 
 if [ -n "$setup_token_notice" ]; then
+    if [ -t 1 ] && command -v tput >/dev/null 2>&1 && [ "$(tput colors 2>/dev/null || echo 0)" -ge 8 ]; then
+        bold="$(tput bold)"; green="$(tput setaf 2)"; yellow="$(tput setaf 3)"; reset="$(tput sgr0)"
+    else
+        bold=""; green=""; yellow=""; reset=""
+    fi
+    border="${green}============================================================${reset}"
+
     echo ""
-    echo "EduTicTac Commons requiere una activación inicial."
-    echo "Abre http://edutictac.local/ y usa este código una sola vez:"
-    echo "  $setup_token_notice"
+    echo "$border"
+    echo "${bold}${green}EduTicTac Commons requereix una activació inicial.${reset}"
+    echo "Obri ${bold}http://edutictac.local/${reset} i usa aquest codi una sola vegada:"
     echo ""
+    echo "   ${bold}${yellow}${setup_token_notice}${reset}"
+    echo ""
+    echo "$border"
+    echo ""
+
+    if command -v notify-send >/dev/null 2>&1 && [ -n "${SUDO_USER:-}" ]; then
+        notify_uid="$(id -u "$SUDO_USER" 2>/dev/null || true)"
+        if [ -n "$notify_uid" ] && [ -S "/run/user/$notify_uid/bus" ]; then
+            su -s /bin/sh -c "DBUS_SESSION_BUS_ADDRESS='unix:path=/run/user/$notify_uid/bus' notify-send 'EduTicTac Commons' 'Activació inicial pendent: obri http://edutictac.local/'" "$SUDO_USER" >/dev/null 2>&1 || true
+        fi
+    fi
 fi
 
 exit 0

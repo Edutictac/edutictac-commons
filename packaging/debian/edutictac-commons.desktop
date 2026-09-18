@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=EduTicTac Commons
+Comment=Obri el portal d'EduTicTac Commons
+Exec=xdg-open http://edutictac.local/
+Icon=edutictac-commons
+Terminal=false
+Categories=Education;Network;

@@ -1,12 +1,12 @@
 Package: edutictac-commons
-Version: 0.1.1~alpha12
+Version: 0.1.1~alpha13
 Section: education
 Priority: optional
 Architecture: amd64
 Maintainer: EduTicTac <hola@edutictac.es>
 Description: EduTicTac Commons Docker stack installer
- Instalador para desplegar EduTicTac Commons en Ubuntu amd64. Incluye el
- stack Docker, la configuración inicial, el servicio systemd y los scripts
- de operación. Las imágenes OCI se descargan del registro configurado.
+ Instal·lador per a desplegar EduTicTac Commons en Ubuntu amd64. Inclou
+ l'stack Docker, la configuració inicial, el servei systemd i els scripts
+ d'operació. Les imatges OCI es descarreguen del registre configurat.
 Depends: docker.io | docker-ce, docker-compose-v2 | docker-compose-plugin | docker-compose (>= 2.0), avahi-daemon, curl, jq, python3, ca-certificates, openssl, systemd
-Recommends: git
+Recommends: git, libnotify-bin
