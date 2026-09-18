@@ -61,7 +61,9 @@ function setAuthentikLinks() {
     if (link) link.href = url;
   });
   const changePasswordLink = $("changePasswordLink");
-  if (changePasswordLink) changePasswordLink.href = `${url}if/user/`;
+  if (changePasswordLink) {
+    changePasswordLink.href = `${url}if/flow/default-password-change/?next=%2Fif%2Fuser%2F%23%2Fsettings%3B%7B%22page%22%3A%22page-details%22%7D`;
+  }
 }
 
 function showOidcSetupNotice() {
