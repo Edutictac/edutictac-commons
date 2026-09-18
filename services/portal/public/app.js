@@ -240,7 +240,9 @@ async function api(path, options = {}) {
   const body = text ? JSON.parse(text) : null;
   if (!response.ok) {
     const detail = body && body.detail ? body.detail : response.statusText;
-    throw new Error(detail);
+    const error = new Error(detail);
+    error.status = response.status;
+    throw error;
   }
   return body;
 }
@@ -602,15 +604,21 @@ function studentProfileCard(message = "") {
   `;
 }
 
-async function checkHealth() {
-  $("apiStatus").textContent = t("common.apiStatus.checking");
+async function checkIdentityStatus() {
+  const statusNode = $("apiStatus");
+  if (!statusNode) return;
+  statusNode.textContent = t("common.session.checking");
+  statusNode.classList.remove("error");
   try {
-    await api("/api/health", { method: "GET" });
-    $("apiStatus").textContent = t("common.apiStatus.ok");
-    $("apiStatus").classList.remove("error");
+    const data = await api("/api/auth/me", { method: "GET" });
+    const identity = data.identity || {};
+    const name = identity.username || identity.public_code || identity.id || "—";
+    statusNode.textContent = t("common.session.user", { name });
   } catch (error) {
-    $("apiStatus").textContent = t("common.apiStatus.error");
-    $("apiStatus").classList.add("error");
+    statusNode.textContent = error.status === 401
+      ? t("common.session.signedOut")
+      : t("common.session.unavailable");
+    statusNode.classList.toggle("error", error.status !== 401);
   }
 }
 
@@ -1249,7 +1257,7 @@ if (has("resultsOutput")) {
 }
 
 refreshStudentSession().catch(() => {});
-checkHealth();
+checkIdentityStatus();
 checkOidc();
 checkFirstRunSetup();
 if (has("teacherOidcLogin")) {
