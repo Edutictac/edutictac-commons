@@ -211,7 +211,7 @@ async function runJsonAction(path, payload) {
 }
 
 document.getElementById("loginBtn").addEventListener("click", () => {
-  window.location.href = "/api/auth/oidc/login";
+  window.location.href = "/api/auth/oidc/login?next=%2Fadmin%2F";
 });
 
 document.getElementById("logoutBtn").addEventListener("click", () => {

@@ -859,6 +859,10 @@ async def oidc_login(request: Request):
     if not oidc_enabled():
         raise HTTPException(status_code=503, detail="OIDC is not configured")
     require_secret()
+    next_url = request.query_params.get("next", "/")
+    if not next_url.startswith("/") or next_url.startswith("//"):
+        next_url = "/"
+    request.session["oidc_next"] = next_url
     return await oauth.authentik.authorize_redirect(request, OIDC_REDIRECT_URL)
 
 
@@ -883,7 +887,10 @@ async def oidc_callback(request: Request):
         issuer.rstrip("/") for issuer in oidc_accepted_issuers()
     }:
         raise HTTPException(status_code=401, detail="OIDC issuer mismatch")
-    response = RedirectResponse(url="/", status_code=303)
+    next_url = request.session.pop("oidc_next", "/")
+    if not isinstance(next_url, str) or not next_url.startswith("/") or next_url.startswith("//"):
+        next_url = "/"
+    response = RedirectResponse(url=next_url, status_code=303)
     set_oidc_cookie(response, claims, oidc_role(claims))
     return response
 
