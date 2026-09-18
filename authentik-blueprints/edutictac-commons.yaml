@@ -21,8 +21,20 @@ entries:
       name: profesor
     attrs:
       name: profesor
+
+  - id: edutictac-commons-groups-mapping
+    model: authentik_providers_oauth2.scopemapping
+    state: present
+    identifiers:
+      name: EduTicTac Commons groups
     attrs:
-      name: administrador
+      name: EduTicTac Commons groups
+      scope_name: groups
+      expression: |
+        return {
+            "groups": [group.name for group in request.user.ak_groups.all()],
+        }
+      description: EduTicTac Commons role groups
 
   - id: edutictac-commons-provider
     model: authentik_providers_oauth2.oauth2provider
