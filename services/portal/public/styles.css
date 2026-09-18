@@ -1,14 +1,69 @@
 :root {
-  color-scheme: light;
+  color-scheme: light dark;
   --bg: #f5f7f2;
   --ink: #1d2a2e;
   --muted: #5f6e72;
   --line: #d8dfd8;
   --panel: #ffffff;
+  --panel-muted: #fbfcfa;
+  --disabled-bg: #eef1ed;
   --accent: #1f7a68;
   --accent-dark: #15594d;
+  --accent-contrast: #ffffff;
   --warn: #8f4d15;
   --soft: #e8f3ef;
+  --tint: #f2f6ff;
+  --tint-strong: #e9edff;
+  --error-ink: #7b241c;
+  --error-bg: #f9e4df;
+  --warn-bg: #fff8e5;
+  --warn-border: #d4a142;
+  --success-ink: #375a2f;
+  --shadow-rgb: 29, 42, 46;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111a18;
+    --ink: #e6efec;
+    --muted: #9fb0ac;
+    --line: #2b3a37;
+    --panel: #17211f;
+    --panel-muted: #1c2725;
+    --disabled-bg: #202b29;
+    --accent: #2f9c85;
+    --accent-dark: #7fe0c8;
+    --soft: #17302b;
+    --tint: #1c2440;
+    --tint-strong: #262f56;
+    --error-ink: #ffb4a8;
+    --error-bg: #3a1f1a;
+    --warn-bg: #3a2f14;
+    --warn-border: #caa257;
+    --success-ink: #9fd68f;
+    --shadow-rgb: 0, 0, 0;
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #111a18;
+  --ink: #e6efec;
+  --muted: #9fb0ac;
+  --line: #2b3a37;
+  --panel: #17211f;
+  --panel-muted: #1c2725;
+  --disabled-bg: #202b29;
+  --accent: #2f9c85;
+  --accent-dark: #7fe0c8;
+  --soft: #17302b;
+  --tint: #1c2440;
+  --tint-strong: #262f56;
+  --error-ink: #ffb4a8;
+  --error-bg: #3a1f1a;
+  --warn-bg: #3a2f14;
+  --warn-border: #caa257;
+  --success-ink: #9fd68f;
+  --shadow-rgb: 0, 0, 0;
 }
 
 * {
@@ -30,7 +85,7 @@ body {
   gap: 24px;
   padding: 28px clamp(18px, 4vw, 56px);
   border-bottom: 1px solid var(--line);
-  background: #fff;
+  background: var(--panel);
 }
 
 h1,
@@ -104,8 +159,8 @@ h3 {
   padding: 6px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: #fff;
-  box-shadow: 0 8px 24px rgba(29, 42, 46, 0.14);
+  background: var(--panel);
+  box-shadow: 0 8px 24px rgba(var(--shadow-rgb), 0.14);
 }
 
 .session-menu__items a,
@@ -127,8 +182,8 @@ h3 {
 }
 
 .status.error {
-  color: #7b241c;
-  background: #f9e4df;
+  color: var(--error-ink);
+  background: var(--error-bg);
 }
 
 .topnav {
@@ -144,7 +199,7 @@ h3 {
   padding: 8px 12px;
   color: var(--accent-dark);
   text-decoration: none;
-  background: #fff;
+  background: var(--panel);
   font-weight: 700;
 }
 
@@ -169,7 +224,7 @@ h3 {
   border: 1px solid var(--line);
   border-radius: 6px;
   padding: 6px 10px;
-  background: #fff;
+  background: var(--panel);
   color: var(--accent-dark);
   font-size: 13px;
   font-weight: 700;
@@ -183,7 +238,7 @@ h3 {
 .lang-switcher button.active {
   border-color: var(--accent);
   background: var(--accent);
-  color: #fff;
+  color: var(--accent-contrast);
 }
 
 html.i18n-pending body {
@@ -206,7 +261,7 @@ html.i18n-pending body {
   padding: 22px;
   color: var(--ink);
   text-decoration: none;
-  background: #fff;
+  background: var(--panel);
 }
 
 .role-card strong {
@@ -220,7 +275,7 @@ html.i18n-pending body {
 
 .role-card:hover {
   border-color: var(--accent);
-  box-shadow: 0 8px 24px rgba(29, 42, 46, 0.08);
+  box-shadow: 0 8px 24px rgba(var(--shadow-rgb), 0.08);
 }
 
 .app-entry {
@@ -245,7 +300,7 @@ html.i18n-pending body {
   padding: 16px;
   color: var(--ink);
   text-decoration: none;
-  background: #fff;
+  background: var(--panel);
 }
 
 .app-link > span {
@@ -321,7 +376,7 @@ html.i18n-pending body {
 
 .teacher-primary-panel {
   border-color: color-mix(in srgb, var(--accent) 35%, var(--line));
-  box-shadow: 0 8px 24px rgba(29, 42, 46, 0.06);
+  box-shadow: 0 8px 24px rgba(var(--shadow-rgb), 0.06);
 }
 
 .teacher-auth-actions {
@@ -397,6 +452,7 @@ html.i18n-pending body {
   border: 1px solid var(--line, #d8dee8);
   border-radius: 1rem;
   padding: 1.5rem;
+  background: var(--panel);
   color: var(--ink, #172033);
   box-shadow: 0 1rem 3rem rgb(0 0 0 / 22%);
 }
@@ -496,6 +552,7 @@ input {
   border-radius: 6px;
   padding: 9px 11px;
   color: var(--ink);
+  background: var(--panel);
   font: inherit;
 }
 
@@ -525,7 +582,7 @@ button {
   border-radius: 6px;
   padding: 9px 14px;
   background: var(--accent);
-  color: #fff;
+  color: var(--accent-contrast);
   font: inherit;
   font-weight: 700;
   cursor: pointer;
@@ -545,19 +602,19 @@ button,
   border-radius: 6px;
   padding: 9px 14px;
   background: var(--accent);
-  color: #fff;
+  color: var(--accent-contrast);
   font: inherit;
   font-weight: 700;
 }
 
 button.secondary {
-  background: #fff;
+  background: var(--panel);
   color: var(--accent-dark);
 }
 
 button.danger {
   border-color: #b2472f;
-  background: #fff;
+  background: var(--panel);
   color: #8f2f1d;
 }
 
@@ -572,7 +629,7 @@ button.compact {
 }
 
 .button-link.secondary {
-  background: #fff;
+  background: var(--panel);
   color: var(--accent-dark);
 }
 
@@ -580,18 +637,18 @@ button:hover,
 .button-link:hover {
   border-color: var(--accent-dark);
   background: var(--accent-dark);
-  color: #fff;
+  color: var(--accent-contrast);
 }
 
 button.danger:hover {
   border-color: #8f2f1d;
   background: #8f2f1d;
-  color: #fff;
+  color: var(--accent-contrast);
 }
 
 button:disabled {
   border-color: var(--line);
-  background: #eef1ed;
+  background: var(--disabled-bg);
   color: var(--muted);
   cursor: not-allowed;
 }
@@ -602,7 +659,7 @@ button:disabled {
   border-radius: 6px;
   padding: 12px;
   overflow: auto;
-  background: #fbfcfa;
+  background: var(--panel-muted);
 }
 
 .output.empty {
@@ -626,7 +683,7 @@ button:disabled {
   border: 1px solid var(--line);
   border-radius: 8px;
   padding: 12px;
-  background: #fff;
+  background: var(--panel);
 }
 
 .student-profile__summary {
@@ -647,7 +704,7 @@ button:disabled {
   place-items: center;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: #f2f6ff;
+  background: var(--tint);
   font-size: 32px;
   line-height: 1;
 }
@@ -662,7 +719,7 @@ button:disabled {
   min-height: 42px;
   padding: 4px;
   border-color: var(--line);
-  background: #fff;
+  background: var(--panel);
   font-size: 24px;
   line-height: 1;
 }
@@ -670,22 +727,22 @@ button:disabled {
 .student-icon.selected,
 .student-icon:hover {
   border-color: #5b6fbd;
-  background: #e9edff;
+  background: var(--tint-strong);
   color: var(--ink);
 }
 
 .profile-status {
   margin: 0;
-  color: #375a2f;
+  color: var(--success-ink);
   font-weight: 700;
 }
 
 .pin-notice {
   margin-top: 8px;
-  border: 1px solid #d4a142;
+  border: 1px solid var(--warn-border);
   border-radius: 6px;
   padding: 8px 10px;
-  background: #fff8e5;
+  background: var(--warn-bg);
 }
 
 .cards {
@@ -699,7 +756,7 @@ button:disabled {
   border: 1px solid var(--line);
   border-radius: 6px;
   padding: 10px;
-  background: #fff;
+  background: var(--panel);
 }
 
 .credential strong {
@@ -715,7 +772,7 @@ button:disabled {
 }
 
 .credential:hover small {
-  color: #fff;
+  color: var(--accent-contrast);
 }
 
 table {
