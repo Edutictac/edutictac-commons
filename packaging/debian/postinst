@@ -327,6 +327,12 @@ if [ -n "$setup_token_notice" ]; then
             su -s /bin/sh -c "DBUS_SESSION_BUS_ADDRESS='unix:path=/run/user/$notify_uid/bus' notify-send 'EduTicTac Commons' 'Activació inicial pendent: obri http://edutictac.local/'" "$SUDO_USER" >/dev/null 2>&1 || true
         fi
     fi
+elif [ "$had_existing_env" -eq 1 ]; then
+    echo ""
+    echo "EduTicTac Commons ja estava configurat: el codi d'activació no es torna"
+    echo "a mostrar en les actualitzacions. Si encara no s'ha activat, recupera'l amb:"
+    echo "   sudo grep '^EDUTICTAC_SETUP_TOKEN=' $ENV_FILE"
+    echo "Si ja es va activar, no cal fer res."
 fi
 
 exit 0
