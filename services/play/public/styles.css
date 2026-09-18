@@ -33,3 +33,4 @@
 }
 
 .test-phase strong { color: var(--accent); }
+ .matching-row,.memory-row{grid-template-columns:1fr 1fr auto;align-items:start}.match-image-label{font-size:13px;color:var(--muted)}.match-image-label input{padding:7px;font-size:13px}@media(max-width:560px){.matching-row,.memory-row{grid-template-columns:1fr auto}}

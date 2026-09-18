@@ -13,6 +13,7 @@ import tempfile
 import time
 import uuid
 import zipfile
+from datetime import datetime, timezone
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -28,10 +29,17 @@ DATA_DIR = Path(os.environ.get("PLAY_DATA_DIR", ROOT / "data"))
 ACTIVITIES_DIR = DATA_DIR / "activities"
 LIBRARIES_DIR = ROOT / "h5p-libraries"
 PUBLIC_DIR = ROOT / "public"
-MAX_BODY = 256 * 1024
+MAX_BODY = 4 * 1024 * 1024
+MAX_MATCHING_IMAGE_BYTES = 400 * 1024
 HOST = os.environ.get("HOST", "0.0.0.0")
 URL_PREFIX = os.environ.get("URL_PREFIX", "").rstrip("/")
 COMMONS_API_URL = os.environ.get("EDUTICTAC_ID_API_URL", "").rstrip("/")
+COMMONS_AUTH_ME_URL = os.environ.get(
+    "EDUTICTAC_AUTH_ME_URL",
+    f"{COMMONS_API_URL}/api/auth/me" if COMMONS_API_URL else "",
+).rstrip("/")
+PLAY_TEACHER_LOGIN_URL = os.environ.get("PLAY_TEACHER_LOGIN_URL", "").strip()
+ANONYMOUS_ACTIVITY_TTL_SECONDS = int(os.environ.get("PLAY_ANONYMOUS_TTL_SECONDS", str(24 * 60 * 60)))
 COMMONS_APP_ID = os.environ.get("EDUTICTAC_PLAY_APP_ID", "edutictac-play")
 COMMONS_APP_TOKEN = os.environ.get("EDUTICTAC_ID_APP_TOKEN", "")
 PLAY_ADMIN_TOKEN = os.environ.get("EDUTICTAC_PLAY_ADMIN_TOKEN", "").strip()
@@ -95,6 +103,22 @@ CATALOG_LABELS_DEFAULT = {
 }
 
 
+def matching_side_markup(pair: dict, side: str) -> str:
+    text = safe_text(pair.get(side, ""), 120)
+    image = str(pair.get(f"{side}Image", "") or "")
+    if not valid_matching_image(image):
+        return text
+    return f'<img src="{html.escape(image, quote=True)}" alt="{text}" style="max-width:100%;max-height:96px;display:block;margin:auto"><span>{text}</span>'
+
+
+def matching_item_markup(item: dict) -> str:
+    text = safe_text(item.get("text", ""), 120)
+    image = str(item.get("image", "") or "")
+    if not valid_matching_image(image):
+        return text
+    return f'<img src="{html.escape(image, quote=True)}" alt="{text}" style="max-width:100%;max-height:96px;display:block;margin:auto"><span>{text}</span>'
+
+
 def h5p_library_for_activity(activity: dict) -> str:
     """Return the exact child library version accepted by QuestionSet."""
 
@@ -116,6 +140,24 @@ def h5p_library_for_activity(activity: dict) -> str:
 
 def safe_text(value: object, limit: int = 5000) -> str:
     return html.escape(str(value or "").strip()[:limit], quote=True)
+
+
+def valid_matching_image(value: str) -> bool:
+    """Accept only client/server-optimized WebP data URLs below the cap."""
+
+    prefix = "data:image/webp;base64,"
+    if not value.startswith(prefix):
+        return False
+    encoded = value[len(prefix):]
+    if len(encoded) > ((MAX_MATCHING_IMAGE_BYTES + 2) * 4 // 3 + 8):
+        return False
+    try:
+        import base64
+
+        decoded = base64.b64decode(encoded, validate=True)
+    except (ValueError, TypeError):
+        return False
+    return 1 <= len(decoded) <= MAX_MATCHING_IMAGE_BYTES
 
 
 LANGUAGES = ("es", "ca", "en")
@@ -388,7 +430,7 @@ def activity_content(activity: dict) -> dict:
         elements = []
         drop_zones = []
         for index, item in enumerate(activity["items"]):
-            elements.append({"type": {"library": "H5P.AdvancedText 1.1", "params": {"text": f"<p>{safe_text(item['text'])}</p>"}}, "x": 5 + (index % 3) * 30, "y": 6 + (index // 3) * 12, "height": 5, "width": 24, "dropZones": [int(item["category"])], "backgroundOpacity": 100, "multiple": False})
+            elements.append({"type": {"library": "H5P.AdvancedText 1.1", "params": {"text": f"<p>{matching_item_markup(item)}</p>"}}, "x": 5 + (index % 3) * 30, "y": 6 + (index // 3) * 12, "height": 8 if item.get("image") else 5, "width": 24, "dropZones": [int(item["category"])], "backgroundOpacity": 100, "multiple": False})
         for index, category in enumerate(activity["categories"]):
             top = 65 + (index % 2) * 17
             left = 5 + (index // 2) * 48
@@ -406,8 +448,8 @@ def activity_content(activity: dict) -> dict:
         drop_zones = []
         for index, pair in enumerate(activity["pairs"]):
             top = 8 + index * 16
-            elements.append({"type": {"library": "H5P.AdvancedText 1.1", "params": {"text": f"<p>{safe_text(pair['left'])}</p>"}}, "x": 5, "y": top, "height": 3, "width": 12, "dropZones": [index], "backgroundOpacity": 100, "multiple": False})
-            drop_zones.append({"label": safe_text(pair["right"]), "showLabel": True, "x": 55, "y": top, "height": 3, "width": 18, "correctElements": [index], "backgroundOpacity": 100, "tipsAndFeedback": {"tip": "", "feedbackOnCorrect": t["correct"], "feedbackOnIncorrect": t["incorrect"]}})
+            elements.append({"type": {"library": "H5P.AdvancedText 1.1", "params": {"text": f"<p>{matching_side_markup(pair, 'left')}</p>"}}, "x": 5, "y": top, "height": 8 if pair.get("leftImage") else 3, "width": 20, "dropZones": [index], "backgroundOpacity": 100, "multiple": False})
+            drop_zones.append({"label": matching_side_markup(pair, "right"), "showLabel": True, "x": 55, "y": top, "height": 8 if pair.get("rightImage") else 3, "width": 25, "correctElements": [index], "backgroundOpacity": 100, "tipsAndFeedback": {"tip": "", "feedbackOnCorrect": t["correct"], "feedbackOnIncorrect": t["incorrect"]}})
         return {
             "scoreShow": t["check"], "submit": t["submit"], "tryAgain": t["retryShort"],
             "question": {"settings": {"questionTitle": safe_text(activity["question"]), "size": {"width": 620, "height": 310}}, "task": {"elements": elements, "dropZones": drop_zones}},
@@ -418,7 +460,7 @@ def activity_content(activity: dict) -> dict:
     if activity.get("type") == "memory":
         return {
             "cards": [
-                {"image": {"path": f"card-{index}.svg", "mime": "image/svg+xml", "width": 320, "height": 180}, "imageAlt": safe_text(card["text"])}
+                {"image": {"path": f"card-{index}.{'webp' if card.get('image') else 'svg'}", "mime": "image/webp" if card.get("image") else "image/svg+xml", "width": 320, "height": 180}, "imageAlt": safe_text(card["text"])}
                 for index, card in enumerate(activity["cards"])
             ],
             "behaviour": {"useGrid": True, "allowRetry": True},
@@ -653,6 +695,11 @@ def package_files(activity: dict) -> dict[str, bytes]:
     }
     if activity.get("type") == "memory":
         for index, card in enumerate(activity["cards"]):
+            if card.get("image"):
+                import base64
+
+                files[f"content/card-{index}.webp"] = base64.b64decode(card["image"].split(",", 1)[1])
+                continue
             text = safe_text(card["text"], 120)
             files[f"content/card-{index}.svg"] = (
                 f'<svg xmlns="http://www.w3.org/2000/svg" width="320" height="180">'
@@ -730,7 +777,18 @@ def validate_activity(payload: dict) -> tuple[dict | None, list[str]]:
         if not isinstance(cards, list) or not 2 <= len(cards) <= 12:
             errors.append("Añade entre 2 y 12 parejas.")
             cards = []
-        cleaned = [{"text": str(card.get("text", "")).strip()[:120]} for card in cards if isinstance(card, dict) and str(card.get("text", "")).strip()]
+        cleaned = []
+        for card in cards:
+            if not isinstance(card, dict) or not str(card.get("text", "")).strip():
+                continue
+            item = {"text": str(card.get("text", "")).strip()[:120]}
+            image = str(card.get("image", "") or "").strip()
+            if image:
+                if not valid_matching_image(image):
+                    errors.append("Las imágenes deben estar optimizadas en formato WebP y pesar menos de 400 KB.")
+                else:
+                    item["image"] = image
+            cleaned.append(item)
         if len(cleaned) != len(cards):
             errors.append("Cada pareja debe tener texto.")
         if errors:
@@ -745,7 +803,19 @@ def validate_activity(payload: dict) -> tuple[dict | None, list[str]]:
         if not isinstance(pairs, list) or not 2 <= len(pairs) <= 8:
             errors.append("Añade entre 2 y 8 parejas.")
             pairs = []
-        cleaned = [{"left": str(pair.get("left", "")).strip()[:120], "right": str(pair.get("right", "")).strip()[:120]} for pair in pairs if isinstance(pair, dict) and str(pair.get("left", "")).strip() and str(pair.get("right", "")).strip()]
+        cleaned = []
+        for pair in pairs:
+            if not isinstance(pair, dict) or not str(pair.get("left", "")).strip() or not str(pair.get("right", "")).strip():
+                continue
+            item = {"left": str(pair.get("left", "")).strip()[:120], "right": str(pair.get("right", "")).strip()[:120]}
+            for side in ("left", "right"):
+                image = str(pair.get(f"{side}Image", "") or "").strip()
+                if image:
+                    if not valid_matching_image(image):
+                        errors.append("Las imágenes deben estar optimizadas en formato WebP y pesar menos de 400 KB.")
+                    else:
+                        item[f"{side}Image"] = image
+            cleaned.append(item)
         if len(cleaned) != len(pairs):
             errors.append("Cada relación debe tener dos textos.")
         if errors:
@@ -776,7 +846,14 @@ def validate_activity(payload: dict) -> tuple[dict | None, list[str]]:
                 category = int(item.get("category"))
             except (TypeError, ValueError):
                 category = -1
-            cleaned_items.append({"text": str(item["text"]).strip()[:120], "category": category})
+            cleaned_item = {"text": str(item["text"]).strip()[:120], "category": category}
+            image = str(item.get("image", "") or "").strip()
+            if image:
+                if not valid_matching_image(image):
+                    errors.append("Las imágenes deben estar optimizadas en formato WebP y pesar menos de 400 KB.")
+                else:
+                    cleaned_item["image"] = image
+            cleaned_items.append(cleaned_item)
         if len(cleaned_items) != len(items) or any(item["category"] < 0 or item["category"] >= len(cleaned_categories) for item in cleaned_items):
             errors.append("Cada elemento debe tener texto y una categoría válida.")
         if errors:
@@ -975,6 +1052,67 @@ class Handler(BaseHTTPRequestHandler):
         value = self.headers.get(PLAY_TRUSTED_IDENTITY_HEADER, "").strip()
         return value[:160] if re.fullmatch(r"[A-Za-z0-9._:@/-]{1,160}", value) else ""
 
+    def teacher_identity(self) -> str:
+        """Return the Authentik-backed teacher identity from Commons."""
+
+        identity = self.authenticated_identity()
+        if identity.get("role") not in {"profesor", "administrador", "teacher"}:
+            return ""
+        value = str(identity.get("id", "")).strip()
+        return value[:160] if re.fullmatch(r"[A-Za-z0-9._:@/-]{1,160}", value) else ""
+
+    def authenticated_identity(self) -> dict:
+        """Return the authenticated Commons identity, if the browser has one."""
+
+        if not COMMONS_AUTH_ME_URL:
+            return {}
+        cookie = self.headers.get("Cookie", "").strip()
+        if not cookie:
+            return {}
+        request = UpstreamRequest(COMMONS_AUTH_ME_URL, headers={"Cookie": cookie})
+        try:
+            with urlopen(request, timeout=5) as response:
+                if response.status != HTTPStatus.OK:
+                    return {}
+                payload = json.loads(response.read().decode("utf-8"))
+        except (HTTPError, URLError, TimeoutError, ValueError, json.JSONDecodeError):
+            return {}
+        identity = payload.get("identity") if isinstance(payload, dict) else None
+        return identity if isinstance(identity, dict) and identity.get("id") else {}
+
+    def authenticated_identity_id(self) -> str:
+        identity = self.authenticated_identity()
+        value = str(identity.get("id", "")).strip()
+        return value[:160] if re.fullmatch(r"[A-Za-z0-9._:@/-]{1,160}", value) else ""
+
+    def require_teacher(self) -> str:
+        # Standalone Play remains usable for its local unit tests and for
+        # development without Commons. The Compose deployment always sets
+        # COMMONS_AUTH_ME_URL, so production authoring takes the Authentik path.
+        if not COMMONS_AUTH_ME_URL:
+            return self.identity_id() or "local-teacher"
+        identity = self.teacher_identity()
+        if identity:
+            return identity
+        self.send_json(HTTPStatus.UNAUTHORIZED, {
+            "error": "Se necesita una sesión docente de Authentik.",
+            "login_url": PLAY_TEACHER_LOGIN_URL or None,
+        })
+        return ""
+
+    def redirect_teacher_login(self) -> None:
+        if PLAY_TEACHER_LOGIN_URL:
+            location = PLAY_TEACHER_LOGIN_URL
+        else:
+            host = self.headers.get("Host", "")
+            if ":" in host:
+                hostname = host.rsplit(":", 1)[0]
+                host = f"{hostname}:8082"
+            location = f"//{host}/api/auth/oidc/login" if host else "/api/auth/oidc/login"
+        self.send_response(HTTPStatus.SEE_OTHER)
+        self.send_header("Location", location)
+        self.end_headers()
+
     def creator_hash(self) -> str:
         """Hash of the anonymous creator key sent by the browser via header."""
 
@@ -984,7 +1122,7 @@ class Handler(BaseHTTPRequestHandler):
         visibility = activity.get("visibility", "public")
         if visibility == "public":
             return True
-        identity = self.identity_id()
+        identity = self.authenticated_identity_id() or self.identity_id()
         return bool(identity and activity.get("owner_id") == identity)
 
     def send_json(self, status: int, payload: dict) -> None:
@@ -1028,7 +1166,7 @@ class Handler(BaseHTTPRequestHandler):
                 "tag": query.get("tag", [""])[0],
                 "q": query.get("q", [""])[0],
             }
-            filters["identity_id"] = self.identity_id()
+            filters["identity_id"] = self.authenticated_identity_id() or self.identity_id()
             creator_hash = self.creator_hash()
             items, total = list_activities(filters)
             self.send_json(HTTPStatus.OK, {
@@ -1104,7 +1242,17 @@ class Handler(BaseHTTPRequestHandler):
             self.send_json(HTTPStatus.NOT_FOUND, {"error": "Ruta no encontrada."})
             return
         activity = read_activity(match.group(1))
+        owner_id = self.authenticated_identity_id() or (self.identity_id() if not COMMONS_AUTH_ME_URL else "")
         authorized = self.admin_authorized()
+        if owner_id and not authorized:
+            authorized = activity is not None and activity.get("owner_id") == owner_id
+        if not owner_id and not authorized:
+            creator_hash = self.creator_hash()
+            owner_hash = str(activity.get("owner_key_hash", "")) if activity else ""
+            authorized = bool(creator_hash and owner_hash and secrets.compare_digest(owner_hash, creator_hash))
+        if COMMONS_AUTH_ME_URL and not authorized:
+            self.send_json(HTTPStatus.UNAUTHORIZED, {"error": "Se necesita una sesión docente o la clave de creador."})
+            return
         if not authorized:
             creator_hash = self.creator_hash()
             owner_hash = str(activity.get("owner_key_hash", "")) if activity else ""
@@ -1120,6 +1268,8 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self) -> None:  # noqa: N802
         route = self.normalize_path(self.path)
         if route == "/api/catalog":
+            if not self.require_teacher():
+                return
             self.update_catalog()
             return
         if route == "/api/commons/launch":
@@ -1129,14 +1279,19 @@ class Handler(BaseHTTPRequestHandler):
             self.forward_commons_score()
             return
         if route == "/api/recursos/publish":
+            if not self.require_teacher():
+                return
             self.publish_recursos_activity()
             return
         if route == "/api/recursos/unpublish":
+            if not self.require_teacher():
+                return
             self.unpublish_recursos_activity()
             return
         if route not in {"/api/activities", "/api/previews"}:
             self.send_json(HTTPStatus.NOT_FOUND, {"error": "Ruta no encontrada."})
             return
+        identity = self.authenticated_identity_id() or (self.identity_id() if not COMMONS_AUTH_ME_URL else "")
         try:
             length = int(self.headers.get("Content-Length", "0"))
             if length > MAX_BODY:
@@ -1159,10 +1314,14 @@ class Handler(BaseHTTPRequestHandler):
         if requested_visibility not in VISIBILITIES:
             self.send_json(HTTPStatus.UNPROCESSABLE_ENTITY, {"errors": ["Visibilidad no válida."]})
             return
-        identity = self.identity_id()
         activity["visibility"] = requested_visibility if identity else "public"
         if identity:
             activity["owner_id"] = identity
+        else:
+            activity["expiresAt"] = (
+                __import__("datetime").datetime.now(__import__("datetime").timezone.utc)
+                + __import__("datetime").timedelta(seconds=ANONYMOUS_ACTIVITY_TTL_SECONDS)
+            ).isoformat()
         creator_hash = self.creator_hash()
         if creator_hash:
             activity["owner_key_hash"] = creator_hash
@@ -1492,9 +1651,23 @@ def read_activity(activity_id: str) -> dict | None:
         return None
     file = ACTIVITIES_DIR / activity_id / "activity.json"
     try:
-        return json.loads(file.read_text(encoding="utf-8"))
+        activity = json.loads(file.read_text(encoding="utf-8"))
+        return None if activity_expired(activity) else activity
     except (FileNotFoundError, json.JSONDecodeError):
         return None
+
+
+def activity_expired(activity: dict) -> bool:
+    expires_at = activity.get("expiresAt")
+    if not expires_at:
+        return False
+    try:
+        expiry = datetime.fromisoformat(str(expires_at).replace("Z", "+00:00"))
+    except ValueError:
+        return False
+    if expiry.tzinfo is None:
+        expiry = expiry.replace(tzinfo=timezone.utc)
+    return expiry <= datetime.now(timezone.utc)
 
 
 def activity_matches(activity: dict, filters: dict) -> bool:

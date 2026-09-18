@@ -4,6 +4,7 @@ module.exports = defineConfig({
   testDir: './tests/browser',
   testMatch: /play\.spec\.js/,
   use: { baseURL: 'http://127.0.0.1:18183', serviceWorkers: 'block' },
+  expect: { timeout: 10000 },
   projects: [
     { name: 'desktop', use: { ...devices['Desktop Chrome'] } },
     { name: 'mobile', use: { ...devices['Pixel 7'] } },

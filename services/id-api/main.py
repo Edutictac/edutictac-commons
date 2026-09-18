@@ -1110,6 +1110,9 @@ def me(request: Request) -> dict[str, Any]:
     oidc = oidc_cookie(request)
     if oidc:
         return {"identity": oidc_identity(oidc)}
+    teacher = parse_cookie(request.cookies.get(TEACHER_COOKIE))
+    if teacher and teacher.get("teacher"):
+        return {"identity": {"id": str(teacher.get("teacher_id") or "teacher"), "role": "teacher", "provider": "local"}}
     identity = current_identity(request)
     if not identity:
         raise HTTPException(status_code=401, detail="not authenticated")

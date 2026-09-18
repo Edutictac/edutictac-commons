@@ -54,6 +54,7 @@ printf '{"token":"%s"}' "$teacher_token" | curl -fsS -c "$teacher_cookie" -b "$t
   -H 'Content-Type: application/json' --data-binary @- "$base/api/teacher/login" >/dev/null
 
 activity_id="$(curl -fsS -X POST "$play_base/api/activities" \
+  -b "$teacher_cookie" \
   -H 'Content-Type: application/json' \
   -d '{"title":"Prueba Play Commons","question":"¿Cuál es correcta?","answers":[{"text":"Sí","correct":true},{"text":"No","correct":false}]}' | jq -r '.id')"
 case "$activity_id" in
