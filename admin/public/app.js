@@ -238,6 +238,65 @@ async function runJsonAction(path, payload) {
   }
 }
 
+const JOB_POLL_INTERVAL_MS = 3000;
+const JOB_POLL_TIMEOUT_MS = 10 * 60 * 1000;
+let jobPollTimer = null;
+
+function stopJobPoll() {
+  if (jobPollTimer) {
+    clearTimeout(jobPollTimer);
+    jobPollTimer = null;
+  }
+}
+
+async function pollJob(unit, startedAt) {
+  stopJobPoll();
+  let data;
+  try {
+    const resp = await apiFetch(`/api/job-status?unit=${encodeURIComponent(unit)}`);
+    data = await resp.json();
+    if (!resp.ok) throw new Error(data.error || `HTTP ${resp.status}`);
+  } catch (err) {
+    setOutput(actionOutput, `${t("common.errorLabel")} ${err.message}`, true);
+    return;
+  }
+
+  const log = data.log || "";
+  if (data.running) {
+    if (Date.now() - startedAt > JOB_POLL_TIMEOUT_MS) {
+      setOutput(actionOutput, `${log}\n\n${t("job.timeout")}`, true);
+      return;
+    }
+    setOutput(actionOutput, `${log}\n\n${t("job.running")}`, false);
+    jobPollTimer = setTimeout(() => pollJob(unit, startedAt), JOB_POLL_INTERVAL_MS);
+    return;
+  }
+
+  const success = data.result === "success";
+  setOutput(actionOutput, `${log}\n\n${success ? t("job.success") : t("job.failed")}`, !success);
+  await loadStatus();
+}
+
+async function runJobAction(path, payload) {
+  setOutput(actionOutput, t("common.executing"), false);
+  try {
+    const resp = await apiFetch(path, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const data = await resp.json();
+    setOutput(actionOutput, data.output || JSON.stringify(data), !data.ok);
+    if (data.ok && data.unit) {
+      jobPollTimer = setTimeout(() => pollJob(data.unit, Date.now()), JOB_POLL_INTERVAL_MS);
+    } else {
+      await loadStatus();
+    }
+  } catch (err) {
+    setOutput(actionOutput, `${t("common.errorLabel")} ${err.message}`, true);
+  }
+}
+
 document.getElementById("loginBtn").addEventListener("click", () => {
   window.location.href = "/api/auth/oidc/login?next=%2Fadmin%2F";
 });
@@ -281,7 +340,7 @@ document.getElementById("backupRestoreBtn").addEventListener("click", () => {
     setOutput(actionOutput, t("backup.restoreCancelled"), false);
     return;
   }
-  runJsonAction("/api/backup/restore", { backup });
+  runJobAction("/api/backup/restore", { backup });
 });
 
 document.getElementById("imagesCheckBtn").addEventListener("click", checkUpdates);
@@ -292,7 +351,7 @@ document.getElementById("imagesUpdateBtn").addEventListener("click", () => {
     setOutput(actionOutput, t("images.updateCancelled"), false);
     return;
   }
-  runJsonAction("/api/images/update", {});
+  runJobAction("/api/images/update", {});
 });
 
 document.getElementById("imagesRollbackBtn").addEventListener("click", () => {
@@ -306,7 +365,7 @@ document.getElementById("imagesRollbackBtn").addEventListener("click", () => {
     setOutput(actionOutput, t("images.rollbackCancelled"), false);
     return;
   }
-  runJsonAction("/api/images/rollback", { backup });
+  runJobAction("/api/images/rollback", { backup });
 });
 
 document.getElementById("contentResourcesSyncBtn").addEventListener("click", () => {

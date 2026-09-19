@@ -23,6 +23,7 @@ env_value() {
 docker_cmd="${DOCKER:-docker}"
 registry="$(env_value IMAGE_REGISTRY edutictac)"
 image_tag="$(env_value IMAGE_TAG "$(cat VERSION 2>/dev/null || echo 0.1.0-alpha)")"
+admin_tag="$(env_value ADMIN_TAG "$image_tag")"
 eduhoot_tag="$(env_value EDUHOOT_TAG 0.1.0)"
 recursos_tag="$(env_value RECURSOS_TAG local)"
 profiles="$(env_value COMPOSE_PROFILES "")"
@@ -30,7 +31,7 @@ profiles="$(env_value COMPOSE_PROFILES "")"
 images="
 ${registry}/commons-id-api:${image_tag}
 ${registry}/commons-portal:${image_tag}
-${registry}/commons-admin:${image_tag}
+${registry}/commons-admin:${admin_tag}
 ${registry}/commons-play:${image_tag}
 "
 
@@ -47,6 +48,9 @@ esac
 
 echo "Registre: ${registry}"
 echo "Tag Commons: ${image_tag}"
+if [ "$admin_tag" != "$image_tag" ]; then
+  echo "Tag Admin (independent): ${admin_tag}"
+fi
 echo "Perfils actius: ${profiles:-cap}"
 echo
 

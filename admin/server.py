@@ -57,6 +57,7 @@ SERVICE_UNIT = "edutictac-commons-backup.service"
 
 SCRIPT_TIMEOUT = 120
 BACKUP_NAME_RE = re.compile(r"^commons-\d{8}T\d{6}Z$")
+JOB_UNIT_RE = re.compile(r"^edutictac-commons-(update|restore|rollback)-\d{14}$")
 
 
 def read_stack_version():
@@ -207,6 +208,23 @@ def run_script(*args, timeout=SCRIPT_TIMEOUT):
     return proc.returncode == 0, output
 
 
+def job_status(unit_name):
+    state = systemctl_show(unit_name, ["ActiveState", "SubState", "Result"])
+    active_state = state.get("ActiveState", "")
+    running = active_state in {"activating", "active", "reloading", "deactivating"}
+    _, log = run_script(
+        "journalctl", "--user", "-u", unit_name, "--no-pager", "-o", "cat",
+        timeout=10,
+    )
+    return {
+        "unit": unit_name,
+        "running": running,
+        "active_state": active_state,
+        "result": state.get("Result", ""),
+        "log": log,
+    }
+
+
 def authentik_api(path, method="GET", payload=None):
     if not AUTHENTIK_API_TOKEN:
         raise RuntimeError("API de Authentik no configurada")
@@ -317,7 +335,7 @@ def action_backup_restore(payload):
             "\nRestauracio iniciada. El panell pot desconnectar-se uns segons "
             "mentre el stack es para i torna a arrancar."
         )
-    return ok, output
+    return ok, output, (200 if ok else 500), {"unit": unit_name}
 
 
 ACTIONS["/api/backup/restore"] = action_backup_restore
@@ -352,7 +370,7 @@ def action_update_images(payload):
             "\nActualitzacio iniciada. El proces crea i verifica un backup, "
             "descarrega imatges, reinicia el stack i executa comprovacions."
         )
-    return ok, output
+    return ok, output, (200 if ok else 500), {"unit": unit_name}
 
 
 ACTIONS["/api/images/update"] = action_update_images
@@ -436,10 +454,11 @@ def action_rollback_images(payload):
     repo_dir = os.environ.get("REPO_DIR", str(APP_DIR))
     rollback_script = str(Path(repo_dir) / "scripts" / "rollback-images.sh")
     unit_name = f"edutictac-commons-rollback-{datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S')}"
-    return run_script(
+    ok, output = run_script(
         "systemd-run", "--user", "--collect", f"--unit={unit_name}",
         f"--property=WorkingDirectory={repo_dir}", "/bin/sh", rollback_script, name,
     )
+    return ok, output, (200 if ok else 500), {"unit": unit_name}
 
 
 ACTIONS["/api/images/rollback"] = action_rollback_images
@@ -515,12 +534,20 @@ class Handler(BaseHTTPRequestHandler):
             if not self._is_authorized():
                 self._send_json(401, {"error": "no autoritzat"})
                 return
-            if self.path == "/api/status":
+            parsed = urllib.parse.urlparse(self.path)
+            if parsed.path == "/api/status":
                 self._send_json(200, build_status())
                 return
-            if self.path == "/api/updates":
+            if parsed.path == "/api/updates":
                 ok, payload = get_update_status()
                 self._send_json(200 if ok else 500, payload)
+                return
+            if parsed.path == "/api/job-status":
+                unit = urllib.parse.parse_qs(parsed.query).get("unit", [""])[0]
+                if not JOB_UNIT_RE.match(unit):
+                    self._send_json(400, {"error": "unit invalid o absent"})
+                    return
+                self._send_json(200, job_status(unit))
                 return
             self._send_json(404, {"error": "no trobat"})
             return
@@ -555,7 +582,8 @@ class Handler(BaseHTTPRequestHandler):
         result = action(payload)
         ok, output = result[:2]
         status = result[2] if len(result) > 2 else (200 if ok else 500)
-        self._send_json(status, {"ok": ok, "output": output})
+        extra = result[3] if len(result) > 3 else {}
+        self._send_json(status, {"ok": ok, "output": output, **extra})
 
 
 def main():

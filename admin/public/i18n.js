@@ -102,6 +102,10 @@
       "content.help": "Descarga y valida la última versión publicada del catálogo de la red de centros.",
       "content.resources": "Sincronizar Recursos",
       "content.eduhoot": "Sincronizar EduHoot",
+      "job.running": "⏳ En marcha... espera, puede tardar varios minutos.",
+      "job.success": "✅ Completado con éxito.",
+      "job.failed": "❌ Ha fallado. Revisa el registro de arriba.",
+      "job.timeout": "⚠️ Sigue en marcha pero ha dejado de comprobarse aquí. Revisa el registro más tarde.",
     },
     ca: {
       "common.lang.label": "Idioma",
@@ -197,6 +201,10 @@
       "content.help": "Descarrega i valida l'última versió publicada del catàleg de la xarxa de centres.",
       "content.resources": "Sincronitzar Recursos",
       "content.eduhoot": "Sincronitzar EduHoot",
+      "job.running": "⏳ En marxa... espera, pot trigar uns minuts.",
+      "job.success": "✅ Completat amb èxit.",
+      "job.failed": "❌ Ha fallat. Revisa el registre de dalt.",
+      "job.timeout": "⚠️ Encara va en marxa pero s'ha deixat de comprovar ací. Revisa el registre mes tard.",
     },
     va: {
       "common.actionPlaceholder": "Els resultats de les accions apareixeran ací.",
@@ -306,6 +314,10 @@
       "content.help": "Download and validate the latest published version of the centre network catalogue.",
       "content.resources": "Sync Resources",
       "content.eduhoot": "Sync EduHoot",
+      "job.running": "⏳ Running... please wait, this can take a few minutes.",
+      "job.success": "✅ Completed successfully.",
+      "job.failed": "❌ Failed. Check the log above.",
+      "job.timeout": "⚠️ Still running but no longer being checked here. Check the log later.",
     },
   };
 
