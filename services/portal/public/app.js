@@ -1300,6 +1300,8 @@ bind("teacherLogout", teacherLogout, "teacherOutput");
 bind("teacherSummary", teacherSummary, "teacherOutput");
 bind("refreshDashboard", refreshDashboard, "teacherOutput");
 bind("createBatch", createBatch, "teacherOutput");
+bind("addGroupIdentities", addGroupIdentities, "teacherOutput");
+bind("deleteGroup", deleteGroup, "teacherOutput");
 bind("assignFavoriteResources", assignFavoriteResources, "resourcesOutput");
 bind("addGroupMember", addGroupMember, "membersOutput");
 bind("loadGroupMembers", loadGroupMembers, "membersOutput");
