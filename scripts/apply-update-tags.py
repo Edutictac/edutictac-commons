@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Apply IMAGE_TAG/EDUHOOT_TAG values to .env without printing secrets."""
+"""Apply IMAGE_TAG/ADMIN_TAG/EDUHOOT_TAG values to .env without printing secrets."""
 
 from __future__ import annotations
 
@@ -38,7 +38,12 @@ def main() -> int:
     args = parser.parse_args()
     values = {}
     if args.image_tag:
+        # commons-admin es publica sempre junt amb id-api/portal/play (mateix
+        # tag, veure push-images.sh), aixi que ADMIN_TAG seguix IMAGE_TAG en
+        # el flux normal d'actualitzacio/rollback. Qui vullga fixar l'admin
+        # a una versio propia pot editar ADMIN_TAG a ma en .env despres.
         values["IMAGE_TAG"] = args.image_tag
+        values["ADMIN_TAG"] = args.image_tag
     if args.eduhoot_tag:
         values["EDUHOOT_TAG"] = args.eduhoot_tag
     if values:
