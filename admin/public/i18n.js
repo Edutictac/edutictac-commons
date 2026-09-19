@@ -106,6 +106,7 @@
       "job.success": "✅ Completado con éxito.",
       "job.failed": "❌ Ha fallado. Revisa el registro de arriba.",
       "job.timeout": "⚠️ Sigue en marcha pero ha dejado de comprobarse aquí. Revisa el registro más tarde.",
+      "job.reconnecting": "⏳ Reconectando... el propio panel puede estar reiniciándose como parte de la actualización.",
     },
     ca: {
       "common.lang.label": "Idioma",
@@ -205,6 +206,7 @@
       "job.success": "✅ Completat amb èxit.",
       "job.failed": "❌ Ha fallat. Revisa el registre de dalt.",
       "job.timeout": "⚠️ Encara va en marxa pero s'ha deixat de comprovar ací. Revisa el registre mes tard.",
+      "job.reconnecting": "⏳ Reconnectant... el mateix panell pot estar reiniciant-se com a part de l'actualització.",
     },
     va: {
       "common.actionPlaceholder": "Els resultats de les accions apareixeran ací.",
@@ -318,6 +320,7 @@
       "job.success": "✅ Completed successfully.",
       "job.failed": "❌ Failed. Check the log above.",
       "job.timeout": "⚠️ Still running but no longer being checked here. Check the log later.",
+      "job.reconnecting": "⏳ Reconnecting... the panel itself may be restarting as part of the update.",
     },
   };
 

@@ -240,7 +240,9 @@ async function runJsonAction(path, payload) {
 
 const JOB_POLL_INTERVAL_MS = 3000;
 const JOB_POLL_TIMEOUT_MS = 10 * 60 * 1000;
+const JOB_POLL_MAX_CONSECUTIVE_FAILURES = 6;
 let jobPollTimer = null;
+let jobPollFailures = 0;
 
 function stopJobPoll() {
   if (jobPollTimer) {
@@ -256,8 +258,22 @@ async function pollJob(unit, startedAt) {
     const resp = await apiFetch(`/api/job-status?unit=${encodeURIComponent(unit)}`);
     data = await resp.json();
     if (!resp.ok) throw new Error(data.error || `HTTP ${resp.status}`);
+    jobPollFailures = 0;
   } catch (err) {
-    setOutput(actionOutput, `${t("common.errorLabel")} ${err.message}`, true);
+    // "Actualitzar imatges" també reinicia el propi contenidor admin que
+    // servix este JS i respon a este mateix polling: durant eixe reinici
+    // el fetch pot fallar de forma transitòria encara que la feina de
+    // fons (systemd-run --collect, independent del contenidor) continue i
+    // acabe amb èxit. Reintenta unes quantes vegades abans de donar-ho per
+    // fallat perquè l'usuari no vega un error fals mentre tot va bé.
+    jobPollFailures += 1;
+    const timedOut = Date.now() - startedAt > JOB_POLL_TIMEOUT_MS;
+    if (timedOut || jobPollFailures > JOB_POLL_MAX_CONSECUTIVE_FAILURES) {
+      setOutput(actionOutput, `${t("common.errorLabel")} ${err.message}`, true);
+      return;
+    }
+    setOutput(actionOutput, t("job.reconnecting"), false);
+    jobPollTimer = setTimeout(() => pollJob(unit, startedAt), JOB_POLL_INTERVAL_MS);
     return;
   }
 
