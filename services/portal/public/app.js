@@ -620,7 +620,7 @@ function studentDashboard(assignments) {
   const rows = visibleAssignments.map((assignment) => ({
     ...assignment,
     title: assignment.title || assignment.activity_id,
-    status: assignment.completed ? t("student.done") : t("student.pending"),
+    status: assignment.completed ? t("student.done") : assignment.started ? t("student.inProgress") : t("student.pending"),
     best_score: assignment.best_score ?? "",
     last_score_at: assignment.last_score_at || "",
     action:
@@ -631,8 +631,6 @@ function studentDashboard(assignments) {
           : assignment.app_id === "resource"
             ? String(assignment.activity_id || "").startsWith("teacher-upload:")
               ? `<button class="compact secondary" type="button" data-launch-document-assignment="${escapeHtml(assignment.id)}">${t("student.openResource")}</button>`
-              : assignment.launch_url
-              ? `<a class="button-link compact secondary" href="${escapeHtml(accessibleResourceUrl(assignment.launch_url))}" target="_blank" rel="noopener noreferrer">${t("student.openResource")}</a>`
               : `<button class="compact secondary" type="button" data-launch-resource-assignment="${escapeHtml(assignment.id)}">${t("student.openResource")}</button>`
         : "",
   }));
@@ -1060,6 +1058,14 @@ async function launchPlayAssignment(assignment) {
 }
 
 async function launchResourceAssignment(assignment) {
+  try {
+    await api("/api/student/launch-token", {
+      method: "POST",
+      body: JSON.stringify({ assignment_id: assignment.id }),
+    });
+  } catch (error) {
+    console.warn("No s'ha pogut registrar l'inici de l'activitat", error);
+  }
   let url = accessibleResourceUrl(assignment.launch_url);
   if (!url) {
     const query = new URLSearchParams({ q: assignment.activity_id, limit: "50" });

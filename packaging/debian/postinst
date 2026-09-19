@@ -39,7 +39,7 @@ text = path.read_text(encoding="utf-8")
 values = {
     "REPO_DIR": "/opt/edutictac-commons",
     "IMAGE_REGISTRY": "registry.edutictac.es/edutictac",
-    "IMAGE_TAG": "0.1.1-alpha14",
+    "IMAGE_TAG": "0.1.1-alpha15",
     "ADMIN_TAG": "0.1.1-alpha13",
     "EDUHOOT_TAG": "1.0.4",
     "EDUHOOT_RESOURCES_TOKEN": secrets.token_urlsafe(48),
@@ -67,7 +67,7 @@ values = {
 replace_if = {
     "REPO_DIR": {"", "/opt/edutictac-commons"},
     "IMAGE_REGISTRY": {"edutictac", ""},
-    "IMAGE_TAG": {"", "0.1.1-alpha", "0.1.1-alpha10"},
+    "IMAGE_TAG": {"", "0.1.1-alpha", "0.1.1-alpha10", "0.1.1-alpha14"},
     "PUID": {"1000", ""},
     "PGID": {"1000", ""},
     "EDUTICTAC_ID_SECRET": {"change-this-local-secret", ""},

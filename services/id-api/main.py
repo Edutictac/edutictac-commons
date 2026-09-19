@@ -1176,7 +1176,11 @@ def student_dashboard(request: Request) -> dict[str, Any]:
                 (SELECT ii.position FROM itinerary_items ii
                  JOIN itineraries it ON it.id = ii.itinerary_id
                  WHERE ii.assignment_id = a.id AND it.group_id = a.group_id AND it.active = 1
-                 ORDER BY ii.position LIMIT 1) AS itinerary_position
+                 ORDER BY ii.position LIMIT 1) AS itinerary_position,
+                EXISTS(
+                    SELECT 1 FROM app_launch_tokens t
+                    WHERE t.assignment_id = a.id AND t.identity_id = ?
+                ) AS started
             FROM activity_assignments a
             LEFT JOIN scores s
                 ON s.assignment_id = a.id
@@ -1187,7 +1191,7 @@ def student_dashboard(request: Request) -> dict[str, Any]:
             ORDER BY itinerary_position IS NULL, itinerary_position,
                      a.created_at DESC, a.title, a.app_id, a.activity_id
             """,
-            (identity["id"], identity["group_id"]),
+            (identity["id"], identity["id"], identity["group_id"]),
         ).fetchall()
     return {
         "identity": identity,
@@ -1198,6 +1202,7 @@ def student_dashboard(request: Request) -> dict[str, Any]:
                 "best_score": row["best_score"],
                 "last_score_at": row["last_score_at"],
                 "completed": int(row["attempts"] or 0) > 0,
+                "started": bool(row["started"]),
                 "itinerary_position": row["itinerary_position"],
             }
             for row in rows
