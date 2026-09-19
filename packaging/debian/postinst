@@ -8,7 +8,7 @@ SERVICE=edutictac-commons.service
 MDNS_CONF=/etc/avahi/avahi-daemon.conf
 
 step_num=0
-step_total=7
+step_total=8
 step() {
     step_num=$((step_num + 1))
     echo ""
@@ -293,7 +293,16 @@ if [ -n "$bundle" ] && command -v docker >/dev/null 2>&1; then
     fi
 fi
 
-step "Activant i arrencant el servei (pot trigar uns minuts mentre es descarreguen les imatges Docker)..."
+step "Descarregant les imatges Docker (es mostra el progrés de cada capa)..."
+
+if command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1; then
+    if ! (cd "$APP_DIR" && docker compose --env-file "$ENV_FILE" -f compose.yml pull); then
+        echo "Avís: no s'han pogut descarregar totes les imatges Docker ara mateix;" >&2
+        echo "es tornarà a intentar automàticament en arrencar el servei." >&2
+    fi
+fi
+
+step "Activant i arrencant el servei..."
 
 if command -v systemctl >/dev/null 2>&1; then
     systemctl daemon-reload

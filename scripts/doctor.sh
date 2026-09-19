@@ -38,3 +38,23 @@ echo "OK Docker: $($docker_cmd --version)"
 echo "OK Compose: $($docker_cmd compose version --short)"
 echo "OK port portal configurat: $portal_port"
 echo "OK entorn: $env_file"
+
+profiles="$(grep '^COMPOSE_PROFILES=' "$env_file" | tail -n 1 | cut -d= -f2-)"
+case ",$profiles," in
+  *,authentik,*)
+    issuer="$(grep '^EDUTICTAC_ID_OIDC_ISSUER_URL=' "$env_file" | tail -n 1 | cut -d= -f2-)"
+    client_id="$(grep '^EDUTICTAC_ID_OIDC_CLIENT_ID=' "$env_file" | tail -n 1 | cut -d= -f2-)"
+    client_secret="$(grep '^EDUTICTAC_ID_OIDC_CLIENT_SECRET=' "$env_file" | tail -n 1 | cut -d= -f2-)"
+    redirect="$(grep '^EDUTICTAC_ID_OIDC_REDIRECT_URL=' "$env_file" | tail -n 1 | cut -d= -f2-)"
+    role_claim="$(grep '^EDUTICTAC_ID_OIDC_ROLE_CLAIM=' "$env_file" | tail -n 1 | cut -d= -f2-)"
+    if [ -z "$issuer" ] || [ -z "$client_id" ] || [ -z "$client_secret" ] || [ -z "$redirect" ]; then
+      echo "AVIS: COMPOSE_PROFILES inclou 'authentik' pero falten variables EDUTICTAC_ID_OIDC_* a $env_file."
+      echo "      Veure 'Activar Authentik SSO' en INSTALL-CENTRES.md."
+    else
+      echo "OK Authentik OIDC: variables EDUTICTAC_ID_OIDC_* presents"
+    fi
+    if [ "$role_claim" != "groups" ]; then
+      echo "AVIS: EDUTICTAC_ID_OIDC_ROLE_CLAIM hauria de ser 'groups' (actual: '${role_claim:-buit}')."
+    fi
+    ;;
+esac

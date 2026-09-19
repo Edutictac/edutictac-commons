@@ -131,6 +131,65 @@ EduHoot guarda dades en `data/eduhoot-mongo/`, `data/eduhoot-uploads/` i
 `data/eduhoot-logs/`. `make backup` i `make restore` les cobreixen quan el
 perfil està actiu.
 
+## Activar Authentik SSO
+
+Authentik és opcional i permet que professorat i administració entren amb un compte SSO en lloc
+del token/PIN local. Per activar-lo:
+
+1. En `.env`, activa el perfil i genera les credencials pròpies d'Authentik:
+
+   ```env
+   COMPOSE_PROFILES=authentik
+   AUTHENTIK_PG_PASS=<genera amb: openssl rand -base64 48>
+   AUTHENTIK_SECRET_KEY=<genera amb: openssl rand -base64 48>
+   ```
+
+2. Genera tu mateix un parell client_id/client_secret (no cal crear l'aplicació OAuth2 des de la
+   interfície web d'Authentik: el blueprint `authentik-blueprints/edutictac-commons.yaml` la crea
+   automàticament amb els valors que li passes per variable d'entorn):
+
+   ```bash
+   openssl rand -hex 16    # -> EDUTICTAC_ID_OIDC_CLIENT_ID
+   openssl rand -base64 48 # -> EDUTICTAC_ID_OIDC_CLIENT_SECRET
+   ```
+
+3. Omple en `.env` (substituïx `edutictac.local` pel domini/IP real si cal):
+
+   ```env
+   EDUTICTAC_ID_OIDC_ISSUER_URL=http://edutictac.local:9000/application/o/edutictac-commons/
+   EDUTICTAC_ID_OIDC_DISCOVERY_URL=http://authentik-server:9000/application/o/edutictac-commons/.well-known/openid-configuration
+   EDUTICTAC_ID_OIDC_AUTHORIZATION_URL=http://edutictac.local:9000/application/o/authorize/
+   EDUTICTAC_ID_OIDC_CLIENT_ID=<el valor generat en el pas 2>
+   EDUTICTAC_ID_OIDC_CLIENT_SECRET=<el valor generat en el pas 2>
+   EDUTICTAC_ID_OIDC_REDIRECT_URL=http://edutictac.local:8082/api/auth/oidc/callback
+   EDUTICTAC_ID_OIDC_ROLE_CLAIM=groups
+
+   EDUHOOT_AUTHENTIK_CLIENT_ID=<el mateix valor generat en el pas 2>
+   EDUHOOT_AUTHENTIK_CLIENT_SECRET=<el mateix valor generat en el pas 2>
+   ```
+
+   `RECURSOS_OIDC_REDIRECT_URI` i `EDUHOOT_AUTHENTIK_REDIRECT_URI` ja venen omplits per defecte en
+   `.env.example`; no cal tocar-los llevat que canvies l'host. Nota important:
+   `EDUTICTAC_ID_OIDC_ROLE_CLAIM` ha de ser `groups`, no `roles` — és la claim que el blueprint
+   assigna als grups `administrador`/`profesor` d'Authentik.
+
+4. Arranca (o reinicia) els serveis d'Authentik perquè apliquen el blueprint amb estos valors:
+
+   ```bash
+   make up-authentik
+   ```
+
+5. Verifica:
+
+   ```bash
+   make test-authentik-config
+   ```
+
+   Hauria de mostrar `Authentik OIDC activo`. Si no, revisa `make doctor`.
+
+Amb `EDUTICTAC_ID_OIDC_*` buit (per defecte), el professorat continua entrant amb el token local /
+codi + PIN Commons sense cap canvi.
+
 ## Ús d'imatges ja publicades (registre propi)
 
 EduTicTac publica les imatges a un registre OCI propi,
@@ -290,7 +349,6 @@ make up
 ## Limitacions actuals
 
 - És una demo tècnica inicial.
-- El professorat entra amb token local, no amb SSO.
-- No hi ha Authentik encara.
+- El professorat pot entrar amb token local o, si s'activa, amb SSO via Authentik (veure "Activar Authentik SSO").
 - EduHoot ja es pot activar com a mòdul opcional (`COMPOSE_PROFILES=eduhoot`, veure README); Banc de recursos i Robotics encara no estan integrats.
 - No s'han de carregar dades reals d'alumnat.
