@@ -19,6 +19,7 @@ ROOT = Path(__file__).resolve().parent.parent
 ENV_FILE = ROOT / ".env"
 ENV_EXAMPLE = ROOT / ".env.example"
 COMMON_IMAGES = ["commons-id-api", "commons-portal", "commons-admin"]
+RECURSOS_IMAGES = ["recursos", "recursos-api"]
 
 
 def read_env() -> dict[str, str]:
@@ -36,6 +37,7 @@ def read_env() -> dict[str, str]:
         "IMAGE_REGISTRY",
         "IMAGE_TAG",
         "EDUHOOT_TAG",
+        "RECURSOS_TAG",
         "COMPOSE_PROFILES",
         "UPDATE_CHANNEL",
         "REGISTRY_USERNAME",
@@ -131,22 +133,25 @@ def channel_match(tag: str, channel: str) -> bool:
     return True
 
 
-def choose_common_update(
-    registry: str, current: str, channel: str, username: str = "", password: str = ""
+def choose_intersection_update(
+    registry: str, images: list[str], current: str, channel: str, username: str = "", password: str = ""
 ) -> dict[str, object]:
+    """Tria la versio mes recent publicada per a TOTES les imatges donades
+    (interseccio de tags), util quan varies imatges es publiquen sempre
+    juntes amb el mateix tag (bundle Commons, o recursos+recursos-api)."""
     try:
-        tag_sets = {image: set(fetch_tags(registry, image, username, password)) for image in COMMON_IMAGES}
+        tag_sets = {image: set(fetch_tags(registry, image, username, password)) for image in images}
     except (OSError, urllib.error.URLError, urllib.error.HTTPError, TimeoutError, json.JSONDecodeError) as exc:
         return {"current": current, "candidate": "", "update_available": False, "error": str(exc)}
 
-    common_tags = set.intersection(*(tag_sets[image] for image in COMMON_IMAGES))
+    common_tags = set.intersection(*(tag_sets[image] for image in images))
     candidates = sorted((tag for tag in common_tags if channel_match(tag, channel)), key=semver_key, reverse=True)
     candidate = candidates[0] if candidates else ""
     return {
         "current": current,
         "candidate": candidate,
         "update_available": bool(candidate and semver_key(candidate) > semver_key(current)),
-        "images": {image: sorted(tag_sets[image], key=semver_key, reverse=True)[:10] for image in COMMON_IMAGES},
+        "images": {image: sorted(tag_sets[image], key=semver_key, reverse=True)[:10] for image in images},
     }
 
 
@@ -179,12 +184,19 @@ def build_status() -> dict[str, object]:
     status: dict[str, object] = {
         "registry": registry,
         "channel": channel,
-        "commons": choose_common_update(registry, env.get("IMAGE_TAG") or "unknown", channel, username, password),
+        "commons": choose_intersection_update(
+            registry, COMMON_IMAGES, env.get("IMAGE_TAG") or "unknown", channel, username, password
+        ),
         "eduhoot": None,
+        "recursos": None,
     }
     if "eduhoot" in profiles:
         status["eduhoot"] = choose_single_update(
             registry, "eduhoot", env.get("EDUHOOT_TAG") or "unknown", channel, username, password
+        )
+    if "recursos" in profiles:
+        status["recursos"] = choose_intersection_update(
+            registry, RECURSOS_IMAGES, env.get("RECURSOS_TAG") or "unknown", channel, username, password
         )
     return status
 
@@ -193,7 +205,7 @@ def print_human(status: dict[str, object]) -> None:
     print(f"Registre: {status['registry']}")
     print(f"Canal: {status['channel']}")
     print()
-    for name in ["commons", "eduhoot"]:
+    for name in ["commons", "eduhoot", "recursos"]:
         item = status.get(name)
         if not item:
             continue

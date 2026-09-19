@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Apply IMAGE_TAG/ADMIN_TAG/EDUHOOT_TAG values to .env without printing secrets."""
+"""Apply IMAGE_TAG/ADMIN_TAG/EDUHOOT_TAG/RECURSOS_TAG values to .env without printing secrets."""
 
 from __future__ import annotations
 
@@ -35,6 +35,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--image-tag", default="")
     parser.add_argument("--eduhoot-tag", default="")
+    parser.add_argument("--recursos-tag", default="")
     args = parser.parse_args()
     values = {}
     if args.image_tag:
@@ -46,6 +47,10 @@ def main() -> int:
         values["ADMIN_TAG"] = args.image_tag
     if args.eduhoot_tag:
         values["EDUHOOT_TAG"] = args.eduhoot_tag
+    if args.recursos_tag:
+        # recursos i recursos-api es publiquen sempre junts amb el mateix
+        # tag (veure push-images.sh), per aixo comparteixen RECURSOS_TAG.
+        values["RECURSOS_TAG"] = args.recursos_tag
     if values:
         update_env(values)
     return 0

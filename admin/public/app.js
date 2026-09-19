@@ -163,7 +163,7 @@ function renderUpdateStatus(data) {
   const lines = [];
   lines.push(`${t("status.registryLine")} ${data.registry}`);
   lines.push(`${t("status.channelLine")} ${data.channel}`);
-  ["commons", "eduhoot"].forEach((name) => {
+  ["commons", "eduhoot", "recursos"].forEach((name) => {
     const item = data[name];
     if (!item) return;
     lines.push("");

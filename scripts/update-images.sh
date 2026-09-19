@@ -12,13 +12,15 @@ docker_cmd="${DOCKER:-docker}"
 compose="$docker_cmd compose --env-file $env_file -f compose.yml"
 previous_image_tag="$(grep -E '^IMAGE_TAG=' "$env_file" 2>/dev/null | tail -n 1 | cut -d= -f2- || true)"
 previous_eduhoot_tag="$(grep -E '^EDUHOOT_TAG=' "$env_file" 2>/dev/null | tail -n 1 | cut -d= -f2- || true)"
+previous_recursos_tag="$(grep -E '^RECURSOS_TAG=' "$env_file" 2>/dev/null | tail -n 1 | cut -d= -f2- || true)"
 tags_changed=0
 
 restore_tags() {
   if [ "$tags_changed" = "1" ]; then
     python3 ./scripts/apply-update-tags.py \
       --image-tag "$previous_image_tag" \
-      --eduhoot-tag "$previous_eduhoot_tag"
+      --eduhoot-tag "$previous_eduhoot_tag" \
+      --recursos-tag "$previous_recursos_tag"
     echo "Tags restaurats en .env per error durant l'actualitzacio."
   fi
 }
@@ -54,7 +56,8 @@ if [ -z "$update_backup" ]; then
 fi
 previous_image_tag="${previous_image_tag:-$(cat VERSION)}"
 previous_eduhoot_tag="${previous_eduhoot_tag:-1.0.2}"
-python3 - "$update_backup" "$previous_image_tag" "$previous_eduhoot_tag" <<'PY'
+previous_recursos_tag="${previous_recursos_tag:-local}"
+python3 - "$update_backup" "$previous_image_tag" "$previous_eduhoot_tag" "$previous_recursos_tag" <<'PY'
 import json
 import sys
 from pathlib import Path
@@ -63,6 +66,7 @@ backup = Path("backups") / sys.argv[1]
 (backup / "update.json").write_text(json.dumps({
     "previous_image_tag": sys.argv[2],
     "previous_eduhoot_tag": sys.argv[3],
+    "previous_recursos_tag": sys.argv[4],
 }, indent=2) + "\n")
 PY
 echo "Tags anteriors guardats en $update_backup/update.json"
@@ -87,13 +91,21 @@ eduhoot = data.get("eduhoot") or {}
 print(eduhoot.get("candidate") if eduhoot.get("update_available") else "")
 PY
 )"
+next_recursos_tag="$(python3 - /tmp/edutictac-commons-updates.$$.json <<'PY'
+import json, sys
+data = json.load(open(sys.argv[1]))
+recursos = data.get("recursos") or {}
+print(recursos.get("candidate") if recursos.get("update_available") else "")
+PY
+)"
 rm -f /tmp/edutictac-commons-updates.$$.json
 
-if [ -n "$next_image_tag" ] || [ -n "$next_eduhoot_tag" ]; then
+if [ -n "$next_image_tag" ] || [ -n "$next_eduhoot_tag" ] || [ -n "$next_recursos_tag" ]; then
   echo "Aplicant tags nous en .env..."
   python3 ./scripts/apply-update-tags.py \
     --image-tag "$next_image_tag" \
-    --eduhoot-tag "$next_eduhoot_tag"
+    --eduhoot-tag "$next_eduhoot_tag" \
+    --recursos-tag "$next_recursos_tag"
   tags_changed=1
 else
   echo "No hi ha tags mes recents en el canal configurat; es refresquen les imatges actuals."
