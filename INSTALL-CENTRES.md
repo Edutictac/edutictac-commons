@@ -304,7 +304,8 @@ make restore BACKUP=backups/commons-YYYYmmddTHHMMSSZ/
 Totes aquestes accions, i activar/desactivar el backup automàtic diari, es
 poden fer també sense terminal des del panell `/admin`
 (`http://127.0.0.1:8091/`, amb la sessió Authentik d'`akadmin`) — vegeu
-`README.md#panell-dadministracio`.
+`README.md#panell-dadministracio` i la guia pas a pas
+[docs/GUIA-ADMIN.md](docs/GUIA-ADMIN.md).
 
 ## Solució de problemes
 

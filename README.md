@@ -56,7 +56,8 @@ H5P en Moodle](docs/moodle-h5p-test.md).
 La integración con el módulo `recursos` está descrita en
 [resources-integration.md](docs/resources-integration.md).
 La guía práctica para el profesorado está en
-[docs/GUIA-DOCENTE.md](docs/GUIA-DOCENTE.md).
+[docs/GUIA-DOCENTE.md](docs/GUIA-DOCENTE.md), i la guia per a qui administra
+el panell tècnic en [docs/GUIA-ADMIN.md](docs/GUIA-ADMIN.md).
 
 ## Panell d'administració
 
@@ -68,6 +69,9 @@ llista de còpies disponibles, els avisos de cobertura i l'estat del timer de
 backup automàtic. Permet crear un backup, activar/desactivar backups
 automàtics i restaurar una còpia seleccionada amb confirmació forta — cap
 requereix terminal: tot es fa des del navegador amb la sessió Authentik.
+
+Guia pas a pas per a qui administra el panell:
+[docs/GUIA-ADMIN.md](docs/GUIA-ADMIN.md).
 
 ## Reutilització del treball existent
 
