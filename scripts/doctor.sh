@@ -8,6 +8,16 @@ if [ ! -f "$env_file" ]; then
   env_file=".env.example"
 fi
 
+if [ ! -r "$env_file" ]; then
+  echo "ERROR: $env_file no es llegible per l'usuari actual ($(id -un))."
+  echo "       Els fluxos d'actualitzacio/backup/restore del panell admin s'executen"
+  echo "       amb 'systemd-run --user' com l'usuari amfitrio (PUID), no com root:"
+  echo "       si $env_file es root:root 600 fallaran en silenci (cauen a valors per"
+  echo "       defecte enlloc de donar error clar). Arregla amb:"
+  echo "         sudo chown root:\$(id -gn) $env_file && sudo chmod 640 $env_file"
+  exit 1
+fi
+
 docker_cmd="${DOCKER:-docker}"
 
 need() {
