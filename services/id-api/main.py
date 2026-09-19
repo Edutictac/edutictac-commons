@@ -288,6 +288,15 @@ def init_db() -> None:
                 updated_at TEXT NOT NULL
             );
 
+            CREATE TABLE IF NOT EXISTS manual_completions (
+                id TEXT PRIMARY KEY,
+                assignment_id TEXT NOT NULL REFERENCES activity_assignments(id) ON DELETE CASCADE,
+                identity_id TEXT NOT NULL REFERENCES student_identities(id) ON DELETE CASCADE,
+                teacher_id TEXT NOT NULL DEFAULT '',
+                created_at TEXT NOT NULL,
+                UNIQUE(assignment_id, identity_id)
+            );
+
             CREATE TABLE IF NOT EXISTS itineraries (
                 id TEXT PRIMARY KEY,
                 title TEXT NOT NULL,
@@ -1180,7 +1189,11 @@ def student_dashboard(request: Request) -> dict[str, Any]:
                 EXISTS(
                     SELECT 1 FROM app_launch_tokens t
                     WHERE t.assignment_id = a.id AND t.identity_id = ?
-                ) AS started
+                ) AS started,
+                EXISTS(
+                    SELECT 1 FROM manual_completions m
+                    WHERE m.assignment_id = a.id AND m.identity_id = ?
+                ) AS manual_completed
             FROM activity_assignments a
             LEFT JOIN scores s
                 ON s.assignment_id = a.id
@@ -1191,7 +1204,7 @@ def student_dashboard(request: Request) -> dict[str, Any]:
             ORDER BY itinerary_position IS NULL, itinerary_position,
                      a.created_at DESC, a.title, a.app_id, a.activity_id
             """,
-            (identity["id"], identity["id"], identity["group_id"]),
+            (identity["id"], identity["id"], identity["id"], identity["group_id"]),
         ).fetchall()
     return {
         "identity": identity,
@@ -1201,7 +1214,7 @@ def student_dashboard(request: Request) -> dict[str, Any]:
                 "attempts": int(row["attempts"] or 0),
                 "best_score": row["best_score"],
                 "last_score_at": row["last_score_at"],
-                "completed": int(row["attempts"] or 0) > 0,
+                "completed": int(row["attempts"] or 0) > 0 or bool(row["manual_completed"]),
                 "started": bool(row["started"]),
                 "itinerary_position": row["itinerary_position"],
             }
@@ -1548,30 +1561,88 @@ def teacher_activity_assignment_results(assignment_id: str, request: Request) ->
         rows = conn.execute(
             """
             SELECT
+                i.id AS identity_id,
                 i.public_code,
                 COUNT(s.id) AS attempts,
                 MAX(s.score) AS best_score,
-                MAX(s.created_at) AS last_score_at
-            FROM scores s
-            JOIN student_identities i ON i.id = s.identity_id
-            WHERE s.assignment_id = ? AND i.active = 1
-            GROUP BY i.public_code
+                MAX(s.created_at) AS last_score_at,
+                EXISTS(
+                    SELECT 1 FROM manual_completions m
+                    WHERE m.assignment_id = ? AND m.identity_id = i.id
+                ) AS manual_completed
+            FROM student_identities i
+            LEFT JOIN scores s
+                ON s.assignment_id = ?
+               AND s.identity_id = i.id
+            WHERE i.group_id = ? AND i.active = 1
+            GROUP BY i.id
             ORDER BY best_score DESC, last_score_at DESC, i.public_code
             """,
-            (assignment_id,),
+            (assignment_id, assignment_id, assignment["group_id"]),
         ).fetchall()
     return {
         "assignment": public_assignment(assignment),
         "results": [
             {
+                "identity_id": row["identity_id"],
                 "public_code": row["public_code"],
                 "attempts": int(row["attempts"] or 0),
                 "best_score": row["best_score"],
                 "last_score_at": row["last_score_at"],
+                "completed": int(row["attempts"] or 0) > 0 or bool(row["manual_completed"]),
             }
             for row in rows
         ],
     }
+
+
+def _teacher_owned_assignment(conn: sqlite3.Connection, assignment_id: str, teacher_id: str) -> sqlite3.Row:
+    assignment = conn.execute(
+        """
+        SELECT a.* FROM activity_assignments a
+        WHERE a.id = ? AND a.active = 1 AND (a.created_by_teacher_id = ? OR EXISTS (
+            SELECT 1 FROM group_memberships m
+            WHERE m.group_id = a.group_id AND m.teacher_id = ?
+        ))
+        """,
+        (assignment_id, teacher_id, teacher_id),
+    ).fetchone()
+    if not assignment:
+        raise HTTPException(status_code=404, detail="assignment not found")
+    return assignment
+
+
+@app.post("/api/teacher/activity-assignments/{assignment_id}/students/{identity_id}/complete", status_code=201)
+def mark_assignment_completed(assignment_id: str, identity_id: str, request: Request) -> dict[str, Any]:
+    teacher_id = require_teacher(request)
+    with get_conn() as conn:
+        assignment = _teacher_owned_assignment(conn, assignment_id, teacher_id)
+        identity = conn.execute(
+            "SELECT id FROM student_identities WHERE id = ? AND group_id = ? AND active = 1",
+            (identity_id, assignment["group_id"]),
+        ).fetchone()
+        if not identity:
+            raise HTTPException(status_code=404, detail="identity not found")
+        conn.execute(
+            """
+            INSERT OR IGNORE INTO manual_completions (id, assignment_id, identity_id, teacher_id, created_at)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            (secrets.token_urlsafe(14), assignment_id, identity_id, teacher_id, iso_now()),
+        )
+    return {"completed": True}
+
+
+@app.delete("/api/teacher/activity-assignments/{assignment_id}/students/{identity_id}/complete")
+def unmark_assignment_completed(assignment_id: str, identity_id: str, request: Request) -> dict[str, Any]:
+    teacher_id = require_teacher(request)
+    with get_conn() as conn:
+        _teacher_owned_assignment(conn, assignment_id, teacher_id)
+        conn.execute(
+            "DELETE FROM manual_completions WHERE assignment_id = ? AND identity_id = ?",
+            (assignment_id, identity_id),
+        )
+    return {"completed": False}
 
 
 @app.post("/api/scores", status_code=201)

@@ -1092,16 +1092,33 @@ async function loadResults() {
   if (!state.assignment) {
     throw new Error(t("teacher.errors.selectActivityFirst"));
   }
-  const data = await api(`/api/teacher/activity-assignments/${state.assignment.id}/results`, { method: "GET" });
+  const assignmentId = state.assignment.id;
+  const data = await api(`/api/teacher/activity-assignments/${assignmentId}/results`, { method: "GET" });
+  const rows = data.results.map((row) => ({
+    ...row,
+    status: row.completed ? t("student.done") : t("student.pending"),
+    action: row.completed
+      ? `<button class="compact secondary" type="button" data-unmark-completed="${escapeHtml(assignmentId)}:${escapeHtml(row.identity_id)}">${t("teacher.unmarkCompleted")}</button>`
+      : `<button class="compact secondary" type="button" data-mark-completed="${escapeHtml(assignmentId)}:${escapeHtml(row.identity_id)}">${t("teacher.markCompleted")}</button>`,
+  }));
   setOutput(
     $("resultsOutput"),
-    table(data.results, [
+    table(rows, [
       { key: "public_code", label: t("common.code") },
       { key: "attempts", label: t("common.attempts") },
       { key: "best_score", label: t("common.bestScore") },
       { key: "last_score_at", label: t("common.lastScoreAt") },
+      { key: "status", label: t("common.status") },
+      { key: "action", label: "", html: true },
     ]),
   );
+}
+
+async function toggleManualCompletion(assignmentId, identityId, completed) {
+  await api(`/api/teacher/activity-assignments/${encodeURIComponent(assignmentId)}/students/${encodeURIComponent(identityId)}/complete`, {
+    method: completed ? "DELETE" : "POST",
+  });
+  await loadResults();
 }
 
 async function loadRanking() {
@@ -1213,6 +1230,28 @@ document.addEventListener("click", (event) => {
     revokeIdentity(revokeButton.dataset.revokeIdentity).catch((error) => {
       if (has("teacherOutput")) {
         setOutput($("teacherOutput"), `<p><strong>${t("common.errorLabel")}</strong> ${escapeHtml(error.message)}</p>`);
+      }
+    });
+    return;
+  }
+
+  const markCompletedButton = event.target.closest("[data-mark-completed]");
+  if (markCompletedButton) {
+    const [assignmentId, identityId] = markCompletedButton.dataset.markCompleted.split(":");
+    toggleManualCompletion(assignmentId, identityId, false).catch((error) => {
+      if (has("resultsOutput")) {
+        setOutput($("resultsOutput"), `<p><strong>${t("common.errorLabel")}</strong> ${escapeHtml(error.message)}</p>`);
+      }
+    });
+    return;
+  }
+
+  const unmarkCompletedButton = event.target.closest("[data-unmark-completed]");
+  if (unmarkCompletedButton) {
+    const [assignmentId, identityId] = unmarkCompletedButton.dataset.unmarkCompleted.split(":");
+    toggleManualCompletion(assignmentId, identityId, true).catch((error) => {
+      if (has("resultsOutput")) {
+        setOutput($("resultsOutput"), `<p><strong>${t("common.errorLabel")}</strong> ${escapeHtml(error.message)}</p>`);
       }
     });
     return;
