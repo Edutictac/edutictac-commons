@@ -10,7 +10,8 @@ alumne/a usa un **codi públic + PIN**.
 
 ## Com es generen les credencials
 
-1. Entra al tauler del professorat amb l'accés que t'haja facilitat el centre.
+1. Entra al tauler del professorat amb el teu compte del centre (accés
+   **Authentik**, no una contrasenya pròpia d'EduTicTac).
 2. Crea un grup i genera un lot de credencials (codi + PIN).
 3. Imprimeix les targetes per repartir-les o exporta el CSV de codis si el
    centre ho necessita per a la gestió interna.
@@ -59,4 +60,4 @@ Centre / responsable: _______________________________________________
 
 Canal de dubtes de privacitat: ______________________________________
 
-<!-- updated: 2026-09-15 -->
+<!-- updated: 2026-09-19 -->

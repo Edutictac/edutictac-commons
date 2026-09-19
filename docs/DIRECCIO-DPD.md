@@ -6,18 +6,25 @@
 
 ## Arquitectura
 
-- Serveis del stack autoallotjats al centre (portal + `id-api` + EduHoot
-  opcional).
+- Serveis del stack autoallotjats al centre (portal + `id-api` + Authentik +
+  EduHoot i Recursos opcionals).
 - **Identitat de l'alumnat**: codi públic + PIN, gestionada per `id-api`, sense
   dades identificatives.
-- **Identitat del professorat**: token d'accés en aquesta versió; previst
-  Authentik/OIDC en la v2.
+- **Identitat del professorat i de l'administració**: Authentik (OIDC),
+  autoallotjat pel mateix centre. L'`id-api` no crea contrasenyes pròpies ni
+  copia nom, correu o grups d'Authentik: només guarda el `sub` opac i un
+  pseudònim derivat per HMAC. Vegeu `authentik.md`.
 - Grups opacs generats pel sistema (no identifiquen cap aula real).
 - Rànquings vinculats al codi pseudònim, no al nom real.
 - Panell docent d'estadístiques del grup i exportació CSV.
+- Catàleg de recursos (`recursos`/`recursos-api`, opcional): banc de materials
+  educatius, poblable manualment o per sincronització amb un canal de
+  continguts extern de materials ja publicats amb llicència oberta (autor i
+  llicència del material, no dades de l'alumnat ni del professorat).
 - Panell `/admin` local per a operacions tècniques (estat, backups,
-  restauració i actualitzacions); s'ha de protegir amb token fort i no
-  exposar-lo directament a internet.
+  restauració i actualitzacions); l'accés requereix identitat Authentik amb
+  rol d'administrador (`ADMIN_OIDC_USERNAME`) i no s'ha d'exposar directament
+  a internet.
 
 ## Taula de dades
 
@@ -35,6 +42,8 @@
 | Sessió tècnica | Sí | No reintroduir el PIN | 180 dies |
 | Adreça IP | Transitària (rate limiting) | Seguretat | No s'emmagatzema de manera duradora |
 | Cookies | Sí, tècniques | Sessió | Segons caducitat de la cookie |
+| Nom/correu/grups del professorat (Authentik) | No a `id-api` (resta al proveïdor Authentik) | Autenticació docent/admin | Gestionat pel centre en Authentik |
+| Metadades de recursos del catàleg (autor, llicència, proveïdor) | Si el mòdul Recursos està actiu | Atribució i tria pedagògica de materials | Es reemplaça amb cada sincronització del catàleg |
 
 ## Mesures de seguretat
 
@@ -66,6 +75,10 @@ absolut en cap document oficial.
 - Procediment per atendre peticions d'accés o eliminació.
 - Procediment d'incidències: pèrdua de targetes, ús indegut d'un PIN o accés
   no autoritzat al panell docent/admin.
+- Gestió dels comptes d'Authentik del professorat/administració (alta, baixa
+  i grups), ja que eixes dades resten en Authentik, no en `id-api`.
+- Si activar el mòdul Recursos i confiar en el canal de continguts extern, o
+  mantindre només materials propis del centre.
 
 ## Procediment mínim recomanat per a un pilot
 
@@ -92,4 +105,4 @@ absolut en cap document oficial.
 | Procediment d'exportació i eliminació de dades | |
 | Inventari final de serveis del desplegament | |
 
-<!-- updated: 2026-09-15 -->
+<!-- updated: 2026-09-19 -->

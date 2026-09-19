@@ -1,6 +1,6 @@
 # Privacitat del stack EduTicTac Commons
 
-> Repo: `edutictac-commons` · Versió: `0.1.0-alpha`
+> Repo: `edutictac-commons` · Versió: `0.1.1-alpha`
 >
 > Aquest document descriu què guarda el stack **de manera real**, què no
 > guarda i amb quines mesures de seguretat. No és material legal: és
@@ -17,7 +17,23 @@ terminis de conservació i procediments d'atenció de drets.
 
 EduTicTac Commons és un conjunt d'eines educatives lliures i autoallotjables.
 Aquest stack conté el nucli: el portal (tauler docent i vista d'alumnat),
-l'`id-api` (credencial pseudònima) i, opcionalment, EduHoot.
+l'`id-api` (credencial pseudònima) i, opcionalment, EduHoot, el catàleg de
+recursos (`recursos`/`recursos-api`) i Authentik com a proveïdor d'accés per
+al professorat i l'administració.
+
+## Identitat del professorat i de l'administració: Authentik
+
+El professorat i l'administració **no accedeixen amb un token compartit**:
+inicien sessió amb Authentik, el proveïdor OIDC autoallotjat pel mateix
+centre. L'`id-api` no crea una base de contrasenyes pròpia ni copia nom,
+correu ni grups d'Authentik: després del login només conserva una cookie de
+sessió firmada amb el `sub` opac del proveïdor i un pseudònim derivat per
+HMAC. La resta de dades (nom, correu, grups) resta a Authentik, que el
+centre gestiona i allotja ell mateix. Vegeu `authentik.md` per al detall
+tècnic.
+
+El mode codi + PIN de l'alumnat és independent d'Authentik i continua
+funcionant igual encara que Authentik no estiga configurat.
 
 ## Model de credencial: codi + PIN
 
@@ -52,6 +68,20 @@ conega el nom, el correu ni cap identificador institucional de l'alumne/a.
 | `data/eduhoot-uploads/` | imatges pujades a EduHoot |
 | `data/eduhoot-logs/` | informes de sessió amb resultats reals de l'alumnat |
 
+### Catàleg de recursos (opcional, perfil `recursos`)
+
+| Dada | Contingut | Observacions |
+|---|---|---|
+| Base SQLite `recursos-api` (`data/recursos.db`) | títol, descripció, autor, llicència, proveïdor, tipus, matèria, etapa, URL d'origen de cada recurs | Metadades de continguts, **no** dades personals de l'alumnat del centre |
+| Favorits i valoracions del professorat | vinculats al pseudònim OIDC del docent, no a l'índex públic | Igual que la resta d'identitat docent: pseudònima |
+
+El catàleg pot poblar-se manualment o sincronitzant-se amb un canal de
+continguts extern (`content_sync`, veure `CONTENT_CATALOG_BASE_URL`). Els
+recursos importats d'eixe canal són materials de tercers ja publicats amb
+llicència oberta (per exemple JClic, H5P); l'autoria i la llicència que es
+guarden són les del material, no dades de l'alumnat ni del professorat del
+centre.
+
 ## Dades que **no** es guarden
 
 El `id-api` no emmagatzema en cap moment:
@@ -62,6 +92,10 @@ El `id-api` no emmagatzema en cap moment:
 - data de naixement;
 - centre, curs ni aula reals (només el codi de grup opac);
 - cap relació automàtica entre l'alumne/a real i el codi pseudònim.
+
+Tampoc del professorat ni de l'administració: l'`id-api` no copia el nom,
+el correu ni els grups que gestiona Authentik; només guarda el `sub` opac i
+un pseudònim derivat per HMAC.
 
 ## PIN
 
@@ -127,8 +161,10 @@ de «codi pseudònim» i de «pseudonimització».
 
 ## Analítica i serveis de tercers
 
-El stack no inclou analítica, publicitat, rastreig ni fonts externes. Les
-imatges i les fonts es serveixen des del propi desplegament.
+El stack no inclou analítica, publicitat ni rastreig. Authentik és un
+proveïdor extern **autoallotjat pel mateix centre** (no un tercer extern),
+igual que el canal de sincronització de continguts, que descarrega només
+materials de tercers ja publicats amb llicència oberta.
 
 Si el centre afegeix serveis externs, plugins, proxies o analítica pròpia, ha
 d'actualitzar aquesta documentació i la fitxa `DIRECCIO-DPD.md`.
@@ -149,4 +185,4 @@ resultats educatius.
 Les dades d'ubicació del servidor, el responsable del tractament i el contacte
 de privacitat els ha de completar el centre en `DIRECCIO-DPD.md`.
 
-<!-- updated: 2026-09-15 -->
+<!-- updated: 2026-09-19 -->
