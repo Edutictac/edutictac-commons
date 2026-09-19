@@ -61,8 +61,9 @@ intern de l'ecosistema EduTicTac:
 
 Aquesta v1.0 és el **mínim entregable** de la primera fase 4D. Authentik ja
 forma part de la distribució instal·lable perquè permet deixar operatiu el
-tauler docent des de la primera arrencada. El Banc de recursos avançat, la
-cistella i el SSO docent dins d'EduHoot continuen a la secció «v2».
+tauler docent des de la primera arrencada. La integració avançada del Banc de
+recursos, la cistella i el **SSO docent i la identitat pseudònima de l'alumnat
+entre EduHoot, Recursos i Play** continuen a la secció «v2».
 
 ## Estat per tancar la v1
 
@@ -204,10 +205,12 @@ l'alumnat pot completar-la amb la mateixa identitat pseudònima.
 continuació, amb l'objectiu d'arribar-hi abans d'agost 2027 (vegeu §0.1 del
 roadmap 4D).
 
-### Fita v2-1 — Authentik (identitat docent i d'administració)
+### Fita v2-1 — Authentik i SSO docent dels serveis educatius
 
 La base d'Authentik ja està incorporada a la v1 instal·lable. Aquesta fita v2
-conserva les millores d'integració que encara no són necessàries per al nucli.
+concentra la integració completa de la identitat docent i de la identitat
+pseudònima de l'alumnat amb **EduHoot, Recursos i Play**; la v1 només necessita
+el nucli instal·lable i el flux docent bàsic.
 
 - [x] Afegir al `id-api` el flux OIDC opcional Authorization Code amb Authentik.
 - [x] Mantindre el mode codi + PIN quan OIDC no estiga configurat.
@@ -219,8 +222,11 @@ conserva les millores d'integració que encara no són necessàries per al nucli
   inicial d'un sol ús.
 - [ ] Validar l'activació OIDC del paquet en una màquina neta i activar-lo en
   una instal·lació de centre.
-- [ ] Connectar la identitat OIDC pseudònima amb Portal, Play, Recursos i
-  EduHoot.
+- [ ] Connectar i validar el SSO docent amb Portal, Play, Recursos i EduHoot.
+- [ ] Compartir la identitat pseudònima de l'alumnat entre Play, Recursos i
+  EduHoot, mantenint l'accés amb codi + PIN i sense comptes personals.
+- [ ] Completar l'accés docent a EduHoot per OIDC, substituint el flux actual
+  basat en tokens.
 - [x] Provar el flux complet contra una instància Authentik del laboratori per
   a Commons/Portal i Recursos.
 - [ ] Afegir classes/grups i permisos compartits completament integrats en el
@@ -336,10 +342,15 @@ temps real de `edutictac.es`.
 - [ ] Documentar el flux de publicació, sincronització, rollback i treball
   sense connexió amb el repositori central.
 
-### Fita v2-4 — SSO docent a EduHoot
+### Fita v2-4 — SSO docent i identitat d'alumnat entre EduHoot, Recursos i Play
 
 - [ ] Permetre l'accés del professorat a EduHoot amb Authentik/OIDC (crear i
   gestionar qüestionaris), en lloc del flux actual per tokens.
+- [ ] Mantindre una sessió docent compartida entre Commons, Recursos i Play.
+- [ ] Mantindre una identitat pseudònima d'alumnat compartida entre Commons,
+  Recursos, Play i EduHoot, sense exigir compte personal ni nom real.
+- [ ] Validar permisos, propietat d'activitats i gestió de grups en els tres
+  serveis sense exigir comptes separats.
 
 ### Fita v2-5 — Visor net de vídeos i col·lecció docent
 
