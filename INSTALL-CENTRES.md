@@ -110,7 +110,19 @@ make update-images
 ```
 
 `make update-images` crea i verifica un backup abans de canviar tags, descarrega
-imatges, reinicia serveis i executa `make test-flow`.
+imatges, reinicia serveis i executa `make test-flow`. Actualitza totes les
+imatges pròpies (`commons-id-api`, `commons-portal`, `commons-admin` i
+`commons-play`) en un sol pas, incloent el panell `/admin`: no cal cap acció
+manual addicional perquè el panell quede al dia.
+
+Si una actualització falla alguna comprovació, es pot desfer amb:
+
+```bash
+make rollback-images BACKUP=commons-<stamp>
+```
+
+on `<stamp>` és el backup creat automàticament abans de l'actualització (es
+mostra en la seua eixida, o es pot vore amb `ls backups/`).
 
 ## Activar EduHoot
 
