@@ -411,6 +411,39 @@ def test_memory_card_image_is_served_for_player():
         process.wait(timeout=3)
 
 
+def test_memory_card_uploaded_image_is_served_with_correct_content_type():
+    data_dir = Path(tempfile.mkdtemp(prefix="edutictac-play-test-"))
+    process = subprocess.Popen(
+        ["python3", "server.py"],
+        cwd=Path(__file__).parents[1] / "services" / "play",
+        env={**os.environ, "PORT": "18116", "PLAY_DATA_DIR": str(data_dir)},
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    try:
+        time.sleep(0.25)
+        webp_data_url = (
+            "data:image/webp;base64,"
+            "UklGRjwAAABXRUJQVlA4IDAAAADQAQCdASoCAAIAAUAmJaACdLoB+AADsAD"
+            "+8ut//NgVzXPv9//S4P0uD9Lg/9KQAAA="
+        )
+        payload = json.dumps({
+            "type": "memory",
+            "title": "Animales",
+            "question": "Encuentra las parejas",
+            "cards": [{"text": "Gato", "image": webp_data_url}, {"text": "Perro"}],
+        }).encode()
+        request = urllib.request.Request("http://127.0.0.1:18116/api/activities", data=payload, headers={"Content-Type": "application/json"}, method="POST")
+        activity = json.loads(urllib.request.urlopen(request).read())
+        with urllib.request.urlopen(f"http://127.0.0.1:18116/api/activities/{activity['id']}/h5p/content/card-0.webp") as response:
+            assert response.status == 200
+            assert response.headers["Content-Type"].startswith("image/webp")
+            assert response.headers["Content-Type"] != "application/octet-stream"
+    finally:
+        process.terminate()
+        process.wait(timeout=3)
+
+
 def test_commons_score_proxy_forwards_identity_cookie():
     CommonsScoreHandler.received = None
     upstream = ThreadingHTTPServer(("127.0.0.1", 0), CommonsScoreHandler)

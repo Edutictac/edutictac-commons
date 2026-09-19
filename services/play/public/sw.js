@@ -1,4 +1,4 @@
-const CACHE = 'edutictac-play-shell-v11';
+const CACHE = 'edutictac-play-shell-v12';
 const SCOPE = self.registration.scope;
 const SCOPE_PATH = new URL(SCOPE).pathname;
 const SHELL = [
