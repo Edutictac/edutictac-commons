@@ -142,7 +142,16 @@ services:
     pid: host
     user: "${PUID:-1000}:${PGID:-1000}"
     environment:
-      REPO_DIR: ${PWD}
+      # REPO_DIR: preferim el valor explicit de .env si existeix; si no,
+      # el $PWD de qui invoca "docker compose" (cas normal en un "make up").
+      # Sense este fallback explicit, si l'admin es recrea alguna vegada des
+      # d'una invocacio amb $PWD incorrecte (per exemple un arrancada
+      # automatica que no fa "cd" primer al directori del projecte), l'admin
+      # queda amb un REPO_DIR trencat fins la seguent recreacio "per atzar"
+      # amb el $PWD correcte -- els scripts que llança per systemd-run
+      # (update-images.sh, restore.sh, rollback-images.sh) fallen en silenci
+      # amb rutes relatives.
+      REPO_DIR: ${REPO_DIR:-${PWD}}
       XDG_RUNTIME_DIR: /run/user/${PUID:-1000}
       XDG_CONFIG_HOME: /hostcfg
       COMPOSE_PROFILES: ${COMPOSE_PROFILES:-}
