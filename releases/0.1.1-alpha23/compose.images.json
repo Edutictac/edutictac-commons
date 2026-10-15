@@ -1,0 +1,16 @@
+{
+  "services": {
+    "id-api": {
+      "image": "registry.edutictac.es/edutictac/commons-id-api@sha256:900f14ecf7cabd1152f0eff2acc4f217e3c1c0e86456ba803c6438c83beafa0f"
+    },
+    "portal": {
+      "image": "registry.edutictac.es/edutictac/commons-portal@sha256:dd3fbb44acd2f7968a1bc22c30fa88a987d41125a898f7dd824822ea91aed2a6"
+    },
+    "admin": {
+      "image": "registry.edutictac.es/edutictac/commons-admin@sha256:7d3d496a5d24575d0daeffcaa75014bf932145df326f7ae14c0c0bacfea48d45"
+    },
+    "play": {
+      "image": "registry.edutictac.es/edutictac/commons-play@sha256:7205c02f9fe6390d8dc2e4c72d66b81f171e2317074cb4f35c87aae312162859"
+    }
+  }
+}
