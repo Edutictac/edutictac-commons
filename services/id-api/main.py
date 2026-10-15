@@ -2155,3 +2155,20 @@ def app_roster(app_id: str, payload: AppRosterIn, request: Request) -> dict[str,
         for row in rows
     ]
     return {"app_id": app_key, "group_id": payload.group_id, "identities": identities}
+
+# Quiosc shares teacher authentication and existing classroom membership rules.
+from quiosc.api import install as install_quiosc
+
+def require_quiosc_teacher(request: Request) -> str:
+    # A demo installation must not acquire remote execution merely by mounting
+    # the Epoptes socket. OIDC teachers can use their normal Commons identity.
+    if os.environ.get("QUIOSC_MODE", "disabled") == "real" and len(SESSION_SECRET) < 32:
+        raise HTTPException(503, "Quiosc real requiere una clave de firma de producción (32 caracteres mínimo)")
+    teacher_id = require_teacher(request)
+    if (os.environ.get("QUIOSC_MODE", "disabled") == "real"
+            and teacher_id == "teacher-token" and len(TEACHER_TOKEN) < 24):
+        raise HTTPException(503, "Quiosc real no admite el acceso docente de desarrollo; usa OIDC o un token de producción")
+    return teacher_id
+
+
+install_quiosc(app, require_quiosc_teacher, require_group_access)

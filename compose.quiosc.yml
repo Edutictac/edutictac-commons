@@ -1,0 +1,24 @@
+# Opt-in override. No changes to the running stack until explicitly deployed.
+# Real local socket, or an SSH-forwarded Unix socket on the Docker host.
+services:
+  id-api:
+    environment:
+      QUIOSC_MODE: ${QUIOSC_MODE:-simulation}
+      QUIOSC_SOCKET: /run/quiosc-epoptes/epoptes.socket
+      QUIOSC_ROOMS_FILE: /etc/quiosc/rooms.json
+      QUIOSC_DB: /data/quiosc.db
+    group_add:
+      - "${QUIOSC_SOCKET_GID:?Set the numeric group owning the Epoptes or forwarded socket}"
+    volumes:
+      - type: bind
+        source: ${QUIOSC_SOCKET_DIR:?Set existing socket directory}
+        target: /run/quiosc-epoptes
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${QUIOSC_ROOMS_FILE:?Set absolute rooms.json path}
+        target: /etc/quiosc/rooms.json
+        read_only: true
+        bind:
+          create_host_path: false

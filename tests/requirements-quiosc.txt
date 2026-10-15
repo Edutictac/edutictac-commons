@@ -1,0 +1,3 @@
+-r ../services/id-api/requirements.txt
+pytest>=8,<10
+Twisted>=24.3,<27

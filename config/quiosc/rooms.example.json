@@ -1,0 +1,11 @@
+[
+  {
+    "id": "informatica",
+    "name": "Aula de informática",
+    "group_id": "REEMPLAZAR_POR_ID_DE_GRUPO_COMMONS",
+    "devices": [
+      {"id": "pc01", "label": "Equipo 01", "mac": "02:00:00:00:00:01", "uid": "1000"},
+      {"id": "pc02", "label": "Equipo 02", "mac": "02:00:00:00:00:02", "uid": "1000"}
+    ]
+  }
+]

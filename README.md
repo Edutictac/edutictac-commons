@@ -193,3 +193,16 @@ La primera versió tancada queda documentada en `RELEASE-0.1.0-alpha.md`.
 ## Desenvolupament
 
 El roadmap operatiu d'aquest repo viu en `docs/ROADMAP.md` i l'inventari tècnic en `docs/INVENTARI.md`. El dossier 4D complet continua en el repositori `edutictac-4d-solicitud`; aquest repo se centra en la Pista B: stack Docker replicable, credencial pseudònima, portal/taulers i instal·lador v1.
+
+
+## EduTicTac Quiosc (opcional)
+
+Prototipo de actividad supervisada integrado en el panel docente, disponible
+tras actualizar las imágenes `commons-id-api` y `commons-portal`. Usa Epoptes
+existente para iniciar Firefox con perfil temporal y recuperarlo sin instalar
+componentes en los PC del alumnado. **Quiosco básico, sin aislamiento del
+escritorio ni filtro de navegación.** Desactivado por defecto.
+
+Configuración local/SSH, permisos, pruebas y recuperación:
+[docs/quiosc.md](docs/quiosc.md). El despliegue usa el override optativo
+`compose.quiosc.yml`; empieza con simulación antes de conectar equipos reales.

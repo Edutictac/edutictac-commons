@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="es">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EduTicTac Quiosc — Commons</title><link rel="stylesheet" href="/styles.css"><script src="/quiosc.js" defer></script></head>
+<body><header class="topbar"><div><p class="eyebrow">EduTicTac Commons</p><h1>EduTicTac Quiosc</h1></div>
+<nav class="topnav"><a href="/teacher.html">Tauler docent / Panel docente</a><a href="/">Inici / Inicio</a></nav></header>
+<main class="single-layout"><section class="panel">
+<h2>Actividad supervisada</h2>
+<p>Quiosco básico: abre Firefox con un perfil temporal. <strong>No bloquea el escritorio, otras aplicaciones, atajos, pestañas ni sitios web.</strong> Requiere supervisión docente; no ofrece aislamiento para un examen seguro.</p>
+<p id="mode" role="status">Comprobando acceso docente…</p>
+<p id="message" role="alert"></p>
+<div class="grid-fields"><label>Aula o grupo <select id="room"></select></label>
+<button id="discover" type="button">Comprobar equipos</button></div>
+<label><input id="all" type="checkbox"> Seleccionar todos los equipos preparados</label>
+<div id="devices"></div>
+<form id="exam"><div class="grid-fields">
+<label>URL de la actividad <input id="url" type="url" required placeholder="https://aules.edu.gva.es/…" maxlength="2048"></label>
+<label>Duración (minutos) <input id="minutes" type="number" min="1" max="240" value="45" required></label>
+</div><p>El perfil empieza sin la sesión habitual de Aules: el alumnado deberá identificarse. El cierre elimina el perfil temporal; comprueba que las respuestas se han enviado antes de finalizar.</p>
+<button id="start" type="submit">Iniciar actividad supervisada</button></form>
+</section><section class="panel"><h2>Sesiones y recuperación</h2>
+<p>«Proceso de Firefox observado» solo confirma que sigue en ejecución. No confirma pantalla completa, foco ni bloqueo. Los estados guardados incluyen la hora de la última consulta.</p>
+<div class="grid-fields"><label>Sesión <select id="session"></select></label>
+<button id="refresh" type="button">Consultar estado real</button><button id="stop" class="danger" type="button">Finalizar sesión</button></div>
+<div id="results"></div>
+</section></main></body></html>
