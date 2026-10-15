@@ -113,7 +113,8 @@ validados; eso queda fuera del requisito de cero configuración del alumnado.
   inciertos para recuperación después de un reinicio del contenedor.
 - `api.py`: rutas protegidas por sesión docente, membresía del grupo y cabecera
   CSRF; `recover.py`: recuperación administrativa sin interfaz web.
-- `services/portal/public/quiosc.{html,js}`: panel integrado, selección,
+- `services/portal/public/quiosc.{html,js}`, `quiosc-reasons.js` e `i18n.js`: panel
+  integrado con la preferencia de idioma de Commons, selección,
   preparación, duración, sesiones anteriores y restauración por equipo.
 - `services/id-api/{Dockerfile,.dockerignore,main.py}`, `services/portal/{nginx/default.conf,public/teacher.html}`:
   empaquetado y enlaces de integración.
@@ -415,8 +416,9 @@ Resultados ejecutados el 2026-10-15:
 
  No hay validación de socket/paquete Epoptes de un centro,
 reenvío SSH real, efectos gráficos KDE/Firefox ni exámenes Aules. No hay captura
-de pantalla, cámara ni micrófono del alumnado. La interfaz inicial está en
-español; traducción al resto de idiomas del portal pendiente.
+de pantalla, cámara ni micrófono del alumnado. La interfaz reutiliza el selector, la detección y la preferencia de idioma del
+portal: valenciano, catalán, español e inglés. Incluye avisos, estados, errores
+y motivos de recuperación, que se actualizan sin perder la selección de equipos.
 
 
 ## API docente
@@ -441,3 +443,17 @@ sesión no autorizada (404), equipo con sesión pendiente (409), validación (40
 /422) y Epoptes/configuración no disponible (503). Los errores individuales
 aparecen en cada equipo; HTTP 200 no significa que todos hayan iniciado o
 terminado correctamente. Inspecciona siempre los estados.
+
+
+## Idiomas de Quiosc (alpha24)
+
+Valenciano, catalán, español e inglés mediante `i18nPortal`, los botones
+CA/VA/ES/EN y la preferencia compartida del portal. El valenciano se detecta
+con la configuración de navegador `ca-ES-valencia` o seleccionando VA. Se
+traducen los avisos, los estados observados, los motivos conocidos del backend,
+los mensajes de error y las fechas. Cambiar de idioma conserva URL, equipos
+seleccionados y sesión abierta; no vuelve a ejecutar órdenes.
+
+Validación de esta actualización: 16 pruebas de Quiosc y seis comprobaciones
+existentes de idiomas aprobadas, en escritorio y móvil (22 en total), más
+construcción de la imagen portal y prueba Docker aislada aprobadas.

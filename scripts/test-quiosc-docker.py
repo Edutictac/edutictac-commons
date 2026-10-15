@@ -55,7 +55,7 @@ try:
     sid=result['session']['id'];assert result['devices'][0]['state']=='simulation_running'
     subprocess.run(['docker','exec',api,'python','-m','quiosc.recover',sid],check=True,stdout=subprocess.DEVNULL)
     assert json.load(request('/api/quiosc/sessions/'+sid+'/stop',{}))['devices'][0]['state']=='simulation_finished'
-    assert b'Actividad supervisada' in request('/quiosc.html').read()
+    assert b'data-i18n="quiosc.activity"' in request('/quiosc.html').read()
     subprocess.run(['docker','exec',portal,'nginx','-t'],check=True,stdout=subprocess.DEVNULL)
     print('Docker smoke passed: real Commons login, group ACL, proxy with Origin/port, simulation, recovery, UI, nginx')
 finally:

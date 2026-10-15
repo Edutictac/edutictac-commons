@@ -1,26 +1,29 @@
 <!doctype html>
-<html lang="es">
+<html lang="ca">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>EduTicTac Quiosc — Commons</title><link rel="stylesheet" href="/styles.css"><script src="/quiosc.js" defer></script></head>
+<title>EduTicTac Quiosc — Commons</title><script src="/i18n.js"></script><link rel="stylesheet" href="/styles.css"><script src="/quiosc-reasons.js" defer></script><script src="/quiosc.js" defer></script></head>
 <body><header class="topbar"><div><p class="eyebrow">EduTicTac Commons</p><h1>EduTicTac Quiosc</h1></div>
-<nav class="topnav"><a href="/teacher.html">Tauler docent / Panel docente</a><a href="/">Inici / Inicio</a></nav></header>
+<nav class="topnav" aria-label="Navegació principal" data-i18n-title="common.nav.label"><a href="/teacher.html" data-i18n="teacher.title">Tauler docent</a><a href="/" data-i18n="common.home">Inici</a></nav>
+<div class="lang-switcher" role="group" aria-label="Idioma" data-i18n-title="common.lang.label">
+<button type="button" data-lang="ca" title="Català">CA</button><button type="button" data-lang="va" title="Valencià">VA</button><button type="button" data-lang="es" title="Español">ES</button><button type="button" data-lang="en" title="English">EN</button>
+</div></header>
 <main class="single-layout"><section class="panel">
-<h2>Actividad supervisada</h2>
-<p>Quiosco básico: abre Firefox con un perfil temporal. <strong>No bloquea el escritorio, otras aplicaciones, atajos, pestañas ni sitios web.</strong> Requiere supervisión docente; no ofrece aislamiento para un examen seguro.</p>
-<p id="mode" role="status">Comprobando acceso docente…</p>
+<h2 data-i18n="quiosc.activity">Activitat supervisada</h2>
+<p><span data-i18n="quiosc.intro">Quiosc bàsic: obri Firefox amb un perfil temporal.</span> <strong data-i18n="quiosc.warning">No bloqueja l’escriptori, altres aplicacions, dreceres, pestanyes ni llocs web.</strong> <span data-i18n="quiosc.supervision">Requerix supervisió docent; no oferix aïllament per a un examen segur.</span></p>
+<p id="mode" role="status" data-i18n="quiosc.checking">Comprovant l’accés docent…</p>
 <p id="message" role="alert"></p>
-<div class="grid-fields"><label>Aula o grupo <select id="room"></select></label>
-<button id="discover" type="button">Comprobar equipos</button></div>
-<label><input id="all" type="checkbox"> Seleccionar todos los equipos preparados</label>
+<div class="grid-fields"><label><span data-i18n="quiosc.room">Aula o grup</span> <select id="room"></select></label>
+<button id="discover" type="button" data-i18n="quiosc.discover">Comprovar els equips</button></div>
+<label><input id="all" type="checkbox"> <span data-i18n="quiosc.all">Seleccionar tots els equips preparats</span></label>
 <div id="devices"></div>
 <form id="exam"><div class="grid-fields">
-<label>URL de la actividad <input id="url" type="url" required placeholder="https://aules.edu.gva.es/…" maxlength="2048"></label>
-<label>Duración (minutos) <input id="minutes" type="number" min="1" max="240" value="45" required></label>
-</div><p>El perfil empieza sin la sesión habitual de Aules: el alumnado deberá identificarse. El cierre elimina el perfil temporal; comprueba que las respuestas se han enviado antes de finalizar.</p>
-<button id="start" type="submit">Iniciar actividad supervisada</button></form>
-</section><section class="panel"><h2>Sesiones y recuperación</h2>
-<p>«Proceso de Firefox observado» solo confirma que sigue en ejecución. No confirma pantalla completa, foco ni bloqueo. Los estados guardados incluyen la hora de la última consulta.</p>
-<div class="grid-fields"><label>Sesión <select id="session"></select></label>
-<button id="refresh" type="button">Consultar estado real</button><button id="stop" class="danger" type="button">Finalizar sesión</button></div>
+<label><span data-i18n="quiosc.url">URL de l’activitat</span> <input id="url" type="url" required placeholder="https://aules.edu.gva.es/…" maxlength="2048"></label>
+<label><span data-i18n="quiosc.duration">Duració (minuts)</span> <input id="minutes" type="number" min="1" max="240" value="45" required></label>
+</div><p data-i18n="quiosc.profile">El perfil comença sense la sessió habitual d’Aules: l’alumnat haurà d’identificar-se. En tancar, s’elimina el perfil temporal; comprova que les respostes s’han enviat abans de finalitzar.</p>
+<button id="start" type="submit" data-i18n="quiosc.start">Iniciar l’activitat supervisada</button></form>
+</section><section class="panel"><h2 data-i18n="quiosc.sessions">Sessions i recuperació</h2>
+<p data-i18n="quiosc.evidence">«Procés de Firefox observat» només confirma que continua en execució. No confirma pantalla completa, focus ni bloqueig. Els estats guardats inclouen l’hora de l’última consulta.</p>
+<div class="grid-fields"><label><span data-i18n="quiosc.session">Sessió</span> <select id="session"></select></label>
+<button id="refresh" type="button" data-i18n="quiosc.refresh">Consultar l’estat real</button><button id="stop" class="danger" type="button" data-i18n="quiosc.stop">Finalitzar la sessió</button></div>
 <div id="results"></div>
 </section></main></body></html>
