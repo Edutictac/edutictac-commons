@@ -2158,12 +2158,20 @@ def app_roster(app_id: str, payload: AppRosterIn, request: Request) -> dict[str,
 
 # Quiosc shares teacher authentication and existing classroom membership rules.
 from quiosc.api import install as install_quiosc
+from quiosc.local_auth import COOKIE as QUIOSC_LOCAL_COOKIE, LOCAL_GROUP, LocalAuth
+from quiosc.service import Quiosc
+
+quiosc_service = Quiosc()
+quiosc_local_auth = LocalAuth(quiosc_service, SESSION_SECRET)
 
 def require_quiosc_teacher(request: Request) -> str:
     # A demo installation must not acquire remote execution merely by mounting
     # the Epoptes socket. OIDC teachers can use their normal Commons identity.
     if os.environ.get("QUIOSC_MODE", "disabled") == "real" and len(SESSION_SECRET) < 32:
         raise HTTPException(503, "Quiosc real requiere una clave de firma de producción (32 caracteres mínimo)")
+    local_teacher = quiosc_local_auth.identity(request.cookies.get(QUIOSC_LOCAL_COOKIE))
+    if local_teacher:
+        return local_teacher
     teacher_id = require_teacher(request)
     if (os.environ.get("QUIOSC_MODE", "disabled") == "real"
             and teacher_id == "teacher-token" and len(TEACHER_TOKEN) < 24):
@@ -2171,4 +2179,15 @@ def require_quiosc_teacher(request: Request) -> str:
     return teacher_id
 
 
-install_quiosc(app, require_quiosc_teacher, require_group_access)
+def require_quiosc_group_access(request: Request, group_id: str) -> str:
+    if group_id == LOCAL_GROUP:
+        actor = quiosc_local_auth.identity(request.cookies.get(QUIOSC_LOCAL_COOKIE))
+        if not actor:
+            raise HTTPException(404, "Local Epoptes authorization required")
+        return actor
+    # Local Epoptes permission does not grant access to Commons groups.
+    return require_group_access(request, group_id)
+
+
+install_quiosc(app, require_quiosc_teacher, require_quiosc_group_access,
+               service=quiosc_service, local_auth=quiosc_local_auth)

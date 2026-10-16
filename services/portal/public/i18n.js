@@ -10,6 +10,7 @@
 
   var translations = {
     es: {
+      "quiosc.localHint": "Abre EduTicTac Quiosc desde el menú de aplicaciones de este ordenador LliureX. Usará tus permisos actuales de Epoptes, sin otro inicio de sesión ni configuración docente.",
       "quiosc.activity": "Actividad supervisada",
       "quiosc.intro": "Quiosco básico: abre Firefox con un perfil temporal.",
       "quiosc.warning": "No bloquea el escritorio, otras aplicaciones, atajos, pestañas ni sitios web.",
@@ -306,6 +307,7 @@
       "setup.oidcStep3": "Si la instalación es antigua, reinicia Commons después de completar la configuración.",
     },
     ca: {
+      "quiosc.localHint": "Obre EduTicTac Quiosc des del menú d’aplicacions d’aquest ordinador LliureX. Farà servir els teus permisos actuals d’Epoptes, sense un altre inici de sessió ni configuració docent.",
       "quiosc.activity": "Activitat supervisada",
       "quiosc.intro": "Quiosc bàsic: obre Firefox amb un perfil temporal.",
       "quiosc.warning": "No bloqueja l’escriptori, altres aplicacions, dreceres, pestanyes ni llocs web.",
@@ -602,6 +604,7 @@
       "setup.oidcStep3": "Si la instal·lació és antiga, reinicia Commons després de completar la configuració.",
     },
     va: {
+      "quiosc.localHint": "Obri EduTicTac Quiosc des del menú d’aplicacions d’este ordinador LliureX. Usarà els teus permisos actuals d’Epoptes, sense un altre inici de sessió ni configuració docent.",
       "quiosc.activity": "Activitat supervisada",
       "quiosc.intro": "Quiosc bàsic: obri Firefox amb un perfil temporal.",
       "quiosc.warning": "No bloqueja l’escriptori, altres aplicacions, dreceres, pestanyes ni llocs web.",
@@ -736,6 +739,7 @@
       "setup.oidcStep3": "Si la instal·lació és antiga, reinicia Commons després de completar la configuració.",
     },
     en: {
+      "quiosc.localHint": "Open EduTicTac Quiosc from the application menu on this LliureX computer. It will use your current Epoptes permissions, without another login or teacher configuration.",
       "quiosc.activity": "Supervised activity",
       "quiosc.intro": "Basic kiosk: opens Firefox with a temporary profile.",
       "quiosc.warning": "It does not block the desktop, other applications, shortcuts, tabs or websites.",

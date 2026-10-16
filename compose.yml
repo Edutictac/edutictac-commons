@@ -8,6 +8,15 @@ services:
       network: host
     user: "${PUID:-1000}:${PGID:-1000}"
     environment:
+      # Local Epoptes integration remains off until the server installer enables it.
+      QUIOSC_MODE: ${QUIOSC_MODE:-disabled}
+      QUIOSC_DISCOVERY: ${QUIOSC_DISCOVERY:-manual}
+      QUIOSC_LOCAL_AUTH: ${QUIOSC_LOCAL_AUTH:-0}
+      QUIOSC_SERVER_MACS: ${QUIOSC_SERVER_MACS:-}
+      QUIOSC_SOCKET: /run/quiosc-epoptes/epoptes.socket
+      QUIOSC_LOCAL_SOCKET: /run/quiosc-local/local-auth.socket
+      QUIOSC_HOST_EPOPTES_SOCKET: ${QUIOSC_HOST_EPOPTES_SOCKET:-/run/epoptes/epoptes.socket}
+      QUIOSC_LOCAL_URL: ${QUIOSC_LOCAL_URL:-http://127.0.0.1:8082}
       EDUTICTAC_ID_DB: ${EDUTICTAC_ID_DB:-/data/id.db}
       EDUTICTAC_ID_SECRET: ${EDUTICTAC_ID_SECRET:-change-this-local-secret}
       EDUTICTAC_ID_TEACHER_TOKEN: ${EDUTICTAC_ID_TEACHER_TOKEN:-dev-teacher}
@@ -25,8 +34,23 @@ services:
       EDUTICTAC_ID_OIDC_REDIRECT_URL: ${EDUTICTAC_ID_OIDC_REDIRECT_URL:-}
       EDUTICTAC_ID_OIDC_SCOPES: ${EDUTICTAC_ID_OIDC_SCOPES:-openid profile}
       EDUTICTAC_ID_OIDC_ROLE_CLAIM: ${EDUTICTAC_ID_OIDC_ROLE_CLAIM:-groups}
+    group_add:
+      - "${QUIOSC_SOCKET_GID:-${PGID:-1000}}"
     volumes:
       - ./data:/data
+      # Disabled defaults expose only data the API already mounts; never create
+      # guessed host socket directories. The installer sets both host paths.
+      - type: bind
+        source: ${QUIOSC_EPOPTES_DIR:-./data}
+        target: /run/quiosc-epoptes
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${QUIOSC_BROKER_DIR:-./data}
+        target: /run/quiosc-local
+        bind:
+          create_host_path: false
     expose:
       - "8005"
     healthcheck:

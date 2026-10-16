@@ -10,6 +10,7 @@
     return value === `quiosc.${key}` ? t('state.unknown') : value;
   };
   const reason = value => value ? window.i18nPortal.t(window.quioscReasonKeys[value] || 'quiosc.reason.other') : '';
+  let localLauncher = false;
   let busy = false;
   let mode = null;
   let deviceRows = [];
@@ -33,7 +34,7 @@
     return response.json();
   }
   function renderMessage() {
-    el('message').textContent = !messageKey ? '' : messageKey === 'busy' ? t('busy') : `${t(messageKey)}. ${t('recoveryHint')}`;
+    el('message').textContent = !messageKey ? '' : messageKey === 'busy' ? t('busy') : `${t(messageKey)}. ${t(localLauncher ? 'localHint' : 'recoveryHint')}`;
   }
   async function perform(fn) {
     if (busy) return;
@@ -122,6 +123,9 @@
     });
   });
   perform(async () => {
+    const access = await api('/access').catch(() => null);
+    localLauncher = access?.local_launcher === true;
+    el('localAccess').hidden = !localLauncher;
     const value = await api('/rooms'); mode = value.mode; renderMode();
     value.rooms.forEach(r => { const option = node('option', r.name); option.value = r.id; el('room').append(option); });
     if (value.rooms.length) await discover();

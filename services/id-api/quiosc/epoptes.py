@@ -56,9 +56,10 @@ def read_box(sock, deadline=None):
 
 
 class Epoptes:
-    def __init__(self, path, timeout=12):
+    def __init__(self, path, timeout=12, trusted_uid=None):
         self.path = path
         self.timeout = timeout
+        self.trusted_uid = trusted_uid
 
     def call(self, command_name, **fields):
         deadline = time.monotonic() + self.timeout
@@ -66,6 +67,10 @@ class Epoptes:
             with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as sock:
                 sock.settimeout(self.timeout)
                 sock.connect(self.path)
+                if self.trusted_uid is not None:
+                    _, uid, _ = struct.unpack('3i', sock.getsockopt(socket.SOL_SOCKET, socket.SO_PEERCRED, struct.calcsize('3i')))
+                    if uid != self.trusted_uid:
+                        raise EpoptesError('Untrusted Epoptes daemon identity')
                 sock.sendall(encode_box({b'_command': command_name.encode(), b'_ask': b'1',
                                         **{k.encode(): v.encode() for k, v in fields.items()}}))
                 for _ in range(256):
@@ -114,7 +119,7 @@ class Epoptes:
         handles = self.handles()
         def inspect(handle):
             try:
-                reader = Epoptes(self.path, timeout=min(3, self.timeout))
+                reader = Epoptes(self.path, timeout=min(3, self.timeout), trusted_uid=self.trusted_uid)
                 info = dict(line.split('=', 1) for line in reader._command(handle, 'info').splitlines())
                 # System connections must NEVER be used for browser execution.
                 if int(info.get('uid', '0')) > 0:

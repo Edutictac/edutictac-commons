@@ -1,6 +1,7 @@
 """Persistent session orchestration and classroom inventory allowlist."""
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -26,12 +27,43 @@ class Quiosc:
         return mode
 
     @property
+    def discovery(self):
+        value = os.environ.get('QUIOSC_DISCOVERY', 'manual')
+        if value not in ('manual', 'epoptes'):
+            raise ValueError('Invalid discovery mode')
+        return value
+
+    def automatic_room(self, refresh=False):
+        from .local_auth import LOCAL_GROUP, LOCAL_ROOM
+        if os.environ.get('QUIOSC_LOCAL_AUTH') != '1' or self.mode != 'real':
+            raise ValueError('Automatic classroom requires verified local authorization')
+        with self.db() as conn:
+            conn.execute('CREATE TABLE IF NOT EXISTS discovered_devices (id TEXT PRIMARY KEY, mac TEXT NOT NULL, uid TEXT NOT NULL, label TEXT NOT NULL, last_seen REAL NOT NULL, UNIQUE(mac,uid))')
+        server_macs = {mac.lower() for mac in os.environ.get('QUIOSC_SERVER_MACS', '').split(',') if mac}
+        if refresh:
+            clients = self.adapter.inventory()  # Missing socket/protocol fails, never fabricates PCs.
+            with self.db() as conn:
+                for client in clients:
+                    mac, uid = client['mac'].lower(), str(client['uid'])
+                    if mac in server_macs or not re.fullmatch(r'(?:[0-9a-f]{2}:){5}[0-9a-f]{2}', mac) or not uid.isdigit() or int(uid) <= 0:
+                        continue
+                    device_id = 'pc-' + hashlib.sha256((mac + ':' + uid).encode()).hexdigest()[:24]
+                    conn.execute('INSERT INTO discovered_devices VALUES (?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET label=excluded.label,last_seen=excluded.last_seen',
+                                 (device_id, mac, uid, str(client.get('hostname') or device_id)[:128], time.time()))
+        with self.db() as conn:
+            devices = [dict(r) for r in conn.execute('SELECT id,mac,uid,label,last_seen FROM (SELECT *,ROW_NUMBER() OVER (PARTITION BY mac ORDER BY last_seen DESC,id) AS position FROM discovered_devices) WHERE position=1 ORDER BY label,id')]
+        return {'id': LOCAL_ROOM, 'name': 'Epoptes', 'group_id': LOCAL_GROUP, 'devices': [d for d in devices if d['mac'] not in server_macs]}
+
+    @property
     def adapter(self):
-        return Epoptes(os.environ.get('QUIOSC_SOCKET', '/run/epoptes/epoptes.socket'))
+        return Epoptes(os.environ.get('QUIOSC_SOCKET', '/run/epoptes/epoptes.socket'),
+                       trusted_uid=0 if self.discovery == 'epoptes' else None)
 
     def rooms(self):
         if self.mode == 'disabled':
             return []
+        if self.discovery == 'epoptes':
+            return [self.automatic_room()]
         rooms = json.loads(Path(os.environ['QUIOSC_ROOMS_FILE']).read_text())
         ids, machines = set(), set()
         if not isinstance(rooms, list) or len(rooms) > 100:
@@ -54,6 +86,11 @@ class Quiosc:
         return rooms
 
     def room(self, room_id):
+        if self.discovery == 'epoptes' and self.mode != 'disabled':
+            room = self.automatic_room()
+            if room['id'] != room_id:
+                return None
+            return self.automatic_room(refresh=True)
         return next((r for r in self.rooms() if r['id'] == room_id), None)
 
     @contextmanager
@@ -102,6 +139,8 @@ class Quiosc:
         for device in devices:
             matches = [c for c in inventory if c['mac'] == device['mac'].lower() and c['uid'] == str(device['uid'])]
             # Multiple graphical sessions with the same UID are ambiguous.
+            if self.discovery == 'epoptes' and sum(c['mac'] == device['mac'].lower() for c in inventory) != 1:
+                continue  # Multiple sessions on the same PC need administrative review.
             if len(matches) == 1:
                 result[device['id']] = matches[0]
         return result

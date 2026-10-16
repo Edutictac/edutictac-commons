@@ -7,6 +7,15 @@ un modo examen seguro**: inicia Firefox en quiosco básico; no aísla KDE ni lim
 la navegación. La primera entrega conserva lo funcional sin declarar bloqueos
 que no se han implementado ni comprobado.
 
+## Entrada automática del docente local
+
+Para el mismo ordenador que ejecuta Epoptes se ha implementado un modo de
+autorización local y descubrimiento automático: [guía en valenciano](quiosc-local.md).
+Evita el inventario manual y el segundo login, con preparación administrativa
+única del servidor. Está pendiente de validación en LliureX real; la demo
+permanece desactivada. Las instrucciones de inventario JSON siguientes se
+conservan como alternativa manual, no como requisito de ese modo automático.
+
 ## Auditoría y decisión técnica
 
 Commons usa FastAPI, SQLite, cookies firmadas docentes y Authentik/OIDC en

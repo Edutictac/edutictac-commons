@@ -1,0 +1,114 @@
+# Quiosc automàtic en el mateix ordinador d’Epoptes
+
+Este mode evita configurar professorat, MAC, UID o grups Commons. El docent
+entra en LliureX amb la identitat habitual i obri **EduTicTac Quiosc** des del
+menú d’aplicacions. S’aprofita el permís real d’eixa sessió per a connectar amb
+Epoptes, sense demanar ni arreplegar la contrasenya de Conselleria i sense un
+segon inici de sessió web.
+
+La implementació està en proves. **No s’ha validat encara sobre LliureX 23 real
+ni està activada en el desplegament de demostració.** El quiosc continua sent
+bàsic i supervisat; esta millora no afig aïllament de KDE ni filtre web.
+
+## Preparació única del servidor
+
+La instal·lació de Commons ha de tindre les imatges construïdes amb estos
+canvis, Python 3 i Epoptes ja operatius. En el mateix ordinador del servidor,
+l’administració executa:
+
+```bash
+cd /opt/edutictac-commons
+sudo python3 scripts/setup-quiosc-local.py --check
+sudo python3 scripts/setup-quiosc-local.py --deploy
+```
+
+No és una operació que haja de repetir cada docent. El programa comprova el
+socket, la identitat root del dimoni, el protocol AMP i la capacitat de la
+imatge ID API abans de canviar res. Si falta Epoptes o la imatge encara no
+incorpora el codi nou, s’atura. No instal·la paquets, no crea comptes, no canvia
+permisos d’Epoptes i no modifica cap ordinador de l’alumnat.
+
+Detecta GID i ruta del socket, port de Commons i MAC del servidor. Escriu
+únicament la configuració de connexió necessària en `.env`, una configuració
+sense contrasenyes en `/etc/edutictac-quiosc.json`, l’entrada del menú i un
+llançador Python en el servidor. Prepara el directori volàtil mitjançant
+`/etc/tmpfiles.d/edutictac-quiosc.conf`, sense un altre dimoni resident al host.
+Les MAC del servidor s’exclouen de l’aula automàtica per a no seleccionar
+l’ordinador del professor. Si canvien les interfícies de xarxa, l’administració
+ha de repetir la preparació.
+
+El Compose principal reutilitza estes variables; la integració es conserva
+quan el servei systemd o els scripts d’actualització executen `-f compose.yml`.
+No cal un override separat ni un inventari JSON per a este mode. Desactivat,
+els volums addicionals apunten només a les dades que ID API ja té muntades i
+no s’obri cap socket d’autorització. Activat, Epoptes es munta en lectura sola
+i el directori de connexió local és l’únic muntatge addicional amb escriptura.
+No es munta el socket Docker ni s’usa un contenidor privilegiat.
+
+## Com es comprova el permís
+
+1. El llançador s’executa amb l’usuari real del docent, mai amb sudo. Connecta
+   amb Epoptes: el sistema operatiu aplica els grups i ACL de la sessió LliureX.
+   Si cal renovar un grup, pot usar `sg` amb la pertinença ja resolta per NSS,
+   igual que el llançador Epoptes revisat; no demana contrasenyes.
+2. Passa eixa connexió oberta al contenidor mitjançant `SCM_RIGHTS`. ID API
+   comprova el UID que proporciona el nucli, la ruta real del dimoni, el
+   propietari root del socket muntat i les credencials root de l’interlocutor.
+   Un nom d’usuari, un UID escrit en JSON, una IP o el rol genèric «professor»
+   de Commons no substituïxen esta prova.
+3. S’emet una autorització d’un sol ús, vàlida 60 segons i guardada només com
+   a hash en SQLite. El llançador la transferix per formulari POST al navegador.
+   No apareix en URL, arguments de procés, configuració ni logs.
+4. El formulari temporal només es servix en loopback al mateix UID, comprovat
+   amb les metadades TCP del nucli. Un altre usuari local no pot obtindre’l
+   encara que veja la ruta oberta pel navegador. La pàgina no es guarda en
+   memòria cau, no admet marcs i no transmet referències a altres llocs.
+5. Una cookie HttpOnly de quatre hores dona accés exclusivament a `/api/quiosc`.
+   L’accés queda auditat amb un identificador pseudònim del UID local. No dona
+   accés als grups, documents ni altres API docents de Commons. Tancar el
+   navegador no revoca necessàriament la cookie; caduca al límit de quatre hores.
+
+Si falla alguna comprovació, no s’atorga el permís. El llindar actual exigix
+un dimoni Epoptes root i Docker convencional sense remapatge d’usuaris.
+Altres propietaris del dimoni o Docker rootless no estan validats i no s’han
+d’admetre eliminant la comprovació. L’accés des d’un altre dispositiu tampoc
+s’autoritza per pertànyer a la xarxa: este mode és per a l’ordinador Epoptes.
+
+## Detecció d’equips i abast
+
+L’aula «Epoptes» es genera des de `EnumerateClients` i `info`. S’exclouen les
+connexions de sistema UID 0, les MAC invàlides i les del servidor. Els IDs dels
+equips són estables per MAC/UID encara que canvie el handle de connexió.
+L’inventari recorda els equips vistos per a mostrar-los com a desconeguts
+quan es desconnecten. Un equip que no s’ha vist mai no es pot inventar a
+partir del protocol; no s’importen els fitxers privats de grups de la GUI.
+
+Quan canvia l’usuari d’un PC es mostra l’últim UID detectat; les sessions
+històriques conserven el seu propi destinatari. Diverses sessions actives sobre
+una mateixa MAC es consideren ambigües i no es despatxen ordres automàticament.
+Un ID alié o caducat enviat pel navegador es rebutja.
+
+**L’abast és el dels clients que exposa eixe dimoni Epoptes.** Este mode es
+prepara en el servidor d’una aula; no deduïx permisos entre aules d’un servidor
+compartit ni interpreta filtres visuals de la GUI com a controls de seguretat.
+Un centre amb un únic dimoni compartit per diverses aules necessita validar
+l’abast abans d’activar-lo. No s’ha d’ampliar a tot el centre assumint que la
+identitat digital, per si mateixa, limita la llista retornada pel socket.
+
+## Validació pendent en l’aula
+
+- Docent autoritzat: obrir la icona i arribar directament als equips, sense
+  formularis de configuració ni nou login. Verificar també navegador i perfil
+  habituals, el mode X11, la identitat de la sessió i el grup/ACL efectiu.
+- Usuari sense permís Epoptes: el llançador i l’accés web han de fallar.
+- Usuari amb rol docent Commons però sense prova Epoptes: no veu esta aula.
+- Desconnexió, canvi d’usuari, dues sessions i reinici del servidor: comprovar
+  llistes, caducitat, recuperació i regeneració del directori del socket.
+- Executar el procediment de Firefox i recuperació de `quiosc.md`. Esta
+  autorització no valida el comportament visual ni els atajos de KDE.
+
+Proves de desenvolupament: `tests/test_quiosc_local.py` inclou el protocol de
+pas de descriptors, caducitat i no reutilització, origen del formulari, abast de
+la cookie, detecció automàtica i denegació d’identitats no verificades.
+`QUIOSC_DOCKER_TEST=1` afig una prova amb un dimoni Unix root real dins d’un
+contenidor de prova i un llançador no root; no usa alumnes ni el servidor real.

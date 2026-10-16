@@ -206,3 +206,7 @@ escritorio ni filtro de navegación.** Desactivado por defecto.
 Configuración local/SSH, permisos, pruebas y recuperación:
 [docs/quiosc.md](docs/quiosc.md). El despliegue usa el override optativo
 `compose.quiosc.yml`; empieza con simulación antes de conectar equipos reales.
+
+Mode automàtic per al mateix ordinador Epoptes, amb permisos de la sessió
+LliureX i sense inventari docent: [preparació i validació](docs/quiosc-local.md).
+Implementat en proves; pendent de validar en una aula real.
