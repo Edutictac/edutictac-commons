@@ -4,6 +4,7 @@
 > Repo: `edutictac-commons`  
 > Pista: **B — Stack Docker replicable**  
 > Data inicial: 2026-09-14
+> Última revisió: 2026-10-18
 
 Aquest document resumeix el treball que toca fer en aquest repositori. El
 roadmap complet de la candidatura 4D viu en el repo
@@ -25,31 +26,50 @@ Cada canvi funcional ha de deixar:
   equivalent);
 - cap secret, dada real o artefacte local en el repositori.
 
-## Actualització 2026-10-17: selector de ferramentes
+## Estat verificat — 2026-10-18
 
-Implementat: assistent inicial i gestió posterior de Play,
-EduHoot, Recursos i Quiosc des d'Administració, amb conservació de dades i
-recuperació davant fallades. Distribuït com a imatges alpha26 i paquet alpha29. Detall: [mòduls](modules.md).
+Versió publicada: **imatges Commons alpha26 i instal·lador alpha29** en APT
+signat. Codi i tag `v0.1.1-alpha26` en Forgejo i GitHub; manifests, firma APT
+i hash del paquet descarregat comprovats. [Notes de publicació](../releases/0.1.1-alpha26/README.md).
 
-## Estat actual
+Ja implementat i publicat:
 
-La versió `0.1.0-alpha` ja conté:
+- nucli docent/alumnat amb identitat pseudònima, grups compartits,
+  assignacions i resultats;
+- itineraris amb ordre, selecció activa per grup, permisos i conservació del
+  progrés, incloent-hi migració de dades existents;
+- selector inicial i gestió posterior de Play, EduHoot, Recursos i Quiosc des
+  d'Administració; conserva dades i recupera la configuració si falla un canvi;
+- Authentik i activació inicial, operació des del panell, actualitzacions i
+  backups de Commons/EduHoot amb cobertura declarada;
+- sincronització independent de Recursos i EduHoot, amb manifest, hashes i
+  catàleg versionat en el repositori `edutictac-content`;
+- CA/VA/ES/EN. Validació de la publicació: 123 proves Python correctes,
+  2 proves Docker optatives de Quiosc omeses, 66 proves de navegador i prova
+  Docker d'activació/desactivació, dades conservades i recuperació correctes.
 
-- `commons-id-api`: API FastAPI amb credencial pseudònima d'alumnat, sessions,
-  grups, assignacions i puntuacions;
-- `commons-portal`: portal demo amb flux docent -> alumnat -> resultats;
-- integració opcional d'EduHoot via perfil Docker Compose;
-- scripts d'operació local: `doctor`, `up`, `test-flow`, `bootstrap-demo`,
-  `backup`, `restore`, `export-images`, `load-images` i `release-check`;
-- backups automàtics amb timer d'usuari de systemd i panell `/admin`
-  (contenidor `admin`) per gestionar-los sense terminal;
-- documentació d'instal·lació en centres i checklist d'entrega.
+La publicació no dona per validats el pilot LliureX, el SSO complet dels quatre
+serveis ni una instal·lació nova amb esta versió. L'estat del desplegament es
+registra en [PROPERA-SESSIO.md](PROPERA-SESSIO.md).
 
-El criteri d'estabilitat actual és:
+## Ordre de treball immediat
 
-```bash
-make DOCKER="sudo docker" release-check
-```
+1. Completar la cobertura automàtica de backup/restauració d'Authentik, Play,
+   Recursos i Quiosc, amb restauracions comprovades per servei.
+2. Validar la instal·lació nova en LliureX: activació, OIDC, selector, reinici,
+   canvi de mòduls i recuperació.
+3. Validar Quiosc amb Epoptes en una aula real, inclosa restauració dels equips.
+4. Tancar el flux v2 docent: sessió compartida amb Recursos, favorits i
+   assignació de la cistella a un itinerari concret.
+
+Desplegament en la instal·lació existent **completat**: alpha29/alpha26, perfils
+conservats, treball del selector en el host correcte i accessos comprovats des
+d'un altre dispositiu de la tailnet. [Abast i comprovacions](DESPLEGAMENT-ALPHA26.md).
+La còpia completa feta per a este desplegament no substituïx la cobertura dels
+backups automàtics que continua pendent.
+
+Les caselles següents diferencien implementació de validació integral. Una
+funció implementada pot continuar tenint una prova de camp pendent.
 
 ## Objectiu v1 (nucli finançat)
 
@@ -76,7 +96,7 @@ entre EduHoot, Recursos i Play** continuen a la secció «v2».
 El producte i el paquet ja estan implementats. Queda pendent validar el
 lliurament:
 
-1. provar `edutictac-commons_0.1.1~alpha4_amd64.deb` en una màquina neta real,
+1. provar `edutictac-commons_0.1.1~alpha29_amd64.deb` en una màquina neta real,
    incloent-hi activació, OIDC, flux docent → alumnat → EduHoot i restauració;
 
 El `.deb` ja està publicat en el repositori APT signat
@@ -114,7 +134,7 @@ tauler Commons.
 ### Fita 3 — Administració operativa: backups i actualitzacions
 
 **Resultat:** el stack es pot administrar des d'un panell tècnic segur, amb
-còpies de seguretat completes, restauració provada i actualitzacions
+còpies amb cobertura explícita per servei, restauració provada i actualitzacions
 controlades d'imatges Docker/OCI.
 
 Punt de represa detallat: `docs/PROPERA-SESSIO.md`.
@@ -155,6 +175,12 @@ backup recent i verificable**.
 - [x] Definir canals `stable`, `testing` i `dev`.
 - [x] Rollback assistit des del panell; crea un backup de seguretat, recupera
   els tags anteriors i verifica salut i flux funcional.
+- [x] Selecció de mòduls amb revisió de configuració, bloqueig compartit de
+  manteniment, progrés persistent i recuperació davant fallades.
+- [ ] Incorporar Authentik/PostgreSQL, Play, Recursos i Quiosc a la cobertura
+  automàtica de backup i restauració, amb verificació de cada servei. Les
+  còpies habituals actuals cobrixen id-api i EduHoot; declarar estos límits al
+  panell i a la documentació abans de donar per complet el lliurament.
 
 ### Fita 4 — EduHoot com a primera activitat integrada
 
@@ -202,13 +228,13 @@ l'alumnat pot completar-la amb la mateixa identitat pseudònima.
 - [ ] Validar en una màquina neta el paquet `.deb` per a Ubuntu amd64 amb
   dependències, configuració inicial, servei systemd i comprovació
   postinstal·lació.
-- [x] Publicar el `.deb` `0.1.1~alpha4` en el repositori APT signat
+- [x] Publicar el `.deb` `0.1.1~alpha29` en el repositori APT signat
   [`packages.edutictac.es`](https://packages.edutictac.es), amb clau pública,
   índexs signats i documentació d'instal·lació.
 
 ## v2 — més enllà del nucli finançat
 
-### Progrés verificat en desenvolupament — 2026-10-17
+### Progrés implementat i publicat — 2026-10-18
 
 - [x] Editor docent d'itineraris: pujar, baixar i llevar passos, conservant
   assignacions i resultats; CA/VA/ES/EN i ús en mòbil.
@@ -225,7 +251,8 @@ l'alumnat pot completar-la amb la mateixa identitat pseudònima.
 La cistella de favorits i l'assignació al grup ja tenen implementació local;
 les caselles d'integració següents continuen pendents fins a validar la sessió
 OIDC compartida i el flux complet amb Recursos. L'editor i la selecció nous
-estan publicats en alpha25 (instal·lador alpha28), pendents de desplegament.
+estan inclosos en alpha26 (instal·lador alpha29). La validació del desplegament
+es registra en `docs/PROPERA-SESSIO.md`.
 Migració i restauració provades en Docker aïllat. Contracte i proves:
 `docs/itineraries.md`.
 
@@ -257,14 +284,14 @@ el nucli instal·lable i el flux docent bàsic.
   basat en tokens.
 - [x] Provar el flux complet contra una instància Authentik del laboratori per
   a Commons/Portal i Recursos.
-- [ ] Afegir classes/grups i permisos compartits completament integrats en el
-  tauler i els itineraris.
+- [x] Gestió visual de docents col·laboradors en els grups; consultes,
+  credencials, assignacions, resultats i itineraris respecten els permisos.
+- [x] Revocació de col·laboradors i control de canvis simultanis coberts per
+  les proves dels itineraris.
 
-La primera migració de dades i els endpoints de membresía estan implementats i
-documentats en `docs/groups-permissions.md`. Les consultes del tauler, les
-credencials, les assignacions, els resultats i les estadístiques ja respecten
-els docents col·laboradors; queda afegir la gestió visual i connectar-ho amb
-classes i itineraris.
+Migració i contracte de membres del grup en `docs/groups-permissions.md`;
+editor i selecció en `docs/itineraries.md`. La sessió compartida entre serveis
+continua requerint una validació completa independent.
 
 ### Fita v2-2 — Banc de recursos (cistella i recorregut)
 
@@ -276,9 +303,10 @@ d'activitat que EduHoot sol.
   stack (perfil Compose propi, persistència a `data/recursos-*`).
 - [x] Integrar la identitat docent (Authentik/OIDC) al Banc de recursos perquè
   els preferits queden al compte.
-- [ ] Crear un catàleg controlat de categories i etiquetes per a les activitats:
-  l'alumnat només podrà seleccionar valors tancats i el professorat podrà
-  crear, editar, activar o desactivar els valors del seu centre o espai.
+- [x] Catàleg controlat inicial de Play amb etiquetes traduïdes i valors
+  tancats per a la classificació de les activitats.
+- [ ] Completar la gestió docent dels vocabularis del centre i unificar-la
+  entre Play, Commons i Recursos.
 - [x] Definir el contracte inicial del catàleg amb identificadors estables i
   etiquetes `es`, `ca` i `en`, mantenint el token local com a permís provisional.
 - [ ] Aplicar el catàleg controlat als camps de matèria, etapa, nivell i
@@ -291,14 +319,14 @@ d'activitat que EduHoot sol.
   públiques anònimes, privades per identitat fiable i estat de classe reservat.
 - [x] Crear en `recursos-api` l'endpoint `GET /api/teacher/favorites`
   (sessió OIDC docent) que resol els preferits a recurs complet.
-- [ ] Integrar la cistella de favorits en el tauler docent Commons i conservar
-  la sessió OIDC compartida entre portal i Recursos.
+- [x] Interfície de favorits/cistella en el tauler docent i assignació al grup.
+- [ ] Validar el recorregut real amb favorits persistents i sessió OIDC
+  compartida entre el portal i Recursos.
 - [x] Cercador local del Banc de recursos al tauler docent i assignació de
   recursos Play al grup seleccionat, conservant l'`activity_id` per al tauler
   de resultats.
-- [x] Preparar en `id-api` el modelo mínimo de itinerarios sobre asignaciones
-  existentes, con orden estable y compatibilidad con el dashboard del
-  alumnado.
+- [x] Model d'itineraris sobre assignacions existents, ordre estable,
+  selecció per grup i visualització al tauler d'alumnat.
 - [ ] Assignar recursos de la cistella als recorreguts des del tauler; qualsevol
   recurs és assignable, només els d'app (JClic/H5P/EduHoot) generen puntuació i
   resultats.
@@ -326,17 +354,12 @@ El detall del contracte i les decisions de propietat del recurs estan en
 `docs/resources-integration.md`. Aquesta integració és posterior al MVP i no
 és necessària per crear, jugar o exportar activitats H5P localment.
 
-La comprovació del 2026-09-17 confirma que `recursos` i `recursos-api` són
-repositoris i serveis separats de Commons; el perfil Compose local ja els pot
-desplegar, `recursos-api` indexa EduHoot amb un flux pull i té implementada la
-ingesta push autenticada per a Play. El cicle local de publicació, actualització
-i retirada ja conserva el `resource_id`; queda activar-lo en producció i
-completar la cistella i els itineraris del tauler docent.
-
-El contracte local i la validació del payload ja estan preparats en
-`services/play/recursos.py` i `tests/test_recursos_contract.py`; queda pendent
-connectar-los amb una API real de `recursos` quan el servei i el seu contracte
-estiguen disponibles.
+Recursos i recursos-api són serveis separats i ja tenen integració
+implementada: ingesta autenticada de Play, indexació d'EduHoot i contracte de
+propietat/publicació. No es considera validat el cicle docent complet només
+per tindre estos endpoints. Queden el SSO real de tots els serveis i la
+cistella → itinerari. Contracte i proves: `services/play/recursos.py` i
+`tests/test_recursos_contract.py`.
 
 El contracte de resultats, assignacions i funcionament local-first de Play està
 en `docs/play-commons-integration.md`.
@@ -347,28 +370,35 @@ en `docs/play-commons-integration.md`.
 compartir activitats seleccionades amb la resta de la xarxa sense dependre en
 temps real de `edutictac.es`.
 
-- [ ] Crear el repositori independent `edutictac-content` com a font de
+- [x] Crear el repositori independent `edutictac-content` com a font de
   continguts publicats, separat del codi de Commons i de les dades privades
   dels centres.
-- [ ] Importar-hi el catàleg inicial d'activitats i recursos que ja existeix a
+- [x] Importar-hi el catàleg inicial d'activitats i recursos que ja existeix a
   `edutictac.es`, conservant identificadors, metadades, idioma, llicència i
   autoria.
-- [ ] Definir un manifest versionat amb identificadors estables, revisions,
+- [x] Definir un manifest versionat amb identificadors estables, revisions,
   hashes SHA-256, dependències i fitxers de Recursos/EduHoot.
-- [ ] Publicar les versions en `contenido.edutictac.es` mitjançant HTTPS com a
+- [x] Publicar les versions en `contenido.edutictac.es` mitjançant HTTPS com a
   artefactes estàtics servits per Nginx o emmagatzematge compatible amb S3.
-- [ ] Afegir en Administració dues accions independents: «Sincronitzar
+- [x] Afegir en Administració dues accions independents: «Sincronitzar
   Recursos» i «Sincronitzar EduHoot».
-- [ ] Fer la sincronització idempotent, amb descàrrega temporal, validació del
-  manifest, actualització atòmica, informe de canvis i última versió vàlida
-  local.
+- [x] Descàrrega temporal, validació del manifest i SHA-256, activació local
+  atòmica i importació amb recompte de canvis. Ingesta idempotent comprovada.
+- [ ] Validar el rollback complet entre versions de catàleg i la recuperació
+  coherent del servei importador si falla després d'activar la còpia local.
 - [ ] Permetre proposar des de Play i EduHoot activitats per compartir amb la
   xarxa, mantenint privades per defecte les activitats de centre, docent i
   alumnat.
 - [ ] Incorporar revisió, moderació, llicència, centre d'origen i retirada de
   continguts publicats.
-- [ ] Documentar el flux de publicació, sincronització, rollback i treball
-  sense connexió amb el repositori central.
+- [x] Documentar el manifest i la publicació inicial en `edutictac-content`,
+  així com els dos canals i la validació en `content/README.md`.
+- [ ] Completar la guia de moderació, rollback integral i prova sense
+  connexió amb el repositori central.
+
+La publicació inicial del catàleg i la validació d'ingesta daten del
+2026-09-18. Queda separat el treball de proposta/moderació de noves activitats:
+la recepció de catàlegs ja està implementada, la governança editorial no.
 
 ### Fita v2-4 — SSO docent i identitat d'alumnat entre EduHoot, Recursos i Play
 
@@ -421,6 +451,12 @@ publicitat servida pel reproductor.
 
 ### Fita v2-7 — Configuració de desplegament
 
+- [x] Assistent inicial i activació/desactivació de Play, EduHoot, Recursos i
+  Quiosc des d'Administració; dades conservades i nucli sempre actiu.
+- [x] Migració de la selecció d'instal·lacions anteriors i recuperació si falla
+  l'arrancada. Quiosc queda condicionat a preparar Epoptes prèviament.
+- [ ] Validar l'assistent i els canvis posteriors en una màquina LliureX nova.
+
 - [ ] Permetre configurar des del panell d'administració els ports publicats
   pel host, amb detecció de conflictes, reinici controlat, còpia de la
   configuració anterior i rollback si el stack no recupera la salut.
@@ -434,8 +470,7 @@ No es dona una versió per preparada si:
 - el professorat no pot recuperar o regenerar credencials;
 - no hi ha forma documentada de parar, arrancar, copiar i restaurar dades;
 - la documentació confon pseudonimització amb anonimat complet;
-- cap flux exigeix noms reals, correus o identificadors institucionals
-  d'alumnat.
+- algun flux d'alumnat exigix noms reals, correus o identificadors institucionals.
 
 ## Relació amb el roadmap 4D
 

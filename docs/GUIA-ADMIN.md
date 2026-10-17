@@ -97,9 +97,10 @@ sense passar per Authentik ni per terminal:
 
 Dins d'"Accions" → "Backups":
 
-- **Crear backup ara** — genera una còpia immediata amb totes les dades
-  persistents actives (base de dades, EduHoot, etc.). Apareix a la llista de
-  "Backups disponibles" de l'"Estat" en acabar.
+- **Crear backup ara** — copia la base d'identitat i, quan està actiu,
+  EduHoot (Mongo, uploads i logs). Apareix a "Backups disponibles" en acabar.
+  Authentik, Play, Recursos i Quiosc requerixen encara còpies addicionals;
+  ampliar la cobertura i la restauració automàtica continua pendent.
 - **Activar backups automàtics** / **Desactivar backups automàtics** —
   instal·la o elimina un timer del sistema que fa backups periòdics sense
   intervenció.

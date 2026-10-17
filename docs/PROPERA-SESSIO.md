@@ -1,19 +1,44 @@
 # Propera sessió de treball
 
-## Selector de ferramentes — alpha26 / alpha29 (2026-10-17)
+## Estat de represa — 2026-10-18
 
-Implementat l'assistent inicial i la selecció posterior en Administració per
-Play, EduHoot, Recursos i Quiosc (amb Epoptes preparat). Inclou conservació de
-dades, migració de perfils, permisos, bloqueig de manteniment i recuperació
-si falla l'arrancada. Documents: [mòduls](modules.md) i [paquet](ubuntu-package.md).
-Validació local: 123 proves Python correctes (2 optatives omeses), 66 casos de
-navegador comprovats i paquet alpha29 construït, sense instal·lar-lo.
-Prova Docker aïllada correcta: activació, desactivació, dades conservades i rollback.
-Publicació verificada el 2026-10-18: imatges alpha26 i paquet alpha29 en APT signat. No reutilitzar els tags ni les
-versions anteriors. Notes i verificacions en `releases/0.1.1-alpha26/`. Els canvis previs de Makefile i de sincronització
-de continguts en admin/server.py continuen preservats.
+**Publicat i desplegat:** paquet alpha29 i imatges API, portal, Administració i
+Play alpha26. Es conserven EduHoot 1.0.5 i Recursos alpha18. Les opcions actives
+continuen sent Play, EduHoot i Recursos; Quiosc continua desactivat i condicionat
+a preparar Epoptes. L'actualització marca la selecció anterior com a configurada,
+per tant no força l'assistent inicial als usuaris existents.
 
-## Punt de represa v2 — 2026-10-17
+Desplegament amb còpies lògiques d'Authentik/PostgreSQL i Mongo, dades en fred,
+configuració i referències de les imatges anteriors. Recompte de files de les
+bases SQLite comprovades conservat. El treball real del selector en el host
+(systemd d'usuari, mateixa selecció) acaba amb Result=success i estat idle.
+
+Verificació des d'un altre dispositiu de la tailnet: portada, docent, alumnat,
+Administració, API i estat de mòduls HTTP 200; EduHoot HTTP 200. Authentik server
+i worker connecten realment a PostgreSQL. Entrada OIDC redirigix a Authentik i
+el descobriment respon 200; això no dona per validada tota la sessió compartida.
+[Detall del desplegament](DESPLEGAMENT-ALPHA26.md).
+
+Publicació ja comprovada: 123 proves Python correctes (2 Docker de Quiosc
+optatives omeses), 66 de navegador, cicle Docker dels mòduls correcte, manifests
+remots i APT signat verificats. Notes: `releases/0.1.1-alpha26/`.
+
+Pròxims passos, per ordre:
+
+1. Ampliar els backups automàtics i la restauració a Authentik, Play, Recursos i
+   Quiosc. El backup habitual cobrix id-api i EduHoot; el desplegament ha tingut
+   una còpia manual addicional més àmplia.
+2. Provar esta versió en una màquina LliureX nova amb activació i selector.
+3. Preparar Epoptes i provar Quiosc en una aula real, inclosa restauració.
+4. Validar SSO i favorits amb Recursos i completar cistella → itinerari concret.
+
+El roadmap s'ha actualitzat: grups/col·laboradors visuals, itineraris, selector
+i recepció del catàleg ja no figuren com a desenvolupament pendent. La proposta
+i moderació de continguts i el rollback integral del catàleg continuen oberts.
+Els canvis locals previs de Makefile i export-catalog en admin/server.py es
+conserven sense publicar ni desplegar.
+
+## Històric: publicació d’itineraris alpha25 — 2026-10-17
 
 L'editor d'itineraris permet reordenar i llevar passos, seleccionar l'itinerari
 actiu del grup o deixar-lo sense selecció. El tauler d'alumnat mostra el títol

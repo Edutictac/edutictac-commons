@@ -1,8 +1,10 @@
 # Estabilització del bloc d'itineraris v2 — 2026-10-17
 
-Estat: **validat en desenvolupament**, pendent de publicar imatges i provar el
-desplegament. No equival a una versió estable de tot Commons ni valida el SSO
-compartit amb Recursos.
+Estat actualitzat el 2026-10-18: **publicat i desplegat**, inclòs en les imatges
+alpha26 i el paquet alpha29. [Comprovacions de desplegament](DESPLEGAMENT-ALPHA26.md).
+No equival a una versió estable de tot Commons ni valida el SSO compartit amb
+Recursos. Els resultats detallats següents corresponen a l'estabilització del
+bloc d'itineraris del 2026-10-17; la publicació alpha26 afegix les proves del selector.
 
 ## Correccions
 
@@ -44,7 +46,7 @@ No s'ha executat contra el stack actiu: els seus fluxos funcionals creen dades.
 
 La configuració d'integració contínua executa `npm test` i la suite Python
 completa en dos treballs independents. El workflow s'ha validat localment com
-a YAML; la seua execució remota queda pendent de publicar el codi.
+a YAML; la seua execució remota ja ha acabat correctament amb el codi publicat.
 
 ## Reproducció
 
@@ -60,10 +62,11 @@ python3 -m venv /tmp/commons-v2-tests
 git diff --check
 ```
 
-## Abans del desplegament
+## Desplegament completat i límits
 
-Cal construir i publicar les imatges que incorporen este codi, comprovar la
-migració i la restauració sobre una còpia de dades en un stack aïllat, i
-validar el flux docent/alumnat amb la configuració real d'Authentik. La migració
-de selecció està coberta amb SQLite temporal, però no s'ha aplicat a dades del
-stack actiu. Els canvis previs de `Makefile` i `admin/server.py` s'han preservat.
+Imatges publicades i desplegament en la instal·lació existent completats amb
+còpia prèvia i recompte de files SQLite conservat. Migració i restauració també
+provades en Docker aïllat. Queda la validació del navegador amb Authentik real
+en tots els serveis i una instal·lació nova en LliureX; no es tanquen eixes
+proves amb els resultats unitaris. Els canvis previs de Makefile i
+admin/server.py s'han preservat. Vegeu [estat de represa](PROPERA-SESSIO.md).

@@ -18,6 +18,11 @@ crea y comprueba un backup. Se valida el arranque y la salud del núcleo y de
 los módulos elegidos. Ante un fallo se restaura la configuración anterior y
 se intenta recuperar el estado operativo; un fallo de recuperación se informa.
 
+La copia automática previa cubre actualmente id-api y EduHoot. La cobertura y
+restauración automática de Authentik, Play, Recursos y Quiosc están pendientes;
+desactivar conserva sus datos, pero eso no equivale a tenerlos respaldados.
+En el despliegue alpha26 se realizó una copia manual adicional completa.
+
 ## Contrato de operación
 
 - `GET /admin/api/modules`: estado para el administrador autenticado.

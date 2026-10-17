@@ -1,12 +1,14 @@
 # Catàleg de continguts compartit
 
-Aquest directori documenta el contracte del futur repositori independent
-`edutictac-content`. No conté encara dades reals del catàleg ni activitats
-privades de cap centre.
+Aquest directori documenta el contracte del repositori independent
+`edutictac-content`, ja publicat. Les dades reals del catàleg es mantenen en
+eixe repositori; ací només hi ha exemples i no activitats privades del centre.
 
-El repositori de continguts publicarà un `manifest.json` versionat i fitxers
-associats. Commons podrà descarregar una versió, validar-la i importar per
-separat els canals `resources` i `eduhoot`.
+El repositori de continguts publica un `manifest.json` versionat i fitxers
+associats en `https://contenido.edutictac.es/releases/latest/`. Commons ja pot
+descarregar una versió, validar-la i importar per separat els canals
+`resources` i `eduhoot` des d’Administració. La proposta i moderació de noves
+activitats, així com el rollback integral de la importació, continuen al roadmap.
 
 Cada canal publica un únic fitxer agregat: `resources/catalog.json` i
 `eduhoot/quizzes.json`. L'importador de Commons els envia sencers als serveis
