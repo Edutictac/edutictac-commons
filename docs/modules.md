@@ -1,8 +1,8 @@
 # Selector de módulos
 
-Implementado en desarrollo; publicación prevista: paquete `0.1.1~alpha29`
-e imágenes Commons `0.1.1-alpha26`. No distribuir el paquete antes de publicar
-las imágenes. Alpha28/alpha25 siguen siendo la última distribución publicada.
+Disponible con el paquete `0.1.1~alpha29` y las imágenes Commons
+`0.1.1-alpha26`. Notas y digests: [release alpha26](../releases/0.1.1-alpha26/README.md).
+Actualizar conjuntamente el paquete y las imágenes en instalaciones anteriores.
 
 ## Uso
 
@@ -66,6 +66,6 @@ segundo servidor.
 - Docker real aislado: activación, desactivación, reactivación conservando datos
   y recuperación ante imagen inexistente correctas. Recursos temporales eliminados.
 - Paquete alpha29 construido y contenido revisado: incluye controlador y
-  selector, excluye `.env` y copias de seguridad locales. No instalado ni publicado.
-- Pendiente de distribución: publicar imágenes alpha26 y el nuevo paquete;
-  actualizar conjuntamente los scripts del host y las imágenes.
+  selector; excluye `.env` y copias de seguridad locales.
+- Actualizaciones: conservar la selección y actualizar conjuntamente los scripts
+  del host y las imágenes; el paquete conserva los tags anteriores.

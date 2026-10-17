@@ -13,11 +13,9 @@ Desde el repositorio:
 ./packaging/build-deb.sh
 ```
 
-El artefacto aparece en `dist/`. La siguiente versión en desarrollo es
-`0.1.1~alpha29`, preparada para las imágenes `0.1.1-alpha26` y el selector de
-módulos. **Todavía no está publicada**: antes de distribuir el paquete hay que
-publicar esas imágenes y comprobar su descarga. La última versión publicada
-es `0.1.1~alpha28`, con imágenes alpha25 y sin selector.
+El artefacto aparece en `dist/`. La versión actual es `0.1.1~alpha29`, con
+imágenes Commons `0.1.1-alpha26` y selector de módulos. Incluye los scripts
+de preparación local de Epoptes; Quiosc sigue desactivado por defecto.
 
 ## Instalar desde el repositorio APT
 

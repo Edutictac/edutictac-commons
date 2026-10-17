@@ -1,6 +1,6 @@
 # Propera sessió de treball
 
-## Selector de ferramentes — desenvolupament 2026-10-17
+## Selector de ferramentes — alpha26 / alpha29 (2026-10-17)
 
 Implementat l'assistent inicial i la selecció posterior en Administració per
 Play, EduHoot, Recursos i Quiosc (amb Epoptes preparat). Inclou conservació de
@@ -9,8 +9,8 @@ si falla l'arrancada. Documents: [mòduls](modules.md) i [paquet](ubuntu-package
 Validació local: 123 proves Python correctes (2 optatives omeses), 66 casos de
 navegador comprovats i paquet alpha29 construït, sense instal·lar-lo.
 Prova Docker aïllada correcta: activació, desactivació, dades conservades i rollback.
-Pendent de publicar imatges alpha26 i paquet alpha29; no reutilitzar els tags
-ni la versió ja publicats. Els canvis previs de Makefile i de sincronització
+Distribució: imatges alpha26 i paquet alpha29. No reutilitzar els tags ni les
+versions anteriors. Notes i verificacions en `releases/0.1.1-alpha26/`. Els canvis previs de Makefile i de sincronització
 de continguts en admin/server.py continuen preservats.
 
 ## Punt de represa v2 — 2026-10-17

@@ -27,10 +27,9 @@ Cada canvi funcional ha de deixar:
 
 ## Actualització 2026-10-17: selector de ferramentes
 
-Implementat en desenvolupament: assistent inicial i gestió posterior de Play,
+Implementat: assistent inicial i gestió posterior de Play,
 EduHoot, Recursos i Quiosc des d'Administració, amb conservació de dades i
-recuperació davant fallades. Pendent de publicar com a imatges alpha26 i
-paquet alpha29. Detall: [mòduls](modules.md).
+recuperació davant fallades. Distribuït com a imatges alpha26 i paquet alpha29. Detall: [mòduls](modules.md).
 
 ## Estat actual
 

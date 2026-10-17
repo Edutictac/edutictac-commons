@@ -41,10 +41,9 @@ Botons de la secció "Accés":
 - **Actualitzar** — torna a consultar l'estat sense recarregar la pàgina
   (útil per a vore si un backup o una actualització ja ha acabat).
 
-## Ferramentes del centre (pròxima versió)
+## Ferramentes del centre
 
-Disponible amb el paquet alpha29 i les imatges alpha26, encara pendents de
-publicació. En una instal·lació nova, després d'activar el portal i entrar
+Disponible amb el paquet alpha29 i les imatges alpha26. En una instal·lació nova, després d'activar el portal i entrar
 com a administrador, s'obri un assistent per triar **Play, EduHoot, Recursos i
 Quiosc**. Pots deixar-ho per a més tard.
 
