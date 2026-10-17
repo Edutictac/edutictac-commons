@@ -1,0 +1,104 @@
+import http.client
+from http.server import ThreadingHTTPServer
+import importlib.util
+import io
+import json
+from pathlib import Path
+import sys
+import threading
+
+import pytest
+
+ROOT = Path(__file__).parents[1]
+sys.path.insert(0, str(ROOT / "admin"))
+SPEC = importlib.util.spec_from_file_location("admin_modules_test", ROOT / "admin/server.py")
+admin = importlib.util.module_from_spec(SPEC)
+SPEC.loader.exec_module(admin)
+
+
+@pytest.fixture
+def api(tmp_path, monkeypatch):
+    (tmp_path / "data").mkdir()
+    state = admin.module_snapshot({"COMPOSE_PROFILES": "authentik", "MODULES_CONFIGURED": "0"})
+    (tmp_path / "data/modules.json").write_text(json.dumps(state))
+    monkeypatch.setattr(admin, "APP_DIR", tmp_path)
+    monkeypatch.setenv("REPO_DIR", "/opt/synthetic-commons")
+    identity = {"provider": "authentik", "username": "akadmin"}
+    calls = []
+    def user(request, timeout):
+        return io.BytesIO(json.dumps({"identity": identity}).encode())
+    # Preserve real authorization logic, replace only the upstream identity API.
+    class Reply(io.BytesIO):
+        status = 200
+    monkeypatch.setattr(admin.urllib.request, "urlopen", lambda *args, **kwargs: Reply(json.dumps({"identity": identity}).encode()))
+    def run(*args, **kwargs):
+        calls.append(args)
+        return True, ""
+    monkeypatch.setattr(admin, "run_script", run)
+    server = ThreadingHTTPServer(("127.0.0.1", 0), admin.Handler)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    def request(method, path, body=None, headers=None):
+        connection = http.client.HTTPConnection(*server.server_address, timeout=3)
+        values = {"Cookie": "synthetic-session", "Content-Type": "application/json", "X-Commons-Modules": "1"}
+        values.update(headers or {})
+        connection.request(method, path, json.dumps(body) if body is not None else None, values)
+        response = connection.getresponse()
+        result = response.status, json.loads(response.read())
+        connection.close()
+        return result
+    try:
+        yield request, state, identity, calls
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join()
+
+
+def test_only_authentik_admin_can_read_or_apply(api):
+    request, state, identity, calls = api
+    assert request("GET", "/api/modules", headers={"Cookie": ""})[0] == 401
+    identity["username"] = "teacher"
+    assert request("GET", "/api/modules")[0] == 401
+    assert request("POST", "/api/modules", {"enabled": [], "revision": state["revision"]})[0] == 401
+    assert calls == []
+    identity["username"] = "akadmin"
+    status, result = request("GET", "/api/modules")
+    assert status == 200
+    assert result["configured"] is False
+
+
+@pytest.mark.parametrize("headers", [{"X-Commons-Modules": ""}, {"Origin": "https://untrusted.example"},
+                                    {"Sec-Fetch-Site": "cross-site"}, {"Content-Type": "text/plain"}])
+def test_cross_origin_and_form_requests_are_rejected(api, headers):
+    request, state, identity, calls = api
+    assert request("POST", "/api/modules", {"enabled": ["play"], "revision": state["revision"]}, headers)[0] == 403
+    assert calls == []
+
+
+def test_apply_runs_only_fixed_host_command_and_returns_trackable_job(api):
+    request, state, identity, calls = api
+    status, result = request("POST", "/api/modules", {"enabled": ["play"], "revision": state["revision"]})
+    assert status == 202
+    assert admin.JOB_UNIT_RE.fullmatch(result["unit"])
+    command = calls[0]
+    assert command[:2] == ("systemd-run", "--user")
+    assert "/opt/synthetic-commons/scripts/manage-modules.py" in command
+    assert "--enabled" in command and "play" in command
+    assert not any("shell" in item for item in command)
+    assert request("POST", "/api/modules", {"enabled": ["play; arbitrary"], "revision": state["revision"]})[0] == 400
+
+
+def test_stale_selection_and_unprepared_quiosc_are_rejected(api):
+    request, state, identity, calls = api
+    assert request("POST", "/api/modules", {"enabled": [], "revision": "0" * 64})[0] == 409
+    assert request("POST", "/api/modules", {"enabled": ["quiosc"], "revision": state["revision"]})[0] == 409
+    assert calls == []
+
+
+def test_completed_module_job_remains_queryable_after_admin_restart(monkeypatch):
+    monkeypatch.setattr(admin, "systemctl_show", lambda *args: {"ActiveState": "active", "SubState": "exited", "Result": "success"})
+    monkeypatch.setattr(admin, "run_script", lambda *args, **kwargs: (True, "modules: success"))
+    result = admin.job_status("edutictac-commons-modules-20261017120000-01234567")
+    assert result["running"] is False
+    assert result["result"] == "success"

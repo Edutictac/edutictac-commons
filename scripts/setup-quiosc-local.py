@@ -156,6 +156,10 @@ Categories=Education;
                        cwd=project, check=True)
     else:
         print('Cal recrear id-api i portal amb les imatges actualitzades abans d’obrir Quiosc')
+    module_manager = project / 'scripts/manage-modules.py'
+    if module_manager.is_file():
+        subprocess.run([__import__('sys').executable, str(module_manager), 'status', '--write'],
+                       cwd=project, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
 
 
 if __name__ == '__main__':

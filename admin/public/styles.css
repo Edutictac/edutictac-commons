@@ -32,6 +32,12 @@
   box-sizing: border-box;
 }
 
+.module-choice { display: flex; align-items: flex-start; gap: 12px; margin: 12px 0; }
+.module-choice input { width: auto; flex: 0 0 auto; margin-top: 4px; }
+.module-choice small { display: block; color: var(--muted); margin-top: 4px; }
+#modulesWizard { width: min(640px, calc(100vw - 32px)); max-height: 90vh; overflow: auto; padding: 24px; border: 1px solid var(--border); border-radius: 12px; background: var(--panel); color: var(--text); }
+#modulesWizard::backdrop { background: rgb(0 0 0 / 45%); }
+
 body {
   margin: 0;
   padding: 0 16px 32px;

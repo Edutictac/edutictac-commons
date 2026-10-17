@@ -37,6 +37,32 @@
         </div>
       </section>
 
+      <section id="modulesPanel" class="panel" aria-labelledby="modulesTitle">
+        <div class="panel-heading">
+          <p class="eyebrow" data-i18n="modules.label">Mòduls</p>
+          <h2 id="modulesTitle" data-i18n="modules.title">Ferramentes del centre</h2>
+        </div>
+        <div id="modulesFormHome">
+          <form id="modulesForm">
+            <p data-i18n="modules.core">El portal, la identitat, Administració i Authentik es mantenen actius per conservar l'accés.</p>
+            <fieldset id="modulesChoices" disabled>
+              <legend data-i18n="modules.choose">Tria les ferramentes que vols utilitzar</legend>
+              <label class="module-choice"><input type="checkbox" name="module" value="play"><span><strong>EduTicTac Play</strong><small data-i18n="modules.play">Crear activitats H5P.</small></span></label>
+              <label class="module-choice"><input type="checkbox" name="module" value="eduhoot"><span><strong>EduHoot</strong><small data-i18n="modules.eduhoot">Qüestionaris i partides d'aula.</small></span></label>
+              <label class="module-choice"><input type="checkbox" name="module" value="recursos"><span><strong data-i18n="modules.resourcesName">Banc de recursos</strong><small data-i18n="modules.recursos">Explorar i guardar recursos docents.</small></span></label>
+              <label class="module-choice"><input type="checkbox" name="module" value="quiosc"><span><strong>EduTicTac Quiosc</strong><small data-i18n="modules.quiosc">Activitats supervisades amb Epoptes.</small></span></label>
+            </fieldset>
+            <p id="modulesQuioscHint" class="hint" data-i18n="modules.quioscPreparation">Quiosc requereix preparar Epoptes una vegada en el servidor.</p>
+            <p class="hint" data-i18n="modules.retention">Desactivar una ferramenta conserva les seues dades. Aplicar canvis pot interrompre l'accés uns instants.</p>
+            <p id="modulesNotice" role="status" aria-live="polite" data-i18n="modules.signIn">Entra com a administrador per gestionar les ferramentes.</p>
+            <div class="actions">
+              <button id="modulesApply" type="submit" disabled data-i18n="modules.apply">Aplicar selecció</button>
+              <button id="modulesLater" type="button" class="secondary" hidden data-i18n="modules.later">Configurar més tard</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
       <section class="panel" aria-labelledby="teacherTitle">
         <div class="panel-heading">
           <p class="eyebrow" data-i18n="teachers.label">Profesorado</p>
@@ -115,6 +141,16 @@
       </section>
     </main>
 
+    <dialog id="modulesWizard" aria-labelledby="modulesWizardTitle">
+      <div class="lang-switcher" role="group" aria-label="Idioma">
+        <button type="button" data-lang="ca">CA</button>
+        <button type="button" data-lang="va">VA</button>
+        <button type="button" data-lang="es">ES</button>
+        <button type="button" data-lang="en">EN</button>
+      </div>
+      <h2 id="modulesWizardTitle" data-i18n="modules.firstTitle">Prepara les ferramentes del centre</h2>
+      <div id="modulesWizardContent"></div>
+    </dialog>
     <script src="app.js"></script>
   </body>
 </html>

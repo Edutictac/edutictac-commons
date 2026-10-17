@@ -2,6 +2,7 @@
 set -eu
 
 cd "$(dirname "$0")/.."
+. ./scripts/operation-lock.sh
 
 if [ "$#" -ne 1 ]; then
   echo "Usa: scripts/rollback-images.sh backups/commons-YYYYmmddTHHMMSSZ"

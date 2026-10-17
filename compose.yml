@@ -10,6 +10,7 @@ services:
     environment:
       # Local Epoptes integration remains off until the server installer enables it.
       QUIOSC_MODE: ${QUIOSC_MODE:-disabled}
+      COMMONS_MODULE_PROFILES: ${COMPOSE_PROFILES:-play}
       QUIOSC_DISCOVERY: ${QUIOSC_DISCOVERY:-manual}
       QUIOSC_LOCAL_AUTH: ${QUIOSC_LOCAL_AUTH:-0}
       QUIOSC_SERVER_MACS: ${QUIOSC_SERVER_MACS:-}
@@ -73,6 +74,7 @@ services:
     image: ${IMAGE_REGISTRY:-edutictac}/commons-play:${IMAGE_TAG:-0.1.1-alpha}
     build:
       context: ./services/play
+    profiles: ["play"]
     environment:
       PORT: 8083
       PLAY_DATA_DIR: /app/data
@@ -179,6 +181,8 @@ services:
       XDG_RUNTIME_DIR: /run/user/${PUID:-1000}
       XDG_CONFIG_HOME: /hostcfg
       COMPOSE_PROFILES: ${COMPOSE_PROFILES:-}
+      MODULES_CONFIGURED: ${MODULES_CONFIGURED:-1}
+      QUIOSC_MODE: ${QUIOSC_MODE:-disabled}
       IMAGE_REGISTRY: ${IMAGE_REGISTRY:-edutictac}
       IMAGE_TAG: ${IMAGE_TAG:-0.1.1-alpha}
       EDUHOOT_TAG: ${EDUHOOT_TAG:-1.0.2}

@@ -1,5 +1,6 @@
 """Routes reuse Commons teacher identity and group membership authorization."""
 import sqlite3
+from contextlib import nullcontext
 from urllib.parse import parse_qs
 from urllib.parse import urlsplit
 
@@ -24,7 +25,7 @@ class StopIn(BaseModel):
     device_id: str | None = Field(default=None, max_length=64)
 
 
-def install(app, require_teacher, require_group_access, service=None, local_auth=None):
+def install(app, require_teacher, require_group_access, service=None, local_auth=None, start_guard=None):
     service = service or Quiosc()
     router = APIRouter(prefix='/api/quiosc', tags=['Quiosc'])
 
@@ -147,7 +148,8 @@ def install(app, require_teacher, require_group_access, service=None, local_auth
         mutate(request)
         room = room_access(request, payload.room_id)
         actor = require_teacher(request)
-        return guarded(lambda: service.start(room, payload.devices, payload.url, payload.seconds, actor))
+        with start_guard() if start_guard else nullcontext():
+            return guarded(lambda: service.start(room, payload.devices, payload.url, payload.seconds, actor))
 
     @router.get('/sessions/{sid}')
     def status(sid: str, request: Request):

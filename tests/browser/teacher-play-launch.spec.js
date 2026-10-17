@@ -83,3 +83,25 @@ test('el panel del alumnado oculta las actividades completadas hasta mostrar el 
   await page.getByRole('button', { name: /Mostrar historial|Mostrar historial|Show history/ }).click();
   await expect(page.getByText('Ya realizada')).toBeVisible();
 });
+
+
+test('desactivar Play conserva las asignaciones y resultados sin ofrecer su lanzamiento', async ({ page }) => {
+  const identity = { id: 'test-student', public_code: 'TEST01', avatar_icon: '🚀' };
+  await page.route('**/api/**', (route) => {
+    const path = new URL(route.request().url()).pathname;
+    if (path === '/api/modules/status') return route.fulfill({ json: { enabled: [] } });
+    if (path === '/api/auth/me') return route.fulfill({ json: { identity } });
+    if (path === '/api/student/dashboard') return route.fulfill({ json: { identity, assignments: [
+      { id: 'pending-disabled', app_id: 'edutictac-play', activity_id: 'Pending1', title: 'Actividad conservada', completed: false },
+      { id: 'done-disabled', app_id: 'edutictac-play', activity_id: 'Done0001', title: 'Resultado conservado', completed: true, best_score: 87 },
+    ] } });
+    return route.fulfill({ status: 401, json: {} });
+  });
+  await page.goto('/student.html');
+  await expect(page.getByText('Actividad conservada')).toBeVisible();
+  await expect(page.locator('[data-launch-play-assignment]')).toHaveCount(0);
+  await page.getByRole('button', { name: /Mostrar historial|Show history/ }).click();
+  await expect(page.getByText('Resultado conservado')).toBeVisible();
+  await expect(page.locator('#studentOutput')).toContainText('87');
+  await expect(page.locator('[data-launch-play-assignment]')).toHaveCount(0);
+});

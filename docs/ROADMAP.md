@@ -25,6 +25,13 @@ Cada canvi funcional ha de deixar:
   equivalent);
 - cap secret, dada real o artefacte local en el repositori.
 
+## Actualització 2026-10-17: selector de ferramentes
+
+Implementat en desenvolupament: assistent inicial i gestió posterior de Play,
+EduHoot, Recursos i Quiosc des d'Administració, amb conservació de dades i
+recuperació davant fallades. Pendent de publicar com a imatges alpha26 i
+paquet alpha29. Detall: [mòduls](modules.md).
+
 ## Estat actual
 
 La versió `0.1.0-alpha` ja conté:

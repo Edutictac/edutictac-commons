@@ -35,6 +35,7 @@ const state = {
   showStudentHistory: false,
   resources: [],
   basket: [],
+  enabledModules: null,
 };
 
 const $ = (id) => document.getElementById(id);
@@ -99,6 +100,7 @@ function ensureFirstRunDialog() {
           <p><strong data-i18n="setup.username">Usuario:</strong> <code id="firstRunSetupUser"></code><br><strong data-i18n="setup.password">Contraseña:</strong> <code id="firstRunSetupPassword"></code></p>
           <p data-i18n="setup.changePasswordHint">Guárdalas temporalmente, entra en el panel de acceso y cambia la contraseña inmediatamente.</p>
           <p><a id="firstRunSetupLink" href="#" target="_blank" rel="noopener" data-i18n="setup.openAuthentik">Abrir panel de acceso</a></p>
+          <p><a href="/admin/" data-i18n="setup.chooseModules">Continuar: elegir las herramientas del centro</a></p>
         </div>
         <div class="actions">
           <button id="firstRunSetupSubmit" type="submit" data-i18n="setup.activate">Activar instalación</button>
@@ -176,6 +178,22 @@ function setApplicationLinks() {
   });
   const teacherResourcesLink = $("teacherResourcesLink");
   if (teacherResourcesLink) teacherResourcesLink.href = links.resourcesHomeLink;
+}
+
+async function loadEnabledModules() {
+  try {
+    const data = await api("/api/modules/status", { method: "GET" });
+    if (!Array.isArray(data.enabled)) return;
+    state.enabledModules = new Set(data.enabled);
+    document.querySelectorAll("[data-module]").forEach((node) => {
+      node.hidden = !state.enabledModules.has(node.dataset.module);
+    });
+    if (state.student && has("studentOutput")) {
+      setOutput($("studentOutput"), `${studentProfileCard()}${studentDashboard(state.studentAssignments)}`);
+    }
+  } catch {
+    // Older API images and source-only development retain the existing links.
+  }
 }
 
 function saveState() {
@@ -738,7 +756,10 @@ function studentDashboard(assignments) {
     best_score: assignment.best_score ?? "",
     last_score_at: assignment.last_score_at || "",
     action:
-      assignment.app_id === EDUHOOT_APP
+      state.enabledModules && !state.enabledModules.has({ eduhoot: "eduhoot", resource: "recursos", play: "play", "edutictac-play": "play" }[assignment.app_id] || assignment.app_id)
+        && [EDUHOOT_APP, "resource", "play", PLAY_APP].includes(assignment.app_id)
+        ? `<small>${t("student.moduleDisabled")}</small>`
+        : assignment.app_id === EDUHOOT_APP
         ? `<button class="compact secondary" type="button" data-launch-eduhoot-assignment="${escapeHtml(assignment.id)}">${t("student.openEduhoot")}</button>`
         : [PLAY_APP, "play"].includes(String(assignment.app_id || "").toLowerCase())
           ? `<button class="compact secondary" type="button" data-launch-play-assignment="${escapeHtml(assignment.id)}">${t("student.openPlay")}</button>`
@@ -1531,6 +1552,7 @@ window.addEventListener("edutictac:langchange", () => {
 restoreState();
 setAuthentikLinks();
 setApplicationLinks();
+loadEnabledModules();
 if (has("teacherOidcLogin")) {
   setTeacherSession(false);
 }

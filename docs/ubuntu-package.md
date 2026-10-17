@@ -13,10 +13,11 @@ Desde el repositorio:
 ./packaging/build-deb.sh
 ```
 
-El artefacto aparece en `dist/`. La versión de Debian actual es
-`0.1.1~alpha28`. En instalaciones nuevas utiliza las imágenes Commons
-`0.1.1-alpha25`, con itinerarios estabilizados y Quiosc opcional. Incluye los
-scripts de preparación local de Epoptes; Quiosc sigue desactivado por defecto.
+El artefacto aparece en `dist/`. La siguiente versión en desarrollo es
+`0.1.1~alpha29`, preparada para las imágenes `0.1.1-alpha26` y el selector de
+módulos. **Todavía no está publicada**: antes de distribuir el paquete hay que
+publicar esas imágenes y comprobar su descarga. La última versión publicada
+es `0.1.1~alpha28`, con imágenes alpha25 y sin selector.
 
 ## Instalar desde el repositorio APT
 
@@ -49,7 +50,7 @@ documentadas en [`edutictac-packages`](https://git.edutictac.es/Edutictac/edutic
 ## Instalar un paquete local
 
 ```bash
-sudo apt install ./dist/edutictac-commons_0.1.1~alpha28_amd64.deb
+sudo apt install ./dist/edutictac-commons_0.1.1~alpha29_amd64.deb
 ```
 
 El paquete declara Docker Engine, Docker Compose v2, Avahi/mDNS, `curl`, `jq`,
@@ -59,25 +60,29 @@ Python, certificados y OpenSSL como dependencias. Durante la instalación:
 - configura el registro `registry.edutictac.es/edutictac` y el tag de la
   versión;
 - publica el nombre local `edutictac.local` mediante mDNS/Avahi;
-- activa los perfiles de Authentik, EduHoot y Recursos, y genera sus secretos;
+- activa el núcleo con Authentik y genera los secretos de los módulos;
 - conserva la configuración en modo privado (`0600`);
 - habilita `edutictac-commons.service`;
 - arranca el stack y descarga automáticamente las imágenes publicadas;
 - muestra en la terminal un código de activación de un solo uso en una
   instalación nueva; no se vuelve a mostrar durante las actualizaciones.
 
-El servicio usa la configuración de `/opt/edutictac-commons/.env`. Los tres
-módulos se activan automáticamente. Para reiniciar el stack tras cambiar la
-configuración, ejecuta:
+El servicio usa la configuración de `/opt/edutictac-commons/.env`.
+En una instalación nueva, después de activar el portal e iniciar sesión como
+administrador, `/admin/` muestra el selector de **Play, EduHoot, Recursos y
+Quiosc**. Se puede posponer y volver a **Herramientas del centro** más tarde.
+Portal, identidad, Administración y Authentik permanecen activos.
 
-```bash
-sudo systemctl restart edutictac-commons.service
-```
+Desde la misma sección se pueden activar y desactivar módulos posteriormente.
+Se crea y comprueba una copia previa; desactivar conserva los datos. El portal
+oculta los accesos de los módulos desactivados y conserva las asignaciones y
+resultados. El cambio puede interrumpir el acceso brevemente. Si falla el
+arranque, se intenta recuperar la configuración anterior y se muestra el error.
 
-Esta versión todavía no ofrece un selector de módulos en el asistente ni
-botones para activarlos o desactivarlos desde Administración. EduHoot y
-Recursos se gestionan técnicamente mediante `COMPOSE_PROFILES`; Play forma
-parte del stack habitual y Authentik proporciona el acceso docente.
+Las actualizaciones conservan los módulos y tags existentes. La primera
+migración incorpora el perfil `play` para mantener el Play que antes arrancaba
+siempre. Para usar el selector hay que actualizar tanto el paquete como las
+imágenes de API, portal y Administración. Véase [operación de módulos](modules.md).
 
 Quiosc requiere Epoptes ya instalado y una preparación administrativa única
 en el servidor LliureX. La instalación de Commons no lo activa ni instala
@@ -86,14 +91,14 @@ componentes en los equipos del alumnado. Véase
 
 Una actualización del `.deb` incorpora los scripts nuevos y conserva los
 tags configurados de las imágenes en instalaciones existentes. Para pasar una
-instalación existente a alpha25 hace falta actualizar también sus imágenes;
+instalación existente a alpha26 hace falta actualizar también sus imágenes;
 instalar este paquete no garantiza por sí solo que ejecute la nueva API.
 
 La entrada principal queda disponible en `http://edutictac.local/` (o con la
 IP del equipo si el cliente no soporta mDNS). En la primera visita aparece un
 asistente: introduce el código que mostró el instalador y el navegador muestra
-una sola vez las credenciales iniciales de Authentik. El asistente enlaza con
-`http://edutictac.local:9000/` para que el administrador cambie la contraseña.
+una sola vez las credenciales iniciales de Authentik. El asistente enlaza con Authentik para cambiar la contraseña y con
+`/admin/` para elegir las herramientas del centro.
 El código queda invalidado al canjearlo y la contraseña no se guarda en el
 portal.
 
@@ -103,7 +108,7 @@ En una instalación nueva, el worker de Authentik aplica además el blueprint
 secreto y URL de retorno generados por el instalador. El API de identidad usa
 el descubrimiento interno de Docker y el emisor público `edutictac.local`.
 
-EduHoot queda disponible en `http://edutictac.local:8090/` y Recursos en
+Cuando están activados, EduHoot queda disponible en `http://edutictac.local:8090/` y Recursos en
 `http://edutictac.local:8086/`.
 
 ## Comprobación

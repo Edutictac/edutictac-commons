@@ -41,6 +41,28 @@ Botons de la secció "Accés":
 - **Actualitzar** — torna a consultar l'estat sense recarregar la pàgina
   (útil per a vore si un backup o una actualització ja ha acabat).
 
+## Ferramentes del centre (pròxima versió)
+
+Disponible amb el paquet alpha29 i les imatges alpha26, encara pendents de
+publicació. En una instal·lació nova, després d'activar el portal i entrar
+com a administrador, s'obri un assistent per triar **Play, EduHoot, Recursos i
+Quiosc**. Pots deixar-ho per a més tard.
+
+Per canviar la selecció després, obri **Ferramentes del centre**, marca o
+desmarca les opcions i prem **Aplicar selecció**. El panell mostra el progrés
+i recupera el seguiment si recarregues la pàgina. Espera que acabe abans de
+fer una altra operació de manteniment.
+
+El portal, la identitat, Administració i Authentik es mantenen actius. Quan
+desactives una ferramenta, es conserven les seues dades, assignacions i
+resultats; els accessos deixen de mostrar-se fins que la tornes a activar.
+Abans d'aplicar el canvi es comprova una còpia de seguretat. El servei pot
+interrompre's breument; si falla, s'intenta recuperar la selecció anterior.
+
+Quiosc només es pot activar després de la [preparació d'Epoptes](quiosc-local.md)
+en el servidor. Si hi ha equips amb sessions pendents de restaurar, primer
+cal resoldre-les. Una actualització conserva les ferramentes que ja utilitzes.
+
 ## 2. Llegir l'"Estat operatiu del stack"
 
 Esta secció es carrega sola en entrar i es refresca després de cada acció.

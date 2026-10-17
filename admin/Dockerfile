@@ -25,6 +25,7 @@ RUN printf '#!/bin/sh\nexit 101\n' > /usr/sbin/policy-rc.d \
 
 COPY admin/server.py .
 COPY admin/content_sync.py .
+COPY admin/modules.py .
 COPY admin/public ./public
 COPY scripts ./scripts
 COPY systemd ./systemd

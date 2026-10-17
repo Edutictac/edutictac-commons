@@ -8,8 +8,96 @@ const restoreBackupSelect = document.getElementById("restoreBackupSelect");
 const rollbackBackupSelect = document.getElementById("rollbackBackupSelect");
 
 const t = window.i18nAdmin.t;
+const modulesForm = document.getElementById("modulesForm");
+let moduleState = null;
+let moduleWizardDismissed = false;
+let moduleJobUnit = sessionStorage.getItem("commons-modules-job");
+if (moduleJobUnit && !/^edutictac-commons-modules-\d{14}-[a-f0-9]{8}$/.test(moduleJobUnit)) {
+  sessionStorage.removeItem("commons-modules-job");
+  moduleJobUnit = null;
+}
+
+function closeModuleWizard() {
+  const dialog = document.getElementById("modulesWizard");
+  if (dialog.open) dialog.close();
+  document.getElementById("modulesFormHome").appendChild(modulesForm);
+  document.getElementById("modulesLater").hidden = true;
+  moduleWizardDismissed = true;
+}
+
+document.getElementById("modulesLater").addEventListener("click", closeModuleWizard);
+document.getElementById("modulesWizard").addEventListener("cancel", (event) => {
+  event.preventDefault();
+  closeModuleWizard();
+});
+
+async function loadModules() {
+  const notice = document.getElementById("modulesNotice");
+  const choices = document.getElementById("modulesChoices");
+  const apply = document.getElementById("modulesApply");
+  try {
+    const response = await apiFetch("/api/modules");
+    if (!response.ok) throw new Error("unavailable");
+    const state = await response.json();
+    if (!moduleState || state.revision !== moduleState.revision || state.phase === "failed") {
+      modulesForm.querySelectorAll('[name="module"]').forEach((input) => {
+        input.checked = state.enabled.includes(input.value);
+      });
+    }
+    moduleState = state;
+    if (moduleJobUnit && jobPollTimer === null) {
+      jobPollTimer = setTimeout(() => pollJob(moduleJobUnit, Date.now()), JOB_POLL_INTERVAL_MS);
+    }
+    const busy = Boolean(moduleJobUnit) || state.phase === "applying";
+    choices.disabled = !state.manageable || busy;
+    apply.disabled = !state.manageable || busy;
+    const quiosc = modulesForm.querySelector('[value="quiosc"]');
+    quiosc.disabled = !state.available.quiosc && !quiosc.checked;
+    document.getElementById("modulesQuioscHint").hidden = state.available.quiosc;
+    setOutput(notice, t(!state.manageable ? "modules.updateInstaller" : busy ? "modules.applying" :
+      state.error ? "modules.failed" : state.configured ? "modules.ready" : "modules.firstHint"), Boolean(state.error));
+    if (state.manageable && !state.configured && !busy && !moduleWizardDismissed) {
+      document.getElementById("modulesWizardContent").appendChild(modulesForm);
+      document.getElementById("modulesLater").hidden = false;
+      const dialog = document.getElementById("modulesWizard");
+      if (!dialog.open) dialog.showModal();
+    }
+  } catch {
+    choices.disabled = true;
+    apply.disabled = true;
+    setOutput(notice, t("modules.unavailable"), true);
+  }
+}
+
+modulesForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  if (!moduleState || moduleJobUnit) return;
+  const enabled = [...modulesForm.querySelectorAll('[name="module"]:checked')].map((input) => input.value);
+  document.getElementById("modulesChoices").disabled = true;
+  document.getElementById("modulesApply").disabled = true;
+  try {
+    const response = await apiFetch("/api/modules", {
+      method: "POST", headers: { "Content-Type": "application/json", "X-Commons-Modules": "1" },
+      body: JSON.stringify({ enabled, revision: moduleState.revision }),
+    });
+    const result = await response.json();
+    if (!response.ok || !result.ok || !result.unit) throw new Error(result.output || "operation_failed");
+    moduleJobUnit = result.unit;
+    sessionStorage.setItem("commons-modules-job", result.unit);
+    closeModuleWizard();
+    setOutput(document.getElementById("modulesNotice"), t("modules.applying"), false);
+    setOutput(actionOutput, t("modules.applying"), false);
+    jobPollTimer = setTimeout(() => pollJob(result.unit, Date.now()), JOB_POLL_INTERVAL_MS);
+  } catch (error) {
+    await loadModules();
+    const key = ["configuration_changed", "operation_busy", "quiosc_not_prepared", "host_runner_unavailable"].includes(error.message)
+      ? `modules.error.${error.message}` : "modules.failed";
+    setOutput(document.getElementById("modulesNotice"), t(key), true);
+  }
+});
 
 function setOutput(el, text, isError) {
+  el.removeAttribute("data-i18n");
   el.textContent = text;
   el.classList.remove("empty", "error");
   if (isError) {
@@ -191,6 +279,7 @@ async function loadStatus() {
     populateBackupSelect(data.backups || []);
     populateRollbackSelect(data.backups || []);
     setOutput(statusOutput, renderStatus(data), false);
+    await loadModules();
   } catch (err) {
     setOutput(statusOutput, `${t("common.errorLabel")} ${err.message}`, true);
   }
@@ -252,6 +341,7 @@ function stopJobPoll() {
 }
 
 async function pollJob(unit, startedAt) {
+  jobPollTimer = null;
   stopJobPoll();
   let data;
   try {
@@ -289,6 +379,10 @@ async function pollJob(unit, startedAt) {
   }
 
   const success = data.result === "success";
+  if (moduleJobUnit === unit) {
+    moduleJobUnit = null;
+    sessionStorage.removeItem("commons-modules-job");
+  }
   setOutput(actionOutput, `${log}\n\n${success ? t("job.success") : t("job.failed")}`, !success);
   await loadStatus();
 }
@@ -322,6 +416,10 @@ document.getElementById("logoutBtn").addEventListener("click", () => {
     apiStatus.textContent = t("status.disconnected");
     setOutput(statusOutput, t("status.signInToView"), false);
     statusOutput.classList.add("empty");
+    closeModuleWizard();
+    moduleState = null;
+    document.getElementById("modulesChoices").disabled = true;
+    document.getElementById("modulesApply").disabled = true;
   });
 });
 
@@ -397,4 +495,7 @@ setOutput(statusOutput, t("status.signInToView"), false);
 statusOutput.classList.add("empty");
 setOutput(actionOutput, t("common.actionPlaceholder"), false);
 actionOutput.classList.add("empty");
+window.addEventListener("edutictac:langchange", () => {
+  if (moduleState) loadModules();
+});
 loadStatus();

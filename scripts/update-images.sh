@@ -2,6 +2,7 @@
 set -eu
 
 cd "$(dirname "$0")/.."
+. ./scripts/operation-lock.sh
 
 env_file=".env"
 if [ ! -f "$env_file" ]; then

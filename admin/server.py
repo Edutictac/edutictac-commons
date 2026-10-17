@@ -23,6 +23,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 from content_sync import sync_channel
+from modules import load_public_state, selection as module_selection, snapshot as module_snapshot
 
 APP_DIR = Path(__file__).resolve().parent
 PUBLIC_DIR = APP_DIR / "public"
@@ -57,7 +58,42 @@ SERVICE_UNIT = "edutictac-commons-backup.service"
 
 SCRIPT_TIMEOUT = 120
 BACKUP_NAME_RE = re.compile(r"^commons-\d{8}T\d{6}Z$")
-JOB_UNIT_RE = re.compile(r"^edutictac-commons-(update|restore|rollback)-\d{14}$")
+JOB_UNIT_RE = re.compile(r"^edutictac-commons-(?:(update|restore|rollback)-\d{14}|modules-\d{14}-[a-f0-9]{8})$")
+
+
+def get_modules():
+    fallback = module_snapshot({"COMPOSE_PROFILES": COMPOSE_PROFILES,
+                                "QUIOSC_MODE": os.environ.get("QUIOSC_MODE", "disabled"),
+                                "MODULES_CONFIGURED": os.environ.get("MODULES_CONFIGURED", "1")})
+    state = load_public_state(APP_DIR / "data" / "modules.json", fallback)
+    # A missing host-side state file means the installation needs the matching
+    # installer/scripts before it can apply module selections.
+    state["manageable"] = (APP_DIR / "data" / "modules.json").is_file()
+    return state
+
+
+def action_modules(payload):
+    try:
+        enabled, expected = module_selection(payload)
+    except ValueError as error:
+        return False, str(error), 400
+    state = get_modules()
+    if not state["manageable"]:
+        return False, "installer_update_required", 409
+    if state.get("phase") == "applying":
+        return False, "operation_busy", 409
+    if expected != state["revision"]:
+        return False, "configuration_changed", 409
+    if "quiosc" in enabled and not state["available"].get("quiosc"):
+        return False, "quiosc_not_prepared", 409
+    repo = os.environ.get("REPO_DIR", str(APP_DIR))
+    unit = "edutictac-commons-modules-" + datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S") + "-" + secrets.token_hex(4)
+    ok, _ = run_script("systemd-run", "--user", "--service-type=oneshot",
+                       "--property=RemainAfterExit=yes", f"--unit={unit}",
+                       f"--property=WorkingDirectory={repo}", "/usr/bin/python3",
+                       str(Path(repo) / "scripts/manage-modules.py"), "apply",
+                       "--enabled", ",".join(enabled), "--revision", expected)
+    return ok, "modules_started" if ok else "host_runner_unavailable", 202 if ok else 503, {"unit": unit} if ok else {}
 
 
 def read_stack_version():
@@ -212,6 +248,8 @@ def job_status(unit_name):
     state = systemctl_show(unit_name, ["ActiveState", "SubState", "Result"])
     active_state = state.get("ActiveState", "")
     running = active_state in {"activating", "active", "reloading", "deactivating"}
+    if unit_name.startswith("edutictac-commons-modules-") and state.get("SubState") == "exited":
+        running = False
     _, log = run_script(
         "journalctl", "--user", "-u", unit_name, "--no-pager", "-o", "cat",
         timeout=10,
@@ -290,6 +328,7 @@ def create_teacher(payload):
 
 
 ACTIONS = {
+    "/api/modules": action_modules,
     "/api/backup-timer/install": lambda payload: run_script(str(APP_DIR / "scripts" / "install-backup-timer.sh")),
     "/api/backup-timer/uninstall": lambda payload: run_script(str(APP_DIR / "scripts" / "uninstall-backup-timer.sh")),
 }
@@ -490,6 +529,7 @@ class Handler(BaseHTTPRequestHandler):
         body = json.dumps(payload).encode("utf-8")
         self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Cache-Control", "no-store")
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body)
@@ -538,6 +578,9 @@ class Handler(BaseHTTPRequestHandler):
             if parsed.path == "/api/status":
                 self._send_json(200, build_status())
                 return
+            if parsed.path == "/api/modules":
+                self._send_json(200, get_modules())
+                return
             if parsed.path == "/api/updates":
                 ok, payload = get_update_status()
                 self._send_json(200 if ok else 500, payload)
@@ -560,6 +603,15 @@ class Handler(BaseHTTPRequestHandler):
         if not self._is_authorized():
             self._send_json(401, {"error": "no autoritzat"})
             return
+        if self.path == "/api/modules":
+            origin = self.headers.get("Origin")
+            host = self.headers.get("Host", "")
+            invalid_origin = origin is not None and urllib.parse.urlsplit(origin).netloc.lower() != host.lower()
+            if (self.headers.get("X-Commons-Modules") != "1" or invalid_origin
+                    or self.headers.get("Sec-Fetch-Site") == "cross-site"
+                    or self.headers.get("Content-Type", "").split(";", 1)[0].strip() != "application/json"):
+                self._send_json(403, {"ok": False, "output": "request_not_allowed"})
+                return
         if self.path == "/api/teachers":
             try:
                 teacher = create_teacher(self._read_json_body())

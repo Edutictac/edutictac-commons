@@ -28,23 +28,26 @@ target_gid="${SUDO_GID:-$target_uid}"
 case "$target_uid" in *[!0-9]*|'') target_uid=1000 ;; esac
 case "$target_gid" in *[!0-9]*|'') target_gid="$target_uid" ;; esac
 
-setup_token_notice="$(python3 - "$ENV_FILE" "$target_uid" "$target_gid" <<'PY'
+setup_token_notice="$(python3 - "$ENV_FILE" "$target_uid" "$target_gid" "$had_existing_env" <<'PY'
 import secrets
 import sys
 from pathlib import Path
 
 path = Path(sys.argv[1])
 uid, gid = sys.argv[2:4]
+existing = len(sys.argv) > 4 and sys.argv[4] == "1"
 text = path.read_text(encoding="utf-8")
+previous_module_selection = any(line.startswith("MODULES_CONFIGURED=") for line in text.splitlines())
 values = {
     "REPO_DIR": "/opt/edutictac-commons",
     "IMAGE_REGISTRY": "registry.edutictac.es/edutictac",
-    "IMAGE_TAG": "0.1.1-alpha25",
-    "ADMIN_TAG": "0.1.1-alpha25",
+    "IMAGE_TAG": "0.1.1-alpha26",
+    "ADMIN_TAG": "0.1.1-alpha26",
     "EDUHOOT_TAG": "1.0.5",
     "EDUHOOT_RESOURCES_TOKEN": secrets.token_urlsafe(48),
     "PORTAL_PORT": "80",
-    "COMPOSE_PROFILES": "authentik,eduhoot,recursos",
+    "COMPOSE_PROFILES": "authentik",
+    "MODULES_CONFIGURED": "1" if existing else "0",
     "RECURSOS_TAG": "0.1.1-alpha12",
     "EDUTICTAC_MDNS_NAME": "edutictac",
     "CONTENT_CATALOG_BASE_URL": "https://contenido.edutictac.es/releases/latest",
@@ -73,7 +76,8 @@ replace_if = {
     "EDUTICTAC_ID_SECRET": {"change-this-local-secret", ""},
     "EDUTICTAC_ID_TEACHER_TOKEN": {"dev-teacher", ""},
     "EDUTICTAC_ID_APP_TOKEN": {"dev-app-token", ""},
-    "COMPOSE_PROFILES": {"", "authentik", "eduhoot", "recursos"},
+    "COMPOSE_PROFILES": {"", "play"} if not existing else set(),
+    "MODULES_CONFIGURED": {""},
     "RECURSOS_TAG": {"", "local", "0.1.1-alpha10"},
     "ADMIN_TAG": {"", "0.1.1-alpha10", "0.1.1-alpha11", "0.1.1-alpha12", "0.1.1-alpha13"},
     "EDUHOOT_TAG": {"", "1.0.2", "1.0.3", "1.0.4"},
@@ -114,6 +118,13 @@ for key, value in values.items():
         lines.append(f"{key}={value}")
         if key == "EDUTICTAC_SETUP_TOKEN":
             new_setup_token = value
+if existing and not previous_module_selection:
+    # Before the selector Play had no profile and was always running. Preserve
+    # that behaviour on upgrade; only fresh installations begin with the core.
+    for index, line in enumerate(lines):
+        if line.startswith("COMPOSE_PROFILES="):
+            profiles = set(filter(None, line.split("=", 1)[1].split(",")))
+            lines[index] = "COMPOSE_PROFILES=" + ",".join(sorted(profiles | {"play", "authentik"}))
 path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 if new_setup_token:
     print(new_setup_token)
@@ -272,6 +283,10 @@ mkdir -p "$APP_DIR/data" "$APP_DIR/data/play" "$APP_DIR/data/recursos-api" \
 chown -R root:root "$APP_DIR"
 chown -R "$target_uid:$target_gid" "$APP_DIR/data"
 chown "$target_uid:$target_gid" "$APP_DIR/backups" "$APP_DIR/dist"
+# Host-side maintenance jobs run as this user and replace .env atomically.
+# Keep program files root-owned while allowing configuration replacement.
+chown "$target_uid:$target_gid" "$APP_DIR" "$ENV_FILE"
+python3 "$APP_DIR/scripts/manage-modules.py" status --write >/dev/null
 chmod 700 "$APP_DIR/data" "$APP_DIR/backups"
 
 step "Comprovant Docker Compose..."

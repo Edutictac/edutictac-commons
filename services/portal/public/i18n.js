@@ -10,6 +10,8 @@
 
   var translations = {
     es: {
+      "student.moduleDisabled": "Herramienta desactivada por el centro",
+      "setup.chooseModules": "Continuar: elegir las herramientas del centro",
       "teacher.itinerary.loading": "Cargando itinerarios…",
       "teacher.itinerary.select": "Usar con el alumnado",
       "teacher.itinerary.selectLabel": "Usar con el alumnado: {title}",
@@ -324,6 +326,8 @@
       "setup.oidcStep3": "Si la instalación es antigua, reinicia Commons después de completar la configuración.",
     },
     ca: {
+      "student.moduleDisabled": "Eina desactivada pel centre",
+      "setup.chooseModules": "Continuar: triar les eines del centre",
       "teacher.itinerary.loading": "Carregant itineraris…",
       "teacher.itinerary.select": "Fer servir amb l’alumnat",
       "teacher.itinerary.selectLabel": "Fer servir amb l’alumnat: {title}",
@@ -638,6 +642,8 @@
       "setup.oidcStep3": "Si la instal·lació és antiga, reinicia Commons després de completar la configuració.",
     },
     va: {
+      "student.moduleDisabled": "Ferramenta desactivada pel centre",
+      "setup.chooseModules": "Continuar: triar les ferramentes del centre",
       "teacher.itinerary.loading": "Carregant itineraris…",
       "teacher.itinerary.select": "Usar amb l’alumnat",
       "teacher.itinerary.selectLabel": "Usar amb l’alumnat: {title}",
@@ -790,6 +796,8 @@
       "setup.oidcStep3": "Si la instal·lació és antiga, reinicia Commons després de completar la configuració.",
     },
     en: {
+      "student.moduleDisabled": "Tool disabled by the school",
+      "setup.chooseModules": "Continue: choose the school’s tools",
       "teacher.itinerary.loading": "Loading itineraries…",
       "teacher.itinerary.select": "Use with students",
       "teacher.itinerary.selectLabel": "Use with students: {title}",

@@ -851,6 +851,11 @@ def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
+@app.get("/api/modules/status")
+def public_module_status() -> dict[str, Any]:
+    return public_modules()
+
+
 def setup_pending() -> bool:
     if not SETUP_TOKEN or not AUTHENTIK_BOOTSTRAP_PASSWORD:
         return False
@@ -2299,6 +2304,7 @@ def app_roster(app_id: str, payload: AppRosterIn, request: Request) -> dict[str,
 from quiosc.api import install as install_quiosc
 from quiosc.local_auth import COOKIE as QUIOSC_LOCAL_COOKIE, LOCAL_GROUP, LocalAuth
 from quiosc.service import Quiosc
+from module_guard import quiosc_start_guard, public_modules
 
 quiosc_service = Quiosc()
 quiosc_local_auth = LocalAuth(quiosc_service, SESSION_SECRET)
@@ -2329,4 +2335,4 @@ def require_quiosc_group_access(request: Request, group_id: str) -> str:
 
 
 install_quiosc(app, require_quiosc_teacher, require_quiosc_group_access,
-               service=quiosc_service, local_auth=quiosc_local_auth)
+               service=quiosc_service, local_auth=quiosc_local_auth, start_guard=quiosc_start_guard)
