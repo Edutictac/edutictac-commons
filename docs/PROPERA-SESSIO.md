@@ -1,5 +1,37 @@
 # Propera sessió de treball
 
+## Punt de represa v2 — 2026-10-17
+
+L'editor d'itineraris permet reordenar i llevar passos, seleccionar l'itinerari
+actiu del grup o deixar-lo sense selecció. El tauler d'alumnat mostra el títol
+seleccionat i ordena primer els seus passos; la resta d'assignacions i els seus
+resultats es conserven. Inclou permisos de grup, guardat atòmic, detecció de
+canvis simultanis i migració idempotent de bases existents. Implementació local
+en CA/VA/ES/EN; pendent de publicar en imatges i desplegar.
+
+Estabilització completada en desenvolupament: 89 proves Python correctes
+(2 Docker optatives omeses) i 54 de navegador correctes. S'han corregit les
+proves antigues, l'accés de col·laboradors revocats, l'afegit atòmic de passos,
+les respostes tardanes de grup i la recuperació després d'errors de connexió.
+CI ampliada al portal complet i a Python. No s'ha executat el `release-check`
+contra el stack actiu. Detall i reproducció:
+[`ESTABILITZACIO-V2.md`](ESTABILITZACIO-V2.md).
+
+Continuació recomanada de la v2:
+
+1. Validar el flux real de sessió OIDC compartida amb Recursos i la cistella;
+   la interfície de favorits i assignació al grup ja existeix.
+2. Completar l'assignació directa de la cistella a un itinerari escollit.
+
+Quiosc és una línia separada: automatització Epoptes publicada en Git fins al
+commit `889b36b`, pendent d'imatges i prova en aula LliureX. No confondre-la amb
+el tancament dels itineraris. Els canvis previs de `Makefile` i
+`admin/server.py` s'han preservat.
+
+## Històric — 2026-09-17
+
+El contingut següent conserva l'estat antic; no és la llista actual de treball.
+
 > Estat: Play té Modo Reto, importació d'activitats des del banc, catàleg
 > controlat i exportació H5P validada. Commons ja té permisos compartits de
 > grup i gestió visual de docents col·laboradors. La distribució local també

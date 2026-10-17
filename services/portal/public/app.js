@@ -27,8 +27,11 @@ const state = {
   assignment: null,
   assignments: [],
   itineraries: [],
+  itinerariesGroupId: null,
+  itinerariesReady: false,
   student: null,
   studentAssignments: [],
+  studentItinerary: null,
   showStudentHistory: false,
   resources: [],
   basket: [],
@@ -225,6 +228,7 @@ function setTeacherSession(active) {
       node.disabled = !active;
     }
   });
+  updateItineraryControls();
 }
 
 function setStudentSession(active) {
@@ -571,21 +575,62 @@ function renderItineraries(data) {
   state.itineraries = data.itineraries || [];
   if (!state.itineraries.length) {
     setEmpty(output, t("teacher.itinerariesEmptyList"));
+    updateItineraryControls();
     return;
   }
-  setOutput(output, `<div class="cards">${state.itineraries.map((itinerary) => `
+  const selected = state.itineraries.find((itinerary) => itinerary.is_selected);
+  setOutput(output, `<p class="hint">${t("teacher.itinerary.selectionHint")}</p>
+    ${selected ? `<button class="compact secondary" type="button" data-clear-group-itinerary>${t("teacher.itinerary.clearSelection")}</button>` : `<p>${t("teacher.itinerary.noSelection")}</p>`}
+    <div class="cards">${state.itineraries.map((itinerary) => `
     <article class="card">
       <strong>${escapeHtml(itinerary.title)}</strong>
+      ${itinerary.is_selected
+        ? `<small role="status">${t("teacher.itinerary.selected")}</small>`
+        : `<button class="compact secondary" type="button" data-select-group-itinerary="${escapeHtml(itinerary.id)}"
+            aria-label="${escapeHtml(t("teacher.itinerary.selectLabel", { title: itinerary.title }))}">${t("teacher.itinerary.select")}</button>`}
       <small>${t("teacher.itinerarySteps", { count: itinerary.items.length })}</small>
-      <ol>${itinerary.items.map((item) => `<li>${escapeHtml(state.assignments.find((a) => a.id === item.assignment_id)?.title || item.assignment_id)}</li>`).join("")}</ol>
+      <ol>${itinerary.items.map((item, index) => {
+        const title = state.assignments.find((a) => a.id === item.assignment_id)?.title || item.assignment_id;
+        return `<li>
+          <span>${escapeHtml(title)}</span>
+          <div class="actions">
+            ${["up", "down", "remove"].map((action) => `<button class="compact secondary" type="button"
+              data-edit-itinerary="${escapeHtml(itinerary.id)}" data-itinerary-assignment="${escapeHtml(item.assignment_id)}" data-itinerary-action="${action}"
+              aria-label="${escapeHtml(t(`teacher.itinerary.${action}Label`, { title }))}"
+              ${(action === "up" && index === 0) || (action === "down" && index === itinerary.items.length - 1) ? "disabled" : ""}
+            >${t(`teacher.itinerary.${action}`)}</button>`).join("")}
+          </div>
+        </li>`;
+      }).join("")}</ol>
+      <small>${t("teacher.itinerary.removeHint")}</small>
       ${state.assignment ? `<button class="compact secondary" type="button" data-add-itinerary-item="${escapeHtml(itinerary.id)}">${t("teacher.addSelectedActivity")}</button>` : `<small>${t("teacher.selectAssignmentHint")}</small>`}
     </article>`).join("")}</div>`);
+  updateItineraryControls();
 }
+
+let itineraryLoadSequence = 0;
 
 async function loadItineraries() {
   if (!state.teacher) throw new Error(t("teacher.errors.loginFirst"));
   if (!state.group) throw new Error(t("teacher.errors.selectGroupFirst"));
-  const data = await api(`/api/teacher/itineraries?group_id=${encodeURIComponent(state.group.id)}`, { method: "GET" });
+  const groupId = state.group.id;
+  const sequence = ++itineraryLoadSequence;
+  state.itinerariesReady = false;
+  if (state.itinerariesGroupId !== groupId) {
+    state.itineraries = [];
+    $("itinerariesOutput").textContent = t("teacher.itinerary.loading");
+  }
+  updateItineraryControls();
+  let data;
+  try {
+    data = await api(`/api/teacher/itineraries?group_id=${encodeURIComponent(groupId)}`, { method: "GET" });
+  } catch (error) {
+    if (!state.teacher || state.group?.id !== groupId || sequence !== itineraryLoadSequence) return;
+    throw error;
+  }
+  if (!state.teacher || state.group?.id !== groupId || sequence !== itineraryLoadSequence) return;
+  state.itinerariesGroupId = groupId;
+  state.itinerariesReady = true;
   renderItineraries(data);
 }
 
@@ -594,23 +639,92 @@ async function createItinerary() {
   if (!state.group) throw new Error(t("teacher.errors.selectGroupFirst"));
   const title = $("itineraryTitle").value.trim();
   if (!title) throw new Error(t("teacher.errors.enterItineraryTitle"));
-  await api("/api/teacher/itineraries", {
+  await saveItineraryChange("/api/teacher/itineraries", {
     method: "POST",
     body: JSON.stringify({ title, group_id: state.group.id }),
   });
-  $("itineraryTitle").value = "";
-  await loadItineraries();
 }
 
 async function addSelectedActivityToItinerary(itineraryId) {
   if (!state.assignment) throw new Error(t("teacher.errors.selectActivityFirst"));
   const itinerary = state.itineraries.find((item) => item.id === itineraryId);
-  const position = itinerary ? itinerary.items.length : 0;
-  await api(`/api/teacher/itineraries/${encodeURIComponent(itineraryId)}/items`, {
-    method: "POST",
-    body: JSON.stringify({ assignment_id: state.assignment.id, position }),
+  if (!itinerary) return;
+  if (itinerary?.items.some((item) => item.assignment_id === state.assignment.id)) return;
+  const previous = itinerary.items.map((item) => item.assignment_id);
+  await saveItineraryChange(`/api/teacher/itineraries/${encodeURIComponent(itineraryId)}/items`, {
+    method: "PUT",
+    body: JSON.stringify({ assignment_ids: [...previous, state.assignment.id], expected_assignment_ids: previous }),
   });
-  await loadItineraries();
+}
+
+let itineraryEditPending = false;
+
+function updateItineraryControls() {
+  const unavailable = itineraryEditPending || !state.itinerariesReady || state.itinerariesGroupId !== state.group?.id;
+  if (unavailable) $("itinerariesOutput")?.querySelectorAll("button").forEach((node) => { node.disabled = true; });
+  if (has("createItinerary")) $("createItinerary").disabled = !state.teacher || !state.group || unavailable;
+  if (has("loadItineraries")) $("loadItineraries").disabled = !state.teacher || !state.group || itineraryEditPending;
+}
+
+async function editItineraryItem(button) {
+  if (itineraryEditPending) return;
+  const itinerary = state.itineraries.find((item) => item.id === button.dataset.editItinerary);
+  if (!itinerary) return;
+  const previous = itinerary.items.map((item) => item.assignment_id);
+  const ids = [...previous];
+  const index = ids.indexOf(button.dataset.itineraryAssignment);
+  if (index < 0) return;
+  const action = button.dataset.itineraryAction;
+  if (action === "remove") ids.splice(index, 1);
+  else {
+    const target = index + (action === "up" ? -1 : 1);
+    if (target < 0 || target >= ids.length) return;
+    [ids[index], ids[target]] = [ids[target], ids[index]];
+  }
+  await saveItineraryChange(`/api/teacher/itineraries/${encodeURIComponent(itinerary.id)}/items`, {
+    method: "PUT",
+    body: JSON.stringify({ assignment_ids: ids, expected_assignment_ids: previous }),
+  });
+}
+
+async function selectGroupItinerary(itineraryId) {
+  if (!state.teacher || !state.group || itineraryEditPending) return;
+  const selected = state.itineraries.find((itinerary) => itinerary.is_selected);
+  await saveItineraryChange(`/api/teacher/groups/${encodeURIComponent(state.group.id)}/itinerary`, {
+    method: "PUT",
+    body: JSON.stringify({ itinerary_id: itineraryId, expected_itinerary_id: selected?.id || null }),
+  });
+}
+
+async function saveItineraryChange(path, options) {
+  if (itineraryEditPending || !state.itinerariesReady || state.itinerariesGroupId !== state.group?.id) return;
+  itineraryEditPending = true;
+  const groupId = state.group?.id;
+  let feedback = null;
+  updateItineraryControls();
+  try {
+    await api(path, options);
+    if (path === "/api/teacher/itineraries" && state.group?.id === groupId) $("itineraryTitle").value = "";
+    if (state.group?.id === groupId) await loadItineraries();
+  } catch (error) {
+    if (state.group?.id !== groupId) return;
+    // Keep the editor available, and load a collaborator's changes before retrying.
+    try { await loadItineraries(); } catch { renderItineraries({ itineraries: state.itineraries }); }
+    feedback = t(error.status === 409 ? "teacher.itinerary.conflict" : "teacher.itinerary.saveError");
+  } finally {
+    itineraryEditPending = false;
+    // Restore boundary buttons from their real positions, only with fresh data.
+    if (state.itinerariesReady && state.itinerariesGroupId === state.group?.id) {
+      renderItineraries({ itineraries: state.itineraries });
+    }
+    updateItineraryControls();
+    if (feedback && state.group?.id === groupId) {
+      const notice = document.createElement("p");
+      notice.setAttribute("role", "alert");
+      notice.textContent = feedback;
+      $("itinerariesOutput").prepend(notice);
+    }
+  }
 }
 
 function studentDashboard(assignments) {
@@ -635,6 +749,7 @@ function studentDashboard(assignments) {
         : "",
   }));
   return `
+    ${state.studentItinerary ? `<h3 data-student-itinerary>${escapeHtml(t("student.itineraryTitle", { title: state.studentItinerary.title }))}</h3>` : ""}
     <p>${t("student.progressLabel")} <strong>${completed}/${total}</strong> ${t("student.progressCompleted")}</p>
     ${completed ? `<button class="compact secondary history-toggle" type="button" data-toggle-student-history="true">${state.showStudentHistory ? t("student.hideHistory") : t("student.showHistory")}</button>` : ""}
     ${rows.length ? table(rows, [
@@ -966,6 +1081,7 @@ async function studentLogout() {
   await api("/api/auth/logout", { method: "POST" });
   state.student = null;
   state.studentAssignments = [];
+  state.studentItinerary = null;
   setStudentSession(false);
   await checkIdentityStatus();
   setOutput(
@@ -1000,6 +1116,7 @@ async function loadStudentDashboard(message = "") {
   const data = await api("/api/student/dashboard", { method: "GET" });
   state.student = data.identity;
   state.studentAssignments = data.assignments || [];
+  state.studentItinerary = data.selected_itinerary || null;
   setOutput(
     $("studentOutput"),
     `
@@ -1267,6 +1384,22 @@ document.addEventListener("click", (event) => {
     return;
   }
 
+  const selectItineraryButton = event.target.closest("[data-select-group-itinerary]");
+  if (selectItineraryButton) {
+    selectGroupItinerary(selectItineraryButton.dataset.selectGroupItinerary);
+    return;
+  }
+  if (event.target.closest("[data-clear-group-itinerary]")) {
+    selectGroupItinerary(null);
+    return;
+  }
+
+  const editItineraryButton = event.target.closest("[data-edit-itinerary]");
+  if (editItineraryButton) {
+    editItineraryItem(editItineraryButton);
+    return;
+  }
+
   const addItineraryItemButton = event.target.closest("[data-add-itinerary-item]");
   if (addItineraryItemButton) {
     addSelectedActivityToItinerary(addItineraryItemButton.dataset.addItineraryItem).catch((error) => {
@@ -1377,6 +1510,12 @@ if (has("resourceSearch")) {
 }
 
 window.addEventListener("edutictac:langchange", () => {
+  if (has("itinerariesOutput") && state.teacher && state.group) {
+    renderItineraries({ itineraries: state.itineraries });
+    if (itineraryEditPending) {
+      $("itinerariesOutput").querySelectorAll("button").forEach((node) => { node.disabled = true; });
+    }
+  }
   if (!has("studentOutput")) {
     return;
   }

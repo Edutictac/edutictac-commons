@@ -67,13 +67,14 @@ entre EduHoot, Recursos i Play** continuen a la secció «v2».
 
 ## Estat per tancar la v1
 
-El producte i el paquet ja estan implementats. Només queden dos bloquejos de
+El producte i el paquet ja estan implementats. Queda pendent validar el
 lliurament:
 
 1. provar `edutictac-commons_0.1.1~alpha4_amd64.deb` en una màquina neta real,
    incloent-hi activació, OIDC, flux docent → alumnat → EduHoot i restauració;
-2. publicar el `.deb` com a artefacte descarregable (release o repositori
-   APT). Ara mateix només es genera localment en `dist/`.
+
+El `.deb` ja està publicat en el repositori APT signat
+`packages.edutictac.es` (vegeu Fita 6).
 
 La validació de traduccions del portal i la reorganització d'usabilitat del
 tauler docent ja estan incorporades. El tancament formal requereix repetir el
@@ -200,6 +201,26 @@ l'alumnat pot completar-la amb la mateixa identitat pseudònima.
   índexs signats i documentació d'instal·lació.
 
 ## v2 — més enllà del nucli finançat
+
+### Progrés verificat en desenvolupament — 2026-10-17
+
+- [x] Editor docent d'itineraris: pujar, baixar i llevar passos, conservant
+  assignacions i resultats; CA/VA/ES/EN i ús en mòbil.
+- [x] Guardat atòmic amb detecció de canvis simultanis entre docents i
+  comprovació de permisos del grup.
+- [x] Selecció d'un únic itinerari actiu per grup, amb retirada de selecció,
+  control de canvis simultanis i migració de dades existents.
+- [x] Títol de l'itinerari seleccionat visible al tauler de l'alumnat, mantenint
+  la resta d'assignacions i el progrés.
+- [x] Estabilització local: permisos després de revocar col·laboradors,
+  recuperació de connexió, respostes tardanes i proves completes en verd.
+  Resultats i límits: `docs/ESTABILITZACIO-V2.md`.
+
+La cistella de favorits i l'assignació al grup ja tenen implementació local;
+les caselles d'integració següents continuen pendents fins a validar la sessió
+OIDC compartida i el flux complet amb Recursos. L'editor i la selecció nous
+estan pendents de publicació en imatges i desplegament. Contracte i proves:
+`docs/itineraries.md`.
 
 Ítems que queden **fora** de la v1.0 (nucli finançat per la 4D). Es treballen a
 continuació, amb l'objectiu d'arribar-hi abans d'agost 2027 (vegeu §0.1 del

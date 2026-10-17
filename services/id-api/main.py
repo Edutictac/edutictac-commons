@@ -315,6 +315,11 @@ def init_db() -> None:
                 PRIMARY KEY(itinerary_id, assignment_id)
             );
 
+            CREATE TABLE IF NOT EXISTS group_itinerary_selection (
+                group_id TEXT PRIMARY KEY REFERENCES groups(id) ON DELETE CASCADE,
+                itinerary_id TEXT REFERENCES itineraries(id) ON DELETE SET NULL
+            );
+
             CREATE TABLE IF NOT EXISTS group_memberships (
                 group_id TEXT NOT NULL REFERENCES groups(id) ON DELETE CASCADE,
                 teacher_id TEXT NOT NULL,
@@ -385,6 +390,16 @@ def init_db() -> None:
         )
         if "result_id" not in score_columns:
             conn.execute("ALTER TABLE scores ADD COLUMN result_id TEXT NOT NULL DEFAULT ''")
+        # Upgrade existing groups once. A stored NULL is an explicit choice,
+        # so neither a restart nor creating another itinerary overrides it.
+        conn.execute(
+            """INSERT OR IGNORE INTO group_itinerary_selection (group_id, itinerary_id)
+            SELECT g.id, (SELECT i.id FROM itineraries i
+                          WHERE i.group_id = g.id AND i.active = 1
+                          ORDER BY i.updated_at DESC, i.created_at DESC, i.id LIMIT 1)
+            FROM groups g
+            WHERE EXISTS (SELECT 1 FROM itineraries i WHERE i.group_id = g.id AND i.active = 1)"""
+        )
         conn.execute(
             """
             CREATE UNIQUE INDEX IF NOT EXISTS idx_scores_result_unique
@@ -744,10 +759,35 @@ class ItineraryIn(BaseModel):
     title: str = Field(min_length=1, max_length=160)
     group_id: str = Field(min_length=1, max_length=128)
 
+    @field_validator("title")
+    @classmethod
+    def _title(cls, value: str) -> str:
+        title = value.strip()
+        if not title:
+            raise ValueError("itinerary title must not be blank")
+        return title
+
 
 class ItineraryItemIn(BaseModel):
     assignment_id: str = Field(min_length=1, max_length=128)
     position: int = Field(default=0, ge=0, le=10000)
+
+
+class ItineraryItemsIn(BaseModel):
+    assignment_ids: list[str] = Field(max_length=1000)
+    expected_assignment_ids: list[str] = Field(max_length=1000)
+
+    @field_validator("assignment_ids", "expected_assignment_ids")
+    @classmethod
+    def _unique_assignments(cls, value: list[str]) -> list[str]:
+        if len(value) != len(set(value)) or any(not item or len(item) > 128 for item in value):
+            raise ValueError("assignment IDs must be unique and non-empty")
+        return value
+
+
+class GroupItineraryIn(BaseModel):
+    itinerary_id: str | None = Field(max_length=128)
+    expected_itinerary_id: str | None = Field(max_length=128)
 
 
 def normalize_app_id(raw: str) -> str:
@@ -789,13 +829,14 @@ def public_assignment(row: sqlite3.Row) -> dict[str, Any]:
     }
 
 
-def public_itinerary(row: sqlite3.Row, items: list[sqlite3.Row] | None = None) -> dict[str, Any]:
+def public_itinerary(row: sqlite3.Row, items: list[sqlite3.Row] | None = None, *, selected: bool = False) -> dict[str, Any]:
     return {
         "id": row["id"],
         "title": row["title"],
         "group_id": row["group_id"],
         "created_by_teacher_id": row["created_by_teacher_id"],
         "active": bool(row["active"]),
+        "is_selected": selected,
         "created_at": row["created_at"],
         "updated_at": row["updated_at"],
         "items": [
@@ -1175,6 +1216,12 @@ def student_dashboard(request: Request) -> dict[str, Any]:
     if not identity:
         raise HTTPException(status_code=401, detail="not authenticated")
     with get_conn() as conn:
+        selected = conn.execute(
+            """SELECT i.id, i.title FROM group_itinerary_selection s
+            JOIN itineraries i ON i.id = s.itinerary_id AND i.group_id = s.group_id AND i.active = 1
+            WHERE s.group_id = ?""",
+            (identity["group_id"],),
+        ).fetchone()
         rows = conn.execute(
             """
             SELECT
@@ -1183,9 +1230,8 @@ def student_dashboard(request: Request) -> dict[str, Any]:
                 MAX(s.score) AS best_score,
                 MAX(s.created_at) AS last_score_at,
                 (SELECT ii.position FROM itinerary_items ii
-                 JOIN itineraries it ON it.id = ii.itinerary_id
-                 WHERE ii.assignment_id = a.id AND it.group_id = a.group_id AND it.active = 1
-                 ORDER BY ii.position LIMIT 1) AS itinerary_position,
+                 WHERE ii.assignment_id = a.id AND ii.itinerary_id = ?
+                 LIMIT 1) AS itinerary_position,
                 EXISTS(
                     SELECT 1 FROM app_launch_tokens t
                     WHERE t.assignment_id = a.id AND t.identity_id = ?
@@ -1204,10 +1250,11 @@ def student_dashboard(request: Request) -> dict[str, Any]:
             ORDER BY itinerary_position IS NULL, itinerary_position,
                      a.created_at DESC, a.title, a.app_id, a.activity_id
             """,
-            (identity["id"], identity["id"], identity["id"], identity["group_id"]),
+            (selected["id"] if selected else None, identity["id"], identity["id"], identity["id"], identity["group_id"]),
         ).fetchall()
     return {
         "identity": identity,
+        "selected_itinerary": dict(selected) if selected else None,
         "assignments": [
             {
                 **public_assignment(row),
@@ -1479,15 +1526,22 @@ def create_itinerary(payload: ItineraryIn, request: Request) -> dict[str, Any]:
             """,
             (itinerary_id, payload.title.strip(), payload.group_id, teacher_id, ts, ts),
         )
+        conn.execute(
+            "INSERT OR IGNORE INTO group_itinerary_selection (group_id, itinerary_id) VALUES (?, ?)",
+            (payload.group_id, itinerary_id),
+        )
+        selected = conn.execute(
+            "SELECT itinerary_id FROM group_itinerary_selection WHERE group_id = ?", (payload.group_id,)
+        ).fetchone()
         row = conn.execute("SELECT * FROM itineraries WHERE id = ?", (itinerary_id,)).fetchone()
-    return {"itinerary": public_itinerary(row)}
+    return {"itinerary": public_itinerary(row, selected=selected["itinerary_id"] == itinerary_id)}
 
 
 @app.get("/api/teacher/itineraries")
 def teacher_itineraries(request: Request, group_id: str = "") -> dict[str, Any]:
     teacher_id = require_teacher(request)
     params: list[Any] = [teacher_id, teacher_id]
-    where = """WHERE i.active = 1 AND (i.created_by_teacher_id = ? OR EXISTS (
+    where = """WHERE i.active = 1 AND (g.created_by_teacher_id = ? OR EXISTS (
         SELECT 1 FROM group_memberships m WHERE m.group_id = i.group_id AND m.teacher_id = ?
     ))"""
     if group_id:
@@ -1495,7 +1549,10 @@ def teacher_itineraries(request: Request, group_id: str = "") -> dict[str, Any]:
         params.append(group_id)
     with get_conn() as conn:
         rows = conn.execute(
-            f"SELECT i.* FROM itineraries i {where} ORDER BY i.updated_at DESC, i.title",
+            f"""SELECT i.*, s.itinerary_id AS selected_id FROM itineraries i
+            JOIN groups g ON g.id = i.group_id
+            LEFT JOIN group_itinerary_selection s ON s.group_id = i.group_id
+            {where} ORDER BY i.updated_at DESC, i.title""",
             params,
         ).fetchall()
         result = []
@@ -1504,8 +1561,37 @@ def teacher_itineraries(request: Request, group_id: str = "") -> dict[str, Any]:
                 "SELECT assignment_id, position FROM itinerary_items WHERE itinerary_id = ? ORDER BY position, assignment_id",
                 (row["id"],),
             ).fetchall()
-            result.append(public_itinerary(row, items))
+            result.append(public_itinerary(row, items, selected=row["selected_id"] == row["id"]))
     return {"itineraries": result}
+
+
+@app.put("/api/teacher/groups/{group_id}/itinerary")
+def select_group_itinerary(group_id: str, payload: GroupItineraryIn, request: Request) -> dict[str, Any]:
+    require_group_access(request, group_id)
+    with get_conn() as conn:
+        conn.execute("BEGIN IMMEDIATE")
+        # Administrators also need a real group (the shared access helper allows
+        # them to bypass ownership, not the existence of a group).
+        if not conn.execute("SELECT 1 FROM groups WHERE id = ?", (group_id,)).fetchone():
+            raise HTTPException(status_code=404, detail="group not found")
+        current = conn.execute(
+            """SELECT i.id AS itinerary_id FROM group_itinerary_selection s
+            JOIN itineraries i ON i.id = s.itinerary_id AND i.group_id = s.group_id AND i.active = 1
+            WHERE s.group_id = ?""", (group_id,)
+        ).fetchone()
+        if (current["itinerary_id"] if current else None) != payload.expected_itinerary_id:
+            raise HTTPException(status_code=409, detail="itinerary selection changed; reload before editing")
+        if payload.itinerary_id is not None and not conn.execute(
+            "SELECT 1 FROM itineraries WHERE id = ? AND group_id = ? AND active = 1",
+            (payload.itinerary_id, group_id),
+        ).fetchone():
+            raise HTTPException(status_code=404, detail="itinerary not found")
+        conn.execute(
+            """INSERT INTO group_itinerary_selection (group_id, itinerary_id) VALUES (?, ?)
+            ON CONFLICT(group_id) DO UPDATE SET itinerary_id = excluded.itinerary_id""",
+            (group_id, payload.itinerary_id),
+        )
+    return {"selected_itinerary_id": payload.itinerary_id}
 
 
 @app.post("/api/teacher/itineraries/{itinerary_id}/items", status_code=201)
@@ -1514,8 +1600,9 @@ def add_itinerary_item(itinerary_id: str, payload: ItineraryItemIn, request: Req
     ts = iso_now()
     with get_conn() as conn:
         itinerary = conn.execute(
-            """SELECT i.* FROM itineraries i WHERE i.id = ? AND i.active = 1 AND
-            (i.created_by_teacher_id = ? OR EXISTS (
+            """SELECT i.* FROM itineraries i JOIN groups g ON g.id = i.group_id
+            WHERE i.id = ? AND i.active = 1 AND
+            (g.created_by_teacher_id = ? OR EXISTS (
                 SELECT 1 FROM group_memberships m WHERE m.group_id = i.group_id AND m.teacher_id = ?
             ))""",
             (itinerary_id, teacher_id, teacher_id),
@@ -1539,7 +1626,59 @@ def add_itinerary_item(itinerary_id: str, payload: ItineraryItemIn, request: Req
             "SELECT assignment_id, position FROM itinerary_items WHERE itinerary_id = ? ORDER BY position, assignment_id",
             (itinerary_id,),
         ).fetchall()
-    return {"itinerary": public_itinerary(itinerary, items)}
+        selected = conn.execute(
+            "SELECT 1 FROM group_itinerary_selection WHERE group_id = ? AND itinerary_id = ?",
+            (itinerary["group_id"], itinerary_id),
+        ).fetchone() is not None
+    return {"itinerary": public_itinerary(itinerary, items, selected=selected)}
+
+
+@app.put("/api/teacher/itineraries/{itinerary_id}/items")
+def replace_itinerary_items(itinerary_id: str, payload: ItineraryItemsIn, request: Request) -> dict[str, Any]:
+    teacher_id = require_teacher(request)
+    with get_conn() as conn:
+        # Lock before reading: two collaborators must not overwrite each other's edits.
+        conn.execute("BEGIN IMMEDIATE")
+        itinerary = conn.execute(
+            """SELECT i.* FROM itineraries i JOIN groups g ON g.id = i.group_id
+            WHERE i.id = ? AND i.active = 1 AND
+            (g.created_by_teacher_id = ? OR EXISTS (
+                SELECT 1 FROM group_memberships m WHERE m.group_id = i.group_id AND m.teacher_id = ?
+            ))""",
+            (itinerary_id, teacher_id, teacher_id),
+        ).fetchone()
+        if not itinerary:
+            raise HTTPException(status_code=404, detail="itinerary not found")
+        current = conn.execute(
+            "SELECT assignment_id FROM itinerary_items WHERE itinerary_id = ? ORDER BY position, assignment_id",
+            (itinerary_id,),
+        ).fetchall()
+        if [row["assignment_id"] for row in current] != payload.expected_assignment_ids:
+            raise HTTPException(status_code=409, detail="itinerary changed; reload before editing")
+        for assignment_id in payload.assignment_ids:
+            if not conn.execute(
+                "SELECT 1 FROM activity_assignments WHERE id = ? AND group_id = ? AND active = 1",
+                (assignment_id, itinerary["group_id"]),
+            ).fetchone():
+                raise HTTPException(status_code=404, detail="assignment not found")
+        ts = iso_now()
+        # Only the itinerary links change; assignments, scores and progress survive removal.
+        conn.execute("DELETE FROM itinerary_items WHERE itinerary_id = ?", (itinerary_id,))
+        conn.executemany(
+            "INSERT INTO itinerary_items (itinerary_id, assignment_id, position, created_at) VALUES (?, ?, ?, ?)",
+            [(itinerary_id, assignment_id, position, ts) for position, assignment_id in enumerate(payload.assignment_ids)],
+        )
+        conn.execute("UPDATE itineraries SET updated_at = ? WHERE id = ?", (ts, itinerary_id))
+        row = conn.execute("SELECT * FROM itineraries WHERE id = ?", (itinerary_id,)).fetchone()
+        items = conn.execute(
+            "SELECT assignment_id, position FROM itinerary_items WHERE itinerary_id = ? ORDER BY position, assignment_id",
+            (itinerary_id,),
+        ).fetchall()
+        selected = conn.execute(
+            "SELECT 1 FROM group_itinerary_selection WHERE group_id = ? AND itinerary_id = ?",
+            (row["group_id"], itinerary_id),
+        ).fetchone() is not None
+    return {"itinerary": public_itinerary(row, items, selected=selected)}
 
 
 @app.get("/api/teacher/activity-assignments/{assignment_id}/results")

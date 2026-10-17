@@ -31,7 +31,8 @@ for (const [lang, text] of Object.entries(languages)) {
     await page.reload();
     await expect(page.locator('#studentOutput')).toHaveText(text.prompt);
     await page.goto('/teacher.html');
-    await expect(page.locator('#teacherLogout')).toHaveText(text.logout);
+    const sessionLogout = { ca: 'Eixir de la sessió', va: 'Eixir de la sessió', es: 'Salir de la sesión', en: 'Sign out' };
+    await expect(page.locator('#logoutSessionButton')).toHaveText(sessionLogout[lang]);
     await expect(page.locator('#eduhootActivityId')).toHaveCount(0);
     await expect(page.locator('#assignFavoriteResources')).toBeDisabled();
     await expect(page.locator(`[data-lang="${lang}"]`)).toHaveAttribute('aria-current', 'true');

@@ -1,4 +1,4 @@
-name: Proves d'idiomes
+name: Proves del portal i API
 
 on:
   push:
@@ -20,4 +20,16 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium
-      - run: npm run test:i18n
+      - run: npm test
+
+  api:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - name: Preparar dependències de proves
+        run: |
+          python3 -m venv "$RUNNER_TEMP/commons-tests"
+          "$RUNNER_TEMP/commons-tests/bin/python" -m pip install -r tests/requirements-quiosc.txt
+      - name: Proves Python amb dades temporals
+        run: '"$RUNNER_TEMP/commons-tests/bin/python" -m pytest tests -q'

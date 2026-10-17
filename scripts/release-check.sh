@@ -73,7 +73,7 @@ echo "OK cap artefacte local prohibit està versionat"
 
 echo
 echo "== Flux funcional =="
-npm run test:i18n
+npm test
 ./scripts/test-flow.sh
 
 profiles="$(grep '^COMPOSE_PROFILES=' .env 2>/dev/null | tail -n 1 | cut -d= -f2- || true)"

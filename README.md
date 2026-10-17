@@ -4,6 +4,10 @@ Versió de proves actual: [0.1.1-alpha amb EduHoot 1.0.2](RELEASE-0.1.1-alpha.md
 Proves d'idiomes: `npm ci`, `npx playwright install --with-deps chromium` i
 `make test-i18n`. Instal·lació i restauració aïllades: `make test-installation`.
 
+Proves completes del portal (inclou itineraris i Quiosc): `npm test`.
+Play i Moodle usen configuracions separades. Resultats, dependències Python i
+límits de la validació actual: [estabilització v2](docs/ESTABILITZACIO-V2.md).
+
 Primer stack Docker per desenvolupar i ensenyar el producte EduTicTac Commons en `debiandesktop`, sense tocar producció.
 
 ## Ús ràpid
