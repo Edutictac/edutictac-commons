@@ -9,7 +9,7 @@ si falla l'arrancada. Documents: [mòduls](modules.md) i [paquet](ubuntu-package
 Validació local: 123 proves Python correctes (2 optatives omeses), 66 casos de
 navegador comprovats i paquet alpha29 construït, sense instal·lar-lo.
 Prova Docker aïllada correcta: activació, desactivació, dades conservades i rollback.
-Distribució: imatges alpha26 i paquet alpha29. No reutilitzar els tags ni les
+Publicació verificada el 2026-10-18: imatges alpha26 i paquet alpha29 en APT signat. No reutilitzar els tags ni les
 versions anteriors. Notes i verificacions en `releases/0.1.1-alpha26/`. Els canvis previs de Makefile i de sincronització
 de continguts en admin/server.py continuen preservats.
 

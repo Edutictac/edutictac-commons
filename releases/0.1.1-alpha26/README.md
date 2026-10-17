@@ -29,5 +29,17 @@ desactivació, conservació de dades i rollback. Les proves Docker substituïxen
 tots els noms explícits de volums i xarxes, rebutgen recursos existents i
 validen els bind mounts abans de l'arrancada. Detall: [mòduls](../../docs/modules.md).
 
+Publicació APT completada el 2026-10-18. Firma d'InRelease, SHA-256 de l'índex
+i SHA-256/mida del paquet descarregat verificats. Metadades i URL directa en
+[installer.json](installer.json). CI del codi font correcta:
+[GitHub Actions](https://github.com/Edutictac/edutictac-commons/actions/runs/39063419375).
+
+Amb el repositori APT ja configurat:
+
+```bash
+sudo apt update
+sudo apt install edutictac-commons
+```
+
 La publicació no desplega esta versió en el stack actiu. La prova d'instal·lació
 completa en una màquina LliureX nova continua sent una validació independent.
