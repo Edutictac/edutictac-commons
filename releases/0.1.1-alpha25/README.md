@@ -32,6 +32,10 @@ python3 scripts/test-itineraries-docker.py \
 El paquet d'instal·lació `0.1.1~alpha28` incorpora els fitxers actuals i usa
 alpha25 per defecte en instal·lacions noves. No incorpora selector visual de
 mòduls i no canvia automàticament els tags de les instal·lacions existents.
+Està publicat en el repositori APT signat. La firma de l'índex i el SHA-256
+del paquet descarregat s'han verificat; metadades en [`installer.json`](installer.json).
+Dues proves de configuració del paquet confirmen els defaults i la conservació
+de la configuració existent, sense executar serveis del host.
 
 La publicació no implica desplegament en el stack actiu. Queden pendents el
 pilot LliureX de Quiosc i la validació completa d'Authentik en instal·lació neta.

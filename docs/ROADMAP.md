@@ -219,7 +219,8 @@ l'alumnat pot completar-la amb la mateixa identitat pseudònima.
 La cistella de favorits i l'assignació al grup ja tenen implementació local;
 les caselles d'integració següents continuen pendents fins a validar la sessió
 OIDC compartida i el flux complet amb Recursos. L'editor i la selecció nous
-estan pendents de publicació en imatges i desplegament. Contracte i proves:
+estan publicats en alpha25 (instal·lador alpha28), pendents de desplegament.
+Migració i restauració provades en Docker aïllat. Contracte i proves:
 `docs/itineraries.md`.
 
 Ítems que queden **fora** de la v1.0 (nucli finançat per la 4D). Es treballen a

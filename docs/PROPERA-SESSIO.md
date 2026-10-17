@@ -7,7 +7,7 @@ actiu del grup o deixar-lo sense selecció. El tauler d'alumnat mostra el títol
 seleccionat i ordena primer els seus passos; la resta d'assignacions i els seus
 resultats es conserven. Inclou permisos de grup, guardat atòmic, detecció de
 canvis simultanis i migració idempotent de bases existents. Implementació local
-en CA/VA/ES/EN; pendent de publicar en imatges i desplegar.
+en CA/VA/ES/EN; publicat en imatges `0.1.1-alpha25`, pendent de desplegar.
 
 Estabilització completada en desenvolupament: 89 proves Python correctes
 (2 Docker optatives omeses) i 54 de navegador correctes. S'han corregit les
@@ -17,6 +17,13 @@ CI ampliada al portal complet i a Python. No s'ha executat el `release-check`
 contra el stack actiu. Detall i reproducció:
 [`ESTABILITZACIO-V2.md`](ESTABILITZACIO-V2.md).
 
+Publicació completada: quatre imatges alpha25 verificades per digest i paquet
+`0.1.1~alpha28` en APT, amb firma i SHA-256 de descàrrega comprovades. La prova
+Docker aïllada valida migració des d'alpha24, flux HTTP docent/alumnat, reinici
+i restauració SQLite sense perdre puntuacions. Dues proves addicionals del
+paquet comproven els defaults nous i la conservació dels tags existents.
+Notes i artefactes: `releases/0.1.1-alpha25/`. No s'ha actualitzat el stack viu.
+
 Continuació recomanada de la v2:
 
 1. Validar el flux real de sessió OIDC compartida amb Recursos i la cistella;
@@ -24,7 +31,8 @@ Continuació recomanada de la v2:
 2. Completar l'assignació directa de la cistella a un itinerari escollit.
 
 Quiosc és una línia separada: automatització Epoptes publicada en Git fins al
-commit `889b36b`, pendent d'imatges i prova en aula LliureX. No confondre-la amb
+commit `889b36b`, inclosa ara en les imatges alpha25 i en el paquet alpha28;
+pendent de preparar el servidor i provar-la en aula LliureX. No confondre-la amb
 el tancament dels itineraris. Els canvis previs de `Makefile` i
 `admin/server.py` s'han preservat.
 

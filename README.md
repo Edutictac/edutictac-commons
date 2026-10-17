@@ -1,6 +1,7 @@
 # EduTicTac Commons Stack Local
 
-Versió de proves actual: [0.1.1-alpha amb EduHoot 1.0.2](RELEASE-0.1.1-alpha.md).
+Versió d'imatges actual: [0.1.1-alpha25](releases/0.1.1-alpha25/README.md).
+Instal·lador Ubuntu amd64: `0.1.1~alpha28`, publicat en el repositori APT.
 Proves d'idiomes: `npm ci`, `npx playwright install --with-deps chromium` i
 `make test-i18n`. Instal·lació i restauració aïllades: `make test-installation`.
 

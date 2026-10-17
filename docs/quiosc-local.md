@@ -12,8 +12,9 @@ bàsic i supervisat; esta millora no afig aïllament de KDE ni filtre web.
 
 ## Preparació única del servidor
 
-La instal·lació de Commons ha de tindre les imatges construïdes amb estos
-canvis, Python 3 i Epoptes ja operatius. En el mateix ordinador del servidor,
+La instal·lació de Commons ha de tindre les imatges alpha25 o posteriors,
+els scripts inclosos en l'instal·lador alpha28, Python 3 i Epoptes ja operatius.
+En el mateix ordinador del servidor,
 l’administració executa:
 
 ```bash
