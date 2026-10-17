@@ -14,8 +14,9 @@ Desde el repositorio:
 ```
 
 El artefacto aparece en `dist/`. La versión de Debian actual es
-`0.1.1~alpha4`, correspondiente a Commons `0.1.1-alpha`. Esta versión añade
-el asistente de activación inicial de Authentik.
+`0.1.1~alpha28`. En instalaciones nuevas utiliza las imágenes Commons
+`0.1.1-alpha25`, con itinerarios estabilizados y Quiosc opcional. Incluye los
+scripts de preparación local de Epoptes; Quiosc sigue desactivado por defecto.
 
 ## Instalar desde el repositorio APT
 
@@ -48,7 +49,7 @@ documentadas en [`edutictac-packages`](https://git.edutictac.es/Edutictac/edutic
 ## Instalar un paquete local
 
 ```bash
-sudo apt install ./dist/edutictac-commons_0.1.1~alpha4_amd64.deb
+sudo apt install ./dist/edutictac-commons_0.1.1~alpha28_amd64.deb
 ```
 
 El paquete declara Docker Engine, Docker Compose v2, Avahi/mDNS, `curl`, `jq`,
@@ -72,6 +73,21 @@ configuración, ejecuta:
 ```bash
 sudo systemctl restart edutictac-commons.service
 ```
+
+Esta versión todavía no ofrece un selector de módulos en el asistente ni
+botones para activarlos o desactivarlos desde Administración. EduHoot y
+Recursos se gestionan técnicamente mediante `COMPOSE_PROFILES`; Play forma
+parte del stack habitual y Authentik proporciona el acceso docente.
+
+Quiosc requiere Epoptes ya instalado y una preparación administrativa única
+en el servidor LliureX. La instalación de Commons no lo activa ni instala
+componentes en los equipos del alumnado. Véase
+[preparación local de Quiosc](quiosc-local.md).
+
+Una actualización del `.deb` incorpora los scripts nuevos y conserva los
+tags configurados de las imágenes en instalaciones existentes. Para pasar una
+instalación existente a alpha25 hace falta actualizar también sus imágenes;
+instalar este paquete no garantiza por sí solo que ejecute la nueva API.
 
 La entrada principal queda disponible en `http://edutictac.local/` (o con la
 IP del equipo si el cliente no soporta mDNS). En la primera visita aparece un

@@ -39,8 +39,8 @@ text = path.read_text(encoding="utf-8")
 values = {
     "REPO_DIR": "/opt/edutictac-commons",
     "IMAGE_REGISTRY": "registry.edutictac.es/edutictac",
-    "IMAGE_TAG": "0.1.1-alpha20",
-    "ADMIN_TAG": "0.1.1-alpha20",
+    "IMAGE_TAG": "0.1.1-alpha25",
+    "ADMIN_TAG": "0.1.1-alpha25",
     "EDUHOOT_TAG": "1.0.5",
     "EDUHOOT_RESOURCES_TOKEN": secrets.token_urlsafe(48),
     "PORTAL_PORT": "80",
