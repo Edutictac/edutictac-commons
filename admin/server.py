@@ -94,7 +94,7 @@ def action_modules(payload):
         return False, "quiosc_not_prepared", 409
     repo = os.environ.get("REPO_DIR", str(APP_DIR))
     unit = "edutictac-commons-modules-" + datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S") + "-" + secrets.token_hex(4)
-    ok, _ = run_script("systemd-run", "--user", "--service-type=oneshot",
+    ok, _ = run_script("systemd-run", "--user", "--service-type=oneshot", "--no-block",
                        "--property=RemainAfterExit=yes", f"--unit={unit}",
                        f"--property=WorkingDirectory={repo}", "/usr/bin/env", "/usr/bin/python3",
                        str(Path(repo) / "scripts/manage-modules.py"), "apply",
@@ -349,7 +349,7 @@ ACTIONS = {
 def action_backup_create(payload):
     repo = os.environ.get("REPO_DIR", str(APP_DIR))
     unit = "edutictac-commons-backup-" + datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S") + "-" + secrets.token_hex(4)
-    ok, _ = run_script("systemd-run", "--user", "--service-type=oneshot",
+    ok, _ = run_script("systemd-run", "--user", "--service-type=oneshot", "--no-block",
                        "--property=RemainAfterExit=yes", "--property=TimeoutStartSec=30min", "--property=TimeoutStopSec=5min", f"--unit={unit}",
                        f"--property=WorkingDirectory={repo}", "/usr/bin/env", "/usr/bin/python3",
                        str(Path(repo) / "scripts/backup-stack.py"), "create")
@@ -372,7 +372,7 @@ def action_backup_secondary(payload):
         arguments += ["--mount", str(mount)]
     repo = os.environ.get("REPO_DIR", str(APP_DIR))
     unit = "edutictac-commons-backup-" + datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S") + "-" + secrets.token_hex(4)
-    ok, _ = run_script("systemd-run", "--user", "--service-type=oneshot",
+    ok, _ = run_script("systemd-run", "--user", "--service-type=oneshot", "--no-block",
                        "--property=RemainAfterExit=yes", "--property=TimeoutStartSec=30min",
                        "--property=TimeoutStopSec=5min", f"--unit={unit}",
                        f"--property=WorkingDirectory={repo}", "/usr/bin/env", "/usr/bin/python3",
@@ -400,7 +400,7 @@ def action_backup_restore(payload):
     ok, output = run_script(
         "systemd-run",
         "--user",
-        "--service-type=oneshot",
+        "--service-type=oneshot", "--no-block",
         "--property=RemainAfterExit=yes", "--property=TimeoutStartSec=30min", "--property=TimeoutStopSec=5min",
         f"--unit={unit_name}",
         f"--property=WorkingDirectory={repo_dir}",

@@ -28,3 +28,5 @@ desplegament d'esta publicació.
 Els treballs Python d'Administració utilitzen el Python del host encara que el
 contenidor només el tinga en `/usr/local/bin`. El llançador s'ha comprovat amb
 un treball real de configuració de la segona còpia.
+
+**Substituïda per alpha30/alpha34**, amb llançament asíncron dels treballs.

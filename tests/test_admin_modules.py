@@ -83,6 +83,7 @@ def test_apply_runs_only_fixed_host_command_and_returns_trackable_job(api):
     assert admin.JOB_UNIT_RE.fullmatch(result["unit"])
     command = calls[0]
     assert command[:2] == ("systemd-run", "--user")
+    assert "--no-block" in command
     assert command[command.index("/usr/bin/env") + 1] == "/usr/bin/python3"
     assert "/opt/synthetic-commons/scripts/manage-modules.py" in command
     assert "--enabled" in command and "play" in command
@@ -111,7 +112,7 @@ def test_backup_runs_as_retained_host_job(api):
     assert status == 202 and result['ok']
     assert result['unit'].startswith('edutictac-commons-backup-')
     command = calls[-1]
-    assert '--service-type=oneshot' in command and '--property=RemainAfterExit=yes' in command
+    assert '--service-type=oneshot' in command and '--no-block' in command and '--property=RemainAfterExit=yes' in command
     assert command[command.index('/usr/bin/env') + 1] == '/usr/bin/python3'
     assert '/opt/synthetic-commons/scripts/backup-stack.py' in command
     assert command[-1] == 'create'
@@ -142,7 +143,7 @@ def test_secondary_backup_configuration_runs_on_host_and_needs_csrf(api):
         assert '/opt/synthetic-commons/scripts/backup-secondary.py' in calls[-1]
     configure = calls[0]
     assert configure[-3:] == ('configure', '--mount', '/media/school usb')
-    assert '--property=RemainAfterExit=yes' in configure
+    assert '--property=RemainAfterExit=yes' in configure and '--no-block' in configure
     assert configure[configure.index('/usr/bin/env') + 1] == '/usr/bin/python3'
 
 
