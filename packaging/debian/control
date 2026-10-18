@@ -1,5 +1,5 @@
 Package: edutictac-commons
-Version: 0.1.1~alpha37
+Version: 0.1.1~beta1
 Section: education
 Priority: optional
 Architecture: amd64

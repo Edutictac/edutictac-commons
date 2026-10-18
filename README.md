@@ -1,7 +1,7 @@
 # EduTicTac Commons Stack Local
 
-Versió d'imatges actual: [0.1.1-alpha33](releases/0.1.1-alpha33/README.md).
-Instal·lador Ubuntu amd64: `0.1.1~alpha37`, publicat en el repositori APT.
+Versió d'imatges actual: [0.1.1-beta1](releases/0.1.1-beta1/README.md).
+Instal·lador Ubuntu amd64: `0.1.1~beta1`, candidat per a pilots controlats.
 Proves d'idiomes: `npm ci`, `npx playwright install --with-deps chromium` i
 `make test-i18n`. Instal·lació i restauració aïllades: `make test-installation`.
 
