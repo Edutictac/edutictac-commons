@@ -1,0 +1,95 @@
+/* Fonts Inter i Poppins incloses en EduTicTac Commons (SIL OFL 1.1) */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/static/dist/assets/edutictac/fonts/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa25L7SUc.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/static/dist/assets/edutictac/fonts/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(/static/dist/assets/edutictac/fonts/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa25L7SUc.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(/static/dist/assets/edutictac/fonts/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(/static/dist/assets/edutictac/fonts/pxiByp8kv8JHgFVrLEj6Z1JlFc-K.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(/static/dist/assets/edutictac/fonts/pxiByp8kv8JHgFVrLEj6Z1xlFQ.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(/static/dist/assets/edutictac/fonts/pxiByp8kv8JHgFVrLCz7Z1JlFc-K.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(/static/dist/assets/edutictac/fonts/pxiByp8kv8JHgFVrLCz7Z1xlFQ.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* EduTicTac — identitat visual de l'accés d'EduTicTac Commons (mateixa marca que id.edutictac.es) */
+:root, :host {
+  --pf-global--FontFamily--sans-serif: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --pf-global--FontFamily--heading--sans-serif: "Poppins", "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --pf-global--primary-color--100: #2563eb;
+  --pf-global--primary-color--200: #1d4ed8;
+  --pf-global--active-color--100: #2563eb;
+  --pf-global--link--Color: #2563eb;
+  --pf-global--link--Color--hover: #1d4ed8;
+  --pf-global--BorderRadius--sm: 8px;
+}
+.pf-c-login__main {
+  border-radius: 16px;
+  box-shadow: 0 20px 45px rgba(15, 23, 42, 0.25);
+  overflow: hidden;
+}
+.pf-c-login__main-header h1, .pf-c-title {
+  font-family: "Poppins", "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-weight: 600;
+}
+.pf-c-button.pf-m-primary {
+  border-radius: 10px;
+  font-weight: 600;
+}
+.pf-c-form-control { border-radius: 8px; }
+.pf-c-login__footer, .pf-c-login__footer a { color: #e0e7ff; }
+/* Amaga «Powered by authentik» (l'únic element sense enllaç del peu) */
+ak-brand-links li[data-kind="text"] { display: none !important; }
+/* Amaga el selector d'idioma: el locale «es» porta la traducció valenciana d'EduTicTac (authentik-va) */
+ak-locale-select, ak-locale-selector, .ak-c-locale-select { display: none !important; }

@@ -309,6 +309,13 @@ services:
       - ./data/authentik-templates:/templates
       - ./authentik-compat/2026.8.3/migrate.py:/lifecycle/migrate.py:ro
       - ./authentik-compat/2026.8.3/tenant_to_brand.py:/lifecycle/system_migrations/tenant_to_brand.py:ro
+      # Marca EduTicTac servida pel mateix Authentik en /static/dist/assets/edutictac/.
+      - ./authentik-branding/assets:/web/dist/assets/edutictac:ro
+      - ./authentik-branding/startup_migration.py:/lifecycle/system_migrations/zz_edutictac_branding.py:ro
+      # Traducció valenciana sobre el locale «es» (authentik-va). El nom del
+      # fragment JS canvia amb cada versió: regenerar-lo abans de canviar AUTHENTIK_TAG.
+      - ./authentik-branding/i18n/2026.8.3/es-ES.js:/web/dist/src/locales/chunks/MNQDNCSE.js:ro
+      - ./authentik-branding/i18n/2026.8.3/django.mo:/locale/es_ES/LC_MESSAGES/django.mo:ro
     restart: unless-stopped
 
   authentik-worker:
@@ -337,8 +344,14 @@ services:
       - ./data/authentik:/data
       - ./data/authentik-templates:/templates
       - ./authentik-blueprints/edutictac-commons.yaml:/blueprints/edutictac-commons.yaml:ro
+      - ./authentik-blueprints/edutictac-branding.yaml:/blueprints/edutictac-branding.yaml:ro
+      # Blueprints per defecte d'Authentik 2026.8.3 amb els títols en valencià.
+      - ./authentik-branding/default-blueprints/2026.8.3:/blueprints/default:ro
+      - ./authentik-branding:/blueprints/edutictac-branding:ro
       - ./authentik-compat/2026.8.3/migrate.py:/lifecycle/migrate.py:ro
       - ./authentik-compat/2026.8.3/tenant_to_brand.py:/lifecycle/system_migrations/tenant_to_brand.py:ro
+      - ./authentik-branding/startup_migration.py:/lifecycle/system_migrations/zz_edutictac_branding.py:ro
+      - ./authentik-branding/i18n/2026.8.3/django.mo:/locale/es_ES/LC_MESSAGES/django.mo:ro
     restart: unless-stopped
 
 volumes:

@@ -1,0 +1,163 @@
+# yaml-language-server: $schema=https://goauthentik.io/blueprints/schema.json
+version: 1
+
+metadata:
+  name: EduTicTac Commons - Marca
+  labels:
+    blueprints.goauthentik.io/instantiate: "true"
+    blueprints.goauthentik.io/description: "Marca, tema i fons de l'accés d'EduTicTac Commons"
+
+# Authentik l'aplica quan detecta canvis en este fitxer (instal·lació o
+# actualització de Commons); llavors restablix els canvis manuals de marca.
+# Els recursos els servix el mateix Authentik des de /static/dist/assets/edutictac/.
+# Els títols dels fluxos venen dels blueprints per defecte modificats
+# (authentik-branding/default-blueprints); ací només es posa el fons.
+entries:
+  - model: authentik_blueprints.metaapplyblueprint
+    attrs:
+      identifiers:
+        name: Default - Brand
+      required: false
+  - model: authentik_brands.brand
+    state: present
+    identifiers:
+      domain: authentik-default
+    conditions:
+      - !Find [authentik_brands.brand, [domain, authentik-default]]
+    attrs:
+      branding_title: EduTicTac
+      branding_logo: /static/dist/assets/edutictac/logo.png
+      branding_favicon: /static/dist/assets/edutictac/favicon.png
+      branding_default_flow_background: /static/dist/assets/edutictac/background.jpg
+      branding_custom_css: !File /blueprints/edutictac-branding/custom.css
+      attributes:
+        settings:
+          theme:
+            base: light
+          locale: es
+
+  - model: authentik_flows.flow
+    state: present
+    identifiers:
+      slug: default-authentication-flow
+    conditions:
+      - !Find [authentik_flows.flow, [slug, default-authentication-flow]]
+    attrs:
+      background: /static/dist/assets/edutictac/background.jpg
+
+  - model: authentik_flows.flow
+    state: present
+    identifiers:
+      slug: default-authenticator-static-setup
+    conditions:
+      - !Find [authentik_flows.flow, [slug, default-authenticator-static-setup]]
+    attrs:
+      background: /static/dist/assets/edutictac/background.jpg
+
+  - model: authentik_flows.flow
+    state: present
+    identifiers:
+      slug: default-authenticator-totp-setup
+    conditions:
+      - !Find [authentik_flows.flow, [slug, default-authenticator-totp-setup]]
+    attrs:
+      background: /static/dist/assets/edutictac/background.jpg
+
+  - model: authentik_flows.flow
+    state: present
+    identifiers:
+      slug: default-authenticator-webauthn-setup
+    conditions:
+      - !Find [authentik_flows.flow, [slug, default-authenticator-webauthn-setup]]
+    attrs:
+      background: /static/dist/assets/edutictac/background.jpg
+
+  - model: authentik_flows.flow
+    state: present
+    identifiers:
+      slug: default-invalidation-flow
+    conditions:
+      - !Find [authentik_flows.flow, [slug, default-invalidation-flow]]
+    attrs:
+      background: /static/dist/assets/edutictac/background.jpg
+
+  - model: authentik_flows.flow
+    state: present
+    identifiers:
+      slug: default-password-change
+    conditions:
+      - !Find [authentik_flows.flow, [slug, default-password-change]]
+    attrs:
+      background: /static/dist/assets/edutictac/background.jpg
+
+  - model: authentik_flows.flow
+    state: present
+    identifiers:
+      slug: default-password-recovery-flow
+    conditions:
+      - !Find [authentik_flows.flow, [slug, default-password-recovery-flow]]
+    attrs:
+      background: /static/dist/assets/edutictac/background.jpg
+
+  - model: authentik_flows.flow
+    state: present
+    identifiers:
+      slug: default-provider-authorization-explicit-consent
+    conditions:
+      - !Find [authentik_flows.flow, [slug, default-provider-authorization-explicit-consent]]
+    attrs:
+      background: /static/dist/assets/edutictac/background.jpg
+
+  - model: authentik_flows.flow
+    state: present
+    identifiers:
+      slug: default-provider-authorization-implicit-consent
+    conditions:
+      - !Find [authentik_flows.flow, [slug, default-provider-authorization-implicit-consent]]
+    attrs:
+      background: /static/dist/assets/edutictac/background.jpg
+
+  - model: authentik_flows.flow
+    state: present
+    identifiers:
+      slug: default-provider-invalidation-flow
+    conditions:
+      - !Find [authentik_flows.flow, [slug, default-provider-invalidation-flow]]
+    attrs:
+      background: /static/dist/assets/edutictac/background.jpg
+
+  - model: authentik_flows.flow
+    state: present
+    identifiers:
+      slug: default-request
+    conditions:
+      - !Find [authentik_flows.flow, [slug, default-request]]
+    attrs:
+      background: /static/dist/assets/edutictac/background.jpg
+
+  - model: authentik_flows.flow
+    state: present
+    identifiers:
+      slug: default-source-authentication
+    conditions:
+      - !Find [authentik_flows.flow, [slug, default-source-authentication]]
+    attrs:
+      background: /static/dist/assets/edutictac/background.jpg
+
+  - model: authentik_flows.flow
+    state: present
+    identifiers:
+      slug: default-source-enrollment
+    conditions:
+      - !Find [authentik_flows.flow, [slug, default-source-enrollment]]
+    attrs:
+      background: /static/dist/assets/edutictac/background.jpg
+
+  - model: authentik_flows.flow
+    state: present
+    identifiers:
+      slug: default-user-settings-flow
+    conditions:
+      - !Find [authentik_flows.flow, [slug, default-user-settings-flow]]
+    attrs:
+      background: /static/dist/assets/edutictac/background.jpg
