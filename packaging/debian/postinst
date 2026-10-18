@@ -379,6 +379,17 @@ if [ -n "$AUTHENTIK_API_TOKEN" ] && command -v docker >/dev/null 2>&1; then
     done
 fi
 
+# URL real del portal: en LliureX el port 80 és d'Apache i Commons usa el 8082.
+portal_port="$(sed -n 's/^PORTAL_PORT=//p' "$ENV_FILE" | tail -n 1)"
+case "${portal_port:-80}" in
+    80) portal_url="http://edutictac.local/" ;;
+    *) portal_url="http://edutictac.local:${portal_port}/" ;;
+esac
+desktop_file=/usr/share/applications/edutictac-commons.desktop
+if [ -f "$desktop_file" ]; then
+    sed -i "s#^Exec=xdg-open .*#Exec=xdg-open ${portal_url}#" "$desktop_file"
+fi
+
 if [ -n "$setup_token_notice" ]; then
     if [ -t 1 ] && command -v tput >/dev/null 2>&1 && [ "$(tput colors 2>/dev/null || echo 0)" -ge 8 ]; then
         bold="$(tput bold)"; green="$(tput setaf 2)"; yellow="$(tput setaf 3)"; reset="$(tput sgr0)"
@@ -390,7 +401,7 @@ if [ -n "$setup_token_notice" ]; then
     echo ""
     echo "$border"
     echo "${bold}${green}EduTicTac Commons requereix una activació inicial.${reset}"
-    echo "Obri ${bold}http://edutictac.local/${reset} i usa aquest codi una sola vegada:"
+    echo "Obri ${bold}${portal_url}${reset} i usa aquest codi una sola vegada:"
     echo ""
     echo "   ${bold}${yellow}${setup_token_notice}${reset}"
     echo ""
@@ -400,7 +411,7 @@ if [ -n "$setup_token_notice" ]; then
     if command -v notify-send >/dev/null 2>&1 && [ -n "${SUDO_USER:-}" ]; then
         notify_uid="$(id -u "$SUDO_USER" 2>/dev/null || true)"
         if [ -n "$notify_uid" ] && [ -S "/run/user/$notify_uid/bus" ]; then
-            su -s /bin/sh -c "DBUS_SESSION_BUS_ADDRESS='unix:path=/run/user/$notify_uid/bus' notify-send 'EduTicTac Commons' 'Activació inicial pendent: obri http://edutictac.local/'" "$SUDO_USER" >/dev/null 2>&1 || true
+            su -s /bin/sh -c "DBUS_SESSION_BUS_ADDRESS='unix:path=/run/user/$notify_uid/bus' notify-send 'EduTicTac Commons' 'Activació inicial pendent: obri ${portal_url}'" "$SUDO_USER" >/dev/null 2>&1 || true
         fi
     fi
 elif [ "$had_existing_env" -eq 1 ]; then

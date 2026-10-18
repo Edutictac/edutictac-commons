@@ -57,3 +57,13 @@ def test_fresh_install_from_example_starts_only_core(tmp_path):
     assert values["MODULES_CONFIGURED"] == "0"
     assert values["IMAGE_TAG"] == "0.1.1-alpha32"
     assert values["ADMIN_TAG"] == "0.1.1-alpha32"
+
+
+def test_installer_announces_real_portal_port():
+    # En LliureX el port 80 és d'Apache: Commons passa al 8082 i ha d'anunciar-ho.
+    postinst = (Path(__file__).parents[1] / "packaging/debian/postinst").read_text(encoding="utf-8")
+    assert 'portal_url="http://edutictac.local:${portal_port}/"' in postinst
+    assert "Obri ${bold}${portal_url}${reset}" in postinst
+    assert "obri ${portal_url}'" in postinst
+    assert 'sed -i "s#^Exec=xdg-open .*#Exec=xdg-open ${portal_url}#"' in postinst
+    assert "http://edutictac.local/${reset}" not in postinst
