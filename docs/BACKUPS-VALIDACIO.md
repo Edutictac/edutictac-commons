@@ -40,6 +40,7 @@ Recursos de prova eliminats; cap restauració sobre la instal·lació real.
 Validació del codi: 145 proves Python correctes, 2 Docker optatives de Quiosc
 omeses i 68 de navegador correctes. [CI del codi publicat](https://github.com/Edutictac/edutictac-commons/actions/runs/39102420888).
 
-Les còpies són locals i privades. La rèplica externa xifrada, la instal·lació
-LliureX nova, el pilot Quiosc/Epoptes i el SSO complet entre serveis continuen
-pendents. [Cobertura i instruccions de recuperació](BACKUPS.md).
+Les còpies són locals i privades. Facilitar una segona còpia en un altre
+dispositiu del centre (NAS o disc USB) és una millora opcional segons
+l'equipament disponible; encara no està automatitzada. La instal·lació LliureX
+nova, el pilot Quiosc/Epoptes i el SSO complet entre serveis continuen pendents. [Cobertura i instruccions de recuperació](BACKUPS.md).

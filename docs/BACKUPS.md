@@ -47,8 +47,18 @@ no conté claus ni el contingut de la configuració. Fitxers `0600`, carpetes
 `0700`: la còpia conté dades privades i claus de recuperació.
 
 El manifest i els hashes comproven integritat; no substituïxen una prova real
-de restauració. Les còpies es guarden localment; el trasllat xifrat a una altra
-màquina és una operació addicional.
+de restauració. Les còpies automàtiques es guarden localment en el servidor.
+
+Com a opció segons l'equipament del centre, es pot mantindre una **segona còpia
+en un altre dispositiu del centre**, com un NAS o un disc USB connectat
+periòdicament. Ha de ser un dispositiu diferent del disc del servidor per poder
+recuperar les dades si este falla. No cal un servei de núvol ni enviar les dades
+fora del centre.
+
+Esta segona còpia és opcional i encara no té configuració ni automatització en
+el panell. Cal copiar una carpeta de backup ja completada i verificada, limitar
+l'accés a les persones responsables i protegir les dades i les claus que conté;
+el xifrat és especialment convenient si el dispositiu és extraïble.
 
 ## Programació
 

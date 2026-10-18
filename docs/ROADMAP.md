@@ -180,6 +180,9 @@ backup recent i verificable**.
   Pausa coherent dels serveis amb escriptura i treballs del panell en el host.
 - [x] Publicar i activar alpha27/alpha30 amb la primera còpia completa real i
   el temporitzador d'usuari comprovats. [Guia de recuperació](BACKUPS.md).
+- [ ] Opcional, segons l'equipament del centre: facilitar una segona còpia en
+  un altre dispositiu del centre (NAS o disc USB). Les còpies automàtiques locals
+  ja estan operatives; esta millora no condiciona el tancament de la v1.
 
 ### Fita 4 — EduHoot com a primera activitat integrada
 
