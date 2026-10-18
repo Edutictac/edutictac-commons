@@ -1,6 +1,6 @@
 # Validació dels backups complets — 2026-10-18
 
-## Versió publicada i instal·lada
+## Validació inicial — alpha27/alpha30
 
 Paquet `0.1.1~alpha30` en APT signat i imatges Commons `0.1.1-alpha27`.
 [Metadades del paquet](../releases/0.1.1-alpha27/installer.json) i
@@ -61,5 +61,34 @@ Comprovació del descriptor: substituir la ruta del muntatge no provoca
 escriptura en el directori buit que queda en el servidor.
 
 Estes proves no validen un NAS o USB físic. La nova funció està pendent de
-distribuir i de comprovar sobre el dispositiu escollit pel centre. El servei
-instal·lat alpha27/alpha30 continua fent les còpies locals ja verificades.
+distribuir i de comprovar sobre el dispositiu escollit pel centre. Durant esta validació, el servei
+instal·lat alpha27/alpha30 continuava fent les còpies locals ja verificades.
+
+
+## Publicació i desplegament de la segona còpia — alpha30/alpha34
+
+Imatge d'Administració construïda des de `91ea314`, amb llançador Python del
+host i resposta asíncrona. API, portal i Play mantenen el contingut anterior.
+Paquet alpha34 construït des de `3321d48`, amb conservació del propietari dels
+backups durant l'actualització. [Artefactes i digests](../releases/0.1.1-alpha30/).
+
+La mateixa imatge candidata que s'ha publicat va iniciar un backup complet real
+mitjançant el bus de systemd del host. Va retornar el nom del treball en 0,02 s,
+abans de la pausa dels serveis. Treball completat correctament, còpia
+`commons-20261018T070230Z` v2 completa i serveis recuperats amb HTTP 200.
+[CI del codi d'Administració](https://github.com/Edutictac/edutictac-commons/actions/runs/39106051902)
+correcta: Python i navegador. Les proves de rellotge sincronitzen el polling amb
+les respostes de xarxa; 36 repeticions locals dels fluxos implicats correctes.
+
+La segona còpia queda desactivada: falta triar un NAS o USB muntat en el servidor.
+No s'ha fet una còpia en un dispositiu físic extern al servidor ni una restauració
+sobre les dades reals. Les còpies locals i el temporitzador diari continuen actius.
+
+
+Comprovacions després d'instal·lar alpha34/alpha30: treball nou de configuració
+executat des del contenidor d'Administració amb `Result=success`; segona còpia
+`enabled=false`; lectura de l'estat del temporitzador correcta. Propietari del
+compte del servei i permisos 0700/0600 de tot l'arbre de backups comprovats.
+APIs d'Administració sense sessió responen 401. Des d'un altre dispositiu de la
+tailnet: portada, docent, alumnat, Administració, API, estat de mòduls i EduHoot
+HTTP 200. Claus, perfils i recomptes SQLite conservats en l'actualització.

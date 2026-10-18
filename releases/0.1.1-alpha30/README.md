@@ -30,3 +30,8 @@ un treball real de configuració de la segona còpia.
 
 Els treballs del host es llancen sense esperar que acaben: el panell rep el nom
 del treball abans de la parada de serveis i pot recuperar-ne el seguiment.
+
+Publicada i desplegada el 2026-10-18. [Imatges per digest](images.json),
+[override Compose](compose.images.json) i [paquet APT verificat](installer.json).
+[CI del codi](https://github.com/Edutictac/edutictac-commons/actions/runs/39106051902)
+correcta. [Verificació operativa i límits](../../docs/BACKUPS-VALIDACIO.md).

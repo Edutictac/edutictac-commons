@@ -2,8 +2,8 @@
 
 ## Estat de represa — 2026-10-18
 
-**Publicat i desplegat:** paquet alpha30 i imatges API, portal, Administració i
-Play alpha27. Es conserven EduHoot 1.0.5, Recursos alpha18 i la selecció de mòduls.
+**Publicat i desplegat:** paquet alpha34 i imatges API, portal, Administració i
+Play alpha30. Es conserven EduHoot 1.0.5, Recursos alpha18 i la selecció de mòduls.
 Quiosc continua desactivat fins a preparar Epoptes i validar-lo en aula.
 
 Backups complets v2 operatius: Authentik/PostgreSQL, totes les bases de Mongo,
@@ -11,17 +11,17 @@ Commons/Quiosc, Play, Recursos, fitxers i configuració privada segons les dades
 presents. Primera còpia real comprovada abans d'actualitzar; temporitzador diari
 activat a les 03:15 Europe/Madrid, amb fins a deu minuts de retard aleatori.
 Les còpies són locals i privades. La segona còpia opcional en un NAS o USB del
-centre ja està implementada en codi, amb configuració i reintent des del panell.
-Pendent de distribuir el nou paquet/imatge d'Administració i seleccionar un
-muntatge real per comprovar-la. No està activada en la instal·lació existent.
+centre ja està publicada i desplegada, amb configuració i reintent des del panell.
+Queda desactivada fins a seleccionar un NAS o USB muntat en el servidor i
+comprovar la primera segona còpia real.
 No requerix núvol ni enviament fora del centre. Les còpies del segon dispositiu
 es conserven sense esborrat automàtic; la retenció 7/4/6 continua sent local.
 [Guia de recuperació](BACKUPS.md); [validació del desplegament](BACKUPS-VALIDACIO.md).
 
-Publicació comprovada: 145 proves Python correctes (2 Docker de Quiosc optatives
-omeses), 68 de navegador i restauració completa en un entorn Docker aïllat.
+Publicació comprovada: 178 proves Python correctes (2 Docker de Quiosc optatives
+omeses), 70 de navegador i restauració completa en un entorn Docker aïllat.
 Manifests remots, firma APT i hash del paquet descarregat verificats.
-Notes i metadades: `releases/0.1.1-alpha27/`.
+Notes i metadades: `releases/0.1.1-alpha30/`.
 
 Pròxims passos, per ordre:
 
