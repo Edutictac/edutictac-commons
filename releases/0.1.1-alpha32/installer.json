@@ -1,0 +1,13 @@
+{
+  "package": "edutictac-commons",
+  "version": "0.1.1~alpha36",
+  "architecture": "amd64",
+  "source_revision": "267e85bde723141d6a0395afbf0ffdc8c5fc68e6",
+  "filename": "edutictac-commons_0.1.1~alpha36_amd64.deb",
+  "sha256": "77a2c3ae1c2e3552ef787312a86cddbced92c71e18490ab7517a954a02af392d",
+  "size": 2872420,
+  "default_commons_images": "0.1.1-alpha32",
+  "bundle_images": "none",
+  "download_url": "https://packages.edutictac.es/pool/main/e/edutictac-commons/edutictac-commons_0.1.1~alpha36_amd64.deb",
+  "apt_signature_verified": true
+}

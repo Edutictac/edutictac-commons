@@ -28,9 +28,13 @@ Cada canvi funcional ha de deixar:
 
 ## Estat verificat — 2026-10-18
 
-Versió publicada: **imatges Commons alpha31 i instal·lador alpha35** en APT
-signat. Codi i tag `v0.1.1-alpha31` en Forgejo i GitHub; manifests, firma APT
-i hash del paquet descarregat comprovats. [Notes de publicació](../releases/0.1.1-alpha31/README.md).
+Versió publicada: **imatges Commons alpha32 i instal·lador alpha36** en APT
+signat. Codi i tag `v0.1.1-alpha32` en Forgejo i GitHub; manifests, firma APT
+i hash del paquet descarregat comprovats. [Notes de publicació](../releases/0.1.1-alpha32/README.md).
+
+Novetats d'alpha32/alpha36: Quiosc es prepara automàticament quan l'ordinador té
+servidor Epoptes, sense cap ordre en el servidor; activar-lo continua sent una
+decisió d'Administració. [Detalls](quiosc-local.md).
 
 Novetats d'alpha31/alpha35 (desplegades en la instal·lació existent el 2026-10-18):
 
@@ -67,11 +71,12 @@ registra en [PROPERA-SESSIO.md](PROPERA-SESSIO.md).
 
 1. Validar la instal·lació nova en LliureX: activació, OIDC, selector,
    backups complets, reinici i recuperació.
-2. Validar Quiosc amb Epoptes en una aula real, inclosa restauració dels equips.
+2. Validar Quiosc amb Epoptes en una aula real: preparació automàtica, activació
+   des del panell i restauració dels equips.
 3. Tancar el flux v2 docent: sessió compartida amb Recursos, favorits i
    assignació de la cistella a un itinerari concret.
 
-Desplegament en la instal·lació existent **completat**: alpha35/alpha31, perfils
+Desplegament en la instal·lació existent **completat**: alpha36/alpha32, perfils
 conservats, `.env` i dades SQLite sense canvis i accés per `edutictac.local`
 comprovat des d'un portàtil de la LAN. Primera còpia completa real verificada
 amb alpha30. Temporitzador diari activat
@@ -107,7 +112,7 @@ entre EduHoot, Recursos i Play** continuen a la secció «v2».
 El producte i el paquet ja estan implementats. Queda pendent validar el
 lliurament:
 
-1. provar `edutictac-commons_0.1.1~alpha35_amd64.deb` en una màquina neta real,
+1. provar `edutictac-commons_0.1.1~alpha36_amd64.deb` en una màquina neta real,
    incloent-hi activació, OIDC, flux docent → alumnat → EduHoot i restauració;
 
 El `.deb` ja està publicat en el repositori APT signat
@@ -248,7 +253,7 @@ l'alumnat pot completar-la amb la mateixa identitat pseudònima.
 - [ ] Validar en una màquina neta el paquet `.deb` per a Ubuntu amd64 amb
   dependències, configuració inicial, servei systemd i comprovació
   postinstal·lació.
-- [x] Publicar el `.deb` `0.1.1~alpha35` en el repositori APT signat
+- [x] Publicar el `.deb` `0.1.1~alpha36` en el repositori APT signat
   [`packages.edutictac.es`](https://packages.edutictac.es), amb clau pública,
   índexs signats i documentació d'instal·lació.
 
