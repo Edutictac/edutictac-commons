@@ -1,7 +1,13 @@
 const { test, expect } = require('@playwright/test');
 
+// Obri Play i espera que l'arrencada asíncrona haja enganxat tots els listeners.
+async function openPlay(page, url = '/play/') {
+  await page.goto(url);
+  await page.locator('html[data-play-ready="true"]').waitFor({ state: 'attached' });
+}
+
 test('crear, previsualizar, guardar y reproducir un quiz', async ({ page }) => {
-  await page.goto('/play/');
+  await openPlay(page);
   await page.getByRole('button', { name: 'Quiz' }).click();
   await page.locator('#title').fill('Animales del bosque');
   await page.locator('#question').fill('¿Cuál puede volar?');
@@ -20,7 +26,7 @@ test('crear, previsualizar, guardar y reproducir un quiz', async ({ page }) => {
 });
 
 test('crear y reproducir un reto con varias actividades', async ({ page }) => {
-  await page.goto('/play/');
+  await openPlay(page);
   await page.getByRole('button', { name: 'Modo reto' }).click();
   await page.locator('#title').fill('Reto de ciencias');
   await page.locator('#question').fill('Supera estas dos pruebas');
@@ -52,7 +58,7 @@ test('añadir una actividad guardada desde el banco a un reto', async ({ page, r
   });
   expect(response.ok()).toBeTruthy();
 
-  await page.goto('/play/');
+  await openPlay(page);
   await page.getByRole('button', { name: 'Modo reto' }).click();
   await page.getByRole('button', { name: 'Añadir desde el banco' }).click();
   await expect(page.locator('#compoundBankDialog')).toBeVisible();
@@ -64,7 +70,7 @@ test('añadir una actividad guardada desde el banco a un reto', async ({ page, r
 });
 
 test('crear, previsualizar, guardar y reproducir un verdadero/falso', async ({ page }) => {
-  await page.goto('/play/');
+  await openPlay(page);
   await page.getByRole('button', { name: 'Verdadero/Falso' }).click();
   await page.locator('#title').fill('Ciencia básica');
   await page.locator('#question').fill('El agua se congela a 0 °C.');
@@ -80,7 +86,7 @@ test('crear, previsualizar, guardar y reproducir un verdadero/falso', async ({ p
 });
 
 test('crear y reproducir un Memory', async ({ page }) => {
-  await page.goto('/play/');
+  await openPlay(page);
   await page.getByRole('button', { name: 'Memory' }).click();
   await page.locator('#title').fill('Animales');
   await page.locator('#question').fill('Encuentra las parejas');
@@ -101,7 +107,7 @@ test('crear y reproducir un Memory', async ({ page }) => {
 });
 
 test('crear y reproducir una actividad de relacionar', async ({ page }) => {
-  await page.goto('/play/');
+  await openPlay(page);
   await page.getByRole('button', { name: 'Relacionar' }).click();
   await page.locator('#title').fill('Capitales');
   await page.locator('#question').fill('Relaciona cada país con su capital');
@@ -109,7 +115,7 @@ test('crear y reproducir una actividad de relacionar', async ({ page }) => {
   await page.locator('.match-right').nth(0).fill('Madrid');
   await page.locator('.match-left').nth(1).fill('Italia');
   await page.locator('.match-right').nth(1).fill('Roma');
-  await page.getByRole('button', { name: 'Previsualizar' }).click({ force: true });
+  await page.getByRole('button', { name: 'Previsualizar' }).click();
   await expect(page.locator('#savePreview')).toBeVisible();
   await expect.poll(() => page.frames().length).toBeGreaterThan(1);
   const player = page.frames().find((frame) => frame !== page.mainFrame());
@@ -121,7 +127,7 @@ test('crear y reproducir una actividad de relacionar', async ({ page }) => {
 });
 
 test('crear y reproducir una actividad de clasificar', async ({ page }) => {
-  await page.goto('/play/');
+  await openPlay(page);
   await page.getByRole('button', { name: 'Clasificar' }).click();
   await page.locator('#title').fill('Naturaleza');
   await page.locator('#question').fill('Clasifica cada elemento');
@@ -133,7 +139,7 @@ test('crear y reproducir una actividad de clasificar', async ({ page }) => {
   await page.locator('.classify-category').nth(1).selectOption('1');
   await page.locator('.classify-text').nth(2).fill('Gato');
   await page.locator('.classify-category').nth(2).selectOption('0');
-  await page.getByRole('button', { name: 'Previsualizar' }).click({ force: true });
+  await page.getByRole('button', { name: 'Previsualizar' }).click();
   await expect(page.locator('#savePreview')).toBeVisible();
   await expect.poll(() => page.frames().length).toBeGreaterThan(1);
   const player = page.frames().find((frame) => frame !== page.mainFrame());
@@ -145,7 +151,7 @@ test('crear y reproducir una actividad de clasificar', async ({ page }) => {
 });
 
 test('crear y reproducir una actividad de ordenar', async ({ page }) => {
-  await page.goto('/play/');
+  await openPlay(page);
   await page.getByRole('button', { name: 'Ordenar' }).click();
   await page.locator('#title').fill('Ciclo de una planta');
   await page.locator('#question').fill('Ordena las fases');
@@ -155,7 +161,7 @@ test('crear y reproducir una actividad de ordenar', async ({ page }) => {
   await page.locator('.classify-category').nth(1).selectOption('1');
   await page.locator('.classify-text').nth(2).fill('Flor');
   await page.locator('.classify-category').nth(2).selectOption('2');
-  await page.getByRole('button', { name: 'Previsualizar' }).click({ force: true });
+  await page.getByRole('button', { name: 'Previsualizar' }).click();
   await expect(page.locator('#savePreview')).toBeVisible();
   await expect.poll(() => page.frames().length).toBeGreaterThan(1);
   const player = page.frames().find((frame) => frame !== page.mainFrame());
@@ -166,12 +172,12 @@ test('crear y reproducir una actividad de ordenar', async ({ page }) => {
 });
 
 test('crear y reproducir una actividad de rellenar huecos', async ({ page }) => {
-  await page.goto('/play/');
+  await openPlay(page);
   await page.getByRole('button', { name: 'Rellenar huecos' }).click();
   await page.locator('#title').fill('Ciencia básica');
   await page.locator('#question').fill('Completa la frase');
   await page.locator('#fillBlanksText').fill('El agua hierve a *100* grados.');
-  await page.getByRole('button', { name: 'Previsualizar' }).click({ force: true });
+  await page.getByRole('button', { name: 'Previsualizar' }).click();
   await expect(page.locator('#savePreview')).toBeVisible();
   await expect.poll(() => page.frames().length).toBeGreaterThan(1);
   const player = page.frames().find((frame) => frame !== page.mainFrame());
@@ -181,7 +187,7 @@ test('crear y reproducir una actividad de rellenar huecos', async ({ page }) => 
 });
 
 test('crear y reproducir una sopa de letras', async ({ page }) => {
-  await page.goto('/play/');
+  await openPlay(page);
   await page.getByRole('button', { name: 'Sopa de letras' }).click();
   await page.locator('#title').fill('Naturaleza');
   await page.locator('#question').fill('Encuentra las palabras');
@@ -189,7 +195,7 @@ test('crear y reproducir una sopa de letras', async ({ page }) => {
   await page.locator('.find-word').nth(1).fill('tierra');
   await page.locator('.find-word').nth(2).fill('planta');
   await page.locator('.find-word').nth(3).fill('animal');
-  await page.getByRole('button', { name: 'Previsualizar' }).click({ force: true });
+  await page.getByRole('button', { name: 'Previsualizar' }).click();
   await expect(page.locator('#savePreview')).toBeVisible();
   await expect.poll(() => page.frames().length).toBeGreaterThan(1);
   const player = page.frames().find((frame) => frame !== page.mainFrame());
@@ -200,12 +206,12 @@ test('crear y reproducir una sopa de letras', async ({ page }) => {
 });
 
 test('crear y reproducir una actividad de arrastrar palabras', async ({ page }) => {
-  await page.goto('/play/');
+  await openPlay(page);
   await page.getByRole('button', { name: 'Arrastrar palabras' }).click();
   await page.locator('#title').fill('Planetas');
   await page.locator('#question').fill('Completa la frase');
   await page.locator('#dragTextText').fill('La Tierra gira alrededor del *Sol*.');
-  await page.getByRole('button', { name: 'Previsualizar' }).click({ force: true });
+  await page.getByRole('button', { name: 'Previsualizar' }).click();
   await expect(page.locator('#savePreview')).toBeVisible();
   await expect.poll(() => page.frames().length).toBeGreaterThan(1);
   const player = page.frames().find((frame) => frame !== page.mainFrame());
@@ -215,12 +221,12 @@ test('crear y reproducir una actividad de arrastrar palabras', async ({ page }) 
 });
 
 test('crear y reproducir una actividad de marcar palabras', async ({ page }) => {
-  await page.goto('/play/');
+  await openPlay(page);
   await page.getByRole('button', { name: 'Marcar palabras' }).click();
   await page.locator('#title').fill('Gramática');
   await page.locator('#question').fill('Señala los adjetivos');
   await page.locator('#markWordsText').fill('El *rápido* guepardo cruzó la *seca* llanura.');
-  await page.getByRole('button', { name: 'Previsualizar' }).click({ force: true });
+  await page.getByRole('button', { name: 'Previsualizar' }).click();
   await expect(page.locator('#savePreview')).toBeVisible();
   await expect.poll(() => page.frames().length).toBeGreaterThan(1);
   const player = page.frames().find((frame) => frame !== page.mainFrame());
@@ -230,7 +236,7 @@ test('crear y reproducir una actividad de marcar palabras', async ({ page }) => 
 });
 
 test('crear y reproducir tarjetas de estudio', async ({ page }) => {
-  await page.goto('/play/');
+  await openPlay(page);
   await page.getByRole('button', { name: 'Tarjetas de estudio' }).click();
   await page.locator('#title').fill('Repaso');
   await page.locator('#question').fill('Estudia estos conceptos');
@@ -240,7 +246,7 @@ test('crear y reproducir tarjetas de estudio', async ({ page }) => {
   await page.locator('.dialog-back').nth(1).fill('Marte');
   await page.locator('.dialog-front').nth(2).fill('2 + 2');
   await page.locator('.dialog-back').nth(2).fill('4');
-  await page.getByRole('button', { name: 'Previsualizar' }).click({ force: true });
+  await page.getByRole('button', { name: 'Previsualizar' }).click();
   await expect(page.locator('#savePreview')).toBeVisible();
   await expect.poll(() => page.frames().length).toBeGreaterThan(1);
   const player = page.frames().find((frame) => frame !== page.mainFrame());
@@ -251,7 +257,7 @@ test('crear y reproducir tarjetas de estudio', async ({ page }) => {
 });
 
 test('crear y reproducir un crucigrama', async ({ page }) => {
-  await page.goto('/play/');
+  await openPlay(page);
   await page.getByRole('button', { name: 'Crucigrama' }).click();
   await page.locator('#title').fill('Naturaleza');
   await page.locator('#question').fill('Resuelve el crucigrama');
@@ -263,7 +269,7 @@ test('crear y reproducir un crucigrama', async ({ page }) => {
   await page.locator('.crossword-clue').nth(2).fill('Elevación natural del terreno');
   await page.locator('.crossword-answer').nth(3).fill('bosque');
   await page.locator('.crossword-clue').nth(3).fill('Lugar poblado de árboles');
-  await page.getByRole('button', { name: 'Previsualizar' }).click({ force: true });
+  await page.getByRole('button', { name: 'Previsualizar' }).click();
   await expect(page.locator('#savePreview')).toBeVisible();
   await expect.poll(() => page.frames().length).toBeGreaterThan(1);
   const player = page.frames().find((frame) => frame !== page.mainFrame());
@@ -274,7 +280,7 @@ test('crear y reproducir un crucigrama', async ({ page }) => {
 
 test('el crucigrama mantiene una cuadrícula usable en tablet', async ({ page }) => {
   await page.setViewportSize({ width: 810, height: 1080 });
-  await page.goto('/play/');
+  await openPlay(page);
   await page.getByRole('button', { name: 'Crucigrama' }).click();
   await page.locator('#title').fill('Crucigrama tablet');
   await page.locator('#question').fill('Resuelve');
@@ -284,7 +290,7 @@ test('el crucigrama mantiene una cuadrícula usable en tablet', async ({ page })
     await page.locator('.crossword-answer').nth(index).fill(word);
     await page.locator('.crossword-clue').nth(index).fill(clue);
   }
-  await page.getByRole('button', { name: 'Previsualizar' }).click({ force: true });
+  await page.getByRole('button', { name: 'Previsualizar' }).click();
   await expect(page.locator('#savePreview')).toBeVisible();
   await expect.poll(() => page.frames().length).toBeGreaterThan(1);
   const player = page.frames().find((frame) => frame !== page.mainFrame());
@@ -299,7 +305,7 @@ test('envía a Commons el resultado real de un Quiz H5P', async ({ page }) => {
     scorePayload = route.request().postDataJSON();
     await route.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify({ ok: true, score: scorePayload.score }) });
   });
-  await page.goto('/play/?assignment_id=assignment-test');
+  await openPlay(page, '/play/?assignment_id=assignment-test');
   await page.getByRole('button', { name: 'Quiz' }).click();
   await page.locator('#title').fill('Resultado H5P');
   await page.locator('#question').fill('¿Cuál puede volar?');
@@ -329,7 +335,7 @@ test('reintenta el resultado pendiente al recuperar conexión', async ({ page })
     }
     await route.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify({ ok: true, score: 100 }) });
   });
-  await page.goto('/play/?assignment_id=assignment-test&launch_context=context-test');
+  await openPlay(page, '/play/?assignment_id=assignment-test&launch_context=context-test');
   await page.getByRole('button', { name: 'Quiz' }).click();
   await page.locator('#title').fill('Resultado pendiente');
   await page.locator('#question').fill('¿Cuál puede volar?');
@@ -353,7 +359,7 @@ test('biblioteca: lista, filtra y borra actividades con token', async ({ page, r
   for (const title of [`${marker} uno`, `${marker} dos`]) {
     await request.post('/play/api/activities', { data: { type: 'multiple-choice', title, question: 'q', answers: [{ text: 'a', correct: true }, { text: 'b', correct: false }] } });
   }
-  await page.goto('/play/');
+  await openPlay(page);
   await page.getByRole('button', { name: 'Ver biblioteca' }).click();
   await page.locator('#librarySearch').fill(marker);
   await page.getByRole('button', { name: 'Buscar' }).click();

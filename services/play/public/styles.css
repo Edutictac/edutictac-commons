@@ -36,3 +36,14 @@
  .matching-row,.memory-row{grid-template-columns:1fr 1fr auto;align-items:start}.match-image-label{font-size:13px;color:var(--muted)}.match-image-label input{padding:7px;font-size:13px}@media(max-width:560px){.matching-row,.memory-row{grid-template-columns:1fr auto}}
 
 .demo-notice a { color: var(--accent); font-weight: 700; }
+
+/* Els fieldset tenen min-width: min-content per defecte; amb files de camps i
+   selectors de fitxer eixamplaven el formulari més enllà de la pantalla en mòbil. */
+fieldset, label, fieldset > div, fieldset > section, .matching-row > *, .memory-row > * { min-width: 0; }
+input[type="file"] { width: 100%; }
+input, select, textarea { min-width: 0; max-width: 100%; }
+@media (max-width: 560px) {
+  .matching-row > :not(.remove) { grid-column: 1; }
+  .matching-row input:not([type="file"]) { width: 100%; }
+  .matching-row > .remove { grid-column: 2; grid-row: 1 / span 2; align-self: center; }
+}
