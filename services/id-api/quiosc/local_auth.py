@@ -51,7 +51,9 @@ class LocalAuth:
 
     @property
     def enabled(self):
-        return os.environ.get('QUIOSC_LOCAL_AUTH', '0') == '1'
+        # La preparació deixa QUIOSC_LOCAL_AUTH=1 però Quiosc desactivat fins que
+        # Administració l'activa: llavors no s'obri cap accés local.
+        return os.environ.get('QUIOSC_LOCAL_AUTH', '0') == '1' and self.service.mode != 'disabled'
 
     @property
     def url(self):

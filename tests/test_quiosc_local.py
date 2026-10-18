@@ -262,3 +262,16 @@ def test_auto_discovery_excludes_the_teacher_server(local, monkeypatch):
     service, inventory, _, _ = local
     monkeypatch.setenv('QUIOSC_SERVER_MACS', '02:00:00:00:00:01')
     assert service.automatic_room(refresh=True)['devices'] == []
+
+
+def test_prepared_but_disabled_quiosc_does_not_block_startup(tmp_path, monkeypatch):
+    # Regressió alpha36: preparat (LOCAL_AUTH=1) però desactivat feia caure ID API.
+    monkeypatch.setenv('QUIOSC_DB', str(tmp_path / 'quiosc.db'))
+    monkeypatch.setenv('QUIOSC_MODE', 'disabled')
+    monkeypatch.setenv('QUIOSC_DISCOVERY', 'epoptes')
+    monkeypatch.setenv('QUIOSC_LOCAL_AUTH', '1')
+    monkeypatch.setenv('QUIOSC_LOCAL_SOCKET', str(tmp_path / 'broker.socket'))
+    auth = LocalAuth(Quiosc(), 'synthetic-local-test-signing-secret-1234567890')
+    assert not auth.enabled
+    auth.start()
+    assert not (tmp_path / 'broker.socket').exists()
