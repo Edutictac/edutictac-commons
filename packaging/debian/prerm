@@ -8,6 +8,7 @@ STATE_DIR=/var/lib/edutictac-commons
 
 if [ "${1:-}" = remove ] || [ "${1:-}" = deconfigure ]; then
     systemctl stop edutictac-quiosc-prepare.path >/dev/null 2>&1 || true
+    systemctl disable --now edutictac-quiosc-epoptes.socket >/dev/null 2>&1 || true
     systemctl disable edutictac-quiosc-prepare.path >/dev/null 2>&1 || true
     systemctl stop edutictac-commons.service >/dev/null 2>&1 || true
     systemctl disable edutictac-commons.service >/dev/null 2>&1 || true

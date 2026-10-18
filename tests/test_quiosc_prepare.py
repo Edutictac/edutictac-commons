@@ -47,7 +47,8 @@ def test_preparation_never_enables_quiosc():
 def test_prepare_units_cannot_loop_and_only_prepare():
     path = unit("edutictac-quiosc-prepare.path")
     service = unit("edutictac-quiosc-prepare.service")
-    assert path["Path"]["PathExists"] == "/run/epoptes/epoptes.socket"
+    text = (ROOT / "packaging/edutictac-quiosc-prepare.path").read_text()
+    assert "PathExists=/run/epoptes/epoptes.socket" in text
     assert path["Path"]["Unit"] == "edutictac-quiosc-prepare.service"
     assert service["Service"]["Type"] == "oneshot"
     assert service["Service"]["RemainAfterExit"] == "yes"

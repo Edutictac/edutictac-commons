@@ -1,0 +1,11 @@
+[Unit]
+Description=Pont de Quiosc cap a l'Epoptes de LliureX (una connexió)
+
+[Service]
+ExecStart=/usr/bin/python3 /opt/edutictac-commons/scripts/quiosc-epoptes-bridge.py relay
+StandardInput=socket
+StandardOutput=journal
+StandardError=journal
+NoNewPrivileges=yes
+ProtectHome=yes
+PrivateTmp=yes

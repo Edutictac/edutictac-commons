@@ -58,6 +58,31 @@ no s’obri cap socket d’autorització. Activat, Epoptes es munta en lectura s
 i el directori de connexió local és l’únic muntatge addicional amb escriptura.
 No es munta el socket Docker ni s’usa un contenidor privilegiat.
 
+## Epoptes de LliureX
+
+L'Epoptes de LliureX 23 està modificat: no publica `/run/epoptes/epoptes.socket`
+i la GUI parla per TCP en el port 10000. LliureX el protegix amb dos connectors
+n4d: `EpoptesServer` tanca el port i l'obri per IP quan algú autoritzat crida
+`register_ip`, i `EpoptesFilter` només deixa connectar-se els grups `teachers`,
+`admins`, root i l'usuari principal de l'equip (gid 1000).
+
+Commons s'hi adapta **sense modificar res de LliureX**. El paquet instal·la
+`edutictac-quiosc-epoptes.socket`, que només s'activa si existix el connector
+`EpoptesServer`. Oferix un socket Unix de root en
+`/run/edutictac-quiosc-epoptes/epoptes.socket` amb la mateixa política: grup de
+servei de Commons i una ACL amb els grups que LliureX autoritza, llegits del seu
+connector i de les seues regles. Cada connexió arranca un pont efímer
+(`scripts/quiosc-epoptes-bridge.py`, sense dimoni resident) que:
+
+1. comprova que el port 10000 l'escolta el dimoni Epoptes de root; si no, talla;
+2. si el port local està tancat, el registra amb la mateixa crida n4d que la GUI
+   d'Epoptes, autenticat amb la clau mestra de n4d de root i només per a
+   `127.0.0.1`: des de la xarxa continua tancat;
+3. passa les dades sense interpretar-les ni registrar-les.
+
+La preparació automàtica detecta este socket igual que l'estàndard i la resta
+del procés (llançador, prova del nucli, cookie) no canvia.
+
 ## Com es comprova el permís
 
 1. El llançador s’executa amb l’usuari real del docent, mai amb sudo. Connecta

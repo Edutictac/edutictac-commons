@@ -338,8 +338,13 @@ fi
 # Quiosc: si este equip té servidor Epoptes, es prepara sol (sense activar-lo).
 # La unitat .path també cobrix un Epoptes instal·lat o arrancat més tard.
 if command -v systemctl >/dev/null 2>&1; then
+    # En LliureX el seu Epoptes no té socket Unix: Commons n'oferix un amb la mateixa política.
+    if [ -f /usr/share/n4d/python-plugins/EpoptesServer.py ]; then
+        systemctl enable edutictac-quiosc-epoptes.socket >/dev/null 2>&1 || true
+        systemctl restart edutictac-quiosc-epoptes.socket >/dev/null 2>&1 || true
+    fi
     systemctl enable --now edutictac-quiosc-prepare.path >/dev/null 2>&1 || true
-    if [ -S /run/epoptes/epoptes.socket ]; then
+    if [ -S /run/epoptes/epoptes.socket ] || [ -S /run/edutictac-quiosc-epoptes/epoptes.socket ]; then
         echo "Servidor Epoptes detectat: es prepara Quiosc; s'activa des d'Administració."
         systemctl restart --no-block edutictac-quiosc-prepare.service >/dev/null 2>&1 || true
     fi

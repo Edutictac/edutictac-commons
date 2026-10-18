@@ -1,0 +1,16 @@
+[Unit]
+Description=Socket de Quiosc d'EduTicTac Commons per a l'Epoptes de LliureX
+# Només en LliureX: el seu Epoptes usa TCP 10000 en lloc d'un socket Unix.
+ConditionPathExists=/usr/share/n4d/python-plugins/EpoptesServer.py
+ConditionPathExists=/opt/edutictac-commons/.env
+
+[Socket]
+ListenStream=/run/edutictac-quiosc-epoptes/epoptes.socket
+Accept=yes
+SocketMode=0600
+DirectoryMode=0755
+# Grup de servei de Commons i ACL amb els grups que LliureX autoritza per a Epoptes.
+ExecStartPost=/usr/bin/python3 /opt/edutictac-commons/scripts/quiosc-epoptes-bridge.py setup-socket
+
+[Install]
+WantedBy=sockets.target

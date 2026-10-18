@@ -4,6 +4,8 @@ Description=Detecta el servidor Epoptes per a preparar Quiosc d'EduTicTac Common
 [Path]
 # Epoptes crea este socket en arrancar; si apareix més tard, es prepara llavors.
 PathExists=/run/epoptes/epoptes.socket
+# En LliureX, el socket del pont de Commons (edutictac-quiosc-epoptes.socket).
+PathExists=/run/edutictac-quiosc-epoptes/epoptes.socket
 Unit=edutictac-quiosc-prepare.service
 
 [Install]
