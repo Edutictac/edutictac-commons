@@ -216,6 +216,7 @@ services:
       - /run/systemd/system:/run/systemd/system:ro
       - ${XDG_CONFIG_HOME:-$HOME/.config}/systemd/user:/hostcfg/systemd/user
       - ./backups:/app/backups
+      - ./VERSION:/app/VERSION:ro
       - ./data:/app/data:ro
       - ./data/content-sync:/app/content-sync
     ports:

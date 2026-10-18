@@ -16,6 +16,8 @@ No canvia cap fitxer, regla ni servei de LliureX: usa les seues API (n4d) i
 llig la seua política. No demana ni guarda contrasenyes.
 """
 import argparse
+import fcntl
+import ipaddress
 import os
 from pathlib import Path
 import re
@@ -86,20 +88,40 @@ def loopback_registered(rules=None):
     if rules is None:
         result = subprocess.run(['iptables', '-w', '5', '-S', 'INPUT'], capture_output=True, text=True)
         rules = result.stdout if result.returncode == 0 else ''
-    return any('-s 127.0.0.1/32' in line and '--dport %d' % EPOPTES_PORT in line and '-j ACCEPT' in line
-               for line in rules.splitlines())
+    # n4d can leave a duplicate DROP before its ACCEPT during startup. An
+    # ACCEPT below that DROP does not permit connections: rule order matters.
+    for line in rules.splitlines():
+        if not line.startswith('-A INPUT ') or '--dport %d ' % EPOPTES_PORT not in line:
+            continue
+        source = re.search(r'(?:^| )-s (\S+)', line)
+        if source:
+            try:
+                if ipaddress.ip_address('127.0.0.1') not in ipaddress.ip_network(source.group(1)):
+                    continue
+            except ValueError:
+                return False
+        if '-j DROP' in line or '-j REJECT' in line:
+            return False
+        if '-s 127.0.0.1/32' in line and '-j ACCEPT' in line:
+            return True
+    return False
 
 
 def ensure_loopback_registered():
     """Obri el port local com fa la GUI d'Epoptes, però amb la clau mestra de n4d."""
     if loopback_registered():
         return
-    # Mateixa crida que /usr/bin/epoptes; n4d substituïx l'argument per la IP de qui crida.
-    import n4d.client
-    client = n4d.client.Client(address='https://localhost:9779', key=n4d.client.Key.master_key())
-    client.EpoptesServer.register_ip('')
-    if not loopback_registered():
-        raise PermissionError('n4d no ha obert el port local d’Epoptes')
+    # Serialize our registrations: n4d rebuilds these rules without a lock.
+    with SOCKET_PATH.with_name('register.lock').open('a') as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        if loopback_registered():
+            return
+        # Mateixa crida que /usr/bin/epoptes; n4d substituïx l'argument per la IP de qui crida.
+        import n4d.client
+        client = n4d.client.Client(address='https://localhost:9779', key=n4d.client.Key.master_key())
+        client.EpoptesServer.register_ip('')
+        if not loopback_registered():
+            raise PermissionError('n4d no ha obert el port local d’Epoptes')
 
 
 def listening_inodes(port=EPOPTES_PORT, table='/proc/net/tcp'):

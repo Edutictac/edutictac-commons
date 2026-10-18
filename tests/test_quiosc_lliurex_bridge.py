@@ -45,6 +45,15 @@ def test_loopback_registration_detected_only_for_accept_rule():
     assert not bridge.loopback_registered(other)
 
 
+def test_loopback_accept_below_startup_drop_requires_registration():
+    drop = '-A INPUT -p tcp -m tcp --dport 10000 -j DROP\n'
+    accept = '-A INPUT -s 127.0.0.1/32 -p tcp -m tcp --dport 10000 -j ACCEPT\n'
+    assert not bridge.loopback_registered(drop + accept + drop)
+    assert bridge.loopback_registered(accept + drop)
+    unrelated = '-A INPUT -s 192.0.2.1/32 -p tcp --dport 10000 -j DROP\n'
+    assert bridge.loopback_registered(unrelated + accept + drop)
+
+
 def fake_proc(tmp_path, owner_uid, cmdline, inode="4242", address="00000000"):
     proc = tmp_path / "proc"
     (proc / "net").mkdir(parents=True)
