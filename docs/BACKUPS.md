@@ -49,16 +49,78 @@ no conté claus ni el contingut de la configuració. Fitxers `0600`, carpetes
 El manifest i els hashes comproven integritat; no substituïxen una prova real
 de restauració. Les còpies automàtiques es guarden localment en el servidor.
 
-Com a opció segons l'equipament del centre, es pot mantindre una **segona còpia
-en un altre dispositiu del centre**, com un NAS o un disc USB connectat
-periòdicament. Ha de ser un dispositiu diferent del disc del servidor per poder
-recuperar les dades si este falla. No cal un servei de núvol ni enviar les dades
-fora del centre.
+## Segona còpia opcional en un dispositiu del centre
 
-Esta segona còpia és opcional i encara no té configuració ni automatització en
-el panell. Cal copiar una carpeta de backup ja completada i verificada, limitar
-l'accés a les persones responsables i protegir les dades i les claus que conté;
-el xifrat és especialment convenient si el dispositiu és extraïble.
+Implementada en el codi posterior a alpha27/paquet alpha30; pendent de distribuir
+amb la pròxima versió del paquet i de la imatge d'Administració.
+
+En **Administració → Backups → Segona còpia del centre**, indicar el punt de
+muntatge del NAS o USB en el servidor (per exemple, `/mnt/copias-centre`) i prémer
+**Activar en este dispositiu**. Després es pot usar **Copiar l'últim backup ara**
+per fer la primera còpia sense esperar la programació diària. **Desactivar
+segona còpia** conserva tant les còpies locals com les del dispositiu.
+
+El centre ha de muntar el dispositiu prèviament amb les ferramentes del sistema.
+El panell no munta unitats ni demana credencials de xarxa. Cal un dispositiu
+físic diferent del disc del servidor, amb permís d'escriptura per al compte que
+executa Commons i permisos privats: carpetes 0700 i fitxers 0600. El xifrat és
+especialment convenient per a dispositius extraïbles. No cal núvol ni enviar
+les dades fora del centre.
+
+Es comprova el muntatge, es rebutja el mateix sistema de fitxers i, quan sysfs
+permet identificar-los, particions/LVM/RAID que comparteixen discos físics amb
+els backups locals. Es registra una empremta del dispositiu (UUID o origen de
+xarxa); si canvia, cal revisar i tornar a activar el destí. Un sistema de
+fitxers que no permeta verificar permisos privats es rebutja. En configuracions
+d'emmagatzematge que no expose sysfs, el responsable ha de comprovar que el
+destí es troba en un altre dispositiu físic.
+
+Cada backup local manual o programat es copia **després de completar-lo i de
+reprendre els serveis**. El destí és:
+
+```text
+<punt-de-muntatge>/edutictac-commons/<identificador-instal·lació>/commons-<data>/
+```
+
+La còpia es prepara en una carpeta temporal del dispositiu i només es publica
+quan els hashes de tots els fitxers coincideixen amb la còpia local validada.
+Un reintent comprova una còpia ja existent sense sobreescriure-la. Si hi ha
+contingut diferent amb el mateix nom, s'atura i es conserva el contingut existent.
+No es puja un format v1 parcial.
+
+Si el dispositiu està desconnectat, canvia, es queda sense espai o falla
+l'escriptura, es manté la còpia local i el panell mostra l'últim intent fallit.
+El resultat del backup local continua sent correcte i s'aplica la seua retenció.
+El descriptor del muntatge es manté obert durant la còpia per evitar escriure
+en el directori buit del servidor si es desmunta la unitat. Tornar a connectar
+el dispositiu i prémer **Copiar l'últim backup ara** reintenta la còpia; la següent
+execució diària també ho intentarà. El botó copia l'últim backup, no tot l'històric.
+
+**Retenció:** el 7/4/6 continua aplicant-se només a les còpies locals. La segona
+còpia conserva les carpetes publicades, sense esborrat automàtic. Cal revisar
+periòdicament l'espai i gestionar les còpies antigues del dispositiu; el panell
+avisa si una còpia no cap.
+
+La configuració (`backups/secondary.json`) i l'últim resultat
+(`backups/secondary-status.json`) són locals i privats. No s'inclouen en la
+restauració de dades: després de canviar de servidor, cal tornar a seleccionar
+el dispositiu. No es guarden credencials del NAS.
+
+CLI equivalent, des del directori de la instal·lació i amb el mateix compte del
+servei (sense `sudo`):
+
+```bash
+python3 scripts/backup-secondary.py configure --mount /mnt/copias-centre
+python3 scripts/backup-secondary.py copy
+python3 scripts/backup-secondary.py disable
+```
+
+Per recuperar una còpia del dispositiu, traslladar la carpeta `commons-<data>`
+completa a `backups/` en el servidor de destí, mantenint permisos 0700/0600.
+Validar-la amb `backup-check.sh` i usar el selector de restauració habitual del
+panell. No sobreescriure una carpeta local existent: comprovar primer si és la
+mateixa còpia. La recuperació completa conserva les mateixes comprovacions i
+còpia de seguretat prèvia que una restauració des del disc local.
 
 ## Programació
 

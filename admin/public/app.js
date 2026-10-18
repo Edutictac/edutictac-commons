@@ -59,6 +59,7 @@ async function loadModules() {
     }
     const busy = Boolean(moduleJobUnit || backupJobUnit) || state.phase === "applying";
     document.getElementById("backupCreateBtn").disabled = busy;
+    document.getElementById("secondaryControls").disabled = busy;
     choices.disabled = !state.manageable || busy;
     apply.disabled = !state.manageable || busy;
     const quiosc = modulesForm.querySelector('[value="quiosc"]');
@@ -76,6 +77,7 @@ async function loadModules() {
     choices.disabled = true;
     apply.disabled = true;
     setOutput(notice, t("modules.unavailable"), true);
+    document.getElementById("secondaryControls").disabled = true;
   }
 }
 
@@ -289,6 +291,7 @@ async function loadStatus() {
     populateBackupSelect(data.backups || []);
     populateRollbackSelect(data.backups || []);
     setOutput(statusOutput, renderStatus(data), false);
+    renderSecondary(data.backup_secondary);
     await loadModules();
   } catch (err) {
     setOutput(statusOutput, `${t("common.errorLabel")} ${err.message}`, true);
@@ -443,6 +446,7 @@ document.getElementById("logoutBtn").addEventListener("click", () => {
     statusOutput.classList.add("empty");
     closeModuleWizard();
     moduleState = null;
+    document.getElementById("secondaryControls").disabled = true;
     document.getElementById("modulesChoices").disabled = true;
     document.getElementById("modulesApply").disabled = true;
   });
@@ -522,6 +526,7 @@ setOutput(actionOutput, t("common.actionPlaceholder"), false);
 actionOutput.classList.add("empty");
 window.addEventListener("edutictac:langchange", () => {
   if (moduleState) loadModules();
+  if (secondaryState) renderSecondary(secondaryState);
 });
 loadStatus();
 
@@ -529,3 +534,36 @@ loadStatus();
 if ((backupJobUnit || moduleJobUnit) && jobPollTimer === null && !jobPollInFlight) {
   jobPollTimer = setTimeout(() => pollJob(backupJobUnit || moduleJobUnit, Date.now()), JOB_POLL_INTERVAL_MS);
 }
+
+let secondaryState = null;
+function renderSecondary(state) {
+  secondaryState = state || { enabled: false, mount: "", last: {} };
+  const input = document.getElementById("secondaryMount");
+  if (document.activeElement !== input && !input.dataset.dirty) input.value = secondaryState.mount || "";
+  document.getElementById("secondaryCopy").disabled = !secondaryState.enabled;
+  document.getElementById("secondaryDisable").disabled = !secondaryState.enabled;
+  const last = secondaryState.last || {};
+  const result = last.error === "invalid_configuration" ? "failed" : secondaryState.enabled ? last.result || "ready" : "disabled";
+  const message = [t(`secondary.state.${result}`), last.backup || "", last.checked_at || ""];
+  if (result === "failed" && last.error) message.push(t(`secondary.error.${last.error}`) === `secondary.error.${last.error}` ? t("secondary.error.copy_failed") : t(`secondary.error.${last.error}`));
+  setOutput(document.getElementById("secondaryStatus"), message.filter(Boolean).join(" · "), result === "failed");
+}
+
+document.getElementById("secondaryMount").addEventListener("input", (event) => { event.target.dataset.dirty = "1"; });
+document.getElementById("secondaryForm").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  document.getElementById("secondaryControls").disabled = true;
+  document.getElementById("secondaryMount").dataset.dirty = "";
+  await runJobAction("/api/backup/secondary", { action: "configure", mount: document.getElementById("secondaryMount").value.trim() });
+  document.getElementById("secondaryControls").disabled = Boolean(backupJobUnit);
+});
+document.getElementById("secondaryCopy").addEventListener("click", async () => {
+  document.getElementById("secondaryControls").disabled = true;
+  await runJobAction("/api/backup/secondary", { action: "copy" });
+  document.getElementById("secondaryControls").disabled = Boolean(backupJobUnit);
+});
+document.getElementById("secondaryDisable").addEventListener("click", async () => {
+  document.getElementById("secondaryControls").disabled = true;
+  await runJobAction("/api/backup/secondary", { action: "disable" });
+  document.getElementById("secondaryControls").disabled = Boolean(backupJobUnit);
+});

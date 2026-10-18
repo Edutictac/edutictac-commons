@@ -128,3 +128,35 @@ def test_completed_backup_job_is_still_queryable(monkeypatch):
     monkeypatch.setattr(admin, 'run_script', lambda *args, **kwargs: (True, 'complete'))
     result = admin.job_status('edutictac-commons-backup-20261018060000-aabbccdd')
     assert result['running'] is False and result['result'] == 'success'
+
+
+def test_secondary_backup_configuration_runs_on_host_and_needs_csrf(api):
+    request, state, identity, calls = api
+    assert request('POST', '/api/backup/secondary', {'action': 'disable'})[0] == 403
+    assert request('POST', '/api/backup/secondary', {'action': 'disable'}, headers={'X-Commons-Backup':'1', 'Origin':'https://untrusted.example'})[0] == 403
+    for action in ['configure', 'copy', 'disable']:
+        code, result = request('POST', '/api/backup/secondary', {'action':action, 'mount':'/media/school usb'}, headers={'X-Commons-Backup':'1'})
+        assert code == 202 and admin.JOB_UNIT_RE.fullmatch(result['unit'])
+        assert '/opt/synthetic-commons/scripts/backup-secondary.py' in calls[-1]
+    configure = calls[0]
+    assert configure[-3:] == ('configure', '--mount', '/media/school usb')
+    assert '--property=RemainAfterExit=yes' in configure
+
+
+@pytest.mark.parametrize('payload', [{'action':[]}, {'action':'mount'}, {'action':'configure','mount':'relative'}, {'action':'configure','mount':'/'}, []])
+def test_secondary_backup_rejects_invalid_configuration(api, payload):
+    request, state, identity, calls = api
+    assert request('POST', '/api/backup/secondary', payload, headers={'X-Commons-Backup':'1'})[0] == 400
+    assert calls == []
+
+
+def test_admin_imports_secondary_support_in_container_layout(tmp_path):
+    import shutil
+    import subprocess
+    for name in ['server.py', 'content_sync.py', 'modules.py']:
+        shutil.copyfile(ROOT / 'admin' / name, tmp_path / name)
+    (tmp_path / 'scripts').mkdir()
+    shutil.copyfile(ROOT / 'scripts/backup_secondary.py', tmp_path / 'scripts/backup_secondary.py')
+    result = subprocess.run([sys.executable, '-c', 'import server; assert callable(server.secondary_status)'],
+                            cwd=tmp_path, capture_output=True, timeout=10)
+    assert result.returncode == 0

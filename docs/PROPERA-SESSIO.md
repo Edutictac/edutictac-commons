@@ -10,9 +10,12 @@ Backups complets v2 operatius: Authentik/PostgreSQL, totes les bases de Mongo,
 Commons/Quiosc, Play, Recursos, fitxers i configuració privada segons les dades
 presents. Primera còpia real comprovada abans d'actualitzar; temporitzador diari
 activat a les 03:15 Europe/Madrid, amb fins a deu minuts de retard aleatori.
-Les còpies són locals i privades. Com a millora opcional, segons l'equipament,
-es podrà facilitar una segona còpia en un altre dispositiu del centre (NAS o
-disc USB), sense requerir núvol ni enviament fora del centre.
+Les còpies són locals i privades. La segona còpia opcional en un NAS o USB del
+centre ja està implementada en codi, amb configuració i reintent des del panell.
+Pendent de distribuir el nou paquet/imatge d'Administració i seleccionar un
+muntatge real per comprovar-la. No està activada en la instal·lació existent.
+No requerix núvol ni enviament fora del centre. Les còpies del segon dispositiu
+es conserven sense esborrat automàtic; la retenció 7/4/6 continua sent local.
 [Guia de recuperació](BACKUPS.md); [validació del desplegament](BACKUPS-VALIDACIO.md).
 
 Publicació comprovada: 145 proves Python correctes (2 Docker de Quiosc optatives

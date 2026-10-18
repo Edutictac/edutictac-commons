@@ -106,6 +106,21 @@
           <button id="timerInstallBtn" type="button" data-i18n="backup.installTimer">Activar backups automàtics</button>
           <button id="timerUninstallBtn" type="button" class="secondary" data-i18n="backup.uninstallTimer">Desactivar backups automàtics</button>
         </div>
+        <form id="secondaryForm">
+          <fieldset id="secondaryControls" disabled>
+            <legend data-i18n="secondary.title">Segona còpia del centre (opcional)</legend>
+            <p class="hint" data-i18n="secondary.help">Utilitza un NAS o un disc USB muntat en el servidor, en un dispositiu diferent. No cal núvol.</p>
+            <label for="secondaryMount" data-i18n="secondary.mount">Punt de muntatge del NAS o USB</label>
+            <input id="secondaryMount" type="text" placeholder="/media/commons-backup" autocomplete="off" maxlength="1024" required>
+            <p class="hint" data-i18n="secondary.mounted">El dispositiu ha d’estar muntat i permetre fitxers privats. Si falta, es conserva el backup local i s’avisa ací.</p>
+            <div class="actions">
+              <button id="secondarySave" type="submit" data-i18n="secondary.save">Activar en este dispositiu</button>
+              <button id="secondaryCopy" type="button" class="secondary" data-i18n="secondary.copy">Copiar l’últim backup ara</button>
+              <button id="secondaryDisable" type="button" class="secondary" data-i18n="secondary.disable">Desactivar segona còpia</button>
+            </div>
+          </fieldset>
+          <p id="secondaryStatus" role="status" aria-live="polite"></p>
+        </form>
         <label>
           <span data-i18n="backup.restoreLabel">Backup per restaurar</span>
           <select id="restoreBackupSelect"></select>

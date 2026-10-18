@@ -123,3 +123,56 @@ test('el backup completo se sigue tras recargar y tolera la pausa de los servici
   await expect.poll(() => page.evaluate(() => sessionStorage.getItem('commons-backup-job'))).toBe(null);
   await expect(page.locator('#backupCreateBtn')).toBeEnabled();
 });
+
+
+test('segunda copia opcional: configurar, verificar, reintentar y desactivar', async ({ page }) => {
+  await mockModules(page);
+  const secondary = { enabled: false, mount: '', last: {} };
+  let submitted;
+  const unit = 'edutictac-commons-backup-20261018090000-01234567';
+  await page.route('**/admin/api/status', route => route.fulfill({ json: {
+    stack_version: 'test', active_profiles: [], services: {}, backups: [], backup_timer: {},
+    backup_secondary: secondary, checked_at: 'test',
+  } }));
+  await page.route('**/admin/api/backup/secondary', route => {
+    expect(route.request().headers()['x-commons-backup']).toBe('1');
+    submitted = route.request().postDataJSON();
+    return route.fulfill({ status: 202, json: { ok: true, unit } });
+  });
+  await page.route('**/admin/api/job-status?*', route => {
+    if (submitted.action === 'configure') {
+      secondary.enabled = true; secondary.mount = submitted.mount; secondary.last = { result:'ready' };
+    } else if (submitted.action === 'copy') {
+      secondary.last = { result:'success', backup:'commons-20261018T061500Z', checked_at:'2026-10-18T09:00:00Z' };
+    } else {
+      secondary.enabled = false;
+    }
+    return route.fulfill({ json: { running:false, result:'success', log:'secondary: completed' } });
+  });
+  await page.locator('#refreshBtn').click();
+  await expect(page.locator('#secondaryStatus')).toContainText('desactivada');
+  await expect(page.locator('#secondaryCopy')).toBeDisabled();
+  await page.locator('#secondaryMount').fill('/media/centro usb');
+  await page.locator('#secondarySave').click();
+  expect(submitted).toEqual({ action:'configure', mount:'/media/centro usb' });
+  await page.clock.fastForward(3100);
+  await expect(page.locator('#secondaryStatus')).toContainText('Destino comprobado');
+  await expect(page.locator('#secondaryCopy')).toBeEnabled();
+  secondary.last = { result:'failed', error:'device_unavailable' };
+  await page.locator('#refreshBtn').click();
+  await expect(page.locator('#secondaryStatus')).toContainText('no está montado');
+  for (const [lang, text] of [['en','not mounted'], ['ca','no està muntat'], ['va','no està muntat'], ['es','no está montado']]) {
+    await page.locator('header [data-lang="'+lang+'"]').click();
+    await expect(page.locator('#secondaryStatus')).toContainText(text);
+  }
+  await page.locator('#secondaryCopy').click();
+  expect(submitted).toEqual({ action:'copy' });
+  await page.clock.fastForward(3100);
+  await expect(page.locator('#secondaryStatus')).toContainText('Última segunda copia verificada');
+  await page.locator('#secondaryDisable').click();
+  expect(submitted).toEqual({ action:'disable' });
+  await page.clock.fastForward(3100);
+  await expect(page.locator('#secondaryStatus')).toContainText('desactivada');
+  await expect(page.locator('#secondaryCopy')).toBeDisabled();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBeTruthy();
+});

@@ -22,6 +22,12 @@ from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
+_scripts = Path(__file__).resolve().parent / "scripts"
+if not _scripts.is_dir():
+    _scripts = Path(__file__).resolve().parent.parent / "scripts"
+sys.path.insert(0, str(_scripts))
+from backup_secondary import public_status as secondary_status, mount_path, SecondaryError
+
 from content_sync import sync_channel
 from modules import load_public_state, selection as module_selection, snapshot as module_snapshot
 
@@ -230,6 +236,7 @@ def build_status():
         "backups": backups,
         "coverage_warnings": coverage_warnings,
         "backup_timer": get_timer_status(),
+        "backup_secondary": secondary_status(BACKUPS_DIR),
         "checked_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
     }
 
@@ -350,6 +357,30 @@ def action_backup_create(payload):
 
 
 ACTIONS["/api/backup/create"] = action_backup_create
+
+
+def action_backup_secondary(payload):
+    if not isinstance(payload, dict) or not isinstance(payload.get("action"), str) or payload["action"] not in {"configure", "disable", "copy"}:
+        return False, "invalid_action", 400
+    action = payload["action"]
+    arguments = [action]
+    if action == "configure":
+        try:
+            mount = mount_path(payload.get("mount"))
+        except SecondaryError:
+            return False, "invalid_mount", 400
+        arguments += ["--mount", str(mount)]
+    repo = os.environ.get("REPO_DIR", str(APP_DIR))
+    unit = "edutictac-commons-backup-" + datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S") + "-" + secrets.token_hex(4)
+    ok, _ = run_script("systemd-run", "--user", "--service-type=oneshot",
+                       "--property=RemainAfterExit=yes", "--property=TimeoutStartSec=30min",
+                       "--property=TimeoutStopSec=5min", f"--unit={unit}",
+                       f"--property=WorkingDirectory={repo}", "/usr/bin/python3",
+                       str(Path(repo) / "scripts/backup-secondary.py"), *arguments)
+    return ok, "secondary_started" if ok else "host_runner_unavailable", 202 if ok else 503, {"unit": unit} if ok else {}
+
+
+ACTIONS["/api/backup/secondary"] = action_backup_secondary
 
 
 def action_backup_restore(payload):
@@ -611,7 +642,7 @@ class Handler(BaseHTTPRequestHandler):
         if not self._is_authorized():
             self._send_json(401, {"error": "no autoritzat"})
             return
-        if self.path in {"/api/modules", "/api/backup/create", "/api/backup/restore"}:
+        if self.path in {"/api/modules", "/api/backup/create", "/api/backup/restore", "/api/backup/secondary"}:
             origin = self.headers.get("Origin")
             host = self.headers.get("Host", "")
             invalid_origin = origin is not None and urllib.parse.urlsplit(origin).netloc.lower() != host.lower()

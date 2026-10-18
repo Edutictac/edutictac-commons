@@ -593,7 +593,18 @@ def main():
     else:
         with stack.locks():
             if args.action == 'create':
-                stack.create()
+                destination = stack.create()
+                # Writers have already resumed. A missing removable device must
+                # not invalidate the complete local backup or stop retention.
+                from backup_secondary import Secondary
+                secondary = Secondary(stack.backups)
+                try:
+                    with secondary.locked():
+                        result = secondary.copy(destination, stack.validate)
+                    if result != 'disabled':
+                        print('secondary: success', flush=True)
+                except Exception:
+                    print('secondary: warning; revisa l’estat de la segona còpia en Administració', flush=True)
             elif args.backup:
                 stack.restore(args.backup)
             else:

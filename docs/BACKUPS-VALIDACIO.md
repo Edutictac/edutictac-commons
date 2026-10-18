@@ -42,5 +42,24 @@ omeses i 68 de navegador correctes. [CI del codi publicat](https://github.com/Ed
 
 Les còpies són locals i privades. Facilitar una segona còpia en un altre
 dispositiu del centre (NAS o disc USB) és una millora opcional segons
-l'equipament disponible; encara no està automatitzada. La instal·lació LliureX
+l'equipament disponible. La implementació posterior es detalla a continuació. La instal·lació LliureX
 nova, el pilot Quiosc/Epoptes i el SSO complet entre serveis continuen pendents. [Cobertura i instruccions de recuperació](BACKUPS.md).
+
+
+## Segona còpia opcional — implementació posterior a alpha27
+
+Validació del codi preparat: **178 proves Python correctes i 2 Docker optatives
+omeses**. Suite completa de navegador: **70 proves correctes**; després dels
+ajustos finals de presentació, 14 proves d'Administració en escriptori/mòbil
+correctes, inclosa la segona còpia i l'amplària de la pantalla mòbil.
+
+Configuració i treballs en el host, seguiment del panell en escriptori/mòbil i
+traduccions CA/VA/ES/EN. Proves amb dades sintètiques i destí temporal: activació,
+còpia verificada, reintent, desactivació, desconnexió, canvi de dispositiu,
+falta d'espai, error d'escriptura, permisos, conflicte i bloqueig concurrent.
+Comprovació del descriptor: substituir la ruta del muntatge no provoca
+escriptura en el directori buit que queda en el servidor.
+
+Estes proves no validen un NAS o USB físic. La nova funció està pendent de
+distribuir i de comprovar sobre el dispositiu escollit pel centre. El servei
+instal·lat alpha27/alpha30 continua fent les còpies locals ja verificades.
