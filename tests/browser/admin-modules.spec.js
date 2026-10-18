@@ -6,6 +6,7 @@ async function mockModules(page, { configured = true, conflict = false } = {}) {
   let submitted;
   await page.addInitScript(() => localStorage.setItem('edutictac-admin-lang', 'es'));
   await page.clock.install();
+  await page.clock.pauseAt(await page.evaluate(() => new Date(Date.now() + 1000).toISOString()));
   await page.route('**/admin/api/**', async (route) => {
     const path = new URL(route.request().url()).pathname;
     if (path.endsWith('/status')) return route.fulfill({ json: { stack_version: 'test', active_profiles: ['authentik'],
