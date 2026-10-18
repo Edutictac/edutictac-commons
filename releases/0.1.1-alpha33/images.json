@@ -1,0 +1,22 @@
+{
+  "version": "0.1.1-alpha33",
+  "source_revisions": {
+    "commons": "720abe3b6a71c0827585b0270e8561888d44cc7b"
+  },
+  "images": {
+    "id-api": "registry.edutictac.es/edutictac/commons-id-api@sha256:6fbf52cb259ba0816758ccdeb2bf542eaf7eb51850d3ff7dd32f9a277e3f16e7",
+    "portal": "registry.edutictac.es/edutictac/commons-portal@sha256:6c67f1272385be8578849be42d9d1061f94a6d50a3b6f73e34c1a71527bb4a84",
+    "admin": "registry.edutictac.es/edutictac/commons-admin@sha256:1a1bb79d2f6631e79e29eb924a4da88b37003df27cb323ccea5ae9dcf693ff49",
+    "play": "registry.edutictac.es/edutictac/commons-play@sha256:16358554c37924fb22720588e567f54bb8233e901fd0e9719b0b447283b22b5c"
+  },
+  "platforms": {
+    "id-api": "linux/amd64",
+    "portal": "linux/amd64",
+    "admin": "linux/amd64",
+    "play": "linux/amd64"
+  },
+  "unchanged_images": {
+    "portal": "registry.edutictac.es/edutictac/commons-portal:0.1.1-alpha32",
+    "play": "registry.edutictac.es/edutictac/commons-play:0.1.1-alpha32"
+  }
+}

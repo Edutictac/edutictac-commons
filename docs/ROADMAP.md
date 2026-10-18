@@ -28,9 +28,13 @@ Cada canvi funcional ha de deixar:
 
 ## Estat verificat — 2026-10-18
 
-Versió publicada: **imatges Commons alpha32 i instal·lador alpha36** en APT
-signat. Codi i tag `v0.1.1-alpha32` en Forgejo i GitHub; manifests, firma APT
-i hash del paquet descarregat comprovats. [Notes de publicació](../releases/0.1.1-alpha32/README.md).
+Versió publicada: **imatges Commons alpha33 i instal·lador alpha37** en APT
+signat. Codi i tag `v0.1.1-alpha33` en Forgejo i GitHub; manifests, firma APT
+i hash del paquet descarregat comprovats. [Notes de publicació](../releases/0.1.1-alpha33/README.md).
+
+Novetats d'alpha33/alpha37: compatibilitat amb l'aula LliureX real (Epoptes per
+TCP, port 80 d'Apache, accés a Docker de l'usuari de servei) i correcció de
+l'arrancada amb Quiosc preparat però desactivat.
 
 Novetats d'alpha32/alpha36: Quiosc es prepara automàticament quan l'ordinador té
 servidor Epoptes, sense cap ordre en el servidor; activar-lo continua sent una
@@ -112,7 +116,7 @@ entre EduHoot, Recursos i Play** continuen a la secció «v2».
 El producte i el paquet ja estan implementats. Queda pendent validar el
 lliurament:
 
-1. provar `edutictac-commons_0.1.1~alpha36_amd64.deb` en una màquina neta real,
+1. provar `edutictac-commons_0.1.1~alpha37_amd64.deb` en una màquina neta real,
    incloent-hi activació, OIDC, flux docent → alumnat → EduHoot i restauració;
 
 El `.deb` ja està publicat en el repositori APT signat
@@ -253,7 +257,7 @@ l'alumnat pot completar-la amb la mateixa identitat pseudònima.
 - [ ] Validar en una màquina neta el paquet `.deb` per a Ubuntu amd64 amb
   dependències, configuració inicial, servei systemd i comprovació
   postinstal·lació.
-- [x] Publicar el `.deb` `0.1.1~alpha36` en el repositori APT signat
+- [x] Publicar el `.deb` `0.1.1~alpha37` en el repositori APT signat
   [`packages.edutictac.es`](https://packages.edutictac.es), amb clau pública,
   índexs signats i documentació d'instal·lació.
 
