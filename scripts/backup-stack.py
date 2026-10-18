@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Private, complete backups and verified restores; no credentials in diagnostics."""
 import argparse
-from contextlib import contextmanager
+from contextlib import closing, contextmanager
 from datetime import datetime, timezone
 import fcntl
 import hashlib
@@ -104,7 +104,7 @@ def archive_members(archive, allowed=None):
 
 
 def check_sqlite(path):
-    with sqlite3.connect(path.as_uri() + '?mode=ro&immutable=1', uri=True, timeout=10) as conn:
+    with closing(sqlite3.connect(path.as_uri() + '?mode=ro&immutable=1', uri=True, timeout=10)) as conn:
         if conn.execute('PRAGMA integrity_check').fetchall() != [('ok',)]:
             raise BackupError('sqlite_integrity_failed')
 
@@ -303,7 +303,7 @@ class Stack:
     def ensure_idle(self):
         path = self.root / 'data/quiosc.db'
         if path.exists():
-            with sqlite3.connect(path.as_uri() + '?mode=ro', uri=True) as conn:
+            with closing(sqlite3.connect(path.as_uri() + '?mode=ro', uri=True)) as conn:
                 exists = conn.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='devices'").fetchone()
                 if exists and conn.execute("SELECT 1 FROM devices WHERE state NOT IN ('finished','simulation_finished') LIMIT 1").fetchone():
                     raise BackupError('quiosc_sessions_pending')

@@ -5,6 +5,7 @@ Build commons-selector-{id,portal,admin}:test first. Requires cached optional
 service images; never installs or modifies the active Commons project.
 """
 import argparse
+from contextlib import closing
 import importlib.util
 import json
 import os
@@ -73,7 +74,7 @@ def verify_backup_roundtrip(work, controller, current):
     stack = backups.Stack(work)
     expected = {}
     for relative in ['id.db', 'quiosc.db', 'recursos-api/recursos.db']:
-        with sqlite3.connect(work / 'data' / relative) as conn:
+        with closing(sqlite3.connect(work / 'data' / relative)) as conn, conn:
             conn.execute('CREATE TABLE IF NOT EXISTS commons_backup_probe(value TEXT)');conn.execute('DELETE FROM commons_backup_probe')
             conn.execute("INSERT INTO commons_backup_probe VALUES ('before')")
     files = ['play/roundtrip.txt', 'recursos-api/documents/roundtrip.txt', 'authentik/roundtrip.txt', 'eduhoot-uploads/roundtrip.txt']
@@ -100,7 +101,7 @@ for relative in json.loads(sys.argv[1]):
     manifest = stack.validate(backup)
     assert {'id-api', 'quiosc', 'play', 'recursos', 'authentik', 'eduhoot', 'configuration'} <= {s['name'] for s in manifest['services']}
     for relative in ['id.db', 'quiosc.db', 'recursos-api/recursos.db']:
-        with sqlite3.connect(work / 'data' / relative) as conn:
+        with closing(sqlite3.connect(work / 'data' / relative)) as conn, conn:
             conn.execute("UPDATE commons_backup_probe SET value='after'")
     stack.command([*stack.docker, 'run', '--rm', '--pull=never', '--network=none', '--user=0',
         '--mount', 'type=bind,src=' + str(work / 'data') + ',dst=/data', '--entrypoint=python',
@@ -113,7 +114,7 @@ for relative in json.loads(sys.argv[1]):
     with stack.locks():
         stack.restore(backup)
     for relative in ['id.db', 'quiosc.db', 'recursos-api/recursos.db']:
-        with sqlite3.connect(work / 'data' / relative) as conn:
+        with closing(sqlite3.connect(work / 'data' / relative)) as conn, conn:
             assert conn.execute('SELECT value FROM commons_backup_probe').fetchone()[0] == 'before'
     verify = "import json,sys;from pathlib import Path;assert all((Path('/data')/p).read_text()=='before' for p in json.loads(sys.argv[1]))"
     stack.command([*stack.docker, 'run', '--rm', '--pull=never', '--network=none', '--user=0',

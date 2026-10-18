@@ -225,3 +225,22 @@ def test_resource_frontend_restarts_after_its_api_is_healthy(stack):
     codes=[code for args,code in stack.calls]
     assert codes.index('writers_restart_failed') < codes.index('frontends_restart_failed')
     assert 'recursos' in stack.active
+
+
+def test_sqlite_wal_snapshot_is_self_contained_and_preserves_source(tmp_path):
+    source=tmp_path/'source.db';destination=tmp_path/'snapshot/copy.db'
+    conn=sqlite3.connect(source)
+    try:
+        conn.execute('PRAGMA journal_mode=WAL')
+        conn.execute('CREATE TABLE evidence(value TEXT)')
+        conn.execute("INSERT INTO evidence VALUES ('committed')");conn.commit()
+        original=source.read_bytes();wal=Path(str(source)+'-wal').read_bytes()
+        b.copy_sqlite(source,destination)
+        assert source.read_bytes()==original
+        assert Path(str(source)+'-wal').read_bytes()==wal
+        copied=sqlite3.connect(destination)
+        try:
+            assert copied.execute('SELECT value FROM evidence').fetchone()[0]=='committed'
+            assert copied.execute('PRAGMA journal_mode').fetchone()[0]=='delete'
+        finally: copied.close()
+    finally: conn.close()
