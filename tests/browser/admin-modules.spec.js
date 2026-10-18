@@ -32,6 +32,13 @@ async function mockModules(page, { configured = true, conflict = false } = {}) {
   return { state, submitted: () => submitted };
 }
 
+async function advanceJob(page) {
+  // fetch/JSON callbacks can finish after click() even with a frozen clock.
+  // Advance only once the next poll is registered and no request is in flight.
+  await expect.poll(() => page.evaluate(() => jobPollTimer !== null && !jobPollInFlight)).toBe(true);
+  await page.clock.fastForward(3100);
+}
+
 test('primer inici amb selector, idiomes i Quiosc pendent de preparar', async ({ page }) => {
   const model = await mockModules(page, { configured: false });
   const dialog = page.locator('#modulesWizard');
@@ -48,7 +55,7 @@ test('primer inici amb selector, idiomes i Quiosc pendent de preparar', async ({
   await dialog.locator('#modulesApply').click();
   await expect(dialog).toBeHidden();
   expect(model.submitted()).toEqual({ enabled: ['play', 'recursos'], revision: '1'.repeat(64) });
-  await page.clock.fastForward(3100);
+  await advanceJob(page);
   await expect(page.locator('#modulesNotice')).toContainText('actualizadas');
   await expect(page.locator('#modulesApply')).toBeEnabled();
 });
@@ -60,7 +67,7 @@ test('desactivar conserva la selección vacía y permite cambiarla posteriorment
   await page.locator('#modulesApply').click();
   await expect(page.locator('#modulesApply')).toBeDisabled();
   expect(model.submitted().enabled).toEqual([]);
-  await page.clock.fastForward(3100);
+  await advanceJob(page);
   await expect(page.locator('#modulesApply')).toBeEnabled();
   await expect(page.locator('[value="play"]')).not.toBeChecked();
   await expect(page.locator('#modulesForm')).toContainText('conserva sus datos');
@@ -83,7 +90,7 @@ test('recargar el panel recupera el seguimiento de la operación', async ({ page
   await page.locator('#modulesApply').click();
   await page.reload();
   await expect(page.locator('#modulesNotice')).toContainText('Aplicando');
-  await page.clock.fastForward(3100);
+  await advanceJob(page);
   await expect(page.locator('#modulesApply')).toBeEnabled();
   await expect(page.locator('[value="eduhoot"]')).toBeChecked();
 });
@@ -117,7 +124,7 @@ test('el backup completo se sigue tras recargar y tolera la pausa de los servici
   await expect.poll(() => page.evaluate(() => sessionStorage.getItem('commons-backup-job'))).toBe(unit);
   await page.reload();
   for (let attempt = 0; attempt < 3; attempt += 1) {
-    await page.clock.fastForward(3100);
+    await advanceJob(page);
     await expect.poll(() => polls).toBe(attempt + 1);
   }
   await expect(page.locator('#actionOutput')).toContainText('complete backup verified');
@@ -156,7 +163,7 @@ test('segunda copia opcional: configurar, verificar, reintentar y desactivar', a
   await page.locator('#secondaryMount').fill('/media/centro usb');
   await page.locator('#secondarySave').click();
   expect(submitted).toEqual({ action:'configure', mount:'/media/centro usb' });
-  await page.clock.fastForward(3100);
+  await advanceJob(page);
   await expect(page.locator('#secondaryStatus')).toContainText('Destino comprobado');
   await expect(page.locator('#secondaryCopy')).toBeEnabled();
   secondary.last = { result:'failed', error:'device_unavailable' };
@@ -168,11 +175,11 @@ test('segunda copia opcional: configurar, verificar, reintentar y desactivar', a
   }
   await page.locator('#secondaryCopy').click();
   expect(submitted).toEqual({ action:'copy' });
-  await page.clock.fastForward(3100);
+  await advanceJob(page);
   await expect(page.locator('#secondaryStatus')).toContainText('Última segunda copia verificada');
   await page.locator('#secondaryDisable').click();
   expect(submitted).toEqual({ action:'disable' });
-  await page.clock.fastForward(3100);
+  await advanceJob(page);
   await expect(page.locator('#secondaryStatus')).toContainText('desactivada');
   await expect(page.locator('#secondaryCopy')).toBeDisabled();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBeTruthy();

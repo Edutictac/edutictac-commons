@@ -96,7 +96,7 @@ def action_modules(payload):
     unit = "edutictac-commons-modules-" + datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S") + "-" + secrets.token_hex(4)
     ok, _ = run_script("systemd-run", "--user", "--service-type=oneshot",
                        "--property=RemainAfterExit=yes", f"--unit={unit}",
-                       f"--property=WorkingDirectory={repo}", "/usr/bin/python3",
+                       f"--property=WorkingDirectory={repo}", "/usr/bin/env", "/usr/bin/python3",
                        str(Path(repo) / "scripts/manage-modules.py"), "apply",
                        "--enabled", ",".join(enabled), "--revision", expected)
     return ok, "modules_started" if ok else "host_runner_unavailable", 202 if ok else 503, {"unit": unit} if ok else {}
@@ -351,7 +351,7 @@ def action_backup_create(payload):
     unit = "edutictac-commons-backup-" + datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S") + "-" + secrets.token_hex(4)
     ok, _ = run_script("systemd-run", "--user", "--service-type=oneshot",
                        "--property=RemainAfterExit=yes", "--property=TimeoutStartSec=30min", "--property=TimeoutStopSec=5min", f"--unit={unit}",
-                       f"--property=WorkingDirectory={repo}", "/usr/bin/python3",
+                       f"--property=WorkingDirectory={repo}", "/usr/bin/env", "/usr/bin/python3",
                        str(Path(repo) / "scripts/backup-stack.py"), "create")
     return ok, "backup_started" if ok else "host_runner_unavailable", 202 if ok else 503, {"unit": unit} if ok else {}
 
@@ -375,7 +375,7 @@ def action_backup_secondary(payload):
     ok, _ = run_script("systemd-run", "--user", "--service-type=oneshot",
                        "--property=RemainAfterExit=yes", "--property=TimeoutStartSec=30min",
                        "--property=TimeoutStopSec=5min", f"--unit={unit}",
-                       f"--property=WorkingDirectory={repo}", "/usr/bin/python3",
+                       f"--property=WorkingDirectory={repo}", "/usr/bin/env", "/usr/bin/python3",
                        str(Path(repo) / "scripts/backup-secondary.py"), *arguments)
     return ok, "secondary_started" if ok else "host_runner_unavailable", 202 if ok else 503, {"unit": unit} if ok else {}
 

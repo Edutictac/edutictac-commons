@@ -24,3 +24,5 @@ simulats; NAS/USB físic pendent d'escollir i provar.
 L'instal·lador alpha32 conserva l'accés del compte del servei a les còpies i a
 la configuració privada després d'actualitzar. Substituïx alpha31 abans del
 desplegament d'esta publicació.
+
+**Substituïda per alpha29/alpha33**, que corregix el llançador Python del host.
