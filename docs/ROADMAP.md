@@ -28,9 +28,17 @@ Cada canvi funcional ha de deixar:
 
 ## Estat verificat — 2026-10-18
 
-Versió publicada: **imatges Commons alpha33 i instal·lador alpha37** en APT
-signat. Codi i tag `v0.1.1-alpha33` en Forgejo i GitHub; manifests, firma APT
-i hash del paquet descarregat comprovats. [Notes de publicació](../releases/0.1.1-alpha33/README.md).
+Versió publicada: **0.1.1-beta1** (imatges i instal·lador `0.1.1~beta1`) en APT
+signat, per a pilots LliureX acompanyats. Codi i tag `v0.1.1-beta1` en Forgejo i
+GitHub; imatges, firma APT i hash del paquet descarregat comprovats.
+[Notes i validació](../releases/0.1.1-beta1/README.md).
+
+Novetats de beta1: Recursos funciona en l'aula (publicació des de Play per HTTP
+local i generació d'alumnat després del login Authentik), recuperació del permís
+d'Epoptes de LliureX i versió instal·lada visible en el panell. Validada en una
+aula virtual LliureX 23 amb instal·lació des de zero, reinici, fluxos funcionals
+i backup/restauració real. Limitació coneguda: el primer login d'Authentik pot
+requerir repetir-se un minut després de l'arrancada.
 
 Novetats d'alpha33/alpha37: compatibilitat amb l'aula LliureX real (Epoptes per
 TCP, port 80 d'Apache, accés a Docker de l'usuari de servei) i correcció de
@@ -116,7 +124,7 @@ entre EduHoot, Recursos i Play** continuen a la secció «v2».
 El producte i el paquet ja estan implementats. Queda pendent validar el
 lliurament:
 
-1. provar `edutictac-commons_0.1.1~alpha37_amd64.deb` en una màquina neta real,
+1. provar `edutictac-commons_0.1.1~beta1_amd64.deb` en equips físics d'un centre,
    incloent-hi activació, OIDC, flux docent → alumnat → EduHoot i restauració;
 
 El `.deb` ja està publicat en el repositori APT signat
@@ -257,7 +265,7 @@ l'alumnat pot completar-la amb la mateixa identitat pseudònima.
 - [ ] Validar en una màquina neta el paquet `.deb` per a Ubuntu amd64 amb
   dependències, configuració inicial, servei systemd i comprovació
   postinstal·lació.
-- [x] Publicar el `.deb` `0.1.1~alpha37` en el repositori APT signat
+- [x] Publicar el `.deb` `0.1.1~beta1` en el repositori APT signat
   [`packages.edutictac.es`](https://packages.edutictac.es), amb clau pública,
   índexs signats i documentació d'instal·lació.
 

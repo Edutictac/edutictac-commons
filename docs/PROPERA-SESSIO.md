@@ -2,12 +2,12 @@
 
 ## Estat de represa — 2026-10-18
 
-**Publicat i desplegat:** paquet alpha36 i imatges API, portal, Administració i
-Play alpha32. Es conserven EduHoot 1.0.5, Recursos alpha18 i la selecció de mòduls.
-Quiosc continua desactivat: només es pot activar en l'ordinador de l'aula que
-té el servidor Epoptes (el servidor actual no en té). Allí es prepara sol des
-d'alpha36; queda provar-ho en una aula LliureX real. Accés d'Authentik amb la
-marca EduTicTac i en valencià. Notes: `releases/0.1.1-alpha32/`.
+**Publicat:** 0.1.1-beta1 (imatges i instal·lador `0.1.1~beta1`), validada en
+l'aula virtual LliureX (professor des de zero sobre base neta + alumne).
+Quiosc es prepara sol amb l'Epoptes de LliureX i s'activa des d'Administració.
+El Commons de debiandesktop està aturat i deshabilitat a petició de l'usuari.
+Aula virtual: `reset-profesor` torna el professor a la base neta; arrancar
+sempre el professor abans de l'alumne. Notes: `releases/0.1.1-beta1/`.
 
 Backups complets v2 operatius: Authentik/PostgreSQL, totes les bases de Mongo,
 Commons/Quiosc, Play, Recursos, fitxers i configuració privada segons les dades
