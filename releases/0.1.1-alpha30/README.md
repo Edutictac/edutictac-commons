@@ -22,8 +22,7 @@ simulats; NAS/USB físic pendent d'escollir i provar.
 [Guia de configuració i recuperació](../../docs/BACKUPS.md).
 
 L'instal·lador alpha34 conserva l'accés del compte del servei a les còpies i a
-la configuració privada després d'actualitzar. Substituïx alpha31 abans del
-desplegament d'esta publicació.
+la configuració privada després d’actualitzar.
 
 Els treballs Python d'Administració utilitzen el Python del host encara que el
 contenidor només el tinga en `/usr/local/bin`. El llançador s'ha comprovat amb

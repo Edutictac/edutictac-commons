@@ -51,8 +51,8 @@ de restauració. Les còpies automàtiques es guarden localment en el servidor.
 
 ## Segona còpia opcional en un dispositiu del centre
 
-Implementada en el codi posterior a alpha27/paquet alpha30; pendent de distribuir
-amb la pròxima versió del paquet i de la imatge d'Administració.
+Disponible amb les imatges alpha30 i el paquet alpha34. Cal actualitzar tant
+el paquet com la imatge d’Administració en instal·lacions existents.
 
 En **Administració → Backups → Segona còpia del centre**, indicar el punt de
 muntatge del NAS o USB en el servidor (per exemple, `/mnt/copias-centre`) i prémer
