@@ -9,6 +9,16 @@ identificadores.
 
 ## Estado comprobado
 
+En el aula HTTP, `PLAY_PUBLIC_URL` llega también a Recursos: admite ese origen
+exacto para publicar y mantiene la lista `PLAY_ALLOWED_HOSTS`. El contenedor
+Recursos recibe además la credencial interna de identidad para generar
+alumnado después del login OIDC; no se entrega al navegador.
+
+`make test-recursos` y `make test-teacher-resources` leen la configuración de
+esta instalación, crean recursos temporales propios y los retiran al acabar.
+La segunda prueba usa la credencial técnica configurada para el flujo de
+asignación; la comprobación del login docente OIDC se hace desde el navegador.
+
 Recursos existe actualmente y ya puede desplegarse dentro del entorno Docker
 local de Commons mediante el perfil opcional `recursos`. La instalación
 pública sigue separada en:
