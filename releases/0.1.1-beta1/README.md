@@ -48,3 +48,32 @@ codi d'un sol ús i selecciona els mòduls des d'Administració.
 
 Les eines de desenvolupament de les proves de navegador usen Node 22;
 no són un requisit per a l'ús docent del paquet instal·lat.
+
+En la primera arrancada o després d'un reinici, Authentik pot continuar
+preparant el primer accés després que el portal ja responga. En la prova
+neta va caldre repetir el primer login; espera un minut i torna a entrar
+si encara no apareix el formulari. És una limitació coneguda d'esta beta.
+
+## Validació de la publicació (2026-10-18)
+
+En l'aula virtual LliureX 23 (professor + alumne), amb el professor instal·lat
+des de zero sobre una imatge base neta i proves com a usuari docent `lliurex`:
+
+- Instal·lació, activació i selector de mòduls (EduHoot, Play, Recursos i
+  Quiosc) correctes. Quiosc preparat automàticament pel pont Epoptes.
+- Reinici complet: Commons, pont Epoptes, Epoptes i sessió gràfica tornen sols;
+  contenidors saludables i sense reinicis.
+- Fluxos `test-flow`, `test-recursos`, `test-teacher-resources` i
+  `test-eduhoot-flow` correctes, també després del reinici.
+- Backup complet i verificat; restauració real comprovada amb una activitat de
+  Play creada després del backup, que desapareix en restaurar. Quiosc queda
+  desactivat després de restaurar, com està previst, i es reactiva amb el
+  selector.
+- Codi: 201 proves Python (+48 de Quiosc amb Docker real) i 70 de navegador.
+  `release-check`: requisits, sintaxi i artefactes correctes; el flux funcional
+  s'ha validat en l'aula virtual perquè el Commons del host està aturat.
+- Imatges: les 11 referències d'`images.json` existixen al registre; els tags
+  `0.1.1-beta1` apunten als mateixos digests i admeten pull anònim.
+- APT: signatura InRelease, Packages.gz i SHA-256/mida del `.deb` descarregat
+  verificats. El paquet publicat es va construir des de `12bdb4e`; respecte a
+  `7cd28f0`, instal·lat en l'aula, només canvien les proves del paquet.

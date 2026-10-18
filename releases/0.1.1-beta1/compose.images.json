@@ -1,0 +1,37 @@
+{
+  "services": {
+    "admin": {
+      "image": "registry.edutictac.es/edutictac/commons-admin@sha256:1a1bb79d2f6631e79e29eb924a4da88b37003df27cb323ccea5ae9dcf693ff49"
+    },
+    "authentik-postgresql": {
+      "image": "postgres@sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea"
+    },
+    "authentik-server": {
+      "image": "ghcr.io/goauthentik/server@sha256:ab9b4e8cc4ab3f8d1198d2db6aeea66bafea1963b3f2843589e0d163f97d9849"
+    },
+    "authentik-worker": {
+      "image": "ghcr.io/goauthentik/server@sha256:ab9b4e8cc4ab3f8d1198d2db6aeea66bafea1963b3f2843589e0d163f97d9849"
+    },
+    "eduhoot": {
+      "image": "registry.edutictac.es/edutictac/eduhoot@sha256:473d3e0bdaf10846bf78ab5285e759f16ee2820b1f2bd8f9d4f0b16dce346bd7"
+    },
+    "eduhoot-mongo": {
+      "image": "mongo@sha256:c53852c00c23ca9f23fc39690350ffa9a80e3642fe8f96879726d8da0abe80a7"
+    },
+    "id-api": {
+      "image": "registry.edutictac.es/edutictac/commons-id-api@sha256:6fbf52cb259ba0816758ccdeb2bf542eaf7eb51850d3ff7dd32f9a277e3f16e7"
+    },
+    "play": {
+      "image": "registry.edutictac.es/edutictac/commons-play@sha256:16358554c37924fb22720588e567f54bb8233e901fd0e9719b0b447283b22b5c"
+    },
+    "portal": {
+      "image": "registry.edutictac.es/edutictac/commons-portal@sha256:6c67f1272385be8578849be42d9d1061f94a6d50a3b6f73e34c1a71527bb4a84"
+    },
+    "recursos": {
+      "image": "registry.edutictac.es/edutictac/recursos@sha256:1848cb5b1477a26fe93c900f8158fed8c355949d2f8cddde5bc781c0e1e0ba01"
+    },
+    "recursos-api": {
+      "image": "registry.edutictac.es/edutictac/recursos-api@sha256:b2cb36c6b559655f5e48960230d30bc6bac5b12d4fe57426c0472c77ad9ff591"
+    }
+  }
+}
