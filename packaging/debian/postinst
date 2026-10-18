@@ -301,6 +301,26 @@ if command -v docker >/dev/null 2>&1 && ! docker compose version >/dev/null 2>&1
     echo "Després reinicia el servei: sudo systemctl restart $SERVICE" >&2
 fi
 
+# Les tasques del panell (mòduls, backups, actualitzacions) s'executen en el
+# gestor systemd de l'usuari de servei i necessiten Docker, també sense sessió.
+service_user="$(getent passwd "$(sed -n 's/^PUID=//p' "$ENV_FILE" | tail -n 1)" | cut -d: -f1)"
+service_access_changed=0
+if [ -n "$service_user" ] && getent group docker >/dev/null 2>&1; then
+    if ! id -nG "$service_user" | tr ' ' '\n' | grep -qx docker; then
+        # Només qui ha instal·lat amb sudo o un administrador de l'equip: el grup
+        # docker equival a root i no s'ha de donar a un usuari sense privilegis.
+        if [ "$service_user" = "${SUDO_USER:-}" ] || id -nG "$service_user" | tr ' ' '\n' | grep -qx -E 'sudo|admin'; then
+            usermod -aG docker "$service_user"
+            service_access_changed=1
+        else
+            echo "Avís: $service_user no pot usar Docker; el panell no podrà aplicar canvis." >&2
+        fi
+    fi
+    if command -v loginctl >/dev/null 2>&1 && [ "$(loginctl show-user "$service_user" -p Linger --value 2>/dev/null)" != yes ]; then
+        loginctl enable-linger "$service_user" >/dev/null 2>&1 || true
+    fi
+fi
+
 step "Carregant les imatges Docker incloses a l'instal·lador (si n'hi ha)..."
 
 bundle="$(ls "$APP_DIR"/dist/edutictac-commons-images-*.tar.gz 2>/dev/null | head -n 1 || true)"
@@ -388,6 +408,12 @@ esac
 desktop_file=/usr/share/applications/edutictac-commons.desktop
 if [ -f "$desktop_file" ]; then
     sed -i "s#^Exec=xdg-open .*#Exec=xdg-open ${portal_url}#" "$desktop_file"
+fi
+
+if [ "$service_access_changed" -eq 1 ]; then
+    echo ""
+    echo "Avís: s'ha donat accés a Docker a $service_user per a les tasques del panell."
+    echo "Reinicia l'equip abans d'activar mòduls o crear còpies des d'Administració."
 fi
 
 if [ -n "$setup_token_notice" ]; then

@@ -67,3 +67,12 @@ def test_installer_announces_real_portal_port():
     assert "obri ${portal_url}'" in postinst
     assert 'sed -i "s#^Exec=xdg-open .*#Exec=xdg-open ${portal_url}#"' in postinst
     assert "http://edutictac.local/${reset}" not in postinst
+
+
+def test_installer_gives_service_user_docker_and_linger_only_if_admin():
+    # LliureX: uid 1000 no està en el grup docker i les tasques del panell fallaven.
+    postinst = (Path(__file__).parents[1] / "packaging/debian/postinst").read_text(encoding="utf-8")
+    assert 'usermod -aG docker "$service_user"' in postinst
+    assert 'loginctl enable-linger "$service_user"' in postinst
+    assert '[ "$service_user" = "${SUDO_USER:-}" ]' in postinst
+    assert "grep -qx -E 'sudo|admin'" in postinst
