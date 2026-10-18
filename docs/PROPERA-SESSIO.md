@@ -2,9 +2,11 @@
 
 ## Estat de represa — 2026-10-18
 
-**Publicat i desplegat:** paquet alpha34 i imatges API, portal, Administració i
-Play alpha30. Es conserven EduHoot 1.0.5, Recursos alpha18 i la selecció de mòduls.
-Quiosc continua desactivat fins a preparar Epoptes i validar-lo en aula.
+**Publicat i desplegat:** paquet alpha35 i imatges API, portal, Administració i
+Play alpha31. Es conserven EduHoot 1.0.5, Recursos alpha18 i la selecció de mòduls.
+Quiosc continua desactivat: només es pot activar en l'ordinador de l'aula que
+té el servidor Epoptes (el servidor actual no en té). Accés d'Authentik amb la
+marca EduTicTac i en valencià. Notes: `releases/0.1.1-alpha31/`.
 
 Backups complets v2 operatius: Authentik/PostgreSQL, totes les bases de Mongo,
 Commons/Quiosc, Play, Recursos, fitxers i configuració privada segons les dades

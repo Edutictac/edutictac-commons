@@ -28,9 +28,18 @@ Cada canvi funcional ha de deixar:
 
 ## Estat verificat — 2026-10-18
 
-Versió publicada: **imatges Commons alpha30 i instal·lador alpha34** en APT
-signat. Codi i tag `v0.1.1-alpha30` en Forgejo i GitHub; manifests, firma APT
-i hash del paquet descarregat comprovats. [Notes de publicació](../releases/0.1.1-alpha30/README.md).
+Versió publicada: **imatges Commons alpha31 i instal·lador alpha35** en APT
+signat. Codi i tag `v0.1.1-alpha31` en Forgejo i GitHub; manifests, firma APT
+i hash del paquet descarregat comprovats. [Notes de publicació](../releases/0.1.1-alpha31/README.md).
+
+Novetats d'alpha31/alpha35 (desplegades en la instal·lació existent el 2026-10-18):
+
+- Play: neteja automàtica de les activitats anònimes caducades, avís opcional
+  de demo pública i editors en mòbil sense desbordament (Relacionar, Classificar,
+  Targetes i Encreuat). API, portal i Administració conserven els digests d'alpha30.
+- Authentik amb la marca d'`id.edutictac.es` (logo, fons, CSS, fonts, tema clar,
+  títols dels fluxos i peu) i traducció valenciana, tot servit en local i sense
+  dependre d'Internet. [Marca i manteniment](../authentik-branding/README.md).
 
 Ja implementat i publicat:
 
@@ -44,9 +53,11 @@ Ja implementat i publicat:
   backups complets dels serveis amb dades i de la configuració privada;
 - sincronització independent de Recursos i EduHoot, amb manifest, hashes i
   catàleg versionat en el repositori `edutictac-content`;
-- CA/VA/ES/EN. Validació de la publicació: 178 proves Python correctes,
-  2 proves Docker optatives de Quiosc omeses, 70 proves de navegador i prova
-  Docker d'activació/desactivació, dades conservades i recuperació correctes.
+- CA/VA/ES/EN. Validació d'alpha31/alpha35: 185 proves Python correctes,
+  2 proves Docker optatives de Quiosc omeses, 36 de navegador de Play (també
+  amb la CPU saturada) i prova aïllada d'Authentik amb `docker run`. Validació
+  d'alpha30: 70 proves de navegador i prova Docker d'activació/desactivació,
+  dades conservades i recuperació correctes.
 
 La publicació no dona per validats el pilot LliureX, el SSO complet dels quatre
 serveis ni una instal·lació nova amb esta versió. L'estat del desplegament es
@@ -60,8 +71,10 @@ registra en [PROPERA-SESSIO.md](PROPERA-SESSIO.md).
 3. Tancar el flux v2 docent: sessió compartida amb Recursos, favorits i
    assignació de la cistella a un itinerari concret.
 
-Desplegament en la instal·lació existent **completat**: alpha34/alpha30, perfils
-conservats i primera còpia completa real verificada. Temporitzador diari activat
+Desplegament en la instal·lació existent **completat**: alpha35/alpha31, perfils
+conservats, `.env` i dades SQLite sense canvis i accés per `edutictac.local`
+comprovat des d'un portàtil de la LAN. Primera còpia completa real verificada
+amb alpha30. Temporitzador diari activat
 a les 03:15 (Europe/Madrid), amb fins a deu minuts de retard aleatori.
 Restauració completa comprovada en Docker aïllat, sense restaurar la instal·lació
 real. [Abast i comprovacions](BACKUPS-VALIDACIO.md); [recuperació](BACKUPS.md).
@@ -94,7 +107,7 @@ entre EduHoot, Recursos i Play** continuen a la secció «v2».
 El producte i el paquet ja estan implementats. Queda pendent validar el
 lliurament:
 
-1. provar `edutictac-commons_0.1.1~alpha34_amd64.deb` en una màquina neta real,
+1. provar `edutictac-commons_0.1.1~alpha35_amd64.deb` en una màquina neta real,
    incloent-hi activació, OIDC, flux docent → alumnat → EduHoot i restauració;
 
 El `.deb` ja està publicat en el repositori APT signat
@@ -235,7 +248,7 @@ l'alumnat pot completar-la amb la mateixa identitat pseudònima.
 - [ ] Validar en una màquina neta el paquet `.deb` per a Ubuntu amd64 amb
   dependències, configuració inicial, servei systemd i comprovació
   postinstal·lació.
-- [x] Publicar el `.deb` `0.1.1~alpha34` en el repositori APT signat
+- [x] Publicar el `.deb` `0.1.1~alpha35` en el repositori APT signat
   [`packages.edutictac.es`](https://packages.edutictac.es), amb clau pública,
   índexs signats i documentació d'instal·lació.
 
@@ -282,6 +295,8 @@ el nucli instal·lable i el flux docent bàsic.
 - [x] Desplegar **Authentik (OIDC)** a l'stack i preparar-ne el bootstrap
   automàtic en el paquet `.deb`, amb aplicació/proveïdor Commons i activació
   inicial d'un sol ús.
+- [x] Aplicar a l'accés d'Authentik la marca d'`id.edutictac.es` i la traducció
+  valenciana, amb recursos locals (alpha35, desplegat).
 - [ ] Validar l'activació OIDC del paquet en una màquina neta i activar-lo en
   una instal·lació de centre.
 - [ ] Connectar i validar el SSO docent amb Portal, Play, Recursos i EduHoot.
