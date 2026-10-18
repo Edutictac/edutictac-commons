@@ -1,6 +1,6 @@
 # Còpies completes i restauració
 
-Implementació de la pròxima distribució alpha27 / paquet alpha30. Els backups
+Disponible en la distribució alpha27 / paquet alpha30. Els backups
 anteriors continuen sent llegibles i es marquen com a parcials en Administració.
 
 ## Què es guarda

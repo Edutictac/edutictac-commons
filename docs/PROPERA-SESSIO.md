@@ -2,41 +2,33 @@
 
 ## Estat de represa — 2026-10-18
 
-**Publicat i desplegat:** paquet alpha29 i imatges API, portal, Administració i
-Play alpha26. Es conserven EduHoot 1.0.5 i Recursos alpha18. Les opcions actives
-continuen sent Play, EduHoot i Recursos; Quiosc continua desactivat i condicionat
-a preparar Epoptes. L'actualització marca la selecció anterior com a configurada,
-per tant no força l'assistent inicial als usuaris existents.
+**Publicat i desplegat:** paquet alpha30 i imatges API, portal, Administració i
+Play alpha27. Es conserven EduHoot 1.0.5, Recursos alpha18 i la selecció de mòduls.
+Quiosc continua desactivat fins a preparar Epoptes i validar-lo en aula.
 
-Desplegament amb còpies lògiques d'Authentik/PostgreSQL i Mongo, dades en fred,
-configuració i referències de les imatges anteriors. Recompte de files de les
-bases SQLite comprovades conservat. El treball real del selector en el host
-(systemd d'usuari, mateixa selecció) acaba amb Result=success i estat idle.
+Backups complets v2 operatius: Authentik/PostgreSQL, totes les bases de Mongo,
+Commons/Quiosc, Play, Recursos, fitxers i configuració privada segons les dades
+presents. Primera còpia real comprovada abans d'actualitzar; temporitzador diari
+activat a les 03:15 Europe/Madrid, amb fins a deu minuts de retard aleatori.
+Les còpies són locals i privades; la rèplica externa xifrada queda pendent.
+[Guia de recuperació](BACKUPS.md); [validació del desplegament](BACKUPS-VALIDACIO.md).
 
-Verificació des d'un altre dispositiu de la tailnet: portada, docent, alumnat,
-Administració, API i estat de mòduls HTTP 200; EduHoot HTTP 200. Authentik server
-i worker connecten realment a PostgreSQL. Entrada OIDC redirigix a Authentik i
-el descobriment respon 200; això no dona per validada tota la sessió compartida.
-[Detall del desplegament](DESPLEGAMENT-ALPHA26.md).
-
-Publicació ja comprovada: 123 proves Python correctes (2 Docker de Quiosc
-optatives omeses), 66 de navegador, cicle Docker dels mòduls correcte, manifests
-remots i APT signat verificats. Notes: `releases/0.1.1-alpha26/`.
+Publicació comprovada: 145 proves Python correctes (2 Docker de Quiosc optatives
+omeses), 68 de navegador i restauració completa en un entorn Docker aïllat.
+Manifests remots, firma APT i hash del paquet descarregat verificats.
+Notes i metadades: `releases/0.1.1-alpha27/`.
 
 Pròxims passos, per ordre:
 
-1. Publicar i activar els backups complets alpha27/alpha30: implementació
-   afegida per a Authentik, Play, Recursos, Quiosc i configuració privada.
-   Comprovar la primera còpia real i el temporitzador; [guia](BACKUPS.md).
-2. Provar esta versió en una màquina LliureX nova amb activació i selector.
-3. Preparar Epoptes i provar Quiosc en una aula real, inclosa restauració.
-4. Validar SSO i favorits amb Recursos i completar cistella → itinerari concret.
+1. Provar esta versió en una màquina LliureX nova: activació, OIDC, selector,
+   reinici, backup i recuperació.
+2. Preparar Epoptes i provar Quiosc en una aula real, inclosa restauració.
+3. Validar SSO i favorits amb Recursos i completar cistella → itinerari concret.
 
-El roadmap s'ha actualitzat: grups/col·laboradors visuals, itineraris, selector
-i recepció del catàleg ja no figuren com a desenvolupament pendent. La proposta
-i moderació de continguts i el rollback integral del catàleg continuen oberts.
-Els canvis locals previs de Makefile i export-catalog en admin/server.py es
-conserven sense publicar ni desplegar.
+No s'ha restaurat la instal·lació real ni s'ha validat encara la sessió completa
+OIDC entre serveis. La proposta i moderació de continguts i el rollback integral
+del catàleg continuen oberts. Els canvis locals previs de Makefile i
+export-catalog en admin/server.py es conserven sense publicar ni desplegar.
 
 ## Històric: publicació d’itineraris alpha25 — 2026-10-17
 

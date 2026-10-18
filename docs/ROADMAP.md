@@ -28,9 +28,9 @@ Cada canvi funcional ha de deixar:
 
 ## Estat verificat — 2026-10-18
 
-Versió publicada: **imatges Commons alpha26 i instal·lador alpha29** en APT
-signat. Codi i tag `v0.1.1-alpha26` en Forgejo i GitHub; manifests, firma APT
-i hash del paquet descarregat comprovats. [Notes de publicació](../releases/0.1.1-alpha26/README.md).
+Versió publicada: **imatges Commons alpha27 i instal·lador alpha30** en APT
+signat. Codi i tag `v0.1.1-alpha27` en Forgejo i GitHub; manifests, firma APT
+i hash del paquet descarregat comprovats. [Notes de publicació](../releases/0.1.1-alpha27/README.md).
 
 Ja implementat i publicat:
 
@@ -41,11 +41,11 @@ Ja implementat i publicat:
 - selector inicial i gestió posterior de Play, EduHoot, Recursos i Quiosc des
   d'Administració; conserva dades i recupera la configuració si falla un canvi;
 - Authentik i activació inicial, operació des del panell, actualitzacions i
-  backups de Commons/EduHoot amb cobertura declarada;
+  backups complets dels serveis amb dades i de la configuració privada;
 - sincronització independent de Recursos i EduHoot, amb manifest, hashes i
   catàleg versionat en el repositori `edutictac-content`;
-- CA/VA/ES/EN. Validació de la publicació: 123 proves Python correctes,
-  2 proves Docker optatives de Quiosc omeses, 66 proves de navegador i prova
+- CA/VA/ES/EN. Validació de la publicació: 145 proves Python correctes,
+  2 proves Docker optatives de Quiosc omeses, 68 proves de navegador i prova
   Docker d'activació/desactivació, dades conservades i recuperació correctes.
 
 La publicació no dona per validats el pilot LliureX, el SSO complet dels quatre
@@ -60,12 +60,11 @@ registra en [PROPERA-SESSIO.md](PROPERA-SESSIO.md).
 3. Tancar el flux v2 docent: sessió compartida amb Recursos, favorits i
    assignació de la cistella a un itinerari concret.
 
-Desplegament en la instal·lació existent **completat**: alpha29/alpha26, perfils
-conservats, treball del selector en el host correcte i accessos comprovats des
-d'un altre dispositiu de la tailnet. [Abast i comprovacions](DESPLEGAMENT-ALPHA26.md).
-La següent distribució alpha27/alpha30 incorpora la cobertura completa al
-backup habitual i la mateixa operació des del panell i el temporitzador.
-[Abast i restauració](BACKUPS.md).
+Desplegament en la instal·lació existent **completat**: alpha30/alpha27, perfils
+conservats i primera còpia completa real verificada. Temporitzador diari activat
+a les 03:15 (Europe/Madrid), amb fins a deu minuts de retard aleatori.
+Restauració completa comprovada en Docker aïllat, sense restaurar la instal·lació
+real. [Abast i comprovacions](BACKUPS-VALIDACIO.md); [recuperació](BACKUPS.md).
 
 Les caselles següents diferencien implementació de validació integral. Una
 funció implementada pot continuar tenint una prova de camp pendent.
@@ -95,7 +94,7 @@ entre EduHoot, Recursos i Play** continuen a la secció «v2».
 El producte i el paquet ja estan implementats. Queda pendent validar el
 lliurament:
 
-1. provar `edutictac-commons_0.1.1~alpha29_amd64.deb` en una màquina neta real,
+1. provar `edutictac-commons_0.1.1~alpha30_amd64.deb` en una màquina neta real,
    incloent-hi activació, OIDC, flux docent → alumnat → EduHoot i restauració;
 
 El `.deb` ja està publicat en el repositori APT signat
@@ -179,7 +178,7 @@ backup recent i verificable**.
 - [x] Implementar cobertura completa de backup/restauració per a Authentik,
   Play, Recursos, Quiosc i configuració, mantenint les còpies v1 llegibles.
   Pausa coherent dels serveis amb escriptura i treballs del panell en el host.
-- [ ] Publicar i activar alpha27/alpha30 amb la primera còpia completa real i
+- [x] Publicar i activar alpha27/alpha30 amb la primera còpia completa real i
   el temporitzador d'usuari comprovats. [Guia de recuperació](BACKUPS.md).
 
 ### Fita 4 — EduHoot com a primera activitat integrada
@@ -228,7 +227,7 @@ l'alumnat pot completar-la amb la mateixa identitat pseudònima.
 - [ ] Validar en una màquina neta el paquet `.deb` per a Ubuntu amd64 amb
   dependències, configuració inicial, servei systemd i comprovació
   postinstal·lació.
-- [x] Publicar el `.deb` `0.1.1~alpha29` en el repositori APT signat
+- [x] Publicar el `.deb` `0.1.1~alpha30` en el repositori APT signat
   [`packages.edutictac.es`](https://packages.edutictac.es), amb clau pública,
   índexs signats i documentació d'instal·lació.
 

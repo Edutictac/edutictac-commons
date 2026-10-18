@@ -31,3 +31,8 @@ tots els serveis després de modificar les dades originals.
 L'instal·lador alpha30 incorpora els scripts del host i selecciona alpha27 en
 instal·lacions noves. Les existents conserven tags: cal actualitzar també les
 imatges per disposar del nou botó de backup i del seguiment al panell.
+
+Publicació i desplegament completats el 2026-10-18: paquet alpha30 disponible en
+APT signat, amb [hash i procedència](installer.json). Primera còpia completa real
+i cicle automàtic verificats; timer diari actiu a les 03:15 Europe/Madrid, amb
+fins a deu minuts de retard aleatori. [Comprovacions i límits](../../docs/BACKUPS-VALIDACIO.md).
