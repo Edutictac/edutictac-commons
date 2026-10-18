@@ -17,6 +17,12 @@ if (moduleJobUnit && !/^edutictac-commons-modules-\d{14}-[a-f0-9]{8}$/.test(modu
   moduleJobUnit = null;
 }
 
+let backupJobUnit = sessionStorage.getItem("commons-backup-job");
+if (backupJobUnit && !/^edutictac-commons-(?:backup-\d{14}-[a-f0-9]{8}|restore-\d{14})$/.test(backupJobUnit)) {
+  sessionStorage.removeItem("commons-backup-job");
+  backupJobUnit = null;
+}
+
 function closeModuleWizard() {
   const dialog = document.getElementById("modulesWizard");
   if (dialog.open) dialog.close();
@@ -45,10 +51,14 @@ async function loadModules() {
       });
     }
     moduleState = state;
-    if (moduleJobUnit && jobPollTimer === null) {
+    if (moduleJobUnit && jobPollTimer === null && !jobPollInFlight) {
       jobPollTimer = setTimeout(() => pollJob(moduleJobUnit, Date.now()), JOB_POLL_INTERVAL_MS);
     }
-    const busy = Boolean(moduleJobUnit) || state.phase === "applying";
+    if (backupJobUnit && jobPollTimer === null && !jobPollInFlight) {
+      jobPollTimer = setTimeout(() => pollJob(backupJobUnit, Date.now()), JOB_POLL_INTERVAL_MS);
+    }
+    const busy = Boolean(moduleJobUnit || backupJobUnit) || state.phase === "applying";
+    document.getElementById("backupCreateBtn").disabled = busy;
     choices.disabled = !state.manageable || busy;
     apply.disabled = !state.manageable || busy;
     const quiosc = modulesForm.querySelector('[value="quiosc"]');
@@ -329,9 +339,10 @@ async function runJsonAction(path, payload) {
 
 const JOB_POLL_INTERVAL_MS = 3000;
 const JOB_POLL_TIMEOUT_MS = 10 * 60 * 1000;
-const JOB_POLL_MAX_CONSECUTIVE_FAILURES = 6;
+const JOB_POLL_MAX_CONSECUTIVE_FAILURES = 30;
 let jobPollTimer = null;
 let jobPollFailures = 0;
+let jobPollInFlight = false;
 
 function stopJobPoll() {
   if (jobPollTimer) {
@@ -341,50 +352,60 @@ function stopJobPoll() {
 }
 
 async function pollJob(unit, startedAt) {
-  jobPollTimer = null;
-  stopJobPoll();
-  let data;
+  if (jobPollInFlight) return;
+  jobPollInFlight = true;
   try {
-    const resp = await apiFetch(`/api/job-status?unit=${encodeURIComponent(unit)}`);
-    data = await resp.json();
-    if (!resp.ok) throw new Error(data.error || `HTTP ${resp.status}`);
-    jobPollFailures = 0;
-  } catch (err) {
-    // "Actualitzar imatges" també reinicia el propi contenidor admin que
-    // servix este JS i respon a este mateix polling: durant eixe reinici
-    // el fetch pot fallar de forma transitòria encara que la feina de
-    // fons (systemd-run --collect, independent del contenidor) continue i
-    // acabe amb èxit. Reintenta unes quantes vegades abans de donar-ho per
-    // fallat perquè l'usuari no vega un error fals mentre tot va bé.
-    jobPollFailures += 1;
-    const timedOut = Date.now() - startedAt > JOB_POLL_TIMEOUT_MS;
-    if (timedOut || jobPollFailures > JOB_POLL_MAX_CONSECUTIVE_FAILURES) {
-      setOutput(actionOutput, `${t("common.errorLabel")} ${err.message}`, true);
+    jobPollTimer = null;
+    stopJobPoll();
+    let data;
+    try {
+      const resp = await apiFetch(`/api/job-status?unit=${encodeURIComponent(unit)}`);
+      data = await resp.json();
+      if (!resp.ok) throw new Error(data.error || `HTTP ${resp.status}`);
+      jobPollFailures = 0;
+    } catch (err) {
+      // "Actualitzar imatges" també reinicia el propi contenidor admin que
+      // servix este JS i respon a este mateix polling: durant eixe reinici
+      // el fetch pot fallar de forma transitòria encara que la feina de
+      // fons (systemd-run --collect, independent del contenidor) continue i
+      // acabe amb èxit. Reintenta unes quantes vegades abans de donar-ho per
+      // fallat perquè l'usuari no vega un error fals mentre tot va bé.
+      jobPollFailures += 1;
+      const timedOut = Date.now() - startedAt > (backupJobUnit ? 30 * 60 * 1000 : JOB_POLL_TIMEOUT_MS);
+      if (timedOut || (!backupJobUnit && jobPollFailures > JOB_POLL_MAX_CONSECUTIVE_FAILURES)) {
+        setOutput(actionOutput, `${t("common.errorLabel")} ${err.message}`, true);
+        return;
+      }
+      setOutput(actionOutput, t("job.reconnecting"), false);
+      jobPollTimer = setTimeout(() => pollJob(unit, startedAt), JOB_POLL_INTERVAL_MS);
       return;
     }
-    setOutput(actionOutput, t("job.reconnecting"), false);
-    jobPollTimer = setTimeout(() => pollJob(unit, startedAt), JOB_POLL_INTERVAL_MS);
-    return;
-  }
 
-  const log = data.log || "";
-  if (data.running) {
-    if (Date.now() - startedAt > JOB_POLL_TIMEOUT_MS) {
-      setOutput(actionOutput, `${log}\n\n${t("job.timeout")}`, true);
+    const log = data.log || "";
+    if (data.running) {
+      if (Date.now() - startedAt > (backupJobUnit ? 30 * 60 * 1000 : JOB_POLL_TIMEOUT_MS)) {
+        setOutput(actionOutput, `${log}\n\n${t("job.timeout")}`, true);
+        return;
+      }
+      setOutput(actionOutput, `${log}\n\n${t("job.running")}`, false);
+      jobPollTimer = setTimeout(() => pollJob(unit, startedAt), JOB_POLL_INTERVAL_MS);
       return;
     }
-    setOutput(actionOutput, `${log}\n\n${t("job.running")}`, false);
-    jobPollTimer = setTimeout(() => pollJob(unit, startedAt), JOB_POLL_INTERVAL_MS);
-    return;
-  }
 
-  const success = data.result === "success";
-  if (moduleJobUnit === unit) {
-    moduleJobUnit = null;
-    sessionStorage.removeItem("commons-modules-job");
+    const success = data.result === "success";
+    if (moduleJobUnit === unit) {
+      moduleJobUnit = null;
+      sessionStorage.removeItem("commons-modules-job");
+    }
+    if (backupJobUnit === unit) {
+      backupJobUnit = null;
+      sessionStorage.removeItem("commons-backup-job");
+    }
+    setOutput(actionOutput, `${log}\n\n${success ? t("job.success") : t("job.failed")}`, !success);
+    await loadStatus();
+  } finally {
+    jobPollInFlight = false;
   }
-  setOutput(actionOutput, `${log}\n\n${success ? t("job.success") : t("job.failed")}`, !success);
-  await loadStatus();
 }
 
 async function runJobAction(path, payload) {
@@ -392,12 +413,16 @@ async function runJobAction(path, payload) {
   try {
     const resp = await apiFetch(path, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...(path.startsWith("/api/backup/") ? { "X-Commons-Backup": "1" } : {}) },
       body: JSON.stringify(payload),
     });
     const data = await resp.json();
-    setOutput(actionOutput, data.output || JSON.stringify(data), !data.ok);
+    setOutput(actionOutput, data.ok && data.unit ? t("common.executing") : data.output || JSON.stringify(data), !data.ok);
     if (data.ok && data.unit) {
+      if (path.startsWith("/api/backup/")) {
+        backupJobUnit = data.unit;
+        sessionStorage.setItem("commons-backup-job", data.unit);
+      }
       jobPollTimer = setTimeout(() => pollJob(data.unit, Date.now()), JOB_POLL_INTERVAL_MS);
     } else {
       await loadStatus();
@@ -426,7 +451,7 @@ document.getElementById("logoutBtn").addEventListener("click", () => {
 document.getElementById("refreshBtn").addEventListener("click", loadStatus);
 
 document.getElementById("backupCreateBtn").addEventListener("click", () => {
-  runAction("/api/backup/create", t("backup.createConfirm"));
+  if (window.confirm(t("backup.createConfirm"))) runJobAction("/api/backup/create", {});
 });
 
 document.getElementById("timerInstallBtn").addEventListener("click", () => {
@@ -499,3 +524,8 @@ window.addEventListener("edutictac:langchange", () => {
   if (moduleState) loadModules();
 });
 loadStatus();
+
+// Resume even while the identity API is briefly stopped by the backup.
+if ((backupJobUnit || moduleJobUnit) && jobPollTimer === null && !jobPollInFlight) {
+  jobPollTimer = setTimeout(() => pollJob(backupJobUnit || moduleJobUnit, Date.now()), JOB_POLL_INTERVAL_MS);
+}

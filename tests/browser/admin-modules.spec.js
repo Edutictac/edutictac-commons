@@ -95,3 +95,31 @@ test('la portada oculta módulos desactivados sin ocultar el acceso de administr
   await expect(page.locator('#eduhootHomeLink')).toBeHidden();
   await expect(page.locator('#adminHomeLink')).toBeVisible();
 });
+
+
+test('el backup completo se sigue tras recargar y tolera la pausa de los servicios', async ({ page }) => {
+  await mockModules(page);
+  await page.clock.pauseAt(await page.evaluate(() => new Date(Date.now() + 1000).toISOString()));
+  const unit = 'edutictac-commons-backup-20261018060000-aabbccdd';
+  let polls = 0;
+  await page.route('**/admin/api/backup/create', route => {
+    expect(route.request().headers()['x-commons-backup']).toBe('1');
+    return route.fulfill({ status: 202, json: { ok: true, unit, output: 'backup_started' } });
+  });
+  await page.route('**/admin/api/job-status?*', route => {
+    polls += 1;
+    if (polls <= 2) return route.fulfill({ status: 401, json: {} });
+    return route.fulfill({ json: { running: false, result: 'success', log: 'complete backup verified' } });
+  });
+  page.on('dialog', dialog => dialog.accept());
+  await page.locator('#backupCreateBtn').click();
+  await expect.poll(() => page.evaluate(() => sessionStorage.getItem('commons-backup-job'))).toBe(unit);
+  await page.reload();
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    await page.clock.fastForward(3100);
+    await expect.poll(() => polls).toBe(attempt + 1);
+  }
+  await expect(page.locator('#actionOutput')).toContainText('complete backup verified');
+  await expect.poll(() => page.evaluate(() => sessionStorage.getItem('commons-backup-job'))).toBe(null);
+  await expect(page.locator('#backupCreateBtn')).toBeEnabled();
+});

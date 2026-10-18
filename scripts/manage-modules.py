@@ -5,6 +5,7 @@ from contextlib import contextmanager
 import fcntl
 import json
 import os
+import re
 from pathlib import Path
 import sqlite3
 import stat
@@ -103,12 +104,16 @@ class Controller:
     def command(self, arguments, values, code, timeout=240):
         # Compose must read this installation's file, without stale shell overrides.
         env = {k: v for k, v in os.environ.items() if k not in values and not k.startswith("COMPOSE_")}
-        env.update(PWD=str(self.root), REPO_DIR=str(self.root), COMMONS_OPERATION_LOCK_HELD="1")
+        env.update(PWD=str(self.root), REPO_DIR=str(self.root), COMMONS_OPERATION_LOCK_HELD="1", COMMONS_QUIOSC_LOCK_HELD="1")
         try:
             result = subprocess.run(arguments, cwd=self.root, env=env, capture_output=True, text=True, timeout=timeout)
         except (OSError, subprocess.TimeoutExpired):
             raise ModuleError(code) from None
         if result.returncode:
+            if code.startswith('backup'):
+                for line in result.stderr.splitlines():
+                    if re.fullmatch(r'backup: [A-Za-z_:]+', line):
+                        print(line, flush=True)
             # Docker/Compose diagnostics can contain interpolated credentials.
             raise ModuleError(code)
         return result.stdout

@@ -102,3 +102,29 @@ def test_completed_module_job_remains_queryable_after_admin_restart(monkeypatch)
     result = admin.job_status("edutictac-commons-modules-20261017120000-01234567")
     assert result["running"] is False
     assert result["result"] == "success"
+
+
+def test_backup_runs_as_retained_host_job(api):
+    request, state, identity, calls = api
+    status, result = request('POST', '/api/backup/create', {}, headers={'X-Commons-Backup': '1'})
+    assert status == 202 and result['ok']
+    assert result['unit'].startswith('edutictac-commons-backup-')
+    command = calls[-1]
+    assert '--service-type=oneshot' in command and '--property=RemainAfterExit=yes' in command
+    assert '/opt/synthetic-commons/scripts/backup-stack.py' in command
+    assert command[-1] == 'create'
+    assert admin.JOB_UNIT_RE.fullmatch(result['unit'])
+
+
+def test_backup_is_protected_from_cross_site_requests(api):
+    request, state, identity, calls = api
+    assert request('POST', '/api/backup/create', {})[0] == 403
+    assert request('POST', '/api/backup/create', {}, headers={'X-Commons-Backup': '1', 'Origin': 'https://untrusted.example'})[0] == 403
+    assert calls == []
+
+
+def test_completed_backup_job_is_still_queryable(monkeypatch):
+    monkeypatch.setattr(admin, 'systemctl_show', lambda *args: {'ActiveState': 'active', 'SubState': 'exited', 'Result': 'success'})
+    monkeypatch.setattr(admin, 'run_script', lambda *args, **kwargs: (True, 'complete'))
+    result = admin.job_status('edutictac-commons-backup-20261018060000-aabbccdd')
+    assert result['running'] is False and result['result'] == 'success'

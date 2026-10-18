@@ -54,19 +54,18 @@ registra en [PROPERA-SESSIO.md](PROPERA-SESSIO.md).
 
 ## Ordre de treball immediat
 
-1. Completar la cobertura automàtica de backup/restauració d'Authentik, Play,
-   Recursos i Quiosc, amb restauracions comprovades per servei.
-2. Validar la instal·lació nova en LliureX: activació, OIDC, selector, reinici,
-   canvi de mòduls i recuperació.
-3. Validar Quiosc amb Epoptes en una aula real, inclosa restauració dels equips.
-4. Tancar el flux v2 docent: sessió compartida amb Recursos, favorits i
+1. Validar la instal·lació nova en LliureX: activació, OIDC, selector,
+   backups complets, reinici i recuperació.
+2. Validar Quiosc amb Epoptes en una aula real, inclosa restauració dels equips.
+3. Tancar el flux v2 docent: sessió compartida amb Recursos, favorits i
    assignació de la cistella a un itinerari concret.
 
 Desplegament en la instal·lació existent **completat**: alpha29/alpha26, perfils
 conservats, treball del selector en el host correcte i accessos comprovats des
 d'un altre dispositiu de la tailnet. [Abast i comprovacions](DESPLEGAMENT-ALPHA26.md).
-La còpia completa feta per a este desplegament no substituïx la cobertura dels
-backups automàtics que continua pendent.
+La següent distribució alpha27/alpha30 incorpora la cobertura completa al
+backup habitual i la mateixa operació des del panell i el temporitzador.
+[Abast i restauració](BACKUPS.md).
 
 Les caselles següents diferencien implementació de validació integral. Una
 funció implementada pot continuar tenint una prova de camp pendent.
@@ -177,10 +176,11 @@ backup recent i verificable**.
   els tags anteriors i verifica salut i flux funcional.
 - [x] Selecció de mòduls amb revisió de configuració, bloqueig compartit de
   manteniment, progrés persistent i recuperació davant fallades.
-- [ ] Incorporar Authentik/PostgreSQL, Play, Recursos i Quiosc a la cobertura
-  automàtica de backup i restauració, amb verificació de cada servei. Les
-  còpies habituals actuals cobrixen id-api i EduHoot; declarar estos límits al
-  panell i a la documentació abans de donar per complet el lliurament.
+- [x] Implementar cobertura completa de backup/restauració per a Authentik,
+  Play, Recursos, Quiosc i configuració, mantenint les còpies v1 llegibles.
+  Pausa coherent dels serveis amb escriptura i treballs del panell en el host.
+- [ ] Publicar i activar alpha27/alpha30 amb la primera còpia completa real i
+  el temporitzador d'usuari comprovats. [Guia de recuperació](BACKUPS.md).
 
 ### Fita 4 — EduHoot com a primera activitat integrada
 

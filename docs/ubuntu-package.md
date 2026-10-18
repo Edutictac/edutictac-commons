@@ -13,8 +13,8 @@ Desde el repositorio:
 ./packaging/build-deb.sh
 ```
 
-El artefacto aparece en `dist/`. La versión actual es `0.1.1~alpha29`, con
-imágenes Commons `0.1.1-alpha26` y selector de módulos. Incluye los scripts
+El artefacto aparece en `dist/`. La versión actual es `0.1.1~alpha30`, con
+imágenes Commons `0.1.1-alpha27` y selector de módulos. Incluye los scripts
 de preparación local de Epoptes; Quiosc sigue desactivado por defecto.
 
 ## Instalar desde el repositorio APT
@@ -48,7 +48,7 @@ documentadas en [`edutictac-packages`](https://git.edutictac.es/Edutictac/edutic
 ## Instalar un paquete local
 
 ```bash
-sudo apt install ./dist/edutictac-commons_0.1.1~alpha29_amd64.deb
+sudo apt install ./dist/edutictac-commons_0.1.1~alpha30_amd64.deb
 ```
 
 El paquete declara Docker Engine, Docker Compose v2, Avahi/mDNS, `curl`, `jq`,
@@ -89,7 +89,7 @@ componentes en los equipos del alumnado. Véase
 
 Una actualización del `.deb` incorpora los scripts nuevos y conserva los
 tags configurados de las imágenes en instalaciones existentes. Para pasar una
-instalación existente a alpha26 hace falta actualizar también sus imágenes;
+instalación existente a alpha27 hace falta actualizar también sus imágenes;
 instalar este paquete no garantiza por sí solo que ejecute la nueva API.
 
 La entrada principal queda disponible en `http://edutictac.local/` (o con la

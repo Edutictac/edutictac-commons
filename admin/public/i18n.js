@@ -102,7 +102,7 @@
       "backup.noDate": "sin fecha",
       "backup.warnings": "avisos",
       "backup.noneSelected": "No hay ningún backup seleccionado.",
-      "backup.createConfirm": "¿Crear un backup ahora?",
+      "backup.createConfirm": "¿Crear una copia completa ahora? Los servicios tendrán una breve pausa.",
       "backup.installTimerConfirm": "¿Activar el timer diario de backups automáticos en este host?",
       "backup.uninstallTimerConfirm": "¿Desactivar el timer de backups automáticos en este host?",
       "backup.restorePrompt": "Esta acción parará el stack y restaurará {backup}. Escribe RESTAURAR para continuar.",
@@ -131,7 +131,7 @@
       "job.success": "✅ Completado con éxito.",
       "job.failed": "❌ Ha fallado. Revisa el registro de arriba.",
       "job.timeout": "⚠️ Sigue en marcha pero ha dejado de comprobarse aquí. Revisa el registro más tarde.",
-      "job.reconnecting": "⏳ Reconectando... el propio panel puede estar reiniciándose como parte de la actualización.",
+      "job.reconnecting": "⏳ Reconectando... el propio panel puede estar reiniciándose durante la operación.",
     },
     ca: {
       "modules.label": "Mòduls",
@@ -227,7 +227,7 @@
       "backup.noDate": "sense data",
       "backup.warnings": "avisos",
       "backup.noneSelected": "No hi ha cap backup seleccionat.",
-      "backup.createConfirm": "Crear un backup ara?",
+      "backup.createConfirm": "Crear una còpia completa ara? Els serveis tindran una breu pausa.",
       "backup.installTimerConfirm": "Activar el timer diari de backups automàtics en aquest host?",
       "backup.uninstallTimerConfirm": "Desactivar el timer de backups automàtics en aquest host?",
       "backup.restorePrompt": "Aquesta acció pararà el stack i restaurarà {backup}. Escriu RESTAURAR per continuar.",
@@ -256,7 +256,7 @@
       "job.success": "✅ Completat amb èxit.",
       "job.failed": "❌ Ha fallat. Revisa el registre de dalt.",
       "job.timeout": "⚠️ Encara va en marxa pero s'ha deixat de comprovar ací. Revisa el registre mes tard.",
-      "job.reconnecting": "⏳ Reconnectant... el mateix panell pot estar reiniciant-se com a part de l'actualització.",
+      "job.reconnecting": "⏳ Reconnectant... el mateix panell pot estar reiniciant-se durant l'operació.",
     },
     va: {
       "modules.label": "Mòduls",
@@ -391,7 +391,7 @@
       "backup.noDate": "no date",
       "backup.warnings": "warnings",
       "backup.noneSelected": "No backup selected.",
-      "backup.createConfirm": "Create a backup now?",
+      "backup.createConfirm": "Create a complete backup now? Services will pause briefly.",
       "backup.installTimerConfirm": "Enable the daily automatic backup timer on this host?",
       "backup.uninstallTimerConfirm": "Disable the automatic backup timer on this host?",
       "backup.restorePrompt": "This action will stop the stack and restore {backup}. Type RESTORE to continue.",
@@ -420,7 +420,7 @@
       "job.success": "✅ Completed successfully.",
       "job.failed": "❌ Failed. Check the log above.",
       "job.timeout": "⚠️ Still running but no longer being checked here. Check the log later.",
-      "job.reconnecting": "⏳ Reconnecting... the panel itself may be restarting as part of the update.",
+      "job.reconnecting": "⏳ Reconnecting... the panel itself may be restarting during the operation.",
     },
   };
 

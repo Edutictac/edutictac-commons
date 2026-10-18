@@ -58,7 +58,7 @@ SERVICE_UNIT = "edutictac-commons-backup.service"
 
 SCRIPT_TIMEOUT = 120
 BACKUP_NAME_RE = re.compile(r"^commons-\d{8}T\d{6}Z$")
-JOB_UNIT_RE = re.compile(r"^edutictac-commons-(?:(update|restore|rollback)-\d{14}|modules-\d{14}-[a-f0-9]{8})$")
+JOB_UNIT_RE = re.compile(r"^edutictac-commons-(?:(update|restore|rollback)-\d{14}|(?:modules|backup)-\d{14}-[a-f0-9]{8})$")
 
 
 def get_modules():
@@ -159,7 +159,10 @@ def list_backups(limit=20):
                 manifest = json.loads(manifest_path.read_text())
                 entry["created_at"] = manifest.get("created_at")
                 entry["stack_version"] = manifest.get("stack_version")
-                entry["warnings"] = manifest.get("warnings", [])
+                entry["warnings"] = list(manifest.get("warnings", []))
+                entry["complete"] = manifest.get("manifest_version") == 2 and manifest.get("complete") is True
+                if not entry["complete"]:
+                    entry["warnings"].append("Còpia antiga amb cobertura parcial; consulta els serveis inclosos abans de restaurar.")
                 entry["services"] = [s.get("name") for s in manifest.get("services", [])]
                 update_path = d / "update.json"
                 if update_path.is_file():
@@ -212,6 +215,8 @@ def build_status():
     coverage_warnings = list(last_backup.get("warnings", [])) if last_backup else []
     if last_backup is None:
         coverage_warnings.append("no hi ha cap backup encara")
+    if (BACKUPS_DIR / "restore-failed.json").is_file():
+        coverage_warnings.append("Restauració interrompuda: revisa el treball i la còpia de seguretat prèvia.")
 
     return {
         "stack_version": read_stack_version(),
@@ -248,7 +253,7 @@ def job_status(unit_name):
     state = systemctl_show(unit_name, ["ActiveState", "SubState", "Result"])
     active_state = state.get("ActiveState", "")
     running = active_state in {"activating", "active", "reloading", "deactivating"}
-    if unit_name.startswith("edutictac-commons-modules-") and state.get("SubState") == "exited":
+    if state.get("SubState") == "exited":
         running = False
     _, log = run_script(
         "journalctl", "--user", "-u", unit_name, "--no-pager", "-o", "cat",
@@ -335,11 +340,13 @@ ACTIONS = {
 
 
 def action_backup_create(payload):
-    ok, out1 = run_script(str(APP_DIR / "scripts" / "backup.sh"))
-    if not ok:
-        return False, out1
-    ok2, out2 = run_script(str(APP_DIR / "scripts" / "backup-check.sh"))
-    return ok2, out1 + "\n" + out2
+    repo = os.environ.get("REPO_DIR", str(APP_DIR))
+    unit = "edutictac-commons-backup-" + datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S") + "-" + secrets.token_hex(4)
+    ok, _ = run_script("systemd-run", "--user", "--service-type=oneshot",
+                       "--property=RemainAfterExit=yes", f"--unit={unit}",
+                       f"--property=WorkingDirectory={repo}", "/usr/bin/python3",
+                       str(Path(repo) / "scripts/backup-stack.py"), "create")
+    return ok, "backup_started" if ok else "host_runner_unavailable", 202 if ok else 503, {"unit": unit} if ok else {}
 
 
 ACTIONS["/api/backup/create"] = action_backup_create
@@ -362,7 +369,8 @@ def action_backup_restore(payload):
     ok, output = run_script(
         "systemd-run",
         "--user",
-        "--collect",
+        "--service-type=oneshot",
+        "--property=RemainAfterExit=yes",
         f"--unit={unit_name}",
         f"--property=WorkingDirectory={repo_dir}",
         "/bin/sh",
@@ -603,11 +611,12 @@ class Handler(BaseHTTPRequestHandler):
         if not self._is_authorized():
             self._send_json(401, {"error": "no autoritzat"})
             return
-        if self.path == "/api/modules":
+        if self.path in {"/api/modules", "/api/backup/create", "/api/backup/restore"}:
             origin = self.headers.get("Origin")
             host = self.headers.get("Host", "")
             invalid_origin = origin is not None and urllib.parse.urlsplit(origin).netloc.lower() != host.lower()
-            if (self.headers.get("X-Commons-Modules") != "1" or invalid_origin
+            header = "X-Commons-Modules" if self.path == "/api/modules" else "X-Commons-Backup"
+            if (self.headers.get(header) != "1" or invalid_origin
                     or self.headers.get("Sec-Fetch-Site") == "cross-site"
                     or self.headers.get("Content-Type", "").split(";", 1)[0].strip() != "application/json"):
                 self._send_json(403, {"ok": False, "output": "request_not_allowed"})

@@ -18,10 +18,10 @@ crea y comprueba un backup. Se valida el arranque y la salud del núcleo y de
 los módulos elegidos. Ante un fallo se restaura la configuración anterior y
 se intenta recuperar el estado operativo; un fallo de recuperación se informa.
 
-La copia automática previa cubre actualmente id-api y EduHoot. La cobertura y
-restauración automática de Authentik, Play, Recursos y Quiosc están pendientes;
-desactivar conserva sus datos, pero eso no equivale a tenerlos respaldados.
-En el despliegue alpha26 se realizó una copia manual adicional completa.
+La copia previa completa incorpora los datos persistentes y la configuración
+privada de los módulos. Hace una breve pausa de los servicios que escriben;
+el selector y los trabajos del panel se ejecutan en el host y sobreviven a la
+reconexión. Cobertura, formato antiguo y límites: [backups](BACKUPS.md).
 
 ## Contrato de operación
 

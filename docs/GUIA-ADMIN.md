@@ -95,20 +95,22 @@ sense passar per Authentik ni per terminal:
 
 ## 4. Còpies de seguretat
 
+Cobertura i recuperació: [guia de backups complets](BACKUPS.md).
+
 Dins d'"Accions" → "Backups":
 
-- **Crear backup ara** — copia la base d'identitat i, quan està actiu,
-  EduHoot (Mongo, uploads i logs). Apareix a "Backups disponibles" en acabar.
-  Authentik, Play, Recursos i Quiosc requerixen encara còpies addicionals;
-  ampliar la cobertura i la restauració automàtica continua pendent.
+- **Crear backup ara** — inicia una còpia completa de Commons, Authentik,
+  Play, Recursos, EduHoot, Quiosc i configuració privada, segons les dades
+  presents. Fa una breu pausa dels serveis amb escriptura i els torna a
+  arrancar; el panell mostra el progrés i es reconnecta automàticament.
 - **Activar backups automàtics** / **Desactivar backups automàtics** —
   instal·la o elimina un timer del sistema que fa backups periòdics sense
   intervenció.
 - **Restaurar backup seleccionat** — selecciona un backup de la llista
   desplegable i prem el botó. Et demanarà escriure la paraula `RESTAURAR`
   per confirmar, perquè **para el stack i substituïx les dades actuals** per
-  les del backup triat. Fes-ho només si estàs segur: no es pot desfer sense
-  un altre backup previ.
+  les del backup triat. Abans crea una còpia completa de seguretat de l'estat
+  actual i valida els fitxers. Les còpies antigues s'identifiquen com a parcials.
 
 Restaurar un backup és una acció llarga: mentre s'executa veuràs el
 "Progrés en viu" descrit en la secció 5 (el registre va apareixent línia a

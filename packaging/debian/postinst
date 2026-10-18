@@ -41,8 +41,8 @@ previous_module_selection = any(line.startswith("MODULES_CONFIGURED=") for line 
 values = {
     "REPO_DIR": "/opt/edutictac-commons",
     "IMAGE_REGISTRY": "registry.edutictac.es/edutictac",
-    "IMAGE_TAG": "0.1.1-alpha26",
-    "ADMIN_TAG": "0.1.1-alpha26",
+    "IMAGE_TAG": "0.1.1-alpha27",
+    "ADMIN_TAG": "0.1.1-alpha27",
     "EDUHOOT_TAG": "1.0.5",
     "EDUHOOT_RESOURCES_TOKEN": secrets.token_urlsafe(48),
     "PORTAL_PORT": "80",

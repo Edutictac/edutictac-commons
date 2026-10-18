@@ -2,6 +2,7 @@
 set -eu
 
 cd "$(dirname "$0")/.."
+. ./scripts/operation-lock.sh
 
 mkdir -p backups
 lock_dir="${BACKUP_LOCK_DIR:-backups/.backup.lock}"

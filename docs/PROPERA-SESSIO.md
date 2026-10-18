@@ -25,9 +25,9 @@ remots i APT signat verificats. Notes: `releases/0.1.1-alpha26/`.
 
 Pròxims passos, per ordre:
 
-1. Ampliar els backups automàtics i la restauració a Authentik, Play, Recursos i
-   Quiosc. El backup habitual cobrix id-api i EduHoot; el desplegament ha tingut
-   una còpia manual addicional més àmplia.
+1. Publicar i activar els backups complets alpha27/alpha30: implementació
+   afegida per a Authentik, Play, Recursos, Quiosc i configuració privada.
+   Comprovar la primera còpia real i el temporitzador; [guia](BACKUPS.md).
 2. Provar esta versió en una màquina LliureX nova amb activació i selector.
 3. Preparar Epoptes i provar Quiosc en una aula real, inclosa restauració.
 4. Validar SSO i favorits amb Recursos i completar cistella → itinerari concret.

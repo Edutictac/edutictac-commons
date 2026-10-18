@@ -4,6 +4,7 @@
 Build commons-selector-{id,portal,admin}:test first. Requires cached optional
 service images; never installs or modifies the active Commons project.
 """
+import argparse
 import importlib.util
 import json
 import os
@@ -65,7 +66,72 @@ def assert_isolated_model(model, work):
                 raise ValueError("Host bind escaped the disposable directory")
 
 
+def verify_backup_roundtrip(work, controller, current):
+    import sqlite3
+    spec = importlib.util.spec_from_file_location('roundtrip_backup', work / 'scripts/backup-stack.py')
+    backups = importlib.util.module_from_spec(spec); spec.loader.exec_module(backups)
+    stack = backups.Stack(work)
+    expected = {}
+    for relative in ['id.db', 'quiosc.db', 'recursos-api/recursos.db']:
+        with sqlite3.connect(work / 'data' / relative) as conn:
+            conn.execute('CREATE TABLE IF NOT EXISTS commons_backup_probe(value TEXT)');conn.execute('DELETE FROM commons_backup_probe')
+            conn.execute("INSERT INTO commons_backup_probe VALUES ('before')")
+    files = ['play/roundtrip.txt', 'recursos-api/documents/roundtrip.txt', 'authentik/roundtrip.txt', 'eduhoot-uploads/roundtrip.txt']
+    seed = """import os,json,sys
+from pathlib import Path
+for relative in json.loads(sys.argv[1]):
+ p=Path('/data')/relative
+ if not p.parent.exists():
+  p.parent.mkdir(parents=True);os.chown(p.parent,int(sys.argv[2]),int(sys.argv[3]))
+ p.write_text(sys.argv[4])
+ if sys.argv[4]=='before': os.chown(p,int(sys.argv[2]),int(sys.argv[3]))
+"""
+    stack.command([*stack.docker, 'run', '--rm', '--pull=never', '--network=none', '--user=0',
+        '--mount', 'type=bind,src=' + str(work / 'data') + ',dst=/data', '--entrypoint=python',
+        'commons-selector-id:test', '-c', seed, json.dumps(files), str(os.getuid()), str(os.getgid()), 'before'], 'seed_files_failed')
+    expected = {relative: 'before' for relative in files}
+    stack.compose(['exec', '-T', 'authentik-postgresql', 'psql', '-U', 'authentik', '-d', 'authentik', '-v', 'ON_ERROR_STOP=1', '-c',
+        "CREATE TABLE IF NOT EXISTS commons_backup_probe(value TEXT); DELETE FROM commons_backup_probe; INSERT INTO commons_backup_probe VALUES ('before');"], 'seed_postgres_failed')
+    stack.compose(['exec', '-T', 'eduhoot-mongo', 'mongosh', '--quiet', '--eval',
+        "db.getSiblingDB('commons_backup_probe').evidence.deleteMany({});db.getSiblingDB('commons_backup_probe').evidence.insertOne({value:'before'})"], 'seed_mongo_failed')
+    print('backup Docker check: creating complete backup', flush=True)
+    with stack.locks():
+        backup = stack.create()
+    manifest = stack.validate(backup)
+    assert {'id-api', 'quiosc', 'play', 'recursos', 'authentik', 'eduhoot', 'configuration'} <= {s['name'] for s in manifest['services']}
+    for relative in ['id.db', 'quiosc.db', 'recursos-api/recursos.db']:
+        with sqlite3.connect(work / 'data' / relative) as conn:
+            conn.execute("UPDATE commons_backup_probe SET value='after'")
+    stack.command([*stack.docker, 'run', '--rm', '--pull=never', '--network=none', '--user=0',
+        '--mount', 'type=bind,src=' + str(work / 'data') + ',dst=/data', '--entrypoint=python',
+        'commons-selector-id:test', '-c', seed, json.dumps(files), str(os.getuid()), str(os.getgid()), 'after'], 'mutate_files_failed')
+    stack.compose(['exec', '-T', 'authentik-postgresql', 'psql', '-U', 'authentik', '-d', 'authentik', '-v', 'ON_ERROR_STOP=1', '-c',
+        "UPDATE commons_backup_probe SET value='after'"], 'mutate_postgres_failed')
+    stack.compose(['exec', '-T', 'eduhoot-mongo', 'mongosh', '--quiet', '--eval',
+        "db.getSiblingDB('commons_backup_probe').evidence.updateOne({},{$set:{value:'after'}})"], 'mutate_mongo_failed')
+    print('backup Docker check: restoring verified backup', flush=True)
+    with stack.locks():
+        stack.restore(backup)
+    for relative in ['id.db', 'quiosc.db', 'recursos-api/recursos.db']:
+        with sqlite3.connect(work / 'data' / relative) as conn:
+            assert conn.execute('SELECT value FROM commons_backup_probe').fetchone()[0] == 'before'
+    verify = "import json,sys;from pathlib import Path;assert all((Path('/data')/p).read_text()=='before' for p in json.loads(sys.argv[1]))"
+    stack.command([*stack.docker, 'run', '--rm', '--pull=never', '--network=none', '--user=0',
+        '--mount', 'type=bind,src=' + str(work / 'data') + ',dst=/data,readonly', '--entrypoint=python',
+        'commons-selector-id:test', '-c', verify, json.dumps(files)], 'check_restored_files_failed')
+    assert stack.compose(['exec', '-T', 'authentik-postgresql', 'psql', '-U', 'authentik', '-d', 'authentik', '-Atc',
+        'SELECT value FROM commons_backup_probe'], 'check_postgres_failed').strip() == b'before'
+    assert stack.compose(['exec', '-T', 'eduhoot-mongo', 'mongosh', '--quiet', '--eval',
+        "db.getSiblingDB('commons_backup_probe').evidence.findOne().value"], 'check_mongo_failed').strip() == b'before'
+    controller.health(manager.read_env(work / '.env'))
+    print('backup Docker check: PostgreSQL, Mongo, three SQLite DBs, files, configuration and service health OK', flush=True)
+
+
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--backup-roundtrip', action='store_true')
+    parser.add_argument('--keep-on-failure', action='store_true')
+    args = parser.parse_args()
     clean_environment = {key: os.environ[key] for key in ("PATH", "HOME") if key in os.environ}
     clean_environment.update(PWD=str(ROOT), LANG="C.UTF-8")
     result = subprocess.run(["docker", "compose", "--env-file", ".env.example", "--profile", "*",
@@ -144,8 +210,9 @@ def main():
     model["services"]["id-api"]["environment"]["COMMONS_MODULE_PROFILES"] = "${COMPOSE_PROFILES}"
     controller = manager.Controller(work)
     current = values
+    preserve = False
     try:
-        for name in ["scripts", "authentik-blueprints", "authentik-compat"]:
+        for name in ["scripts", "admin", "authentik-blueprints", "authentik-compat"]:
             shutil.copytree(ROOT / name, work / name, ignore=shutil.ignore_patterns("__pycache__"))
         shutil.copy2(ROOT / "VERSION", work / "VERSION")
         (work / "data").mkdir()
@@ -166,8 +233,18 @@ def main():
         with urllib.request.urlopen(f"http://127.0.0.1:{values['PORTAL_PORT']}/api/modules/status", timeout=10) as response:
             assert json.load(response)["enabled"] == []
         print("modules Docker check: enable optional tools", flush=True)
-        controller.apply(["play", "eduhoot", "recursos"], manager.revision(values))
+        if args.backup_roundtrip:
+            manager.atomic_write(work / '.env', manager.replace_settings((work / '.env').read_text(),
+                {'COMPOSE_PROFILES': 'authentik,play,recursos,eduhoot', 'MODULES_CONFIGURED': '1'}))
+            current = manager.read_env(work / '.env')
+            controller.compose(['up', '-d', '--no-build', '--wait', '--wait-timeout', '180'], current, 'optional_start_failed')
+            controller.health(current)
+        else:
+            controller.apply(["play", "eduhoot", "recursos"], manager.revision(values))
         current = manager.read_env(work / ".env")
+        if args.backup_roundtrip:
+            verify_backup_roundtrip(work, controller, current)
+            return
         marker = work / "data/play/selector-retention-probe.txt"
         marker.write_text("retained")
         print("modules Docker check: disable optional tools", flush=True)
@@ -198,24 +275,28 @@ def main():
         controller.health(current)
         print("modules Docker check: core access, enable/disable, retained data and rollback OK", flush=True)
     except Exception:
+        preserve = args.keep_on_failure
+        if preserve:
+            print('Isolated test retained for debugging: ' + str(work), flush=True)
         # Container state is useful without exposing environment or service logs.
         result = subprocess.run(["docker", "ps", "-a", "--filter", "label=com.docker.compose.project=" + work.name,
                                  "--format", "{{.Names}} {{.Status}}"], capture_output=True, text=True)
         print(result.stdout, flush=True)
         raise
     finally:
-        if (work / "compose.yml").exists():
-            try:
-                controller.compose(["--profile", "*", "down", "--volumes", "--remove-orphans"], current, "cleanup_failed")
-            finally:
-                # Database containers own files under this disposable directory.
-                # Remove only that bind-mounted test directory, never host data.
-                subprocess.run(["docker", "run", "--rm", "--pull=never", "--network=none", "--user=0",
-                                "--entrypoint=python", "-v", str(work / "data") + ":/cleanup",
-                                "commons-selector-id:test", "-c",
-                                "from pathlib import Path; import shutil; [shutil.rmtree(p) if p.is_dir() else p.unlink() for p in Path('/cleanup').iterdir()]"],
-                               capture_output=True)
-        shutil.rmtree(work, ignore_errors=True)
+        if not preserve:
+            if (work / "compose.yml").exists():
+                try:
+                    controller.compose(["--profile", "*", "down", "--volumes", "--remove-orphans"], current, "cleanup_failed")
+                finally:
+                    # Database containers own files under this disposable directory.
+                    # Remove only that bind-mounted test directory, never host data.
+                    subprocess.run(["docker", "run", "--rm", "--pull=never", "--network=none", "--user=0",
+                                    "--entrypoint=python", "-v", str(work / "data") + ":/cleanup",
+                                    "commons-selector-id:test", "-c",
+                                    "from pathlib import Path; import shutil; [shutil.rmtree(p) if p.is_dir() else p.unlink() for p in Path('/cleanup').iterdir()]"],
+                                   capture_output=True)
+            shutil.rmtree(work, ignore_errors=True)
 
 
 if __name__ == "__main__":
