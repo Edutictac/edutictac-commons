@@ -343,7 +343,7 @@ def action_backup_create(payload):
     repo = os.environ.get("REPO_DIR", str(APP_DIR))
     unit = "edutictac-commons-backup-" + datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S") + "-" + secrets.token_hex(4)
     ok, _ = run_script("systemd-run", "--user", "--service-type=oneshot",
-                       "--property=RemainAfterExit=yes", f"--unit={unit}",
+                       "--property=RemainAfterExit=yes", "--property=TimeoutStartSec=30min", "--property=TimeoutStopSec=5min", f"--unit={unit}",
                        f"--property=WorkingDirectory={repo}", "/usr/bin/python3",
                        str(Path(repo) / "scripts/backup-stack.py"), "create")
     return ok, "backup_started" if ok else "host_runner_unavailable", 202 if ok else 503, {"unit": unit} if ok else {}
@@ -370,7 +370,7 @@ def action_backup_restore(payload):
         "systemd-run",
         "--user",
         "--service-type=oneshot",
-        "--property=RemainAfterExit=yes",
+        "--property=RemainAfterExit=yes", "--property=TimeoutStartSec=30min", "--property=TimeoutStopSec=5min",
         f"--unit={unit_name}",
         f"--property=WorkingDirectory={repo_dir}",
         "/bin/sh",

@@ -5,6 +5,7 @@ After=network-online.target
 [Service]
 Type=oneshot
 TimeoutStartSec=30min
+TimeoutStopSec=5min
 UMask=0077
 WorkingDirectory=__REPO_DIR__
 ExecStart=__REPO_DIR__/scripts/backup-auto.sh

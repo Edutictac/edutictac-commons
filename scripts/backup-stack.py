@@ -23,6 +23,7 @@ import uuid
 ROOT = Path(__file__).resolve().parent.parent
 NAME = re.compile(r'commons-\d{8}T\d{6}Z')
 WRITERS = {'id-api', 'admin', 'play', 'recursos-api', 'eduhoot', 'authentik-server', 'authentik-worker'}
+FRONTENDS = {'recursos'}  # nginx resolves its API address when the frontend starts.
 GROUPS = {'play': ['play'], 'recursos': ['recursos-api', 'recursos-www'],
           'authentik': ['authentik', 'authentik-templates'],
           'eduhoot': ['eduhoot-uploads', 'eduhoot-logs']}
@@ -312,17 +313,20 @@ class Stack:
         self.ensure_idle()
         before = self.running()
         stopped = sorted(before & WRITERS)
+        frontends = sorted(before & FRONTENDS)
         started = []
         try:
-            if stopped:
+            if stopped or frontends:
                 print('backup: breu parada dels serveis amb escriptura', flush=True)
-                self.compose(['stop', *stopped], 'writers_stop_failed')
+                self.compose(['stop', *frontends, *stopped], 'writers_stop_failed')
             yield before, started
         finally:
             if started:
                 self.compose(['stop', *started], 'temporary_database_stop_failed')
             if stopped:
                 self.compose(['up', '-d', '--no-build', '--no-deps', '--wait', '--wait-timeout', '180', *stopped], 'writers_restart_failed')
+            if frontends:
+                self.compose(['up', '-d', '--no-build', '--no-deps', '--wait', '--wait-timeout', '60', *frontends], 'frontends_restart_failed')
 
     def database_available(self, service, before, started):
         if service in before:
@@ -491,7 +495,7 @@ class Stack:
         safety = self.create()
         original = (self.root / '.env').read_text()
         before = self.running()
-        stopped = sorted(before & WRITERS)
+        stopped = sorted(before & (WRITERS | FRONTENDS))
         self.ensure_idle()
         self.compose(['stop', *stopped], 'writers_stop_failed') if stopped else None
         try:

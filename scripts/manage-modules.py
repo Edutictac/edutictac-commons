@@ -185,8 +185,8 @@ class Controller:
             changed = False
             try:
                 print("modules: backup", flush=True)
-                self.command(["sh", "scripts/backup.sh"], old, "backup_failed")
-                self.command(["sh", "scripts/backup-check.sh"], old, "backup_check_failed")
+                self.command(["sh", "scripts/backup.sh"], old, "backup_failed", timeout=2400)
+                self.command(["sh", "scripts/backup-check.sh"], old, "backup_check_failed", timeout=600)
                 # Retain the previous configuration only in this host process's
                 # memory, never in public state or a student-accessible volume.
                 atomic_write(self.env_path, replace_settings(original, changes),

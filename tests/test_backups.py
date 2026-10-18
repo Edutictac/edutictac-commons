@@ -20,7 +20,7 @@ SPEC.loader.exec_module(b)
 class LocalStack(b.Stack):
     def __init__(self, root):
         super().__init__(root)
-        self.active = set(b.WRITERS) | {'authentik-postgresql', 'eduhoot-mongo'}
+        self.active = set(b.WRITERS | b.FRONTENDS) | {'authentik-postgresql', 'eduhoot-mongo'}
         self.calls = []
         self.fail = None
 
@@ -37,7 +37,7 @@ class LocalStack(b.Stack):
         if args[0] == 'stop':
             self.active -= set(args[1:])
         if args[0] == 'up':
-            self.active |= (set(args) & b.WRITERS) or b.WRITERS
+            self.active |= (set(args) & (b.WRITERS | b.FRONTENDS)) or (b.WRITERS | b.FRONTENDS)
         if kwargs.get('output'):
             kwargs['output'].write_bytes(b'synthetic-database-export')
         return b''
@@ -218,3 +218,10 @@ def test_unused_eduhoot_directory_does_not_start_or_pull_mongo(stack,monkeypatch
     monkeypatch.setattr(real,'compose',lambda args,*a,**kw: calls.append(args) or b'')
     assert real.database_available('eduhoot-mongo',set(),[]) is False
     assert not any('up' in call for call in calls)
+
+
+def test_resource_frontend_restarts_after_its_api_is_healthy(stack):
+    create(stack)
+    codes=[code for args,code in stack.calls]
+    assert codes.index('writers_restart_failed') < codes.index('frontends_restart_failed')
+    assert 'recursos' in stack.active
