@@ -282,7 +282,10 @@ mkdir -p "$APP_DIR/data" "$APP_DIR/data/play" "$APP_DIR/data/recursos-api" \
     "$APP_DIR/data/eduhoot-logs" "$APP_DIR/backups" "$APP_DIR/dist"
 chown -R root:root "$APP_DIR"
 chown -R "$target_uid:$target_gid" "$APP_DIR/data"
-chown "$target_uid:$target_gid" "$APP_DIR/backups" "$APP_DIR/dist"
+# Les còpies i la configuració de la segona còpia han de continuar accessibles
+# al compte del servei també després d'una actualització.
+chown -R "$target_uid:$target_gid" "$APP_DIR/backups"
+chown "$target_uid:$target_gid" "$APP_DIR/dist"
 # Host-side maintenance jobs run as this user and replace .env atomically.
 # Keep program files root-owned while allowing configuration replacement.
 chown "$target_uid:$target_gid" "$APP_DIR" "$ENV_FILE"
