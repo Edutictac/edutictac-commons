@@ -9,8 +9,10 @@ Actualizar conjuntamente el paquete y las imágenes en instalaciones anteriores.
 Tras canjear el código de activación, iniciar sesión como administrador y abrir
 `/admin/`, una instalación nueva muestra el asistente. La sección Herramientas
 del centro permite cambiar la selección después. Play, EduHoot y Recursos son
-opcionales. Quiosc requiere preparación previa de Epoptes; no instala clientes
-ni habilita acceso remoto como efecto de una casilla. El núcleo permanece activo.
+opcionales. Quiosc solo puede activarse en el ordenador del aula con servidor
+Epoptes: el paquete lo prepara automáticamente al detectarlo ([detalle](quiosc-local.md)),
+pero nunca lo activa. No instala clientes ni habilita acceso remoto como efecto
+de una casilla. El núcleo permanece activo.
 
 Desactivar detiene los servicios, sin borrar volúmenes ni archivos. Los accesos
 se ocultan; las asignaciones y resultados se conservan. Antes de cambiar se

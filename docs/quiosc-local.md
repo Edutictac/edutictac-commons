@@ -10,14 +10,26 @@ La implementació està en proves. **No s’ha validat encara sobre LliureX 23 r
 ni està activada en el desplegament de demostració.** El quiosc continua sent
 bàsic i supervisat; esta millora no afig aïllament de KDE ni filtre web.
 
-## Preparació única del servidor
+## Preparació automàtica del servidor
 
-La instal·lació de Commons ha de tindre les imatges alpha25 o posteriors,
-els scripts inclosos en l'instal·lador alpha28, Python 3 i Epoptes ja operatius.
-En el mateix ordinador del servidor,
-l’administració executa:
+No cal executar cap ordre. Des de l'instal·lador alpha36, si l'ordinador on
+s'instal·la Commons té servidor Epoptes, Quiosc es prepara sol:
+
+- en instal·lar o actualitzar el paquet, si el socket d'Epoptes ja existix;
+- amb la unitat `edutictac-quiosc-prepare.path`, quan Epoptes s'instal·la o
+  arranca després de Commons.
+
+La preparació **no activa Quiosc**. Després, una persona administradora
+l'activa en Administració → Eines del centre. En un servidor sense Epoptes la
+casella queda deshabilitada i el panell explica que Quiosc només funciona en
+l'ordinador de l'aula amb Epoptes.
+
+Si cal repetir-la a mà (per exemple, després de canviar les interfícies de
+xarxa), l'administració pot reiniciar el servei o usar l'script:
 
 ```bash
+sudo systemctl restart edutictac-quiosc-prepare.service
+# o bé, amb diagnòstic detallat:
 cd /opt/edutictac-commons
 sudo python3 scripts/setup-quiosc-local.py --check
 sudo python3 scripts/setup-quiosc-local.py --deploy
@@ -36,7 +48,7 @@ llançador Python en el servidor. Prepara el directori volàtil mitjançant
 `/etc/tmpfiles.d/edutictac-quiosc.conf`, sense un altre dimoni resident al host.
 Les MAC del servidor s’exclouen de l’aula automàtica per a no seleccionar
 l’ordinador del professor. Si canvien les interfícies de xarxa, l’administració
-ha de repetir la preparació.
+ha de repetir la preparació (vore més amunt).
 
 El Compose principal reutilitza estes variables; la integració es conserva
 quan el servei systemd o els scripts d’actualització executen `-f compose.yml`.

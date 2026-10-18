@@ -1,0 +1,10 @@
+[Unit]
+Description=Detecta el servidor Epoptes per a preparar Quiosc d'EduTicTac Commons
+
+[Path]
+# Epoptes crea este socket en arrancar; si apareix més tard, es prepara llavors.
+PathExists=/run/epoptes/epoptes.socket
+Unit=edutictac-quiosc-prepare.service
+
+[Install]
+WantedBy=multi-user.target

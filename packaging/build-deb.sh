@@ -85,6 +85,9 @@ install -m 0755 "$repo_dir/packaging/debian/prerm" "$root_dir/DEBIAN/prerm"
 install -m 0755 "$repo_dir/packaging/debian/postrm" "$root_dir/DEBIAN/postrm"
 install -m 0644 "$repo_dir/packaging/edutictac-commons.service" \
   "$root_dir/lib/systemd/system/edutictac-commons.service"
+for unit in edutictac-quiosc-prepare.path edutictac-quiosc-prepare.service; do
+  install -m 0644 "$repo_dir/packaging/$unit" "$root_dir/lib/systemd/system/$unit"
+done
 install -m 0644 "$repo_dir/packaging/debian/edutictac-commons.desktop" \
   "$root_dir/usr/share/applications/edutictac-commons.desktop"
 install -m 0644 "$repo_dir/packaging/edutictac-commons.svg" \

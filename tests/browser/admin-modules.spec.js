@@ -39,12 +39,12 @@ async function advanceJob(page) {
   await page.clock.fastForward(3100);
 }
 
-test('primer inici amb selector, idiomes i Quiosc pendent de preparar', async ({ page }) => {
+test('primer inici amb selector, idiomes i Quiosc sense Epoptes', async ({ page }) => {
   const model = await mockModules(page, { configured: false });
   const dialog = page.locator('#modulesWizard');
   await expect(dialog).toBeVisible();
   await expect(dialog.locator('[value="quiosc"]')).toBeDisabled();
-  await expect(dialog).toContainText('preparar Epoptes');
+  await expect(dialog).toContainText(/no t(?:é|iene) Epoptes/);
   await dialog.locator('[value="play"]').check();
   for (const [lang, text] of [['va', 'Ferramentes'], ['ca', 'eines'], ['en', 'tools'], ['es', 'herramientas']]) {
     await dialog.locator(`[data-lang="${lang}"]`).click();

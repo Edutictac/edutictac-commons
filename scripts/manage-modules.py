@@ -85,8 +85,8 @@ class Controller:
         self.state_path = self.data / "modules.json"
 
     def quiosc_ready(self, values):
-        # Preparation remains a one-time administrative action, never a side effect
-        # of selecting a box in the browser.
+        # Preparation is done as root by the package or edutictac-quiosc-prepare.service
+        # when an Epoptes server exists; selecting a box in the browser never prepares it.
         return (values.get("QUIOSC_LOCAL_AUTH") == "1"
                 and values.get("QUIOSC_DISCOVERY") == "epoptes"
                 and Path("/usr/local/lib/edutictac-quiosc/launcher.py").is_file()

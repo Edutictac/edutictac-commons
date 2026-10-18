@@ -335,6 +335,16 @@ fi
 # systemctl restart already recreates the stack. A second restart here can
 # interrupt first-run migrations before the blueprint has been applied.
 
+# Quiosc: si este equip té servidor Epoptes, es prepara sol (sense activar-lo).
+# La unitat .path també cobrix un Epoptes instal·lat o arrancat més tard.
+if command -v systemctl >/dev/null 2>&1; then
+    systemctl enable --now edutictac-quiosc-prepare.path >/dev/null 2>&1 || true
+    if [ -S /run/epoptes/epoptes.socket ]; then
+        echo "Servidor Epoptes detectat: es prepara Quiosc; s'activa des d'Administració."
+        systemctl restart --no-block edutictac-quiosc-prepare.service >/dev/null 2>&1 || true
+    fi
+fi
+
 AUTHENTIK_API_TOKEN="$(python3 - "$ENV_FILE" <<'PY'
 import sys
 from pathlib import Path

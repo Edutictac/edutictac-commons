@@ -1,0 +1,14 @@
+[Unit]
+Description=Prepara Quiosc d'EduTicTac Commons amb el servidor Epoptes local
+# Només prepara: activar Quiosc continua sent una decisió d'Administració.
+Requires=docker.service
+After=docker.service edutictac-commons.service
+ConditionPathExists=/opt/edutictac-commons/.env
+
+[Service]
+Type=oneshot
+# Queda actiu després de preparar: així la unitat .path no el torna a llançar en bucle.
+RemainAfterExit=yes
+WorkingDirectory=/opt/edutictac-commons
+ExecStart=/usr/bin/python3 /opt/edutictac-commons/scripts/setup-quiosc-local.py --auto
+TimeoutStartSec=300
