@@ -660,3 +660,51 @@ def test_catalog_can_be_updated_by_admin():
     finally:
         process.terminate()
         process.wait(timeout=3)
+
+
+def test_expired_anonymous_activities_are_purged_from_disk():
+    data_dir = Path(tempfile.mkdtemp(prefix="edutictac-play-test-"))
+    legacy = data_dir / "activities" / "legacy01"
+    legacy.mkdir(parents=True)
+    (legacy / "activity.json").write_text(json.dumps({"id": "legacy01", "type": "true-false"}), encoding="utf-8")
+    process = subprocess.Popen(
+        ["python3", "server.py"],
+        cwd=Path(__file__).parents[1] / "services" / "play",
+        env={**os.environ, "PORT": "18112", "PLAY_DATA_DIR": str(data_dir),
+             "PLAY_ANONYMOUS_TTL_SECONDS": "0", "PLAY_PURGE_INTERVAL_SECONDS": "1"},
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    try:
+        time.sleep(0.25)
+        activity = _create_activity(18112, "Caduca de seguida")
+        assert activity["expiresAt"]
+        folder = data_dir / "activities" / activity["id"]
+        deadline = time.time() + 4
+        while folder.exists() and time.time() < deadline:
+            time.sleep(0.2)
+        assert not folder.exists()
+        # Les activitats sense data de caducitat no es toquen.
+        assert (legacy / "activity.json").is_file()
+    finally:
+        process.terminate()
+        process.wait(timeout=3)
+
+
+@pytest.mark.parametrize("commons_url, demo", [("", False), ("https://edutictac.es/commons.html", True)])
+def test_config_exposes_demo_mode(commons_url, demo):
+    process = subprocess.Popen(
+        ["python3", "server.py"],
+        cwd=Path(__file__).parents[1] / "services" / "play",
+        env={**os.environ, "PORT": "18113", "PLAY_DATA_DIR": tempfile.mkdtemp(prefix="edutictac-play-test-"),
+             "PLAY_DEMO_COMMONS_URL": commons_url},
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    try:
+        time.sleep(0.25)
+        config = json.loads(urllib.request.urlopen("http://127.0.0.1:18113/api/config").read())
+        assert config == {"demo": demo, "commonsUrl": commons_url or None}
+    finally:
+        process.terminate()
+        process.wait(timeout=3)

@@ -9,6 +9,21 @@ token de administración.
 GET /api/health
 ```
 
+## Configuración pública
+
+```http
+GET /api/config
+```
+
+Devuelve `{"demo": false, "commonsUrl": null}`. Si el servidor se arranca con
+`PLAY_DEMO_COMMONS_URL`, devuelve `demo: true` y esa URL; la portada muestra
+entonces un aviso de demo pública con un enlace a EduTicTac Commons. Las
+instalaciones de Commons no deben definirla.
+
+Las actividades anónimas caducadas (`expiresAt`, según
+`PLAY_ANONYMOUS_TTL_SECONDS`) se borran del disco cada
+`PLAY_PURGE_INTERVAL_SECONDS` (3600 por defecto; `0` lo desactiva).
+
 ## Crear actividad
 
 ```http

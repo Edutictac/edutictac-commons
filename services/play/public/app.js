@@ -345,3 +345,10 @@ document.addEventListener('DOMContentLoaded', () => {
     preview();
   }, true);
 });
+document.addEventListener('DOMContentLoaded', () => {
+  fetch(`${BASE}/api/config`).then((response) => (response.ok ? response.json() : null)).then((config) => {
+    if (!config?.demo || !config.commonsUrl) return;
+    $('demoLink').href = config.commonsUrl;
+    $('demoNotice').classList.remove('hidden');
+  }).catch(() => {});
+});

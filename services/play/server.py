@@ -10,6 +10,7 @@ import re
 import secrets
 import shutil
 import tempfile
+import threading
 import time
 import uuid
 import zipfile
@@ -40,6 +41,10 @@ COMMONS_AUTH_ME_URL = os.environ.get(
 ).rstrip("/")
 PLAY_TEACHER_LOGIN_URL = os.environ.get("PLAY_TEACHER_LOGIN_URL", "").strip()
 ANONYMOUS_ACTIVITY_TTL_SECONDS = int(os.environ.get("PLAY_ANONYMOUS_TTL_SECONDS", str(24 * 60 * 60)))
+# Cada quant s'esborren del disc les activitats caducades; 0 ho desactiva.
+PURGE_INTERVAL_SECONDS = int(os.environ.get("PLAY_PURGE_INTERVAL_SECONDS", "3600"))
+# Si es definix, Play es mostra com a demo pública amb un enllaç a Commons.
+PLAY_DEMO_COMMONS_URL = os.environ.get("PLAY_DEMO_COMMONS_URL", "").strip()
 COMMONS_APP_ID = os.environ.get("EDUTICTAC_PLAY_APP_ID", "edutictac-play")
 COMMONS_APP_TOKEN = os.environ.get("EDUTICTAC_ID_APP_TOKEN", "")
 PLAY_ADMIN_TOKEN = os.environ.get("EDUTICTAC_PLAY_ADMIN_TOKEN", "").strip()
@@ -1144,6 +1149,12 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/api/health":
             self.send_json(HTTPStatus.OK, {"status": "ok", "service": "edutictac-play"})
             return
+        if path == "/api/config":
+            self.send_json(HTTPStatus.OK, {
+                "demo": bool(PLAY_DEMO_COMMONS_URL),
+                "commonsUrl": PLAY_DEMO_COMMONS_URL or None,
+            })
+            return
         if path == "/api/catalog":
             self.send_json(HTTPStatus.OK, {**read_catalog(), "labels": read_catalog_labels()})
             return
@@ -1758,8 +1769,38 @@ def delete_activity(activity_id: str) -> bool:
     return True
 
 
+def purge_expired_activities() -> int:
+    """Esborra del disc les activitats anònimes caducades i en retorna el nombre."""
+
+    removed = 0
+    if not ACTIVITIES_DIR.exists():
+        return removed
+    for folder in ACTIVITIES_DIR.iterdir():
+        if not folder.is_dir() or not ID_RE.fullmatch(folder.name):
+            continue
+        try:
+            activity = json.loads((folder / "activity.json").read_text(encoding="utf-8"))
+        except (FileNotFoundError, json.JSONDecodeError):
+            continue
+        if activity_expired(activity):
+            shutil.rmtree(folder, ignore_errors=True)
+            removed += 1
+    return removed
+
+
+def purge_loop(interval: int) -> None:
+    while True:
+        try:
+            purge_expired_activities()
+        except OSError:
+            pass
+        time.sleep(interval)
+
+
 def main() -> None:
     ACTIVITIES_DIR.mkdir(parents=True, exist_ok=True)
+    if PURGE_INTERVAL_SECONDS > 0:
+        threading.Thread(target=purge_loop, args=(PURGE_INTERVAL_SECONDS,), daemon=True).start()
     port = int(os.environ.get("PORT", "8083"))
     ThreadingHTTPServer((HOST, port), Handler).serve_forever()
 
