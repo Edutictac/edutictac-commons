@@ -7,6 +7,10 @@ pintor nativo y vincular recursos en la revisión de JSON IA.
 Este documento conserva el plan completo; el [catálogo común inicial](rebost-catalog.md) también está implementado y probado localmente.
 Los hitos de migración e integración con un segundo editor siguen pendientes. Blocs es el primer cliente local. Books queda fuera de la entrega inicial.
 
+La vinculación posterior a abrir el proyecto ya está implementada en Blocs: **Archivo →
+Imágenes del proyecto…** muestra Disponible/Pendiente/No encontrado y reutiliza el selector
+y las subidas de Rebost. No es un segundo gestor ni un editor de imágenes dentro de Blocs.
+
 Nombre de producto confirmado: **EduTicTac Rebost**. Las rutas, archivos e identificadores
 técnicos `assets` se mantienen para conservar compatibilidad; no son el nombre mostrado.
 En valenciano: **Guarda al Rebost** y **Tria del Rebost**; en castellano:

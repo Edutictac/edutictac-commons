@@ -1,5 +1,11 @@
 # EduTicTac Rebost: núcleo central privado
 
+Blocs también permite completar imágenes pendientes después de abrir un proyecto mediante
+**Archivo → Imágenes del proyecto…**, reutilizando este selector y el gestor central para
+subidas. Las copias incorporadas al `.sb3` siguen disponibles sin sesión o sin el original
+central. La implementación y las pruebas están en Blocs, `docs/rebost-opened-project.md`.
+No añade endpoints, permisos, almacenamiento ni dependencias a Commons.
+
 Estado, 20-10-2026: implementado, probado y activado en el stack local de Commons; sin publicación
 externa. La integración local ya permite elegir personajes y fondos desde Blocs,
 con el selector central bajo el mismo origen y el [primer catálogo común](rebost-catalog.md). El gestor provisional de
