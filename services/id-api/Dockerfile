@@ -17,6 +17,7 @@ COPY vendor/edutictac_community ./edutictac_community
 COPY main.py .
 COPY module_guard.py .
 COPY quiosc ./quiosc
+COPY assets ./assets
 COPY entrypoint.sh /entrypoint.sh
 
 RUN groupadd --gid 1000 app \

@@ -23,6 +23,8 @@ from datetime import datetime, timedelta, timezone
 from typing import Any
 from urllib.parse import urlparse
 
+from assets import Library as RebostLibrary
+
 from fastapi import FastAPI, HTTPException, Query, Request, Response
 from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse
 from pydantic import BaseModel, Field, field_validator
@@ -196,6 +198,7 @@ def set_oidc_cookie(response: Response, claims: dict[str, Any], role: str) -> No
         OIDC_COOKIE,
         make_cookie({
             "oidc": True,
+            "rebost_sid": rebost.issue_oidc(OIDC_ISSUER_URL, subject),
             "iss": OIDC_ISSUER_URL,
             "sub": subject,
             "id": f"oidc:{pseudonym}",
@@ -952,7 +955,8 @@ async def oidc_callback(request: Request):
 
 
 @app.post("/api/auth/oidc/logout")
-def oidc_logout(response: Response) -> dict[str, bool]:
+def oidc_logout(request: Request, response: Response) -> dict[str, bool]:
+    rebost.revoke_oidc(request)
     response.delete_cookie(OIDC_COOKIE, **delete_cookie_kwargs())
     return {"ok": True}
 
@@ -1387,6 +1391,7 @@ def student_document_resource(assignment_id: str, launch_token: str, request: Re
 
 @app.post("/api/auth/logout")
 def logout(request: Request, response: Response) -> dict[str, bool]:
+    rebost.revoke_oidc(request)
     cookie = parse_cookie(request.cookies.get(SESSION_COOKIE))
     if cookie and cookie.get("sid"):
         token_hash = hashlib.sha256(str(cookie["sid"]).encode()).hexdigest()
@@ -2336,3 +2341,20 @@ def require_quiosc_group_access(request: Request, group_id: str) -> str:
 
 install_quiosc(app, require_quiosc_teacher, require_quiosc_group_access,
                service=quiosc_service, local_auth=quiosc_local_auth, start_guard=quiosc_start_guard)
+
+
+# A shared private image library; no dependency on a particular editor.
+rebost = RebostLibrary(get_conn, DB_PATH, oidc_cookie, current_identity)
+app.include_router(rebost.router())
+
+
+@app.middleware("http")
+async def rebost_private_headers(request: Request, call_next):
+    response = await call_next(request)
+    if request.url.path.startswith("/api/assets/v1/"):
+        response.headers["Cache-Control"] = "private, no-store"
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["Content-Security-Policy"] = "default-src 'none'; sandbox"
+        response.headers["Cross-Origin-Resource-Policy"] = "same-origin"
+        response.headers["Referrer-Policy"] = "no-referrer"
+    return response

@@ -10,6 +10,7 @@
 
   var translations = {
     es: {
+      "home.rebostDescription": "Tus imágenes reutilizables.",
       "student.moduleDisabled": "Herramienta desactivada por el centro",
       "setup.chooseModules": "Continuar: elegir las herramientas del centro",
       "teacher.itinerary.loading": "Cargando itinerarios…",
@@ -326,6 +327,7 @@
       "setup.oidcStep3": "Si la instalación es antigua, reinicia Commons después de completar la configuración.",
     },
     ca: {
+      "home.rebostDescription": "Les teues imatges reutilitzables.",
       "student.moduleDisabled": "Eina desactivada pel centre",
       "setup.chooseModules": "Continuar: triar les eines del centre",
       "teacher.itinerary.loading": "Carregant itineraris…",
@@ -642,6 +644,7 @@
       "setup.oidcStep3": "Si la instal·lació és antiga, reinicia Commons després de completar la configuració.",
     },
     va: {
+      "home.rebostDescription": "Les teues imatges reutilitzables.",
       "student.moduleDisabled": "Ferramenta desactivada pel centre",
       "setup.chooseModules": "Continuar: triar les ferramentes del centre",
       "teacher.itinerary.loading": "Carregant itineraris…",
@@ -796,6 +799,7 @@
       "setup.oidcStep3": "Si la instal·lació és antiga, reinicia Commons després de completar la configuració.",
     },
     en: {
+      "home.rebostDescription": "Your reusable images.",
       "student.moduleDisabled": "Tool disabled by the school",
       "setup.chooseModules": "Continue: choose the school’s tools",
       "teacher.itinerary.loading": "Loading itineraries…",

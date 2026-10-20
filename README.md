@@ -215,3 +215,16 @@ Configuración local/SSH, permisos, pruebas y recuperación:
 Mode automàtic per al mateix ordinador Epoptes, amb permisos de la sessió
 LliureX i sense inventari docent: [preparació i validació](docs/quiosc-local.md).
 Implementat en proves; pendent de validar en una aula real.
+
+## EduTicTac Rebost i Blocs
+
+La biblioteca multimèdia compartida s’implementa inicialment en el repositori Blocs, amb
+recursos privats, JSON v3 amb imatges pendents i paquets portables. Arquitectura, interfícies
+per a Books i cobertura de persistència: [EduTicTac Rebost](docs/edutictac-assets.md).
+
+Planificació del backend compartit, identitat i migració: [biblioteca central Rebost](docs/assets-central-plan.md).
+
+Primera implementació central local: [Rebost privat, API, permisos i verificació](docs/rebost.md).
+Inclou gestor `/assets/` i client compartit; encara no desplegada ni connectada als editors.
+
+Catàleg comú inicial del Rebost: [dotze recursos de Blocs, procedència i llicències](docs/rebost-catalog.md).
