@@ -53,6 +53,7 @@ test-moodle:
 
 up-recursos: init
 	mkdir -p data/recursos-api
+	mkdir -p data/recursos-www
 	RECURSOS_API_URL=$${RECURSOS_API_URL:-http://recursos-api:8004} PLAY_INGEST_TOKEN=$${PLAY_INGEST_TOKEN:-local-play-ingest-token} PLAY_PUBLIC_URL=$${PLAY_PUBLIC_URL:-http://localhost:8084} COMPOSE_PROFILES=recursos $(COMPOSE) up --build -d id-api recursos-api recursos play
 
 up-authentik: init

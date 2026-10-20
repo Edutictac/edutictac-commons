@@ -482,6 +482,18 @@ def action_content_sync(channel):
                     imported = json.loads(response.read().decode("utf-8"))
                 if imported.get("errors", 0):
                     raise ValueError("el índice rechazó algunos recursos; revisa el catálogo")
+                # Regenera games.json/games-home.json al volum compartit amb el frontend recursos
+                export_request = urllib.request.Request(
+                    f"{RESOURCES_API_URL}/api/internal/export-catalog",
+                    data=b"{}",
+                    method="POST",
+                    headers={
+                        "Authorization": f"Bearer {RESOURCES_IMPORT_TOKEN}",
+                        "Content-Type": "application/json",
+                    },
+                )
+                with urllib.request.urlopen(export_request, timeout=60) as export_response:
+                    json.loads(export_response.read().decode("utf-8"))
             elif channel == "eduhoot":
                 if not EDUHOOT_RESOURCES_TOKEN:
                     raise ValueError("EDUHOOT_RESOURCES_TOKEN no está configurado")
