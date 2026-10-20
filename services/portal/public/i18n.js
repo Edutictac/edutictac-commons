@@ -11,6 +11,7 @@
   var translations = {
     es: {
       "home.rebostDescription": "Tus imágenes reutilizables.",
+      "home.blocsDescription": "Crea y programa con tus imágenes.",
       "student.moduleDisabled": "Herramienta desactivada por el centro",
       "setup.chooseModules": "Continuar: elegir las herramientas del centro",
       "teacher.itinerary.loading": "Cargando itinerarios…",
@@ -328,6 +329,7 @@
     },
     ca: {
       "home.rebostDescription": "Les teues imatges reutilitzables.",
+      "home.blocsDescription": "Crea i programa amb les teues imatges.",
       "student.moduleDisabled": "Eina desactivada pel centre",
       "setup.chooseModules": "Continuar: triar les eines del centre",
       "teacher.itinerary.loading": "Carregant itineraris…",
@@ -645,6 +647,7 @@
     },
     va: {
       "home.rebostDescription": "Les teues imatges reutilitzables.",
+      "home.blocsDescription": "Crea i programa amb les teues imatges.",
       "student.moduleDisabled": "Ferramenta desactivada pel centre",
       "setup.chooseModules": "Continuar: triar les ferramentes del centre",
       "teacher.itinerary.loading": "Carregant itineraris…",
@@ -800,6 +803,7 @@
     },
     en: {
       "home.rebostDescription": "Your reusable images.",
+      "home.blocsDescription": "Create and code with your images.",
       "student.moduleDisabled": "Tool disabled by the school",
       "setup.chooseModules": "Continue: choose the school’s tools",
       "teacher.itinerary.loading": "Loading itineraries…",

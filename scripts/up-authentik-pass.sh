@@ -6,8 +6,14 @@ set -euo pipefail
 project_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$project_dir"
 
-client_id_value="$(pass show edutictac/authentik-users/commons-client-id)"
-client_secret_value="$(pass show edutictac/authentik-users/commons-client-secret)"
+client_id_value="${EDUTICTAC_ID_OIDC_CLIENT_ID:-}"
+client_secret_value="${EDUTICTAC_ID_OIDC_CLIENT_SECRET:-}"
+if [[ -z "$client_id_value" ]]; then
+  client_id_value="$(pass show edutictac/authentik-users/commons-client-id)"
+fi
+if [[ -z "$client_secret_value" ]]; then
+  client_secret_value="$(pass show edutictac/authentik-users/commons-client-secret)"
+fi
 client_id_value="${client_id_value%%$'\n'*}"
 client_secret_value="${client_secret_value%%$'\n'*}"
 

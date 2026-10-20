@@ -228,3 +228,6 @@ Primera implementació central local: [Rebost privat, API, permisos i verificaci
 Inclou gestor `/assets/` i client compartit; encara no desplegada ni connectada als editors.
 
 Catàleg comú inicial del Rebost: [dotze recursos de Blocs, procedència i llicències](docs/rebost-catalog.md).
+
+Accés compartit amb el login habitual de Commons, complement Compose opcional i proves
+locals sense comptes reals: [Commons, Rebost i Blocs](docs/rebost-commons-access.md).

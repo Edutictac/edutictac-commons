@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="ca">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="referrer" content="same-origin">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'">
+  <title>EduTicTac Blocs</title>
+  <link rel="stylesheet" href="/assets/style.css">
+  <script src="/i18n.js" defer></script>
+  <script src="/blocs-access.js" defer></script>
+</head>
+<body>
+  <header>
+    <a href="/">← Commons</a>
+    <nav class="lang-switcher" aria-label="Idioma">
+      <button type="button" data-lang="va">Valencià</button>
+      <button type="button" data-lang="es">Castellano</button>
+    </nav>
+  </header>
+  <main>
+    <h1>EduTicTac Blocs</h1>
+    <p id="status" role="status" aria-live="polite"></p>
+    <section id="access" hidden>
+      <p id="hint"></p>
+      <a id="studentLogin" href="/student.html?next=%2Fblocs-access.html"></a>
+      <a id="oidcLogin" href="/api/auth/oidc/login?next=%2Fblocs-access.html" hidden></a>
+      <a id="anonymous" href="/blocs/editor.html"></a>
+    </section>
+    <a id="retry" href="/blocs-access.html" hidden></a>
+  </main>
+</body>
+</html>

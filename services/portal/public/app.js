@@ -196,6 +196,22 @@ async function loadEnabledModules() {
   }
 }
 
+async function loadBlocsLink() {
+  if (!has("blocsHomeLink")) return;
+  try {
+    const data = await api("/blocs/status", { method: "GET" });
+    $("blocsHomeLink").hidden = data.enabled !== true;
+  } catch { /* Blocs is an optional editor. */ }
+}
+
+// Only these Commons pages may request a return after code/PIN access.
+function returnAfterStudentLogin() {
+  const next = new URLSearchParams(window.location.search).get("next");
+  if (!["/assets/", "/blocs-access.html"].includes(next)) return false;
+  window.location.replace(next);
+  return true;
+}
+
 function saveState() {
   localStorage.setItem(
     STORAGE_KEY,
@@ -1093,6 +1109,7 @@ async function studentLogin() {
     body: JSON.stringify({ public_code: publicCode, pin }),
   });
   state.student = login.identity;
+  if (returnAfterStudentLogin()) return;
   setStudentSession(true);
   await checkIdentityStatus();
   await loadStudentDashboard();
@@ -1116,6 +1133,7 @@ async function refreshStudentSession() {
   try {
     const data = await api("/api/auth/me", { method: "GET" });
     state.student = data.identity;
+    if (state.student && state.student.group_id && returnAfterStudentLogin()) return;
     setStudentSession(true);
     await checkIdentityStatus();
     await loadStudentDashboard();
@@ -1553,6 +1571,7 @@ restoreState();
 setAuthentikLinks();
 setApplicationLinks();
 loadEnabledModules();
+loadBlocsLink();
 if (has("teacherOidcLogin")) {
   setTeacherSession(false);
 }

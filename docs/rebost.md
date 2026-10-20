@@ -1,9 +1,13 @@
 # EduTicTac Rebost: núcleo central privado
 
-Estado, 20-10-2026: implementado en código de Commons y probado localmente. No está desplegado
-en el stack instalado. La integración local ya permite elegir personajes y fondos desde Blocs,
+Estado, 20-10-2026: implementado, probado y activado en el stack local de Commons; sin publicación
+externa. La integración local ya permite elegir personajes y fondos desde Blocs,
 con el selector central bajo el mismo origen y el [primer catálogo común](rebost-catalog.md). El gestor provisional de
 Blocs se ha retirado de la interfaz; sus datos se conservan para migrarlos. [Plan completo y siguientes fases](assets-central-plan.md).
+
+El acceso desde la portada y el login habitual de Commons ya está preparado mediante
+un complemento Compose opcional, verificado con nginx y la API reales en contenedores
+aislados. [Configuración, pruebas y límites del acceso compartido](rebost-commons-access.md).
 
 ## Qué incorpora esta primera entrega
 

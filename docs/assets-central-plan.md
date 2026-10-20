@@ -1,7 +1,7 @@
 # Plan de biblioteca central EduTicTac Rebost
 
 Estado actualizado el 20-10-2026: [núcleo central privado y gestor implementados localmente](rebost.md),
-con pruebas de API, navegador y persistencia. No desplegados. Blocs ya tiene un adaptador local
+con pruebas de API, navegador y persistencia. Activados en el stack local, sin publicación externa. Blocs ya tiene un adaptador local
 para elegir personajes, disfraces y fondos bajo el mismo origen, guardar dibujos desde el
 pintor nativo y vincular recursos en la revisión de JSON IA.
 Este documento conserva el plan completo; el [catálogo común inicial](rebost-catalog.md) también está implementado y probado localmente.
@@ -127,7 +127,10 @@ flowchart LR
 Para la primera integración, publicar las aplicaciones conectadas bajo el mismo origen
 que Commons mediante rutas del proxy, por ejemplo `/blocs/`. Un origen incluye protocolo,
 dominio y puerto: `:8082` y `:18613` no comparten origen. La configuración concreta de la
-ruta y la imagen Blocs forma parte del trabajo; hoy no está incluida en el Compose de Commons.
+ruta y la imagen Blocs ya está preparada en el complemento opcional `compose.rebost-blocs.yml`.
+El [acceso compartido y sus pruebas locales](rebost-commons-access.md) están implementados;
+activado en el stack local. El usuario ha confirmado el acceso con su cuenta desde un iPad;
+esta comprobación manual no sustituye la revisión de todas las operaciones táctiles.
 
 No conectar el cliente existente de proyectos privados de Blocs directamente a
 `/api/auth/me` de Commons: las respuestas tienen contratos diferentes. Rebost tendrá su
