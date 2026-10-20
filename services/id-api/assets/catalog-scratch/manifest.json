@@ -1,0 +1,1069 @@
+{
+  "format": "rebost-catalog",
+  "version": 1,
+  "source_revision": "fa7ed724dd3070486ccf12424bd633f95572bdfd",
+  "license_file": {
+    "path": "licenses/CC-BY-SA-2.0.txt",
+    "sha256": "faa0d2bc65af03485d5d421dacfe73d5ecf27886b4e5f56e57a9eae61a4e7445"
+  },
+  "review_file": {
+    "path": "reviews/review.json",
+    "sha256": "6dbb61548275895d880f74add869194a7c51c02d277d57f52c8e7fe7f6643c13"
+  },
+  "items": [
+    {
+      "id": "img-b6b9a959b5bc1da90b67a05b2a192520775abf435975f0e68c93a1675ef0a21e",
+      "source_id": "scratch:3826a4091a33e4d26f87a2fac7cf796b.svg",
+      "aliases": [
+        "scratch-apple"
+      ],
+      "name": "Poma",
+      "names": {
+        "ca": "Poma",
+        "es": "Manzana"
+      },
+      "type": "object",
+      "width": 64,
+      "height": 65,
+      "license": "CC-BY-SA-2.0",
+      "attribution": "Scratch is developed by the Lifelong Kindergarten Group at the MIT Media Lab. See http://scratch.mit.edu.",
+      "source_revision": "fa7ed724dd3070486ccf12424bd633f95572bdfd",
+      "source_repository": "https://github.com/scratchfoundation/scratch-gui",
+      "source_path": "src/lib/libraries/sprites.json#Apple",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/scratch-apple.png",
+        "sha256": "c8f87d01aac7004cc693ec59ad811a138966bec037c93dd5edb98a2c02aa8401"
+      },
+      "thumbnail": {
+        "path": "thumbnails/scratch-apple.png",
+        "sha256": "e31baa25df015970ea6d85c38022a9666c450322b922298a2ab350ec6c3781ee"
+      },
+      "source": {
+        "path": "sources/3826a4091a33e4d26f87a2fac7cf796b.svg",
+        "sha256": "76947a7ac0c7aa06fb0930e4f4da4830ee459a68d32c5a400ef5899174849d6f"
+      },
+      "revision": 42276302829671
+    },
+    {
+      "id": "img-01cd2252e2ce2e574e77479c2f91ebd6096f7a9b4183f2828f70e3c67368fb0b",
+      "source_id": "scratch:3c6241985b581284ec191f9d1deffde8.svg",
+      "aliases": [
+        "scratch-ball"
+      ],
+      "name": "Pilota",
+      "names": {
+        "ca": "Pilota",
+        "es": "Pelota"
+      },
+      "type": "object",
+      "width": 46,
+      "height": 46,
+      "license": "CC-BY-SA-2.0",
+      "attribution": "Scratch is developed by the Lifelong Kindergarten Group at the MIT Media Lab. See http://scratch.mit.edu.",
+      "source_revision": "fa7ed724dd3070486ccf12424bd633f95572bdfd",
+      "source_repository": "https://github.com/scratchfoundation/scratch-gui",
+      "source_path": "src/lib/libraries/sprites.json#Ball",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/scratch-ball.png",
+        "sha256": "57e96032815d4c6f075de00f788c0cd93b64b85c17a80250107f5db745d62dab"
+      },
+      "thumbnail": {
+        "path": "thumbnails/scratch-ball.png",
+        "sha256": "2003d5cfb9501b09d021a1d26b450b8f490cb5e0a2d29425d668f0becd78975e"
+      },
+      "source": {
+        "path": "sources/3c6241985b581284ec191f9d1deffde8.svg",
+        "sha256": "ef5efb1ce6eb56dd10a3a504b6533df7f1c81a510cf0e377c1afe1513e7e914f"
+      },
+      "revision": 143000776897615
+    },
+    {
+      "id": "img-8ffe13937feb217eb2f8a6f0b67d2bd8886d1db20bbc26f4b1b66bfa1ebfb91f",
+      "source_id": "scratch:e5d3d3eb61797f5999732a8f5efead24.svg",
+      "aliases": [
+        "scratch-bananas"
+      ],
+      "name": "Plàtans",
+      "names": {
+        "ca": "Plàtans",
+        "es": "Plátanos"
+      },
+      "type": "object",
+      "width": 79,
+      "height": 77,
+      "license": "CC-BY-SA-2.0",
+      "attribution": "Scratch is developed by the Lifelong Kindergarten Group at the MIT Media Lab. See http://scratch.mit.edu.",
+      "source_revision": "fa7ed724dd3070486ccf12424bd633f95572bdfd",
+      "source_repository": "https://github.com/scratchfoundation/scratch-gui",
+      "source_path": "src/lib/libraries/sprites.json#Bananas",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/scratch-bananas.png",
+        "sha256": "051bfeef732bd4ca3220593cfde43d9f4d4a338213289647f8e1df7d6d4ec511"
+      },
+      "thumbnail": {
+        "path": "thumbnails/scratch-bananas.png",
+        "sha256": "5194eddd8a725a536d389728b51aef780a79c5be88ee73b4bca9787dbca48260"
+      },
+      "source": {
+        "path": "sources/e5d3d3eb61797f5999732a8f5efead24.svg",
+        "sha256": "9c6646f667e3c530cd98ca17264874739c2f5b776fa598f2c195e62fbe550f2e"
+      },
+      "revision": 111173161780912
+    },
+    {
+      "id": "img-1d7ade5373e1ceeb542cc43c2318b4befe59809bc7ba709997a0f30bcddbd621",
+      "source_id": "scratch:4e4ced87ed37ee66c758bba077e0eae6.svg",
+      "aliases": [
+        "scratch-bat"
+      ],
+      "name": "Ratpenat",
+      "names": {
+        "ca": "Ratpenat",
+        "es": "Murciélago"
+      },
+      "type": "sprite",
+      "width": 159,
+      "height": 120,
+      "license": "CC-BY-SA-2.0",
+      "attribution": "Scratch is developed by the Lifelong Kindergarten Group at the MIT Media Lab. See http://scratch.mit.edu.",
+      "source_revision": "fa7ed724dd3070486ccf12424bd633f95572bdfd",
+      "source_repository": "https://github.com/scratchfoundation/scratch-gui",
+      "source_path": "src/lib/libraries/sprites.json#Bat",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/scratch-bat.png",
+        "sha256": "59e0ff1ea2f8920bffa75c398055d34e27d22a6554655e18a815b2cdee7657c4"
+      },
+      "thumbnail": {
+        "path": "thumbnails/scratch-bat.png",
+        "sha256": "4033c18726fcc493add64973c2352df7acbdb6923ce887b55ea4351b85efc2ad"
+      },
+      "source": {
+        "path": "sources/4e4ced87ed37ee66c758bba077e0eae6.svg",
+        "sha256": "1fe3153f8eb81ff696c912591796b85f03faa6d64f6d230ebe30cf4c12692804"
+      },
+      "revision": 25101645001352
+    },
+    {
+      "id": "img-00c18e9a1a4194ce39cf90efa412baa9d23136051bf46298d496e2b7791594d9",
+      "source_id": "scratch:deef1eaa96d550ae6fc11524a1935024.svg",
+      "aliases": [
+        "scratch-bear"
+      ],
+      "name": "Os",
+      "names": {
+        "ca": "Os",
+        "es": "Oso"
+      },
+      "type": "sprite",
+      "width": 187,
+      "height": 168,
+      "license": "CC-BY-SA-2.0",
+      "attribution": "Scratch is developed by the Lifelong Kindergarten Group at the MIT Media Lab. See http://scratch.mit.edu.",
+      "source_revision": "fa7ed724dd3070486ccf12424bd633f95572bdfd",
+      "source_repository": "https://github.com/scratchfoundation/scratch-gui",
+      "source_path": "src/lib/libraries/sprites.json#Bear",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/scratch-bear.png",
+        "sha256": "87f9acd8e3f9842c611cedef64817b4500d16bab3af61ce453fb0cdc293278d2"
+      },
+      "thumbnail": {
+        "path": "thumbnails/scratch-bear.png",
+        "sha256": "b03cb24e1ac7015e5d62eae5863ac4552085511568866ccf2e1c05b20a59dc6a"
+      },
+      "source": {
+        "path": "sources/deef1eaa96d550ae6fc11524a1935024.svg",
+        "sha256": "69eed348899d031444503719803a30d23443192df1ad553b39e36523b836f003"
+      },
+      "revision": 205377587385338
+    },
+    {
+      "id": "img-4fe6c75aa1d8b760c5f896603dd9f2186549f9a52042a5b876a511029a4a64fd",
+      "source_id": "scratch:fe98df7367e314d9640bfaa54fc239be.svg",
+      "aliases": [
+        "scratch-butterfly-1"
+      ],
+      "name": "Papallona 1",
+      "names": {
+        "ca": "Papallona 1",
+        "es": "Mariposa 1"
+      },
+      "type": "sprite",
+      "width": 134,
+      "height": 90,
+      "license": "CC-BY-SA-2.0",
+      "attribution": "Scratch is developed by the Lifelong Kindergarten Group at the MIT Media Lab. See http://scratch.mit.edu.",
+      "source_revision": "fa7ed724dd3070486ccf12424bd633f95572bdfd",
+      "source_repository": "https://github.com/scratchfoundation/scratch-gui",
+      "source_path": "src/lib/libraries/sprites.json#Butterfly 1",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/scratch-butterfly-1.png",
+        "sha256": "9956180a413a09370b0f312d9d83bf4b609fe2bd3ef7b35e08b507381384d329"
+      },
+      "thumbnail": {
+        "path": "thumbnails/scratch-butterfly-1.png",
+        "sha256": "8a4ecff745e7314322e0cae6285fa616c95597ced8fcd1349b67f6d5cbcaca9d"
+      },
+      "source": {
+        "path": "sources/fe98df7367e314d9640bfaa54fc239be.svg",
+        "sha256": "902676e10cf33c0b0eef2fc31998c8e184948a0f2bf587c0701958d16fc0511e"
+      },
+      "revision": 74434150091658
+    },
+    {
+      "id": "img-d678e2cd4930db0e5e23cba2ef29ea8de96141c9004b7d1d9658f8ffa29cf850",
+      "source_id": "scratch:372ae0abd2e8e50a20bc12cb160d8746.svg",
+      "aliases": [
+        "scratch-butterfly-2"
+      ],
+      "name": "Papallona 2",
+      "names": {
+        "ca": "Papallona 2",
+        "es": "Mariposa 2"
+      },
+      "type": "sprite",
+      "width": 134,
+      "height": 80,
+      "license": "CC-BY-SA-2.0",
+      "attribution": "Scratch is developed by the Lifelong Kindergarten Group at the MIT Media Lab. See http://scratch.mit.edu.",
+      "source_revision": "fa7ed724dd3070486ccf12424bd633f95572bdfd",
+      "source_repository": "https://github.com/scratchfoundation/scratch-gui",
+      "source_path": "src/lib/libraries/sprites.json#Butterfly 2",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/scratch-butterfly-2.png",
+        "sha256": "f99337f0546da1301a7e95dfd54e59751cb885decc6d1d8b81622c8d7f54e383"
+      },
+      "thumbnail": {
+        "path": "thumbnails/scratch-butterfly-2.png",
+        "sha256": "30321d1f476454d5d78c269f32e62a504c25f89c6a0c0e364c427418a24536c3"
+      },
+      "source": {
+        "path": "sources/372ae0abd2e8e50a20bc12cb160d8746.svg",
+        "sha256": "e86c9937f4f6645a38a783ac665a00a03e065fc91470207ca980a1ab602c44cd"
+      },
+      "revision": 235459326268549
+    },
+    {
+      "id": "img-058bf8baa1c4ef674d5891a30a2a75a74af4a8fca1636358e259a3c9ae642c1d",
+      "source_id": "scratch:f7cdd2acbc6d7559d33be8675059c79e.svg",
+      "aliases": [
+        "scratch-crab"
+      ],
+      "name": "Cranc",
+      "names": {
+        "ca": "Cranc",
+        "es": "Cangrejo"
+      },
+      "type": "sprite",
+      "width": 135,
+      "height": 91,
+      "license": "CC-BY-SA-2.0",
+      "attribution": "Scratch is developed by the Lifelong Kindergarten Group at the MIT Media Lab. See http://scratch.mit.edu.",
+      "source_revision": "fa7ed724dd3070486ccf12424bd633f95572bdfd",
+      "source_repository": "https://github.com/scratchfoundation/scratch-gui",
+      "source_path": "src/lib/libraries/sprites.json#Crab",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/scratch-crab.png",
+        "sha256": "580c5857ecac705607349cef9724123040d775d6b4c62fa8079608c9bb9517a8"
+      },
+      "thumbnail": {
+        "path": "thumbnails/scratch-crab.png",
+        "sha256": "072c661d128359b243a7229ab7f7eb227176960e0f1f6b676aeab7e81dc7df32"
+      },
+      "source": {
+        "path": "sources/f7cdd2acbc6d7559d33be8675059c79e.svg",
+        "sha256": "8e1af186b30a89fa3509b192cd555a0e29835f190e2aa4e4d93f93b7fe41d611"
+      },
+      "revision": 169562393338704
+    },
+    {
+      "id": "img-5542f98aa9fc2ac0477aca8825bab20a3116dc7ec4db2f1a87555d94645495e4",
+      "source_id": "scratch:45b02fbd582c15a50e1953830b59b377.svg",
+      "aliases": [
+        "scratch-dinosaur1"
+      ],
+      "name": "Dinosaure",
+      "names": {
+        "ca": "Dinosaure",
+        "es": "Dinosaurio"
+      },
+      "type": "sprite",
+      "width": 197,
+      "height": 185,
+      "license": "CC-BY-SA-2.0",
+      "attribution": "Scratch is developed by the Lifelong Kindergarten Group at the MIT Media Lab. See http://scratch.mit.edu.",
+      "source_revision": "fa7ed724dd3070486ccf12424bd633f95572bdfd",
+      "source_repository": "https://github.com/scratchfoundation/scratch-gui",
+      "source_path": "src/lib/libraries/sprites.json#Dinosaur1",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/scratch-dinosaur1.png",
+        "sha256": "f874d778c027023d4898df353328c293dd424151ba023d09240877eb8b18892e"
+      },
+      "thumbnail": {
+        "path": "thumbnails/scratch-dinosaur1.png",
+        "sha256": "9abf2cfd201929da5c3674813e33791934e08532a1ea67555fb71637becb9479"
+      },
+      "source": {
+        "path": "sources/45b02fbd582c15a50e1953830b59b377.svg",
+        "sha256": "b5a074173968b55db5db941559877d37c84fbd8f601b71a067fb3519b037319d"
+      },
+      "revision": 187288787345339
+    },
+    {
+      "id": "img-d0fd25e97fa89a397ed6981cb67423e5e3d982cb1f2979dc6ba5da6154e2ce88",
+      "source_id": "scratch:35cd78a8a71546a16c530d0b2d7d5a7f.svg",
+      "aliases": [
+        "scratch-dog1"
+      ],
+      "name": "Gos",
+      "names": {
+        "ca": "Gos",
+        "es": "Perro"
+      },
+      "type": "sprite",
+      "width": 156,
+      "height": 90,
+      "license": "CC-BY-SA-2.0",
+      "attribution": "Scratch is developed by the Lifelong Kindergarten Group at the MIT Media Lab. See http://scratch.mit.edu.",
+      "source_revision": "fa7ed724dd3070486ccf12424bd633f95572bdfd",
+      "source_repository": "https://github.com/scratchfoundation/scratch-gui",
+      "source_path": "src/lib/libraries/sprites.json#Dog1",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/scratch-dog1.png",
+        "sha256": "902e62d947d59951c315672da695270481f30619065e888c802970b46ccce1f3"
+      },
+      "thumbnail": {
+        "path": "thumbnails/scratch-dog1.png",
+        "sha256": "a990f33b6152a3f8640af02381d24f2c008191256b7e64195c8d94d80acbcde7"
+      },
+      "source": {
+        "path": "sources/35cd78a8a71546a16c530d0b2d7d5a7f.svg",
+        "sha256": "060039baa042d72d70bd315650e29e67f049bbd28a6887da6583570446a667f9"
+      },
+      "revision": 112338571636463
+    },
+    {
+      "id": "img-b8b04fa7fe4ad146066faa1c3d89390c56654b7b702e91314f319f39b4dfba5f",
+      "source_id": "scratch:c9837d0454f5f0f73df290af2045359b.svg",
+      "aliases": [
+        "scratch-duck"
+      ],
+      "name": "Ànec",
+      "names": {
+        "ca": "Ànec",
+        "es": "Pato"
+      },
+      "type": "sprite",
+      "width": 119,
+      "height": 123,
+      "license": "CC-BY-SA-2.0",
+      "attribution": "Scratch is developed by the Lifelong Kindergarten Group at the MIT Media Lab. See http://scratch.mit.edu.",
+      "source_revision": "fa7ed724dd3070486ccf12424bd633f95572bdfd",
+      "source_repository": "https://github.com/scratchfoundation/scratch-gui",
+      "source_path": "src/lib/libraries/sprites.json#Duck",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/scratch-duck.png",
+        "sha256": "3c2fd7997127be522cd1d0089c58b53e3edaa81cafc1f5b5c286b2ce9b5e88c8"
+      },
+      "thumbnail": {
+        "path": "thumbnails/scratch-duck.png",
+        "sha256": "27a021f06961acbbb8871bb985956dfe6f78dc5b8c2578612534290f7385ca03"
+      },
+      "source": {
+        "path": "sources/c9837d0454f5f0f73df290af2045359b.svg",
+        "sha256": "ba55c809079acf42097d110bc4ef0b407166f58eed3e769c0907c7fce7dfe0a3"
+      },
+      "revision": 227384441156058
+    },
+    {
+      "id": "img-b944af7a3359c9ed495af101c5c92ca6f09241d6e68753d49d0ae34c0b825dc2",
+      "source_id": "scratch:a9b3d163756621f8395592ad77fb9369.svg",
+      "aliases": [
+        "scratch-fish"
+      ],
+      "name": "Peix",
+      "names": {
+        "ca": "Peix",
+        "es": "Pez"
+      },
+      "type": "sprite",
+      "width": 114,
+      "height": 66,
+      "license": "CC-BY-SA-2.0",
+      "attribution": "Scratch is developed by the Lifelong Kindergarten Group at the MIT Media Lab. See http://scratch.mit.edu.",
+      "source_revision": "fa7ed724dd3070486ccf12424bd633f95572bdfd",
+      "source_repository": "https://github.com/scratchfoundation/scratch-gui",
+      "source_path": "src/lib/libraries/sprites.json#Fish",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/scratch-fish.png",
+        "sha256": "04cc476af6c6ddf230634adc6c16d3f05eb4fb5abe362f808affee2d20b5124f"
+      },
+      "thumbnail": {
+        "path": "thumbnails/scratch-fish.png",
+        "sha256": "777cade5bfbc353abe85670007dc6f3f80724ab38f01d33c87b763145695da9d"
+      },
+      "source": {
+        "path": "sources/a9b3d163756621f8395592ad77fb9369.svg",
+        "sha256": "11f7dc782e24a9b9152567333b82da1ff0f035e153c25339904e6c98c9e157ac"
+      },
+      "revision": 33563203724369
+    },
+    {
+      "id": "img-a38888de1aadf490ae3496d884e4e96e5dc0cea1f7803c82d4469a2ca7aba047",
+      "source_id": "scratch:390845c11df0924f3b627bafeb3f814e.svg",
+      "aliases": [
+        "scratch-frog"
+      ],
+      "name": "Granota",
+      "names": {
+        "ca": "Granota",
+        "es": "Rana"
+      },
+      "type": "sprite",
+      "width": 96,
+      "height": 60,
+      "license": "CC-BY-SA-2.0",
+      "attribution": "Scratch is developed by the Lifelong Kindergarten Group at the MIT Media Lab. See http://scratch.mit.edu.",
+      "source_revision": "fa7ed724dd3070486ccf12424bd633f95572bdfd",
+      "source_repository": "https://github.com/scratchfoundation/scratch-gui",
+      "source_path": "src/lib/libraries/sprites.json#Frog",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/scratch-frog.png",
+        "sha256": "7be88804ce45e929a9c6a2ff5ce982bc73459317ca10e73d7effe659f64fe41d"
+      },
+      "thumbnail": {
+        "path": "thumbnails/scratch-frog.png",
+        "sha256": "5efa2257c60a80ed164b1cfe284ce8b184b8c2b1487fb621f465b2cb5a30439c"
+      },
+      "source": {
+        "path": "sources/390845c11df0924f3b627bafeb3f814e.svg",
+        "sha256": "69546db6fad006fe4cc299999c8f075c2bb655613f96f27e18390d1afe5318d7"
+      },
+      "revision": 193616325320813
+    },
+    {
+      "id": "img-f6fa7a91bd6ddc2522ae632dd3c3ffee82bee3337736e5d5cb9998bccbdb5d6d",
+      "source_id": "scratch:169c0efa8c094fdedddf8c19c36f0229.svg",
+      "aliases": [
+        "scratch-ladybug1"
+      ],
+      "name": "Marieta 1",
+      "names": {
+        "ca": "Marieta 1",
+        "es": "Mariquita 1"
+      },
+      "type": "sprite",
+      "width": 84,
+      "height": 87,
+      "license": "CC-BY-SA-2.0",
+      "attribution": "Scratch is developed by the Lifelong Kindergarten Group at the MIT Media Lab. See http://scratch.mit.edu.",
+      "source_revision": "fa7ed724dd3070486ccf12424bd633f95572bdfd",
+      "source_repository": "https://github.com/scratchfoundation/scratch-gui",
+      "source_path": "src/lib/libraries/sprites.json#Ladybug1",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/scratch-ladybug1.png",
+        "sha256": "0061af791b96070571beb94796d34766e972e6365ceb85879f0bc0368515691b"
+      },
+      "thumbnail": {
+        "path": "thumbnails/scratch-ladybug1.png",
+        "sha256": "fc36b9684d0fb2d9736361777f7ba7eccf38572fd312f86c445a47cf35346fc2"
+      },
+      "source": {
+        "path": "sources/169c0efa8c094fdedddf8c19c36f0229.svg",
+        "sha256": "4680b4ab384f26a3645c146cc332297a68fec92d6e8706a75924e04dedba4463"
+      },
+      "revision": 275593721996507
+    },
+    {
+      "id": "img-6c93c7e5c752167c249d4445d6fbccb05e8894204f883c1734981b049bbc66d2",
+      "source_id": "scratch:457200f8dec8fea00d22473e9bd9175e.svg",
+      "aliases": [
+        "scratch-ladybug2"
+      ],
+      "name": "Marieta 2",
+      "names": {
+        "ca": "Marieta 2",
+        "es": "Mariquita 2"
+      },
+      "type": "sprite",
+      "width": 96,
+      "height": 59,
+      "license": "CC-BY-SA-2.0",
+      "attribution": "Scratch is developed by the Lifelong Kindergarten Group at the MIT Media Lab. See http://scratch.mit.edu.",
+      "source_revision": "fa7ed724dd3070486ccf12424bd633f95572bdfd",
+      "source_repository": "https://github.com/scratchfoundation/scratch-gui",
+      "source_path": "src/lib/libraries/sprites.json#Ladybug2",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/scratch-ladybug2.png",
+        "sha256": "641b7758000464cbb1d2f3eaa710890a02a1484e71c5ca41431543973c5cd95a"
+      },
+      "thumbnail": {
+        "path": "thumbnails/scratch-ladybug2.png",
+        "sha256": "a4bf0ebbc118a8db2d4ee8b1fa39dada10161479429a3fb1adaafb2f5cd77037"
+      },
+      "source": {
+        "path": "sources/457200f8dec8fea00d22473e9bd9175e.svg",
+        "sha256": "f91aa0f23fdc9533bece022d3ab24eb08a09548d8af9cec0543c84cbcf0d7c0a"
+      },
+      "revision": 158195565626455
+    },
+    {
+      "id": "img-97e343e7389146f7c3171d84fe608e293e25c442187d61be23a7218bb79de901",
+      "source_id": "scratch:e22d9b633feffc1d026980a1f21e07d7.svg",
+      "aliases": [
+        "scratch-octopus"
+      ],
+      "name": "Polp",
+      "names": {
+        "ca": "Polp",
+        "es": "Pulpo"
+      },
+      "type": "sprite",
+      "width": 111,
+      "height": 145,
+      "license": "CC-BY-SA-2.0",
+      "attribution": "Scratch is developed by the Lifelong Kindergarten Group at the MIT Media Lab. See http://scratch.mit.edu.",
+      "source_revision": "fa7ed724dd3070486ccf12424bd633f95572bdfd",
+      "source_repository": "https://github.com/scratchfoundation/scratch-gui",
+      "source_path": "src/lib/libraries/sprites.json#Octopus",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/scratch-octopus.png",
+        "sha256": "7ed4a3e7517a44b84799b999d22f4ba67dc1953cfb05dcd9c6a546f3824be024"
+      },
+      "thumbnail": {
+        "path": "thumbnails/scratch-octopus.png",
+        "sha256": "8a454756fcf18eccebadc944c7147bc855f411648b53f5bb6129f2f9a8816eec"
+      },
+      "source": {
+        "path": "sources/e22d9b633feffc1d026980a1f21e07d7.svg",
+        "sha256": "19bfc816e5322d10258292d51661ee1f4c1d78eed4d36034df82d2ed1966ea70"
+      },
+      "revision": 90790100150150
+    },
+    {
+      "id": "img-4833d24142f4df6a41a6a626d2b346df1b0946cb884ec5d607fc83f84cc98393",
+      "source_id": "scratch:082f371c206f07d20e53595a9c69cc22.svg",
+      "aliases": [
+        "scratch-parrot"
+      ],
+      "name": "Lloro",
+      "names": {
+        "ca": "Lloro",
+        "es": "Loro"
+      },
+      "type": "sprite",
+      "width": 172,
+      "height": 143,
+      "license": "CC-BY-SA-2.0",
+      "attribution": "Scratch is developed by the Lifelong Kindergarten Group at the MIT Media Lab. See http://scratch.mit.edu.",
+      "source_revision": "fa7ed724dd3070486ccf12424bd633f95572bdfd",
+      "source_repository": "https://github.com/scratchfoundation/scratch-gui",
+      "source_path": "src/lib/libraries/sprites.json#Parrot",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/scratch-parrot.png",
+        "sha256": "ad0c01820ff650e33977a272295a6c585d468e68a9773a00ea30d15b9cfcbb8f"
+      },
+      "thumbnail": {
+        "path": "thumbnails/scratch-parrot.png",
+        "sha256": "b77b8bc4af834f330b80d88df0859b2662b4439048ffc7cad3b6eec00ff3d9cc"
+      },
+      "source": {
+        "path": "sources/082f371c206f07d20e53595a9c69cc22.svg",
+        "sha256": "7dda5f0cb59a33c6834ccacd6070a6c23319b3ee9bcd0df682822862162c89cb"
+      },
+      "revision": 103698556362274
+    },
+    {
+      "id": "img-d00b6cd6f32784f3f599c742abfddf4f4b703c68736082288fc30471a25de6d7",
+      "source_id": "scratch:b3d6eae85f285dd618bf9dcf609b9454.svg",
+      "aliases": [
+        "scratch-pencil"
+      ],
+      "name": "Llapis",
+      "names": {
+        "ca": "Llapis",
+        "es": "Lápiz"
+      },
+      "type": "object",
+      "width": 102,
+      "height": 121,
+      "license": "CC-BY-SA-2.0",
+      "attribution": "Scratch is developed by the Lifelong Kindergarten Group at the MIT Media Lab. See http://scratch.mit.edu.",
+      "source_revision": "fa7ed724dd3070486ccf12424bd633f95572bdfd",
+      "source_repository": "https://github.com/scratchfoundation/scratch-gui",
+      "source_path": "src/lib/libraries/sprites.json#Pencil",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/scratch-pencil.png",
+        "sha256": "d5b69ec8fb31eabe45db48e0ba5f299b38d2780e6e4a8f9221b9ec214cec6201"
+      },
+      "thumbnail": {
+        "path": "thumbnails/scratch-pencil.png",
+        "sha256": "649807805f7f78a352028c042309591bc9ebd32ee07ddae82d93021481fd5ab7"
+      },
+      "source": {
+        "path": "sources/b3d6eae85f285dd618bf9dcf609b9454.svg",
+        "sha256": "c809bfd59cd5233f0dabdac553243ea11b5db36ec72c2f8652faf7ecffcb9c87"
+      },
+      "revision": 6305094779492
+    },
+    {
+      "id": "img-60e3ac678f3b8c319e46e15197a9a69eb58c48bdab88e10bdbabe7d1f4545b19",
+      "source_id": "scratch:970f886bfa454e1daa6d6c30ef49a972.svg",
+      "aliases": [
+        "scratch-rabbit"
+      ],
+      "name": "Conill",
+      "names": {
+        "ca": "Conill",
+        "es": "Conejo"
+      },
+      "type": "sprite",
+      "width": 161,
+      "height": 144,
+      "license": "CC-BY-SA-2.0",
+      "attribution": "Scratch is developed by the Lifelong Kindergarten Group at the MIT Media Lab. See http://scratch.mit.edu.",
+      "source_revision": "fa7ed724dd3070486ccf12424bd633f95572bdfd",
+      "source_repository": "https://github.com/scratchfoundation/scratch-gui",
+      "source_path": "src/lib/libraries/sprites.json#Rabbit",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/scratch-rabbit.png",
+        "sha256": "0c0bd6d277fdf3d54685c049b4d189bc0dac231e38c7803c725f65350549212b"
+      },
+      "thumbnail": {
+        "path": "thumbnails/scratch-rabbit.png",
+        "sha256": "badf09701a72f6429007644b751fcfb4fe15c18ce4195d22650b0581255d063c"
+      },
+      "source": {
+        "path": "sources/970f886bfa454e1daa6d6c30ef49a972.svg",
+        "sha256": "1a31814c65b92b1454bfb65d9310dfcd3967796ee68fba33a168a86958d1e8f7"
+      },
+      "revision": 133257766336213
+    },
+    {
+      "id": "img-7f2b33b3e3d7ab2668a80f348c8073202159ddc7bd286c7957ea9a221e9b5569",
+      "source_id": "scratch:551629f2a64c1f3703e57aaa133effa6.svg",
+      "aliases": [
+        "scratch-star"
+      ],
+      "name": "Estrela",
+      "names": {
+        "ca": "Estrela",
+        "es": "Estrella"
+      },
+      "type": "object",
+      "width": 47,
+      "height": 46,
+      "license": "CC-BY-SA-2.0",
+      "attribution": "Scratch is developed by the Lifelong Kindergarten Group at the MIT Media Lab. See http://scratch.mit.edu.",
+      "source_revision": "fa7ed724dd3070486ccf12424bd633f95572bdfd",
+      "source_repository": "https://github.com/scratchfoundation/scratch-gui",
+      "source_path": "src/lib/libraries/sprites.json#Star",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/scratch-star.png",
+        "sha256": "ab784323fec76916433ce0fe22a84883765977d1e172e9888772b0131f23ca96"
+      },
+      "thumbnail": {
+        "path": "thumbnails/scratch-star.png",
+        "sha256": "4e140edb1ab859a0aba987adebeb26397dd679a9b78972e1e0ddc00b4d3fe9e0"
+      },
+      "source": {
+        "path": "sources/551629f2a64c1f3703e57aaa133effa6.svg",
+        "sha256": "91770b52b6e41eb2e99f042e9631ef7832f7693136baf92aab447994c3e90981"
+      },
+      "revision": 220879321640304
+    },
+    {
+      "id": "img-e49759295a4e4a1ce99a5950f29e174f1913cb9f60289d879094b5db5bcd396b",
+      "source_id": "scratch:d04b15886635101db8220a4361c0c88d.svg",
+      "aliases": [
+        "scratch-tree1"
+      ],
+      "name": "Arbre",
+      "names": {
+        "ca": "Arbre",
+        "es": "Árbol"
+      },
+      "type": "object",
+      "width": 148,
+      "height": 208,
+      "license": "CC-BY-SA-2.0",
+      "attribution": "Scratch is developed by the Lifelong Kindergarten Group at the MIT Media Lab. See http://scratch.mit.edu.",
+      "source_revision": "fa7ed724dd3070486ccf12424bd633f95572bdfd",
+      "source_repository": "https://github.com/scratchfoundation/scratch-gui",
+      "source_path": "src/lib/libraries/sprites.json#Tree1",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/scratch-tree1.png",
+        "sha256": "c61deb68e30ae243a576c3db055e40b63a02052942d16467e00d95bc49629b18"
+      },
+      "thumbnail": {
+        "path": "thumbnails/scratch-tree1.png",
+        "sha256": "3c0b5474a8a5bd96f6a95959ae8efd6dc9150dff2596701bc0514e1cc1cc2402"
+      },
+      "source": {
+        "path": "sources/d04b15886635101db8220a4361c0c88d.svg",
+        "sha256": "544572b6d6634fc0ffcf2e5510e3839e8108531c85794724ba851bc9f0badc57"
+      },
+      "revision": 206945901130495
+    },
+    {
+      "id": "img-8301f6419737dfce53e5b480a9ca2188be57ecb2a4caa46e6deadc8043b1f4e9",
+      "source_id": "scratch:e7c147730f19d284bcd7b3f00af19bb6.svg",
+      "aliases": [
+        "scratch-blue-sky"
+      ],
+      "name": "Cel blau",
+      "names": {
+        "ca": "Cel blau",
+        "es": "Cielo azul"
+      },
+      "type": "background",
+      "width": 480,
+      "height": 360,
+      "license": "CC-BY-SA-2.0",
+      "attribution": "Scratch is developed by the Lifelong Kindergarten Group at the MIT Media Lab. See http://scratch.mit.edu.",
+      "source_revision": "fa7ed724dd3070486ccf12424bd633f95572bdfd",
+      "source_repository": "https://github.com/scratchfoundation/scratch-gui",
+      "source_path": "src/lib/libraries/backdrops.json#Blue Sky",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/scratch-blue-sky.png",
+        "sha256": "c6a68ab433d662130210d585c97e2ef4db059a1b6d522bae02a9d9e99e41d8eb"
+      },
+      "thumbnail": {
+        "path": "thumbnails/scratch-blue-sky.png",
+        "sha256": "9a817e64cbb4c68ffcdd666b22af6e3838c850a6e4c01f85a56bcd32c52a585c"
+      },
+      "source": {
+        "path": "sources/e7c147730f19d284bcd7b3f00af19bb6.svg",
+        "sha256": "27016673732aa3307b9bfb0dc7f932cc6d3d2d2b11257c024338cc826d18c99a"
+      },
+      "revision": 16082803227582
+    },
+    {
+      "id": "img-19ef2806c092ee839d0419ac8eab5b1472e702cdc499f34dad51f42e6ca6855a",
+      "source_id": "scratch:8eb8790be5507fdccf73e7c1570bbbab.svg",
+      "aliases": [
+        "scratch-blue-sky-2"
+      ],
+      "name": "Cel blau 2",
+      "names": {
+        "ca": "Cel blau 2",
+        "es": "Cielo azul 2"
+      },
+      "type": "background",
+      "width": 482,
+      "height": 362,
+      "license": "CC-BY-SA-2.0",
+      "attribution": "Scratch is developed by the Lifelong Kindergarten Group at the MIT Media Lab. See http://scratch.mit.edu.",
+      "source_revision": "fa7ed724dd3070486ccf12424bd633f95572bdfd",
+      "source_repository": "https://github.com/scratchfoundation/scratch-gui",
+      "source_path": "src/lib/libraries/backdrops.json#Blue Sky 2",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/scratch-blue-sky-2.png",
+        "sha256": "7cc479d6615015ee0f32d5a8e082e24f4858d364c2a5f4d1e71e4ee8c472f6a6"
+      },
+      "thumbnail": {
+        "path": "thumbnails/scratch-blue-sky-2.png",
+        "sha256": "9e3dccf629722b64b684a1f87bf4a7b313fb17d9bb9beba7664954b3afd4b965"
+      },
+      "source": {
+        "path": "sources/8eb8790be5507fdccf73e7c1570bbbab.svg",
+        "sha256": "6e8ae9c8c60985cf108e9bb5df488ae1985690de95387d5e3e5f53b33dfbba38"
+      },
+      "revision": 115790944744026
+    },
+    {
+      "id": "img-a8a9c687b83a500e18a4e55637b604074997679a3a5acfbe2c8aff9f93a2631d",
+      "source_id": "scratch:f98526ccb0eec3ac7d6c8f8ab502825e.svg",
+      "aliases": [
+        "scratch-hearts"
+      ],
+      "name": "Cors",
+      "names": {
+        "ca": "Cors",
+        "es": "Corazones"
+      },
+      "type": "background",
+      "width": 481,
+      "height": 361,
+      "license": "CC-BY-SA-2.0",
+      "attribution": "Scratch is developed by the Lifelong Kindergarten Group at the MIT Media Lab. See http://scratch.mit.edu.",
+      "source_revision": "fa7ed724dd3070486ccf12424bd633f95572bdfd",
+      "source_repository": "https://github.com/scratchfoundation/scratch-gui",
+      "source_path": "src/lib/libraries/backdrops.json#Hearts",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/scratch-hearts.png",
+        "sha256": "e90ae59b1962466cd5385a69fd5d2eb6f3396c1fca2b7577c79f56fc4956efbe"
+      },
+      "thumbnail": {
+        "path": "thumbnails/scratch-hearts.png",
+        "sha256": "c490e5b8ee1d8d61d7ad889af7f15af571d2437419761d70bc2073ff18e2badf"
+      },
+      "source": {
+        "path": "sources/f98526ccb0eec3ac7d6c8f8ab502825e.svg",
+        "sha256": "d1ee57faeb555ddf70f737de5665aac24fb01fd9969f5e7563190583b231cde8"
+      },
+      "revision": 262469673476719
+    },
+    {
+      "id": "img-d4370a6ab5e520aed1800c05d7ea2a4739ecb0f3334e8dec6fe7aa1d0fb16fe6",
+      "source_id": "scratch:64025bdca5db4938f65597e3682fddcf.svg",
+      "aliases": [
+        "scratch-jurassic"
+      ],
+      "name": "Juràssic",
+      "names": {
+        "ca": "Juràssic",
+        "es": "Jurásico"
+      },
+      "type": "background",
+      "width": 480,
+      "height": 360,
+      "license": "CC-BY-SA-2.0",
+      "attribution": "Scratch is developed by the Lifelong Kindergarten Group at the MIT Media Lab. See http://scratch.mit.edu.",
+      "source_revision": "fa7ed724dd3070486ccf12424bd633f95572bdfd",
+      "source_repository": "https://github.com/scratchfoundation/scratch-gui",
+      "source_path": "src/lib/libraries/backdrops.json#Jurassic",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/scratch-jurassic.png",
+        "sha256": "fc64471dcf2bfcdcbc3615341516101ffa57cd8bd9bb524884f77ec2d453c20e"
+      },
+      "thumbnail": {
+        "path": "thumbnails/scratch-jurassic.png",
+        "sha256": "f4f1229d788c8c88eee297bd4997ba987e1212a5ead3789fad27e886b8b2b2dd"
+      },
+      "source": {
+        "path": "sources/64025bdca5db4938f65597e3682fddcf.svg",
+        "sha256": "18447d9eb2bceb2edfa7b2fb495614964d87df596f382335c97091c6d13cd6ae"
+      },
+      "revision": 272618956504804
+    },
+    {
+      "id": "img-06577779bfd4cd9f75e58ee577a78c86975ff7b306ba8f7a1eefca4f30a2ed30",
+      "source_id": "scratch:4b98c07876ed8997c3762e75790507b4.svg",
+      "aliases": [
+        "scratch-light"
+      ],
+      "name": "Llum",
+      "names": {
+        "ca": "Llum",
+        "es": "Luz"
+      },
+      "type": "background",
+      "width": 495,
+      "height": 373,
+      "license": "CC-BY-SA-2.0",
+      "attribution": "Scratch is developed by the Lifelong Kindergarten Group at the MIT Media Lab. See http://scratch.mit.edu.",
+      "source_revision": "fa7ed724dd3070486ccf12424bd633f95572bdfd",
+      "source_repository": "https://github.com/scratchfoundation/scratch-gui",
+      "source_path": "src/lib/libraries/backdrops.json#Light",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/scratch-light.png",
+        "sha256": "6ef4097e63d13e777ca41f7fb0929b1848006f1c5c1e89fe531f17123cafa1f6"
+      },
+      "thumbnail": {
+        "path": "thumbnails/scratch-light.png",
+        "sha256": "4e063070d3f84c8d08cd76c5d1688e6234dab155855c1e4c0168efd181f92b78"
+      },
+      "source": {
+        "path": "sources/4b98c07876ed8997c3762e75790507b4.svg",
+        "sha256": "5670208ec762dff7d17b1351d76991e7f393159a3bb524a05731e22a485cb1c7"
+      },
+      "revision": 36580232333047
+    },
+    {
+      "id": "img-d70c9b5a353f9cb90a06ba7d92988a6a60fed3f7865efb6f089d36c926d11cab",
+      "source_id": "scratch:108160d0e44d1c340182e31c9dc0758a.svg",
+      "aliases": [
+        "scratch-party"
+      ],
+      "name": "Festa",
+      "names": {
+        "ca": "Festa",
+        "es": "Fiesta"
+      },
+      "type": "background",
+      "width": 504,
+      "height": 381,
+      "license": "CC-BY-SA-2.0",
+      "attribution": "Scratch is developed by the Lifelong Kindergarten Group at the MIT Media Lab. See http://scratch.mit.edu.",
+      "source_revision": "fa7ed724dd3070486ccf12424bd633f95572bdfd",
+      "source_repository": "https://github.com/scratchfoundation/scratch-gui",
+      "source_path": "src/lib/libraries/backdrops.json#Party",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/scratch-party.png",
+        "sha256": "afca53601c3fe59ad27fcec489341c58ed8d72502222d2e28b12b284a36c4438"
+      },
+      "thumbnail": {
+        "path": "thumbnails/scratch-party.png",
+        "sha256": "48b53437d022313fa37486ed8af110ef76db1edfd1287658f279fe1890dd48e7"
+      },
+      "source": {
+        "path": "sources/108160d0e44d1c340182e31c9dc0758a.svg",
+        "sha256": "a25d7e4a9962fc14037814c23d8200cf668cdb906d9bc3be1dffc9e9212c57f1"
+      },
+      "revision": 262214082406087
+    },
+    {
+      "id": "img-a7091d62bb90fab64694210722def83b5e982c105c725151b2472d3d73679850",
+      "source_id": "scratch:87e963282db9e020e8c4d075891ea12b.svg",
+      "aliases": [
+        "scratch-rays"
+      ],
+      "name": "Raigs",
+      "names": {
+        "ca": "Raigs",
+        "es": "Rayos"
+      },
+      "type": "background",
+      "width": 481,
+      "height": 360,
+      "license": "CC-BY-SA-2.0",
+      "attribution": "Scratch is developed by the Lifelong Kindergarten Group at the MIT Media Lab. See http://scratch.mit.edu.",
+      "source_revision": "fa7ed724dd3070486ccf12424bd633f95572bdfd",
+      "source_repository": "https://github.com/scratchfoundation/scratch-gui",
+      "source_path": "src/lib/libraries/backdrops.json#Rays",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/scratch-rays.png",
+        "sha256": "f25673632ff3cbfc3dca189ad99880b5a0275e57b10a2f43dd7cf67f0bd554d3"
+      },
+      "thumbnail": {
+        "path": "thumbnails/scratch-rays.png",
+        "sha256": "8e9e1675b516f340bc2fe2908282c7150f82f029e5c267c4f9da013d3ea6a549"
+      },
+      "source": {
+        "path": "sources/87e963282db9e020e8c4d075891ea12b.svg",
+        "sha256": "d560b7c89be9c2cbcf24a09e0ab623c830a0ef85079271210a8e6f0ea47086a3"
+      },
+      "revision": 15013252289927
+    },
+    {
+      "id": "img-12aea7752ebe7ff39f256f06c6976f1d5c9b2019e82e1d9c2e3c037e0eefc786",
+      "source_id": "scratch:a6a21f5c08d586e8daaebde37c97fb6f.svg",
+      "aliases": [
+        "scratch-stripes"
+      ],
+      "name": "Ratlles",
+      "names": {
+        "ca": "Ratlles",
+        "es": "Rayas"
+      },
+      "type": "background",
+      "width": 496,
+      "height": 370,
+      "license": "CC-BY-SA-2.0",
+      "attribution": "Scratch is developed by the Lifelong Kindergarten Group at the MIT Media Lab. See http://scratch.mit.edu.",
+      "source_revision": "fa7ed724dd3070486ccf12424bd633f95572bdfd",
+      "source_repository": "https://github.com/scratchfoundation/scratch-gui",
+      "source_path": "src/lib/libraries/backdrops.json#Stripes",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/scratch-stripes.png",
+        "sha256": "802e0cbacaff8b0cbd5e70d65b187312fd3e22a509cb58cfabb87eaaf63d352d"
+      },
+      "thumbnail": {
+        "path": "thumbnails/scratch-stripes.png",
+        "sha256": "91c1c4dda466b85d36bbf05be94c7e876c6673672f91c1be50dff31d314335b3"
+      },
+      "source": {
+        "path": "sources/a6a21f5c08d586e8daaebde37c97fb6f.svg",
+        "sha256": "22a063dec351241be384d983e0074287fcf51c5b53aeb8336ad2962599ad76b7"
+      },
+      "revision": 56561434190131
+    },
+    {
+      "id": "img-18e19c4442cf0dbd106a728b32b7b3414f1ff14c9cb4e8ceda7814c60ea5f7ab",
+      "source_id": "scratch:5fa9385a60b904672d0e46e9d768bb32.svg",
+      "aliases": [
+        "scratch-winter"
+      ],
+      "name": "Hivern",
+      "names": {
+        "ca": "Hivern",
+        "es": "Invierno"
+      },
+      "type": "background",
+      "width": 616,
+      "height": 503,
+      "license": "CC-BY-SA-2.0",
+      "attribution": "Scratch is developed by the Lifelong Kindergarten Group at the MIT Media Lab. See http://scratch.mit.edu.",
+      "source_revision": "fa7ed724dd3070486ccf12424bd633f95572bdfd",
+      "source_repository": "https://github.com/scratchfoundation/scratch-gui",
+      "source_path": "src/lib/libraries/backdrops.json#Winter",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/scratch-winter.png",
+        "sha256": "13520c6d03e1de8a69acd7c01af20be3a1dc3d6161a3c2a730cfbd71ed388281"
+      },
+      "thumbnail": {
+        "path": "thumbnails/scratch-winter.png",
+        "sha256": "afd34d276dcc37f070fdbd13e0d660970814472ea246a9dbd87db7f9ffcd6abb"
+      },
+      "source": {
+        "path": "sources/5fa9385a60b904672d0e46e9d768bb32.svg",
+        "sha256": "d5f0482c0df4e151c8ecda953dd3c0bdff74d58ae8b231e991067cced7b6373e"
+      },
+      "revision": 128735161259200
+    },
+    {
+      "id": "img-32cffc180612b3d2a7020ce4cba972be07aead45c2524b2b2a471057a874ba8f",
+      "source_id": "scratch:f3eb165d6f3fd23370f97079f2e631bf.svg",
+      "aliases": [
+        "scratch-woods"
+      ],
+      "name": "Bosc",
+      "names": {
+        "ca": "Bosc",
+        "es": "Bosque"
+      },
+      "type": "background",
+      "width": 484,
+      "height": 364,
+      "license": "CC-BY-SA-2.0",
+      "attribution": "Scratch is developed by the Lifelong Kindergarten Group at the MIT Media Lab. See http://scratch.mit.edu.",
+      "source_revision": "fa7ed724dd3070486ccf12424bd633f95572bdfd",
+      "source_repository": "https://github.com/scratchfoundation/scratch-gui",
+      "source_path": "src/lib/libraries/backdrops.json#Woods",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/scratch-woods.png",
+        "sha256": "9e330ebe3f25f5ad72ebbd9b9a8d3f39101b627b070aafb9d2a1a2ff4d28299f"
+      },
+      "thumbnail": {
+        "path": "thumbnails/scratch-woods.png",
+        "sha256": "accc176ffcc3231d52f7773700bc907fe9c0aaf4a647e5481e3d7b36f9a7adc7"
+      },
+      "source": {
+        "path": "sources/f3eb165d6f3fd23370f97079f2e631bf.svg",
+        "sha256": "46b6a5f5382a5b9a1e2a0559977ca8145c47ccd95d90fe9ffc476610be037a34"
+      },
+      "revision": 3572891413165
+    }
+  ]
+}

@@ -89,6 +89,7 @@ def normalize(raw, declared):
 class Library:
     def __init__(self, connect, db_path, oidc, student):
         self.catalogue = Catalogue(Path(__file__).parent / "catalog", normalize)
+        self.catalogue.extend(Catalogue(Path(__file__).parent / "catalog-scratch", normalize, "scratch"))
         self.connect, self.db_path = connect, db_path
         self.oidc, self.student = oidc, student
         self.public_origin = os.environ.get("REBOST_PUBLIC_ORIGIN", "").rstrip("/")
@@ -262,19 +263,23 @@ class Library:
         @router.get("/me")
         def me(request: Request):
             self.principal(request)
-            return {"capabilities": ["private_library", "catalog", "derived_upload"], "catalog_items": len(self.catalogue.items), "limits": {
-                "image_bytes": MAX_IMAGE, "dimension": MAX_DIMENSION,
-                "items": MAX_ITEMS, "library_bytes": MAX_USER_BYTES}}
+            return {
+                "capabilities": ["private_library", "catalog", "scratch_catalog", "derived_upload"],
+                "catalog_items": sum(item["metadata"]["collection"]=="catalog" for item in self.catalogue.items.values()),
+                "scratch_items": sum(item["metadata"]["collection"]=="scratch" for item in self.catalogue.items.values()),
+                "limits": {"image_bytes": MAX_IMAGE, "dimension": MAX_DIMENSION,
+                           "items": MAX_ITEMS, "library_bytes": MAX_USER_BYTES}}
+
 
         @router.get("/items")
         def items(request: Request, q: str = "", type: str = "", cursor: str = "", limit: int = 40, collection: str = "mine"):
             owner = self.principal(request)
             if len(q) > 200 or (type and type not in TYPES) or not (1 <= limit <= 80) or (cursor and not ID.fullmatch(cursor)):
                 fail(422, "invalid_filter")
-            if collection not in {"mine", "catalog"}:
+            if collection not in {"mine", "catalog", "scratch"}:
                 fail(422, "invalid_collection")
-            if collection == "catalog":
-                return self.catalogue.list(q, type, cursor, limit)
+            if collection != "mine":
+                return self.catalogue.list(q, type, cursor, limit, collection)
             search = q.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
             with closing(self.connect()) as db:
                 rows = db.execute("""SELECT a.*,c.width,c.height,length(c.data) AS bytes,p.metadata AS provenance FROM assets a

@@ -311,7 +311,11 @@ def test_browser_private_library(api, tmp_path, language, touch):
             assert page.locator('article').count()==1
             # The system catalogue has read-only cards and creates explicit private copies.
             page.locator('#catalogTab').click()
-            playwright.expect(page.locator('article')).to_have_count(12)
+            playwright.expect(page.locator('article')).to_have_count(40)
+            playwright.expect(page.locator('#more')).to_be_visible()
+            page.locator('#more').click()
+            playwright.expect(page.locator('article')).to_have_count(51)
+            playwright.expect(page.locator('#more')).to_be_hidden()
             playwright.expect(controls).to_be_enabled()
             playwright.expect(page.locator('#uploadArea')).to_be_hidden()
             assert page.locator('article input').count()==0
@@ -327,6 +331,27 @@ def test_browser_private_library(api, tmp_path, language, touch):
             playwright.expect(page.locator('#mineTab')).to_have_attribute('aria-pressed','true')
             playwright.expect(page.locator('article')).to_have_count(2)
             playwright.expect(page.locator('article .credit')).to_contain_text('GPL-3.0-only')
+            # The Scratch collection remains distinct and preserves its own CC license.
+            page.locator('#scratchTab').click()
+            playwright.expect(page.locator('article')).to_have_count(31)
+            playwright.expect(page.locator('#scratchTab')).to_have_attribute('aria-pressed','true')
+            playwright.expect(page.locator('#uploadArea')).to_be_hidden()
+            assert page.locator('article input').count()==0
+            page.locator('#filter').select_option('object')
+            playwright.expect(page.locator('article')).to_have_count(6)
+            page.locator('#search').fill('scratch-apple')
+            playwright.expect(page.locator('article')).to_have_count(1)
+            playwright.expect(controls).to_be_enabled()
+            playwright.expect(page.locator('article h2')).to_have_text('Manzana' if language=='es' else 'Poma')
+            playwright.expect(page.locator('article .credit')).to_contain_text('CC-BY-SA-2.0')
+            with page.expect_download() as download:
+                page.get_by_role('button',name='Descargar licencia' if language=='es' else 'Descarrega la llicència',exact=True).click()
+            assert b'CC BY-SA 2.0' in Path(download.value.path()).read_bytes()
+            playwright.expect(controls).to_be_enabled()
+            page.screenshot(path='/tmp/rebost-scratch-'+language+'.png')
+            page.get_by_role('button',name='Guardar en mis imágenes' if language=='es' else 'Guarda en les meues imatges',exact=True).click()
+            playwright.expect(page.locator('article')).to_have_count(3)
+            playwright.expect(page.locator('article .credit').filter(has_text='CC-BY-SA-2.0')).to_have_count(1)
             assert not errors
             page.screenshot(path=str(tmp_path/f'rebost-{language}.png'))
             # A second browser without an authenticated individual gets the access screen, no images.

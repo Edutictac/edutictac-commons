@@ -4,7 +4,7 @@ const TEXT = {
   es: {
     choose: 'Usar en el proyecto', pickHint: 'Elige una imagen para tu proyecto.',
     intro: 'Guarda tus imágenes y encuentra personajes y fondos del catálogo.',
-    catalog: 'Catálogo EduTicTac', collection: 'Colección', privateHint: 'Tus imágenes son privadas.',
+    scratch: 'Catálogo Scratch', scratchHint: 'Selección de imágenes de Scratch. Conserva los créditos y la licencia CC BY-SA 2.0.', catalog: 'Catálogo EduTicTac', collection: 'Colección', privateHint: 'Tus imágenes son privadas.',
     catalogHint: 'Guarda una copia en Mis imágenes para reutilizarla. Se conserva su licencia.',
     saveCopy: 'Guardar en mis imágenes', source: 'Descargar original SVG', license: 'Descargar licencia',
     mine: 'Mis imágenes', upload: 'Subir imágenes o arrastrarlas aquí',
@@ -30,7 +30,7 @@ const TEXT = {
   ca: {
     choose: 'Usa en el projecte', pickHint: 'Tria una imatge per al teu projecte.',
     intro: 'Guarda les teues imatges i troba personatges i fons del catàleg.',
-    catalog: 'Catàleg EduTicTac', collection: 'Col·lecció', privateHint: 'Les teues imatges són privades.',
+    scratch: 'Catàleg Scratch', scratchHint: 'Selecció d’imatges de Scratch. Conserva els crèdits i la llicència CC BY-SA 2.0.', catalog: 'Catàleg EduTicTac', collection: 'Col·lecció', privateHint: 'Les teues imatges són privades.',
     catalogHint: 'Guarda una còpia en Les meues imatges per a reutilitzar-la. Es conserva la llicència.',
     saveCopy: 'Guarda en les meues imatges', source: 'Descarrega l’original SVG', license: 'Descarrega la llicència',
     mine: 'Les meues imatges', upload: 'Puja imatges o arrossega-les ací',
@@ -77,7 +77,7 @@ if (picking) {
 const api = new RebostClient();
 const $ = id => document.getElementById(id);
 const types = ['sprite', 'background', 'object', 'illustration'];
-let text, active = false, busy = false, collection = new URLSearchParams(location.search).get('collection') === 'catalog' ? 'catalog' : 'mine', cursor = '', urls = [], previewUrl = '', searchTimer;
+let text, active = false, busy = false, collection = (['catalog', 'scratch'].includes(params.get('collection')) ? params.get('collection') : 'mine'), cursor = '', urls = [], previewUrl = '', searchTimer;
 function language() {
   text = TEXT[window.i18nPortal.getLang() === 'es' ? 'es' : 'ca'];
   document.documentElement.lang = text === TEXT.es ? 'es' : 'ca';
@@ -98,14 +98,16 @@ function language() {
   if (active && !busy) run(() => refresh());
 }
 function collectionLabels() {
-  $('mine').textContent = collection === 'mine' ? text.mine : text.catalog;
+  $('mine').textContent = text[collection === 'catalog' ? 'catalog' : collection === 'scratch' ? 'scratch' : 'mine'];
   $('mineTab').textContent = text.mine; $('catalogTab').textContent = text.catalog;
+  $('scratchTab').textContent = text.scratch;
+  $('scratchTab').setAttribute('aria-pressed', String(collection === 'scratch'));
   $('mineTab').setAttribute('aria-pressed', String(collection === 'mine'));
   $('catalogTab').setAttribute('aria-pressed', String(collection === 'catalog'));
   $('collections').setAttribute('aria-label', text.collection);
-  $('collectionHint').textContent = picking ? text.pickHint : (collection === 'mine' ? text.privateHint : text.catalogHint);
+  $('collectionHint').textContent = picking ? text.pickHint : (collection === 'mine' ? text.privateHint : collection === 'scratch' ? text.scratchHint : text.catalogHint);
   $('uploadArea').hidden = picking || collection !== 'mine';
-  $('grid').setAttribute('aria-label', collection === 'mine' ? text.mine : text.catalog);
+  $('grid').setAttribute('aria-label', text[collection === 'catalog' ? 'catalog' : collection === 'scratch' ? 'scratch' : 'mine']);
 }
 async function chooseCollection(value) {
   collection = value;
@@ -137,7 +139,7 @@ function node(tag, content) { const element = document.createElement(tag); if (c
 function button(label, handler) { const b = node('button', label); b.type = 'button'; b.addEventListener('click', handler); return b; }
 async function card(item) {
   const article = node('article'); article.dataset.id = item.id;
-  const displayName = item.collection === 'catalog' ? item.names[text === TEXT.es ? 'es' : 'ca'] : item.name;
+  const displayName = ['catalog', 'scratch'].includes(item.collection) ? item.names[text === TEXT.es ? 'es' : 'ca'] : item.name;
   const picture = node('img'); picture.alt = displayName;
   const blob = await api.read(item.id, true); const url = URL.createObjectURL(blob); urls.push(url); picture.src = url;
   const view = button(text.view + ': ' + displayName, () => run(async () => {
@@ -168,7 +170,7 @@ async function card(item) {
       button(text.duplicate, () => run(async () => { await api.duplicate(item); await refresh(); })),
       button(text.remove, () => { if (confirm(text.confirm)) run(async () => { await api.remove(item); await refresh(); }); }));
   }
-  const origin = item.collection === 'catalog' ? item : item.provenance;
+  const origin = ['catalog', 'scratch'].includes(item.collection) ? item : item.provenance;
   if (origin) {
     const credit = node('p', origin.attribution + ' · ' + origin.license); credit.className = 'credit'; article.append(credit);
     if (!picking) actions.append(button(text.source, () => run(() => downloadOriginal(item))),
@@ -204,6 +206,7 @@ $('drop').addEventListener('dragleave', () => $('drop').classList.remove('drag')
 $('drop').addEventListener('drop', event => { event.preventDefault(); $('drop').classList.remove('drag'); upload(Array.from(event.dataTransfer.files)); });
 $('mineTab').addEventListener('click', () => run(() => chooseCollection('mine')));
 $('catalogTab').addEventListener('click', () => run(() => chooseCollection('catalog')));
+$('scratchTab').addEventListener('click', () => run(() => chooseCollection('scratch')));
 $('search').addEventListener('input', () => { clearTimeout(searchTimer); searchTimer = setTimeout(() => run(() => refresh()), 250); });
 $('filter').addEventListener('change', () => run(() => refresh()));
 $('more').addEventListener('click', () => run(() => refresh(true)));
@@ -214,6 +217,8 @@ window.addEventListener('pagehide', () => urls.forEach(URL.revokeObjectURL));
 language();
 await run(async () => {
   const profile = await api.me(); $('catalogTab').hidden = !profile.capabilities.includes('catalog');
-  if (!profile.capabilities.includes('catalog')) collection = 'mine';
+  $('scratchTab').hidden = !profile.capabilities.includes('scratch_catalog');
+  if ((collection === 'catalog' && !profile.capabilities.includes('catalog')) ||
+      (collection === 'scratch' && !profile.capabilities.includes('scratch_catalog'))) collection = 'mine';
   collectionLabels(); active = true; $('controls').hidden = false; $('access').hidden = true; await refresh();
 });

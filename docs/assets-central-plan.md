@@ -400,3 +400,22 @@ la revocación remota OIDC y validar el piloto. El hito de reutilización entre 
 requiere C y D, con catálogo, migración, segundo editor y backup comprobados. El prototipo de
 Blocs usa este núcleo para elegir personajes/fondos y guardar dibujos en pruebas locales.
 Conectar un segundo editor y completar la migración siguen pendientes; la integración central completa no está terminada.
+
+
+## Ampliación del catálogo propio (20-10-2026)
+
+El paquete local pasa de 12 a 51 imágenes reutilizables de las plantillas de Blocs:
+17 personajes/expresiones, 16 fondos y 18 objetos. Conserva los doce registros iniciales,
+sus IDs, revisiones y bytes; añade nombres es/ca, fuentes SVG y GPL íntegra. Se excluyen
+59 controles y miniaturas de galería. La revisión oficial de Scratch y los límites para
+incorporar su catálogo externo se documentan en [rebost-catalog.md](rebost-catalog.md).
+La incorporación de esos archivos externos no se da por resuelta.
+
+
+## Col·lecció Scratch separada (21-10-2026)
+
+Una primera selecció històrica de 31 imatges de Scratch s'incorpora com a
+`collection=scratch`, amb pestanya pròpia en el gestor i el selector de Blocs.
+Conserva CC BY-SA 2.0, font SVG i atribució en còpies i derivats, sense alterar
+les 51 imatges pròpies ni les seues ID. [Revisió i abast](rebost-scratch.md).
+La resta de la biblioteca externa, sons i disfresses addicionals continuen pendents.

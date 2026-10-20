@@ -182,9 +182,9 @@ Código nuevo escrito para Commons, separado del prototipo GPL de Blocs. No se h
 componentes React ni el editor gráfico a Commons. El cliente no añade dependencias JS.
 Pillow **13.0.0**, MIT-CMU, es la nueva dependencia de ejecución; FastAPI (MIT) y Authlib
 (BSD-3-Clause) ya existían. Se conservan los avisos y condiciones de los proyectos originales.
-Se ha incorporado una primera selección de doce gráficos propios de Blocs, manteniendo GPL-3.0-only
+Se ha incorporado una selección de 51 gráficos propios de Blocs, manteniendo GPL-3.0-only
 y sus fuentes; [inventario y límites de la revisión](rebost-catalog.md). El catálogo externo de
-Scratch continúa excluido de esta selección.
+Scratch queda separado del paquete propio; [su primera selección revisada](rebost-scratch.md) tiene colección y licencia propias.
 
 Adaptador local de Blocs: **Tria del Rebost** ya está en los botones de añadir personaje y fondo.
 **Guarda al Rebost** ya permite guardar dibujos desde Disfraces/Fondos en local.
@@ -283,3 +283,10 @@ servidores locales preparados. Se comprobó es/ca, entrada de ratón/contexto t�
 filtro de tipo, respuesta tardía, target obsoleto, preservación de lógica/créditos y ausencia
 de duplicados en la biblioteca privada. La API y permisos de Commons no necesitan cambios.
 La guía de ejecución está en Blocs `docs/rebost-bindings.md`. Todo continúa sin publicar.
+
+
+## Catàleg Scratch
+
+Colección separada `collection=scratch`, con 31 imágenes históricas revisadas bajo CC BY-SA 2.0.
+Visible en el gestor y en el selector compartido de Blocs; conserva fuentes, atribución y licencia
+en originales, copias privadas y proyectos `.sb3`. [Procedencia, alcance y generación](rebost-scratch.md).

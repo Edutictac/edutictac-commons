@@ -28,6 +28,49 @@ SELECTED = [
     ('sky','fons-cel.svg','background','Cel','Cielo'),
     ('classroom','fons-pissarra.svg','background','Aula','Aula'),
 ]
+# Reviewed reusable template artwork; UI controls and gallery thumbnails stay out.
+SELECTED += [
+    ('bloc-content','bloc-content.svg','sprite','Bloc content','Bloc contento'),
+    ('lua-content','lua-content.svg','sprite','Lua contenta','Lua contenta'),
+    ('robot-content','robot-content.svg','sprite','Robot content','Robot contento'),
+    ('robot-dubte','robot-dubte.svg','sprite','Robot amb dubtes','Robot con dudas'),
+    ('detectiu','detectiu.svg','sprite','Detectiu','Detective'),
+    ('mascota-dubte','mascota-dubte.svg','sprite','Pip amb dubtes','Pip con dudas'),
+    ('mascota-enfadat','mascota-enfadat.svg','sprite','Pip enfadat','Pip enfadado'),
+    ('mascota-espantat','mascota-espantat.svg','sprite','Pip espantat','Pip asustado'),
+    ('mascota-fam','mascota-fam.svg','sprite','Pip amb fam','Pip con hambre'),
+    ('mascota-trist','mascota-trist.svg','sprite','Pip trist','Pip triste'),
+    ('fons-camera','fons-camera.svg','background','Estudi de càmera','Estudio de cámara'),
+    ('fons-casa','fons-casa.svg','background','Casa','Casa'),
+    ('fons-correu','fons-correu.svg','background','Correu','Correo'),
+    ('fons-detectiu','fons-detectiu.svg','background','Investigació de detectiu','Investigación de detective'),
+    ('fons-laberint','fons-laberint.svg','background','Laberint','Laberinto'),
+    ('fons-microbot','fons-microbot.svg','background','Circuit de Microbot','Circuito de Microbot'),
+    ('fons-models-ca','fons-models.ca.svg','background','Models (valencià)','Modelos (valenciano)'),
+    ('fons-models-es','fons-models.es.svg','background','Models (castellà)','Modelos (castellano)'),
+    ('fons-piano','fons-piano.svg','background','Escenari musical','Escenario musical'),
+    ('fons-pista','fons-pista.svg','background','Pista','Pista'),
+    ('fons-pong','fons-pong.svg','background','Pista de Pong','Pista de Pong'),
+    ('laboratori-models','laboratori-models.svg','object','Laboratori de models','Laboratorio de modelos'),
+    ('ma-dubte','ma-dubte.svg','object','Interrogant','Interrogante'),
+    ('ma-paper','ma-paper.svg','object','Paper','Papel'),
+    ('ma-pedra','ma-pedra.svg','object','Pedra','Piedra'),
+    ('ma-tisores','ma-tisores.svg','object','Tisores','Tijeras'),
+    ('meta','meta.svg','object','Meta','Meta'),
+    ('pala','pala.svg','object','Pala de Pong','Pala de Pong'),
+    ('piano','piano.svg','object','Piano','Piano'),
+    ('pilota-joc','pilota-joc.svg','object','Pilota de joc','Pelota de juego'),
+    ('pinzell','pinzell.svg','object','Pinzell','Pincel'),
+    ('poma','poma.svg','object','Poma','Manzana'),
+    ('punter','punter.svg','object','Punter','Puntero'),
+    ('semafor-groc','semafor-groc.svg','object','Semàfor groc','Semáforo amarillo'),
+    ('semafor-verd','semafor-verd.svg','object','Semàfor verd','Semáforo verde'),
+    ('semafor-vermell','semafor-vermell.svg','object','Semàfor roig','Semáforo rojo'),
+    ('sobre','sobre.svg','object','Sobre','Sobre'),
+    ('sobre-error','sobre-error.svg','object','Sobre amb error','Sobre con error'),
+    ('tecla-llum','tecla-llum.svg','object','Tecla il·luminada','Tecla iluminada'),
+]
+
 TAGS = {'svg','g','rect','circle','path','ellipse','text','defs','pattern','linearGradient','stop','polygon'}
 ATTRS = {'width','height','viewBox','cx','cy','r','fill','stroke','stroke-width','d','x','y','rx',
          'text-anchor','font-family','font-size','font-weight','stroke-linejoin','stroke-linecap','ry',
@@ -81,7 +124,8 @@ def inventory(blocs, revision):
     for file in sorted((blocs/'templates/assets').glob('*.svg')):
         raw=file.read_bytes()
         local.append({'path':str(file.relative_to(blocs)),'sha256':sha(raw),'bytes':len(raw),
-                      'status':'selected' if file.name in selected else 'not_selected'})
+                      'status':'selected' if file.name in selected else ('excluded_ui' if file.name.startswith(('boto-','spike-','galeria-')) else 'pending_review'),
+                      'reason':'reviewed reusable artwork' if file.name in selected else ('template control or gallery thumbnail' if file.name.startswith(('boto-','spike-','galeria-')) else 'not reviewed')})
     return {'format':'rebost-blocs-inventory','version':1,'source_revision':revision,
             'counts':{**{name:len(value) for name,value in libs.items()},'external_unique_images':len(images),
                       'external_unique_audio':len(audio),'local_svg':len(local),'selected':len(selected)},
@@ -97,13 +141,21 @@ def main():
     revision=subprocess.check_output(['git','rev-parse','HEAD'],cwd=blocs,text=True).strip()
     if args.check:
         manifest=json.loads((OUT/'manifest.json').read_text())
-        if manifest['source_revision']!=revision:raise ValueError('Blocs revision changed; review catalogue provenance')
+        revision=manifest['source_revision']
+        if set(item['source_path'] for item in manifest['items']) != {'templates/assets/'+entry[1] for entry in SELECTED}:
+            raise ValueError('Catalogue selection changed; rebuild required')
+        selection={entry[1]:entry for entry in SELECTED}
         for item in manifest['items']:
+            alias,filename,kind,ca,es=selection[Path(item['source_path']).name]
+            if (item['source_id'],item['aliases'],item['type'],item['name'],item['names']) != ('edutictac-blocs:'+alias,[alias],kind,ca,{'ca':ca,'es':es}):
+                raise ValueError('Catalogue metadata changed; rebuild required')
             for role in ['image','thumbnail','source']:
                 record=item[role]
                 if sha((OUT/record['path']).read_bytes())!=record['sha256']:raise ValueError('Catalogue checksum mismatch')
             source=blocs/item['source_path']
             if sha(source.read_bytes())!=item['source']['sha256']:raise ValueError('Reviewed source changed')
+            recorded=subprocess.check_output(['git','show',item['source_revision']+':'+item['source_path']],cwd=blocs)
+            if recorded!=source.read_bytes():raise ValueError('Source differs from recorded revision')
         if sha((OUT/manifest['license_file']['path']).read_bytes())!=manifest['license_file']['sha256']:raise ValueError('License changed')
         if (OUT/manifest['license_file']['path']).read_bytes()!=subprocess.check_output(['git','show',revision+':LICENSE'],cwd=blocs):raise ValueError('Catalogue license differs from recorded source')
         if json.loads((ROOT/'docs/rebost-catalog-inventory.json').read_text())!=inventory(blocs,revision):raise ValueError('Inventory changed')
@@ -116,6 +168,9 @@ def main():
     if b'GNU GENERAL PUBLIC LICENSE' not in license_raw or b'Version 3' not in license_raw:raise ValueError('Expected Blocs GPL v3 license')
     if subprocess.check_output(['git','show',revision+':LICENSE'],cwd=blocs)!=license_raw:raise ValueError('License differs from recorded source revision')
     (OUT/'licenses/GPL-3.0-only.txt').write_bytes(license_raw)
+    previous={}
+    if (OUT/'manifest.json').exists():
+        previous={item['source_id']:item for item in json.loads((OUT/'manifest.json').read_text())['items']}
     items=[]
     with sync_playwright() as p:
         browser=p.chromium.launch(executable_path='/usr/bin/chromium',args=['--no-sandbox'])
@@ -151,6 +206,12 @@ def main():
                   'changes':'PNG rasterization and thumbnail; original SVG provided unchanged.'}
             for role,data,path in [('image',png,f'images/{alias}.png'),('thumbnail',thumb,f'thumbnails/{alias}.png'),('source',raw,f'sources/{filename}')]:
                 (OUT/path).write_bytes(data);item[role]={'path':path,'sha256':sha(data)}
+            old=previous.get(key)
+            # Unchanged artwork retains its original provenance and revision.
+            if old and old['source']==item['source'] and old['source_path']==item['source_path']:
+                old_source=subprocess.check_output(['git','show',old['source_revision']+':'+old['source_path']],cwd=blocs)
+                if old_source!=raw:raise ValueError('Previous source revision is invalid')
+                item['source_revision']=old['source_revision']
             item['revision']=int(sha(canonical(item))[:12],16)
             items.append(item)
         browser.close()

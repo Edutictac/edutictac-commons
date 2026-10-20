@@ -1,0 +1,203 @@
+{
+  "terms_url": "https://raw.githubusercontent.com/scratchfoundation/scratch-www/9c8ef43dc4dc9276cd22d42c36bbf14d5d0db4d0/src/views/terms/terms.jsx",
+  "terms_sha256": "8935e0d192188d6a8ac28010777901576092c45d87e72131e219253348ba4ca6",
+  "license_source_url": "https://raw.githubusercontent.com/creativecommons/legalcode/4d2de083a6dcc5095ed1a30885bc48f868b9bb55/by-sa_2.0.html",
+  "license_source_sha256": "ba259d54fe3d8657ee0ed5d5eeead1807a6dc7866eee2a86a58b304a39286189",
+  "scope": "Explicit unbranded historical selection; first costume only. No general clearance of the Scratch library.",
+  "items": [
+    {
+      "id": "img-b6b9a959b5bc1da90b67a05b2a192520775abf435975f0e68c93a1675ef0a21e",
+      "original_name": "Apple",
+      "md5ext": "3826a4091a33e4d26f87a2fac7cf796b.svg",
+      "sha256": "76947a7ac0c7aa06fb0930e4f4da4830ee459a68d32c5a400ef5899174849d6f"
+    },
+    {
+      "id": "img-01cd2252e2ce2e574e77479c2f91ebd6096f7a9b4183f2828f70e3c67368fb0b",
+      "original_name": "Ball",
+      "md5ext": "3c6241985b581284ec191f9d1deffde8.svg",
+      "sha256": "ef5efb1ce6eb56dd10a3a504b6533df7f1c81a510cf0e377c1afe1513e7e914f"
+    },
+    {
+      "id": "img-8ffe13937feb217eb2f8a6f0b67d2bd8886d1db20bbc26f4b1b66bfa1ebfb91f",
+      "original_name": "Bananas",
+      "md5ext": "e5d3d3eb61797f5999732a8f5efead24.svg",
+      "sha256": "9c6646f667e3c530cd98ca17264874739c2f5b776fa598f2c195e62fbe550f2e"
+    },
+    {
+      "id": "img-1d7ade5373e1ceeb542cc43c2318b4befe59809bc7ba709997a0f30bcddbd621",
+      "original_name": "Bat",
+      "md5ext": "4e4ced87ed37ee66c758bba077e0eae6.svg",
+      "sha256": "1fe3153f8eb81ff696c912591796b85f03faa6d64f6d230ebe30cf4c12692804"
+    },
+    {
+      "id": "img-00c18e9a1a4194ce39cf90efa412baa9d23136051bf46298d496e2b7791594d9",
+      "original_name": "Bear",
+      "md5ext": "deef1eaa96d550ae6fc11524a1935024.svg",
+      "sha256": "69eed348899d031444503719803a30d23443192df1ad553b39e36523b836f003"
+    },
+    {
+      "id": "img-4fe6c75aa1d8b760c5f896603dd9f2186549f9a52042a5b876a511029a4a64fd",
+      "original_name": "Butterfly 1",
+      "md5ext": "fe98df7367e314d9640bfaa54fc239be.svg",
+      "sha256": "902676e10cf33c0b0eef2fc31998c8e184948a0f2bf587c0701958d16fc0511e"
+    },
+    {
+      "id": "img-d678e2cd4930db0e5e23cba2ef29ea8de96141c9004b7d1d9658f8ffa29cf850",
+      "original_name": "Butterfly 2",
+      "md5ext": "372ae0abd2e8e50a20bc12cb160d8746.svg",
+      "sha256": "e86c9937f4f6645a38a783ac665a00a03e065fc91470207ca980a1ab602c44cd"
+    },
+    {
+      "id": "img-058bf8baa1c4ef674d5891a30a2a75a74af4a8fca1636358e259a3c9ae642c1d",
+      "original_name": "Crab",
+      "md5ext": "f7cdd2acbc6d7559d33be8675059c79e.svg",
+      "sha256": "8e1af186b30a89fa3509b192cd555a0e29835f190e2aa4e4d93f93b7fe41d611"
+    },
+    {
+      "id": "img-5542f98aa9fc2ac0477aca8825bab20a3116dc7ec4db2f1a87555d94645495e4",
+      "original_name": "Dinosaur1",
+      "md5ext": "45b02fbd582c15a50e1953830b59b377.svg",
+      "sha256": "b5a074173968b55db5db941559877d37c84fbd8f601b71a067fb3519b037319d"
+    },
+    {
+      "id": "img-d0fd25e97fa89a397ed6981cb67423e5e3d982cb1f2979dc6ba5da6154e2ce88",
+      "original_name": "Dog1",
+      "md5ext": "35cd78a8a71546a16c530d0b2d7d5a7f.svg",
+      "sha256": "060039baa042d72d70bd315650e29e67f049bbd28a6887da6583570446a667f9"
+    },
+    {
+      "id": "img-b8b04fa7fe4ad146066faa1c3d89390c56654b7b702e91314f319f39b4dfba5f",
+      "original_name": "Duck",
+      "md5ext": "c9837d0454f5f0f73df290af2045359b.svg",
+      "sha256": "ba55c809079acf42097d110bc4ef0b407166f58eed3e769c0907c7fce7dfe0a3"
+    },
+    {
+      "id": "img-b944af7a3359c9ed495af101c5c92ca6f09241d6e68753d49d0ae34c0b825dc2",
+      "original_name": "Fish",
+      "md5ext": "a9b3d163756621f8395592ad77fb9369.svg",
+      "sha256": "11f7dc782e24a9b9152567333b82da1ff0f035e153c25339904e6c98c9e157ac"
+    },
+    {
+      "id": "img-a38888de1aadf490ae3496d884e4e96e5dc0cea1f7803c82d4469a2ca7aba047",
+      "original_name": "Frog",
+      "md5ext": "390845c11df0924f3b627bafeb3f814e.svg",
+      "sha256": "69546db6fad006fe4cc299999c8f075c2bb655613f96f27e18390d1afe5318d7"
+    },
+    {
+      "id": "img-f6fa7a91bd6ddc2522ae632dd3c3ffee82bee3337736e5d5cb9998bccbdb5d6d",
+      "original_name": "Ladybug1",
+      "md5ext": "169c0efa8c094fdedddf8c19c36f0229.svg",
+      "sha256": "4680b4ab384f26a3645c146cc332297a68fec92d6e8706a75924e04dedba4463"
+    },
+    {
+      "id": "img-6c93c7e5c752167c249d4445d6fbccb05e8894204f883c1734981b049bbc66d2",
+      "original_name": "Ladybug2",
+      "md5ext": "457200f8dec8fea00d22473e9bd9175e.svg",
+      "sha256": "f91aa0f23fdc9533bece022d3ab24eb08a09548d8af9cec0543c84cbcf0d7c0a"
+    },
+    {
+      "id": "img-97e343e7389146f7c3171d84fe608e293e25c442187d61be23a7218bb79de901",
+      "original_name": "Octopus",
+      "md5ext": "e22d9b633feffc1d026980a1f21e07d7.svg",
+      "sha256": "19bfc816e5322d10258292d51661ee1f4c1d78eed4d36034df82d2ed1966ea70"
+    },
+    {
+      "id": "img-4833d24142f4df6a41a6a626d2b346df1b0946cb884ec5d607fc83f84cc98393",
+      "original_name": "Parrot",
+      "md5ext": "082f371c206f07d20e53595a9c69cc22.svg",
+      "sha256": "7dda5f0cb59a33c6834ccacd6070a6c23319b3ee9bcd0df682822862162c89cb"
+    },
+    {
+      "id": "img-d00b6cd6f32784f3f599c742abfddf4f4b703c68736082288fc30471a25de6d7",
+      "original_name": "Pencil",
+      "md5ext": "b3d6eae85f285dd618bf9dcf609b9454.svg",
+      "sha256": "c809bfd59cd5233f0dabdac553243ea11b5db36ec72c2f8652faf7ecffcb9c87"
+    },
+    {
+      "id": "img-60e3ac678f3b8c319e46e15197a9a69eb58c48bdab88e10bdbabe7d1f4545b19",
+      "original_name": "Rabbit",
+      "md5ext": "970f886bfa454e1daa6d6c30ef49a972.svg",
+      "sha256": "1a31814c65b92b1454bfb65d9310dfcd3967796ee68fba33a168a86958d1e8f7"
+    },
+    {
+      "id": "img-7f2b33b3e3d7ab2668a80f348c8073202159ddc7bd286c7957ea9a221e9b5569",
+      "original_name": "Star",
+      "md5ext": "551629f2a64c1f3703e57aaa133effa6.svg",
+      "sha256": "91770b52b6e41eb2e99f042e9631ef7832f7693136baf92aab447994c3e90981"
+    },
+    {
+      "id": "img-e49759295a4e4a1ce99a5950f29e174f1913cb9f60289d879094b5db5bcd396b",
+      "original_name": "Tree1",
+      "md5ext": "d04b15886635101db8220a4361c0c88d.svg",
+      "sha256": "544572b6d6634fc0ffcf2e5510e3839e8108531c85794724ba851bc9f0badc57"
+    },
+    {
+      "id": "img-8301f6419737dfce53e5b480a9ca2188be57ecb2a4caa46e6deadc8043b1f4e9",
+      "original_name": "Blue Sky",
+      "md5ext": "e7c147730f19d284bcd7b3f00af19bb6.svg",
+      "sha256": "27016673732aa3307b9bfb0dc7f932cc6d3d2d2b11257c024338cc826d18c99a"
+    },
+    {
+      "id": "img-19ef2806c092ee839d0419ac8eab5b1472e702cdc499f34dad51f42e6ca6855a",
+      "original_name": "Blue Sky 2 ",
+      "md5ext": "8eb8790be5507fdccf73e7c1570bbbab.svg",
+      "sha256": "6e8ae9c8c60985cf108e9bb5df488ae1985690de95387d5e3e5f53b33dfbba38"
+    },
+    {
+      "id": "img-a8a9c687b83a500e18a4e55637b604074997679a3a5acfbe2c8aff9f93a2631d",
+      "original_name": "Hearts",
+      "md5ext": "f98526ccb0eec3ac7d6c8f8ab502825e.svg",
+      "sha256": "d1ee57faeb555ddf70f737de5665aac24fb01fd9969f5e7563190583b231cde8"
+    },
+    {
+      "id": "img-d4370a6ab5e520aed1800c05d7ea2a4739ecb0f3334e8dec6fe7aa1d0fb16fe6",
+      "original_name": "Jurassic",
+      "md5ext": "64025bdca5db4938f65597e3682fddcf.svg",
+      "sha256": "18447d9eb2bceb2edfa7b2fb495614964d87df596f382335c97091c6d13cd6ae"
+    },
+    {
+      "id": "img-06577779bfd4cd9f75e58ee577a78c86975ff7b306ba8f7a1eefca4f30a2ed30",
+      "original_name": "Light",
+      "md5ext": "4b98c07876ed8997c3762e75790507b4.svg",
+      "sha256": "5670208ec762dff7d17b1351d76991e7f393159a3bb524a05731e22a485cb1c7"
+    },
+    {
+      "id": "img-d70c9b5a353f9cb90a06ba7d92988a6a60fed3f7865efb6f089d36c926d11cab",
+      "original_name": "Party",
+      "md5ext": "108160d0e44d1c340182e31c9dc0758a.svg",
+      "sha256": "a25d7e4a9962fc14037814c23d8200cf668cdb906d9bc3be1dffc9e9212c57f1"
+    },
+    {
+      "id": "img-a7091d62bb90fab64694210722def83b5e982c105c725151b2472d3d73679850",
+      "original_name": "Rays",
+      "md5ext": "87e963282db9e020e8c4d075891ea12b.svg",
+      "sha256": "d560b7c89be9c2cbcf24a09e0ab623c830a0ef85079271210a8e6f0ea47086a3"
+    },
+    {
+      "id": "img-12aea7752ebe7ff39f256f06c6976f1d5c9b2019e82e1d9c2e3c037e0eefc786",
+      "original_name": "Stripes",
+      "md5ext": "a6a21f5c08d586e8daaebde37c97fb6f.svg",
+      "sha256": "22a063dec351241be384d983e0074287fcf51c5b53aeb8336ad2962599ad76b7"
+    },
+    {
+      "id": "img-18e19c4442cf0dbd106a728b32b7b3414f1ff14c9cb4e8ceda7814c60ea5f7ab",
+      "original_name": "Winter",
+      "md5ext": "5fa9385a60b904672d0e46e9d768bb32.svg",
+      "sha256": "d5f0482c0df4e151c8ecda953dd3c0bdff74d58ae8b231e991067cced7b6373e"
+    },
+    {
+      "id": "img-32cffc180612b3d2a7020ce4cba972be07aead45c2524b2b2a471057a874ba8f",
+      "original_name": "Woods",
+      "md5ext": "f3eb165d6f3fd23370f97079f2e631bf.svg",
+      "sha256": "46b6a5f5382a5b9a1e2a0559977ca8145c47ccd95d90fe9ffc476610be037a34"
+    }
+  ],
+  "sprites": {
+    "url": "https://raw.githubusercontent.com/scratchfoundation/scratch-gui/fa7ed724dd3070486ccf12424bd633f95572bdfd/src/lib/libraries/sprites.json",
+    "sha256": "d04c42f6d9176da3cac58d2bde6c83b12490317ac544e890588c59875db95b3a"
+  },
+  "backdrops": {
+    "url": "https://raw.githubusercontent.com/scratchfoundation/scratch-gui/fa7ed724dd3070486ccf12424bd633f95572bdfd/src/lib/libraries/backdrops.json",
+    "sha256": "ab5ad4666e1d8fbf1e3ad407a335366154a7872ada2a60ad9923d1a42594c4fa"
+  }
+}

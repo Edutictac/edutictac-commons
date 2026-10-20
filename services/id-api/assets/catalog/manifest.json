@@ -1,7 +1,7 @@
 {
   "format": "rebost-catalog",
   "version": 1,
-  "source_revision": "d848fd55e8d83f1cd38137131034c1a9883c5fb9",
+  "source_revision": "49d6ef51d43498321d1647e1d993816895b2d004",
   "license_file": {
     "path": "licenses/GPL-3.0-only.txt",
     "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
@@ -414,6 +414,1332 @@
         "sha256": "c6e319b682ea28022f89f0dababc9eca22d7d03cd857b16f66b176240004de31"
       },
       "revision": 175989872782130
+    },
+    {
+      "id": "img-83aa993d9987153553396e31e9893e6088101393a8b770162e7ea702252b7ed6",
+      "source_id": "edutictac-blocs:bloc-content",
+      "aliases": [
+        "bloc-content"
+      ],
+      "name": "Bloc content",
+      "names": {
+        "ca": "Bloc content",
+        "es": "Bloc contento"
+      },
+      "type": "sprite",
+      "width": 80,
+      "height": 80,
+      "license": "GPL-3.0-only",
+      "attribution": "Contribuïdors d’EduTicTac Blocs",
+      "source_revision": "49d6ef51d43498321d1647e1d993816895b2d004",
+      "source_path": "templates/assets/bloc-content.svg",
+      "source_repository": "https://git.edutictac.es/Edutictac/edutictac-blocs",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/bloc-content.png",
+        "sha256": "6f30dcc69e1d7ca973e9eb9a53073a8d93eb49b2bdd8acf40ec47e4f15073ddd"
+      },
+      "thumbnail": {
+        "path": "thumbnails/bloc-content.png",
+        "sha256": "2bc234b2c3c4fb9d4759cf62c28d85250332971e16c3c66db2eaa560d9af8e0c"
+      },
+      "source": {
+        "path": "sources/bloc-content.svg",
+        "sha256": "3b7aff3979e665447386c5d26f0dd9e41803dd704502527497eca5cc32bcac08"
+      },
+      "revision": 71820429859039
+    },
+    {
+      "id": "img-228926a8f3b7e128f55d39f5c9528590c27d083245bf3cc1abdd608836fdc5e6",
+      "source_id": "edutictac-blocs:lua-content",
+      "aliases": [
+        "lua-content"
+      ],
+      "name": "Lua contenta",
+      "names": {
+        "ca": "Lua contenta",
+        "es": "Lua contenta"
+      },
+      "type": "sprite",
+      "width": 80,
+      "height": 80,
+      "license": "GPL-3.0-only",
+      "attribution": "Contribuïdors d’EduTicTac Blocs",
+      "source_revision": "49d6ef51d43498321d1647e1d993816895b2d004",
+      "source_path": "templates/assets/lua-content.svg",
+      "source_repository": "https://git.edutictac.es/Edutictac/edutictac-blocs",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/lua-content.png",
+        "sha256": "06fb2ece6460f5d1fa5557fee9f3d6d64cb6cefd6e55632b59eaff47ac97bd07"
+      },
+      "thumbnail": {
+        "path": "thumbnails/lua-content.png",
+        "sha256": "d223756d130bc58af948444caec909450005c1aa72821b54a51b8341f8446f67"
+      },
+      "source": {
+        "path": "sources/lua-content.svg",
+        "sha256": "e40d0c7d959c4898d1356fbe7862ad29972c3d19fa2d603d6b90da3bce0bec17"
+      },
+      "revision": 12759273776348
+    },
+    {
+      "id": "img-e583a26fdf05c7091ed9db76a318a912865e3b18e65023b2b5ccae3460ece9c8",
+      "source_id": "edutictac-blocs:robot-content",
+      "aliases": [
+        "robot-content"
+      ],
+      "name": "Robot content",
+      "names": {
+        "ca": "Robot content",
+        "es": "Robot contento"
+      },
+      "type": "sprite",
+      "width": 120,
+      "height": 130,
+      "license": "GPL-3.0-only",
+      "attribution": "Contribuïdors d’EduTicTac Blocs",
+      "source_revision": "49d6ef51d43498321d1647e1d993816895b2d004",
+      "source_path": "templates/assets/robot-content.svg",
+      "source_repository": "https://git.edutictac.es/Edutictac/edutictac-blocs",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/robot-content.png",
+        "sha256": "8f5730d4212030a2e0f90f4aae2e22ea29a27c7d8409bdb49deeaf461c027917"
+      },
+      "thumbnail": {
+        "path": "thumbnails/robot-content.png",
+        "sha256": "6d28252086a70a1716850f98556daaa4dedaafc3203d212ec7abbd168bb88f11"
+      },
+      "source": {
+        "path": "sources/robot-content.svg",
+        "sha256": "21a5c3f48a618d7bb4a50c20e23f4dde4446ec587c5cbdb492e552c98ead4641"
+      },
+      "revision": 239319307725854
+    },
+    {
+      "id": "img-5712eb02f7f4c5a288cd73f0e154eb2332db986beaed10fe6c7f74127181d545",
+      "source_id": "edutictac-blocs:robot-dubte",
+      "aliases": [
+        "robot-dubte"
+      ],
+      "name": "Robot amb dubtes",
+      "names": {
+        "ca": "Robot amb dubtes",
+        "es": "Robot con dudas"
+      },
+      "type": "sprite",
+      "width": 120,
+      "height": 130,
+      "license": "GPL-3.0-only",
+      "attribution": "Contribuïdors d’EduTicTac Blocs",
+      "source_revision": "49d6ef51d43498321d1647e1d993816895b2d004",
+      "source_path": "templates/assets/robot-dubte.svg",
+      "source_repository": "https://git.edutictac.es/Edutictac/edutictac-blocs",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/robot-dubte.png",
+        "sha256": "50c7e9b063f8c0fab86e9734873a75742c22f1c8559c4c8c14de80d3f7176fa3"
+      },
+      "thumbnail": {
+        "path": "thumbnails/robot-dubte.png",
+        "sha256": "b03e6a3b7bc0a609a9ca6026a6323813635477ec4416d37af5322ac116cb8be4"
+      },
+      "source": {
+        "path": "sources/robot-dubte.svg",
+        "sha256": "4a558031b6247979d6700d229e23454fb1bd62a730b89983f1385a015d3baa15"
+      },
+      "revision": 265795844530609
+    },
+    {
+      "id": "img-f2dcfe9423c4a7897c1012853df818b4edff9477194d450d777c191dc78c5737",
+      "source_id": "edutictac-blocs:detectiu",
+      "aliases": [
+        "detectiu"
+      ],
+      "name": "Detectiu",
+      "names": {
+        "ca": "Detectiu",
+        "es": "Detective"
+      },
+      "type": "sprite",
+      "width": 120,
+      "height": 120,
+      "license": "GPL-3.0-only",
+      "attribution": "Contribuïdors d’EduTicTac Blocs",
+      "source_revision": "49d6ef51d43498321d1647e1d993816895b2d004",
+      "source_path": "templates/assets/detectiu.svg",
+      "source_repository": "https://git.edutictac.es/Edutictac/edutictac-blocs",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/detectiu.png",
+        "sha256": "bf95690aed658a9daae7e36f1a9e5fd95e4f6f38ba77cdcc84ca4cffd9c48dd9"
+      },
+      "thumbnail": {
+        "path": "thumbnails/detectiu.png",
+        "sha256": "29e8b7580c3fbdf8abe027e4f0050b12ac35ed165222a4d9694125d2c2f9d990"
+      },
+      "source": {
+        "path": "sources/detectiu.svg",
+        "sha256": "e4e7f611e62b6249718035133166abeddbf6553c122b1549fd39f7c74426a123"
+      },
+      "revision": 37539980658776
+    },
+    {
+      "id": "img-339ec3c708bfce1d2ef302b58a69cbe26451981b001113a209a1c3661472291a",
+      "source_id": "edutictac-blocs:mascota-dubte",
+      "aliases": [
+        "mascota-dubte"
+      ],
+      "name": "Pip amb dubtes",
+      "names": {
+        "ca": "Pip amb dubtes",
+        "es": "Pip con dudas"
+      },
+      "type": "sprite",
+      "width": 120,
+      "height": 110,
+      "license": "GPL-3.0-only",
+      "attribution": "Contribuïdors d’EduTicTac Blocs",
+      "source_revision": "49d6ef51d43498321d1647e1d993816895b2d004",
+      "source_path": "templates/assets/mascota-dubte.svg",
+      "source_repository": "https://git.edutictac.es/Edutictac/edutictac-blocs",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/mascota-dubte.png",
+        "sha256": "7d77da56c8389a75661805cfd6f69375e1f69e0efd03c4de88c13aac94fb07e3"
+      },
+      "thumbnail": {
+        "path": "thumbnails/mascota-dubte.png",
+        "sha256": "eb7018e6228b5c28d08a4244161eaef8fff2242e05de84cf4e8932572f87553c"
+      },
+      "source": {
+        "path": "sources/mascota-dubte.svg",
+        "sha256": "be06c01a37d85799862ffe37c122a17ea01e7ac6776ab97f3f49ca4aead4e0fa"
+      },
+      "revision": 201552072248490
+    },
+    {
+      "id": "img-5a9b39e91d2a84e59b29b136dea40b5238f9c695cab25bc38421d5d72f3a9ba7",
+      "source_id": "edutictac-blocs:mascota-enfadat",
+      "aliases": [
+        "mascota-enfadat"
+      ],
+      "name": "Pip enfadat",
+      "names": {
+        "ca": "Pip enfadat",
+        "es": "Pip enfadado"
+      },
+      "type": "sprite",
+      "width": 120,
+      "height": 110,
+      "license": "GPL-3.0-only",
+      "attribution": "Contribuïdors d’EduTicTac Blocs",
+      "source_revision": "49d6ef51d43498321d1647e1d993816895b2d004",
+      "source_path": "templates/assets/mascota-enfadat.svg",
+      "source_repository": "https://git.edutictac.es/Edutictac/edutictac-blocs",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/mascota-enfadat.png",
+        "sha256": "2ac3fac930a69721e782885d1b1ccd2ced8b92ccf396f9e32d51bfa9b70f44c4"
+      },
+      "thumbnail": {
+        "path": "thumbnails/mascota-enfadat.png",
+        "sha256": "27509b7f638ec2ba9b76c457d284e7e9e111e2b92d26fe4e39c236951af628fc"
+      },
+      "source": {
+        "path": "sources/mascota-enfadat.svg",
+        "sha256": "05f853773cfe6fbac1b5df5fd8a236696ca51a70e77ba6679dea749c97ad8809"
+      },
+      "revision": 110880247550940
+    },
+    {
+      "id": "img-0860821d26134e74b2796f2adaf5fb223318b4538a5adfa9146a1e8e0993982d",
+      "source_id": "edutictac-blocs:mascota-espantat",
+      "aliases": [
+        "mascota-espantat"
+      ],
+      "name": "Pip espantat",
+      "names": {
+        "ca": "Pip espantat",
+        "es": "Pip asustado"
+      },
+      "type": "sprite",
+      "width": 120,
+      "height": 110,
+      "license": "GPL-3.0-only",
+      "attribution": "Contribuïdors d’EduTicTac Blocs",
+      "source_revision": "49d6ef51d43498321d1647e1d993816895b2d004",
+      "source_path": "templates/assets/mascota-espantat.svg",
+      "source_repository": "https://git.edutictac.es/Edutictac/edutictac-blocs",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/mascota-espantat.png",
+        "sha256": "c92254db7e9333c79395ec0903b660a0666e7f644ebe7e60d9a7ff85e8e23416"
+      },
+      "thumbnail": {
+        "path": "thumbnails/mascota-espantat.png",
+        "sha256": "e6754e9eeb3ecaee430ded35d15f7cbb276f3d5e554adf79391c0569a55ecf34"
+      },
+      "source": {
+        "path": "sources/mascota-espantat.svg",
+        "sha256": "c218d0f7e6468868eceb8a25c7366e1bd6ec568cb87abb2ef6f77670fb4b32a0"
+      },
+      "revision": 253194812648925
+    },
+    {
+      "id": "img-2310588e94ad947f06bc5e98230598692366d09b14ec414246ab75c7965e5692",
+      "source_id": "edutictac-blocs:mascota-fam",
+      "aliases": [
+        "mascota-fam"
+      ],
+      "name": "Pip amb fam",
+      "names": {
+        "ca": "Pip amb fam",
+        "es": "Pip con hambre"
+      },
+      "type": "sprite",
+      "width": 120,
+      "height": 110,
+      "license": "GPL-3.0-only",
+      "attribution": "Contribuïdors d’EduTicTac Blocs",
+      "source_revision": "49d6ef51d43498321d1647e1d993816895b2d004",
+      "source_path": "templates/assets/mascota-fam.svg",
+      "source_repository": "https://git.edutictac.es/Edutictac/edutictac-blocs",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/mascota-fam.png",
+        "sha256": "0687d0e3ce35aa39d273ae9aad9184534ba26d9ed7c10b9f495e2c5239b401bb"
+      },
+      "thumbnail": {
+        "path": "thumbnails/mascota-fam.png",
+        "sha256": "7596b38380741de648f3c20444ae702d78b3293dbf5552876b0b14f6fce416d1"
+      },
+      "source": {
+        "path": "sources/mascota-fam.svg",
+        "sha256": "5db6c064900f1197a395edf12adc4ecc71b0e2948abbb0c27aa9c38f50c7f496"
+      },
+      "revision": 169592825639790
+    },
+    {
+      "id": "img-9a5af251cd405c92431ef2cdcea5d4571856a0d59dfcd60d3b605d0235851d50",
+      "source_id": "edutictac-blocs:mascota-trist",
+      "aliases": [
+        "mascota-trist"
+      ],
+      "name": "Pip trist",
+      "names": {
+        "ca": "Pip trist",
+        "es": "Pip triste"
+      },
+      "type": "sprite",
+      "width": 120,
+      "height": 110,
+      "license": "GPL-3.0-only",
+      "attribution": "Contribuïdors d’EduTicTac Blocs",
+      "source_revision": "49d6ef51d43498321d1647e1d993816895b2d004",
+      "source_path": "templates/assets/mascota-trist.svg",
+      "source_repository": "https://git.edutictac.es/Edutictac/edutictac-blocs",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/mascota-trist.png",
+        "sha256": "f647780340f6365c0a29d008fd0e0a54bda8071809e93b6c74ecf66b65000809"
+      },
+      "thumbnail": {
+        "path": "thumbnails/mascota-trist.png",
+        "sha256": "5651b4c36e0d166259cd29c3d8383ad57553282397fef404faa03181e84a15aa"
+      },
+      "source": {
+        "path": "sources/mascota-trist.svg",
+        "sha256": "3572d40950c8c1cf16f4056fa8c5248edc9688bde62de641985eff27e8fbcbae"
+      },
+      "revision": 198311664749267
+    },
+    {
+      "id": "img-fc094e8c967426cacca503540b47b8cd5cac3860f07bb41a3720355398efac5a",
+      "source_id": "edutictac-blocs:fons-camera",
+      "aliases": [
+        "fons-camera"
+      ],
+      "name": "Estudi de càmera",
+      "names": {
+        "ca": "Estudi de càmera",
+        "es": "Estudio de cámara"
+      },
+      "type": "background",
+      "width": 480,
+      "height": 360,
+      "license": "GPL-3.0-only",
+      "attribution": "Contribuïdors d’EduTicTac Blocs",
+      "source_revision": "49d6ef51d43498321d1647e1d993816895b2d004",
+      "source_path": "templates/assets/fons-camera.svg",
+      "source_repository": "https://git.edutictac.es/Edutictac/edutictac-blocs",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/fons-camera.png",
+        "sha256": "358b321830be844daba1f0f3bde73d9048c0ee327702189ce4fbefc67d2a99a3"
+      },
+      "thumbnail": {
+        "path": "thumbnails/fons-camera.png",
+        "sha256": "ecd3b7b0bf641ab8cdfcb2fa961a260cc1aa4358a3417d89b24bebbd9f497276"
+      },
+      "source": {
+        "path": "sources/fons-camera.svg",
+        "sha256": "74397c4099bbdc408e47c3b16e8b0145f97081b82dd9912d416b92664ea7172e"
+      },
+      "revision": 114477927287349
+    },
+    {
+      "id": "img-13f67d0cf5a9e83ba6f7a152119ad4997fb4a864185cd8a5a2eb33c1d6d4bb1e",
+      "source_id": "edutictac-blocs:fons-casa",
+      "aliases": [
+        "fons-casa"
+      ],
+      "name": "Casa",
+      "names": {
+        "ca": "Casa",
+        "es": "Casa"
+      },
+      "type": "background",
+      "width": 480,
+      "height": 360,
+      "license": "GPL-3.0-only",
+      "attribution": "Contribuïdors d’EduTicTac Blocs",
+      "source_revision": "49d6ef51d43498321d1647e1d993816895b2d004",
+      "source_path": "templates/assets/fons-casa.svg",
+      "source_repository": "https://git.edutictac.es/Edutictac/edutictac-blocs",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/fons-casa.png",
+        "sha256": "d76ed4f54b015f4199cd8a03f7d4883465b2788cc72f64fa62d9928b005a0cee"
+      },
+      "thumbnail": {
+        "path": "thumbnails/fons-casa.png",
+        "sha256": "0894c0999c5f568d4fc6458626870e70a2bf9d5da9b883cef9d400d7c6e37cf5"
+      },
+      "source": {
+        "path": "sources/fons-casa.svg",
+        "sha256": "a2776d3480a80509ee274da2d7b750079616c0a9608f438919c431f8113ee1f8"
+      },
+      "revision": 246445746940059
+    },
+    {
+      "id": "img-48b74b8f9d59a706b0a6213da81d828f7e015f972eb0a4ab24e01aceacdb91c4",
+      "source_id": "edutictac-blocs:fons-correu",
+      "aliases": [
+        "fons-correu"
+      ],
+      "name": "Correu",
+      "names": {
+        "ca": "Correu",
+        "es": "Correo"
+      },
+      "type": "background",
+      "width": 480,
+      "height": 360,
+      "license": "GPL-3.0-only",
+      "attribution": "Contribuïdors d’EduTicTac Blocs",
+      "source_revision": "49d6ef51d43498321d1647e1d993816895b2d004",
+      "source_path": "templates/assets/fons-correu.svg",
+      "source_repository": "https://git.edutictac.es/Edutictac/edutictac-blocs",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/fons-correu.png",
+        "sha256": "77e70cd429bcc7c0f022ca81ba99fcddf53dbe4fee00b526e65fcb0bceead71f"
+      },
+      "thumbnail": {
+        "path": "thumbnails/fons-correu.png",
+        "sha256": "4d1d4831ab6294136fd240bde78111ff3118d5aba55fee00f84047e49ef24eeb"
+      },
+      "source": {
+        "path": "sources/fons-correu.svg",
+        "sha256": "1c85d1baa8f1c90097ddce95d510285637e7a2251a38a5bf720402780a638e69"
+      },
+      "revision": 233131116978168
+    },
+    {
+      "id": "img-8b7e70f1a8be9a64a6c9bcca8738a9bd954d5797bf836ffb1be14bf2df500dcf",
+      "source_id": "edutictac-blocs:fons-detectiu",
+      "aliases": [
+        "fons-detectiu"
+      ],
+      "name": "Investigació de detectiu",
+      "names": {
+        "ca": "Investigació de detectiu",
+        "es": "Investigación de detective"
+      },
+      "type": "background",
+      "width": 480,
+      "height": 360,
+      "license": "GPL-3.0-only",
+      "attribution": "Contribuïdors d’EduTicTac Blocs",
+      "source_revision": "49d6ef51d43498321d1647e1d993816895b2d004",
+      "source_path": "templates/assets/fons-detectiu.svg",
+      "source_repository": "https://git.edutictac.es/Edutictac/edutictac-blocs",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/fons-detectiu.png",
+        "sha256": "23759cfe6bc1ac6ed1588c2e71364f6f29bcc766e43b600a33452dd00ce1af24"
+      },
+      "thumbnail": {
+        "path": "thumbnails/fons-detectiu.png",
+        "sha256": "197246c275129d3f2d1eacdf173e2ae8d3739a5d0b291d51596b87628c0d088e"
+      },
+      "source": {
+        "path": "sources/fons-detectiu.svg",
+        "sha256": "919c634d6904ca0d87b85f057bca577204f31c78604891359592b021bbae5f70"
+      },
+      "revision": 116699020611991
+    },
+    {
+      "id": "img-9388de045b1adf52049da94081e654e22ed9e6ba6acab45fa573ba649cecfb0b",
+      "source_id": "edutictac-blocs:fons-laberint",
+      "aliases": [
+        "fons-laberint"
+      ],
+      "name": "Laberint",
+      "names": {
+        "ca": "Laberint",
+        "es": "Laberinto"
+      },
+      "type": "background",
+      "width": 480,
+      "height": 360,
+      "license": "GPL-3.0-only",
+      "attribution": "Contribuïdors d’EduTicTac Blocs",
+      "source_revision": "49d6ef51d43498321d1647e1d993816895b2d004",
+      "source_path": "templates/assets/fons-laberint.svg",
+      "source_repository": "https://git.edutictac.es/Edutictac/edutictac-blocs",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/fons-laberint.png",
+        "sha256": "6d48c716cbe2ec5feafd75b1f4afa4f61bd78b7b7a498ac1ff8582fdeebf7738"
+      },
+      "thumbnail": {
+        "path": "thumbnails/fons-laberint.png",
+        "sha256": "d094058678473c5f2e0a0c50b4131bc0858a467a47dafd1e1e56d7956b2419e3"
+      },
+      "source": {
+        "path": "sources/fons-laberint.svg",
+        "sha256": "4adcffd1a340e0c14591f45fdc4a2db64cd1258669e84a5c5057e1b3f3edca56"
+      },
+      "revision": 152590855023866
+    },
+    {
+      "id": "img-ba5b478f74fe0829317af1b43c0d811b2b155e12eca639350cd3d83473aa2b3e",
+      "source_id": "edutictac-blocs:fons-microbot",
+      "aliases": [
+        "fons-microbot"
+      ],
+      "name": "Circuit de Microbot",
+      "names": {
+        "ca": "Circuit de Microbot",
+        "es": "Circuito de Microbot"
+      },
+      "type": "background",
+      "width": 480,
+      "height": 360,
+      "license": "GPL-3.0-only",
+      "attribution": "Contribuïdors d’EduTicTac Blocs",
+      "source_revision": "49d6ef51d43498321d1647e1d993816895b2d004",
+      "source_path": "templates/assets/fons-microbot.svg",
+      "source_repository": "https://git.edutictac.es/Edutictac/edutictac-blocs",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/fons-microbot.png",
+        "sha256": "c3b455d58366bf72b6cae8d49bf432b86da0dfaa2a6388939ebf6f5e152972d6"
+      },
+      "thumbnail": {
+        "path": "thumbnails/fons-microbot.png",
+        "sha256": "e341e89368e43a4dc16eb1e234f123468429dbd1a7c4353ebfe34ce610cd3fb7"
+      },
+      "source": {
+        "path": "sources/fons-microbot.svg",
+        "sha256": "0b573ed0d411d5fca93086de684cbdb31401b5434e7f0cf31af83d847a090573"
+      },
+      "revision": 269735400844170
+    },
+    {
+      "id": "img-f9bd0a76c8c3f294310b57b294dd70a95d9204815a855eef938441895ba97989",
+      "source_id": "edutictac-blocs:fons-models-ca",
+      "aliases": [
+        "fons-models-ca"
+      ],
+      "name": "Models (valencià)",
+      "names": {
+        "ca": "Models (valencià)",
+        "es": "Modelos (valenciano)"
+      },
+      "type": "background",
+      "width": 480,
+      "height": 360,
+      "license": "GPL-3.0-only",
+      "attribution": "Contribuïdors d’EduTicTac Blocs",
+      "source_revision": "49d6ef51d43498321d1647e1d993816895b2d004",
+      "source_path": "templates/assets/fons-models.ca.svg",
+      "source_repository": "https://git.edutictac.es/Edutictac/edutictac-blocs",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/fons-models-ca.png",
+        "sha256": "e20c902470769006373be52e084698cd65a5c5c30a9371e388037597845bc80f"
+      },
+      "thumbnail": {
+        "path": "thumbnails/fons-models-ca.png",
+        "sha256": "1622829c569229b7d2242ec70f7133a82401ee6c1562fa47e7c21f861ccc8cf3"
+      },
+      "source": {
+        "path": "sources/fons-models.ca.svg",
+        "sha256": "daf53a05d05f9152cde6ff7ce9374c7929b13a23dc731f8117f4c84e1ad3af6e"
+      },
+      "revision": 260313452815565
+    },
+    {
+      "id": "img-04e9b2ea65df8394a5f14a2e7651c44dc0e1905cafa69689259c9985d44b16b9",
+      "source_id": "edutictac-blocs:fons-models-es",
+      "aliases": [
+        "fons-models-es"
+      ],
+      "name": "Models (castellà)",
+      "names": {
+        "ca": "Models (castellà)",
+        "es": "Modelos (castellano)"
+      },
+      "type": "background",
+      "width": 480,
+      "height": 360,
+      "license": "GPL-3.0-only",
+      "attribution": "Contribuïdors d’EduTicTac Blocs",
+      "source_revision": "49d6ef51d43498321d1647e1d993816895b2d004",
+      "source_path": "templates/assets/fons-models.es.svg",
+      "source_repository": "https://git.edutictac.es/Edutictac/edutictac-blocs",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/fons-models-es.png",
+        "sha256": "8460115b88ee41868a055578537d5f3aec14dbe14e8b589c2376296c3922b0aa"
+      },
+      "thumbnail": {
+        "path": "thumbnails/fons-models-es.png",
+        "sha256": "f718ea4e670f182117999d6e1f2afb97ec1d23b4e7ea10376d33e3047042ab5c"
+      },
+      "source": {
+        "path": "sources/fons-models.es.svg",
+        "sha256": "f5c3cc48c42ad3973244a021e5f912cfee037418f8fb72d209889d9efeaa9837"
+      },
+      "revision": 149369572823468
+    },
+    {
+      "id": "img-3767a248fcc0eb2dffd7255b2e2ed831cf24bef358a59c12c7cbdee0cf084e48",
+      "source_id": "edutictac-blocs:fons-piano",
+      "aliases": [
+        "fons-piano"
+      ],
+      "name": "Escenari musical",
+      "names": {
+        "ca": "Escenari musical",
+        "es": "Escenario musical"
+      },
+      "type": "background",
+      "width": 480,
+      "height": 360,
+      "license": "GPL-3.0-only",
+      "attribution": "Contribuïdors d’EduTicTac Blocs",
+      "source_revision": "49d6ef51d43498321d1647e1d993816895b2d004",
+      "source_path": "templates/assets/fons-piano.svg",
+      "source_repository": "https://git.edutictac.es/Edutictac/edutictac-blocs",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/fons-piano.png",
+        "sha256": "e3e1ab8db645d6d2d509addde8d734c6dd6874595123729811bf32f004e7addf"
+      },
+      "thumbnail": {
+        "path": "thumbnails/fons-piano.png",
+        "sha256": "9d8ea1744e9a67f6249cd0e0ccadfbb5b14f3ba816d4a80b1fa41937447f667f"
+      },
+      "source": {
+        "path": "sources/fons-piano.svg",
+        "sha256": "4bacd7717ace8b8c73375896208b5ef44c6b9ccd09a4276215cc31141264f6a2"
+      },
+      "revision": 264701874784840
+    },
+    {
+      "id": "img-72528a315e14c27c419865d3ea3ccbe978954bdea4db14d042eab43fa6f5a90f",
+      "source_id": "edutictac-blocs:fons-pista",
+      "aliases": [
+        "fons-pista"
+      ],
+      "name": "Pista",
+      "names": {
+        "ca": "Pista",
+        "es": "Pista"
+      },
+      "type": "background",
+      "width": 480,
+      "height": 360,
+      "license": "GPL-3.0-only",
+      "attribution": "Contribuïdors d’EduTicTac Blocs",
+      "source_revision": "49d6ef51d43498321d1647e1d993816895b2d004",
+      "source_path": "templates/assets/fons-pista.svg",
+      "source_repository": "https://git.edutictac.es/Edutictac/edutictac-blocs",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/fons-pista.png",
+        "sha256": "0c0ffd9fe3594ba00f6e890feb7acd8b6894bf9c9c076c25ea52207f68c6f956"
+      },
+      "thumbnail": {
+        "path": "thumbnails/fons-pista.png",
+        "sha256": "16107a6c397e5c97754420f5b305fed9c86eae461785851d35e67df9ac5b3a15"
+      },
+      "source": {
+        "path": "sources/fons-pista.svg",
+        "sha256": "28d13bbec1962c589ab7d50c4109d14cd8a9b30ecc35d2801cb1c6975473124a"
+      },
+      "revision": 97938919653229
+    },
+    {
+      "id": "img-40b3060286a82254e1ef0593c96dfd5ba832c7150912bcd0ed7a3cdea5c1226f",
+      "source_id": "edutictac-blocs:fons-pong",
+      "aliases": [
+        "fons-pong"
+      ],
+      "name": "Pista de Pong",
+      "names": {
+        "ca": "Pista de Pong",
+        "es": "Pista de Pong"
+      },
+      "type": "background",
+      "width": 480,
+      "height": 360,
+      "license": "GPL-3.0-only",
+      "attribution": "Contribuïdors d’EduTicTac Blocs",
+      "source_revision": "49d6ef51d43498321d1647e1d993816895b2d004",
+      "source_path": "templates/assets/fons-pong.svg",
+      "source_repository": "https://git.edutictac.es/Edutictac/edutictac-blocs",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/fons-pong.png",
+        "sha256": "66416fc6e13ba11c91f276530510b5faa983456682b40a3d25a12bb5a746a604"
+      },
+      "thumbnail": {
+        "path": "thumbnails/fons-pong.png",
+        "sha256": "8ae8db86223f5ef15f827a2f0b131d5b8ff47b640fe5de654b97740a6c5f83fd"
+      },
+      "source": {
+        "path": "sources/fons-pong.svg",
+        "sha256": "9eedce7cb6a4ce66765cd71e1dcfdbce6731322fd6b98701d272a28f8086724a"
+      },
+      "revision": 30511617012582
+    },
+    {
+      "id": "img-e924ba2dbff03f4bbcd87524e30031d1f2b0c386090bfc852abb87ac95217ce4",
+      "source_id": "edutictac-blocs:laboratori-models",
+      "aliases": [
+        "laboratori-models"
+      ],
+      "name": "Laboratori de models",
+      "names": {
+        "ca": "Laboratori de models",
+        "es": "Laboratorio de modelos"
+      },
+      "type": "object",
+      "width": 80,
+      "height": 80,
+      "license": "GPL-3.0-only",
+      "attribution": "Contribuïdors d’EduTicTac Blocs",
+      "source_revision": "49d6ef51d43498321d1647e1d993816895b2d004",
+      "source_path": "templates/assets/laboratori-models.svg",
+      "source_repository": "https://git.edutictac.es/Edutictac/edutictac-blocs",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/laboratori-models.png",
+        "sha256": "9280aed71f0b3740f0b5a87f50e81a61db2932bb4bc1a59fc1f6facf2d4e7fc4"
+      },
+      "thumbnail": {
+        "path": "thumbnails/laboratori-models.png",
+        "sha256": "55539cba95e78fac8d0e0506354887100a0e7620d08a2be0315bb1c75a2246a6"
+      },
+      "source": {
+        "path": "sources/laboratori-models.svg",
+        "sha256": "47f57436f53f5a78a30f93069cbd29ebf9d8f2caaa784b311a99eba5638b6e90"
+      },
+      "revision": 83407655669196
+    },
+    {
+      "id": "img-d070a269c4e484ef0e7c26cbcbae7f0b2ae3cef287b093733af90c938b8e9f6f",
+      "source_id": "edutictac-blocs:ma-dubte",
+      "aliases": [
+        "ma-dubte"
+      ],
+      "name": "Interrogant",
+      "names": {
+        "ca": "Interrogant",
+        "es": "Interrogante"
+      },
+      "type": "object",
+      "width": 80,
+      "height": 80,
+      "license": "GPL-3.0-only",
+      "attribution": "Contribuïdors d’EduTicTac Blocs",
+      "source_revision": "49d6ef51d43498321d1647e1d993816895b2d004",
+      "source_path": "templates/assets/ma-dubte.svg",
+      "source_repository": "https://git.edutictac.es/Edutictac/edutictac-blocs",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/ma-dubte.png",
+        "sha256": "dc3369c9c66c6e22299bc280e1d5495fb25d745ff61136a2974f136f2dd1021b"
+      },
+      "thumbnail": {
+        "path": "thumbnails/ma-dubte.png",
+        "sha256": "c991185d7ff3ee3fadf4d3c7df45e9f50f7ccd1bc7b2f8d5ccfa008dd361b3c0"
+      },
+      "source": {
+        "path": "sources/ma-dubte.svg",
+        "sha256": "74551db3302dd550c2811600ea1fc8606d23bfc705bf1ff44c6b32de6b742ae1"
+      },
+      "revision": 226022245618377
+    },
+    {
+      "id": "img-622beb75031b64372e384f40fb0ab9803062b46f4af82bb5dc631c3bff48f8f1",
+      "source_id": "edutictac-blocs:ma-paper",
+      "aliases": [
+        "ma-paper"
+      ],
+      "name": "Paper",
+      "names": {
+        "ca": "Paper",
+        "es": "Papel"
+      },
+      "type": "object",
+      "width": 80,
+      "height": 80,
+      "license": "GPL-3.0-only",
+      "attribution": "Contribuïdors d’EduTicTac Blocs",
+      "source_revision": "49d6ef51d43498321d1647e1d993816895b2d004",
+      "source_path": "templates/assets/ma-paper.svg",
+      "source_repository": "https://git.edutictac.es/Edutictac/edutictac-blocs",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/ma-paper.png",
+        "sha256": "135ec4341a216703890f8077ff230f90a9f34fa8059a544201585b13a94bf502"
+      },
+      "thumbnail": {
+        "path": "thumbnails/ma-paper.png",
+        "sha256": "f13a128da453015f8a1f7dd2b5fbb56c85f2fd6fc8666e39c2881ac388fa17b2"
+      },
+      "source": {
+        "path": "sources/ma-paper.svg",
+        "sha256": "0da09fc37b993e1440e5deccd1c6cb6c9509c067832520ba4144749a7dc8ebea"
+      },
+      "revision": 19493261342408
+    },
+    {
+      "id": "img-e4d38f8b527d06045fcb283ee962305722d45a9af8dd65e9a2c22b0dd4126013",
+      "source_id": "edutictac-blocs:ma-pedra",
+      "aliases": [
+        "ma-pedra"
+      ],
+      "name": "Pedra",
+      "names": {
+        "ca": "Pedra",
+        "es": "Piedra"
+      },
+      "type": "object",
+      "width": 80,
+      "height": 80,
+      "license": "GPL-3.0-only",
+      "attribution": "Contribuïdors d’EduTicTac Blocs",
+      "source_revision": "49d6ef51d43498321d1647e1d993816895b2d004",
+      "source_path": "templates/assets/ma-pedra.svg",
+      "source_repository": "https://git.edutictac.es/Edutictac/edutictac-blocs",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/ma-pedra.png",
+        "sha256": "fdeee5ca7a74635c0efce7a7120ed2e3603c0aaeab558e13dc1f9cf12d6b8e65"
+      },
+      "thumbnail": {
+        "path": "thumbnails/ma-pedra.png",
+        "sha256": "06feef1bda9026a0161f506ff629bd86b3cd30425e6b738ce390429189a10bd3"
+      },
+      "source": {
+        "path": "sources/ma-pedra.svg",
+        "sha256": "3679922701aa0ecd1a8a5d16d071382880cc933a42cd93f3111213141055c02b"
+      },
+      "revision": 129885224993960
+    },
+    {
+      "id": "img-80877c77ac6c97a9fdf250c622f5b19ef020d137f38edf6e583cfae43cea27d1",
+      "source_id": "edutictac-blocs:ma-tisores",
+      "aliases": [
+        "ma-tisores"
+      ],
+      "name": "Tisores",
+      "names": {
+        "ca": "Tisores",
+        "es": "Tijeras"
+      },
+      "type": "object",
+      "width": 80,
+      "height": 80,
+      "license": "GPL-3.0-only",
+      "attribution": "Contribuïdors d’EduTicTac Blocs",
+      "source_revision": "49d6ef51d43498321d1647e1d993816895b2d004",
+      "source_path": "templates/assets/ma-tisores.svg",
+      "source_repository": "https://git.edutictac.es/Edutictac/edutictac-blocs",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/ma-tisores.png",
+        "sha256": "beb88eb00cbf64a1a667e16bb0c8e7bf687e3249502e5e3783de8bf8cf2a290c"
+      },
+      "thumbnail": {
+        "path": "thumbnails/ma-tisores.png",
+        "sha256": "eabbd35f9014e744e3e21544139a6a14d8045af1be89568e1ef76111099aeb12"
+      },
+      "source": {
+        "path": "sources/ma-tisores.svg",
+        "sha256": "b26163d1f86b862cd9d21c2abae7c25d9bd3a6d660a6ff3c5aea319fd8cf7702"
+      },
+      "revision": 195014249155401
+    },
+    {
+      "id": "img-caa72659014bc26d2d929beaf9a40668d356cd23759c78b7d686a65b5ddafa61",
+      "source_id": "edutictac-blocs:meta",
+      "aliases": [
+        "meta"
+      ],
+      "name": "Meta",
+      "names": {
+        "ca": "Meta",
+        "es": "Meta"
+      },
+      "type": "object",
+      "width": 44,
+      "height": 52,
+      "license": "GPL-3.0-only",
+      "attribution": "Contribuïdors d’EduTicTac Blocs",
+      "source_revision": "49d6ef51d43498321d1647e1d993816895b2d004",
+      "source_path": "templates/assets/meta.svg",
+      "source_repository": "https://git.edutictac.es/Edutictac/edutictac-blocs",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/meta.png",
+        "sha256": "afed7a20986e99c4e111b8c44c6a438fa4cefeb9e455d0553dad4948e7e89930"
+      },
+      "thumbnail": {
+        "path": "thumbnails/meta.png",
+        "sha256": "e59f8510ca6199d1416f7dc96932dbeb450a0ba30c9a115557e089885bd6efe1"
+      },
+      "source": {
+        "path": "sources/meta.svg",
+        "sha256": "be37993cd21b9a2f0e410d2d9b27f3c6ea784c58ddfde08780bcb93eccf4123b"
+      },
+      "revision": 270702209772322
+    },
+    {
+      "id": "img-a5b5097c0616a86c5a9b7629a8d64c2e91af0ec166ee218214ed3ff06eafc70b",
+      "source_id": "edutictac-blocs:pala",
+      "aliases": [
+        "pala"
+      ],
+      "name": "Pala de Pong",
+      "names": {
+        "ca": "Pala de Pong",
+        "es": "Pala de Pong"
+      },
+      "type": "object",
+      "width": 100,
+      "height": 18,
+      "license": "GPL-3.0-only",
+      "attribution": "Contribuïdors d’EduTicTac Blocs",
+      "source_revision": "49d6ef51d43498321d1647e1d993816895b2d004",
+      "source_path": "templates/assets/pala.svg",
+      "source_repository": "https://git.edutictac.es/Edutictac/edutictac-blocs",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/pala.png",
+        "sha256": "0f2ead1737308177e1828eebedd8d375951e9b7e4c1b1f8ae279b3d8b468886b"
+      },
+      "thumbnail": {
+        "path": "thumbnails/pala.png",
+        "sha256": "4743a595ab06b8f78be347cad62c6fa2ccb433a5536c63c4e066db799df56a05"
+      },
+      "source": {
+        "path": "sources/pala.svg",
+        "sha256": "99b13352c705eddcf6907cb1d890f2fa8cc4edae2bf32fa0362e5967647626a6"
+      },
+      "revision": 52710005399362
+    },
+    {
+      "id": "img-9158922442d63c763d3ebea34ad51f5c0148a72bc8dc395268e5f9c595a31658",
+      "source_id": "edutictac-blocs:piano",
+      "aliases": [
+        "piano"
+      ],
+      "name": "Piano",
+      "names": {
+        "ca": "Piano",
+        "es": "Piano"
+      },
+      "type": "object",
+      "width": 80,
+      "height": 80,
+      "license": "GPL-3.0-only",
+      "attribution": "Contribuïdors d’EduTicTac Blocs",
+      "source_revision": "49d6ef51d43498321d1647e1d993816895b2d004",
+      "source_path": "templates/assets/piano.svg",
+      "source_repository": "https://git.edutictac.es/Edutictac/edutictac-blocs",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/piano.png",
+        "sha256": "c981f63f36c1699374c92d0dcf98dce4becd5e093f887b3d587f5fe51cef8b0b"
+      },
+      "thumbnail": {
+        "path": "thumbnails/piano.png",
+        "sha256": "8dcbb6ee47ede909df4a2c5cc6ad5b8056358dd7400113352eb2448320468fea"
+      },
+      "source": {
+        "path": "sources/piano.svg",
+        "sha256": "3257687d0139f555d8ac434bae783d4b8e11897f52722778bd41258ed44081d5"
+      },
+      "revision": 41355500462979
+    },
+    {
+      "id": "img-cb869906ae69ae1f5cf5b01fec70b58154f712f043abbfc45a30ca5833c448d6",
+      "source_id": "edutictac-blocs:pilota-joc",
+      "aliases": [
+        "pilota-joc"
+      ],
+      "name": "Pilota de joc",
+      "names": {
+        "ca": "Pilota de joc",
+        "es": "Pelota de juego"
+      },
+      "type": "object",
+      "width": 60,
+      "height": 60,
+      "license": "GPL-3.0-only",
+      "attribution": "Contribuïdors d’EduTicTac Blocs",
+      "source_revision": "49d6ef51d43498321d1647e1d993816895b2d004",
+      "source_path": "templates/assets/pilota-joc.svg",
+      "source_repository": "https://git.edutictac.es/Edutictac/edutictac-blocs",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/pilota-joc.png",
+        "sha256": "0bde7aede1f512452325c5db6398376217b60c96885369140df124fd43d562be"
+      },
+      "thumbnail": {
+        "path": "thumbnails/pilota-joc.png",
+        "sha256": "e98e770514f02b7f5a697d111d8ca24370dfc7debe0ddde13ae36891e751ff60"
+      },
+      "source": {
+        "path": "sources/pilota-joc.svg",
+        "sha256": "63e0df7c49a72b7e8f8aaf37c3810ef24515a5a7a6242334c8c36a4dc521f5ae"
+      },
+      "revision": 57631539337445
+    },
+    {
+      "id": "img-ddd79ccd8eb48ccb53b6d9645969727db90b94af3da29d17db7a513f34b929ac",
+      "source_id": "edutictac-blocs:pinzell",
+      "aliases": [
+        "pinzell"
+      ],
+      "name": "Pinzell",
+      "names": {
+        "ca": "Pinzell",
+        "es": "Pincel"
+      },
+      "type": "object",
+      "width": 40,
+      "height": 40,
+      "license": "GPL-3.0-only",
+      "attribution": "Contribuïdors d’EduTicTac Blocs",
+      "source_revision": "49d6ef51d43498321d1647e1d993816895b2d004",
+      "source_path": "templates/assets/pinzell.svg",
+      "source_repository": "https://git.edutictac.es/Edutictac/edutictac-blocs",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/pinzell.png",
+        "sha256": "32c008466d6970a0d1dae7351ab46af960c200bb007f0f6f5bc89994659f581d"
+      },
+      "thumbnail": {
+        "path": "thumbnails/pinzell.png",
+        "sha256": "0243e22db6a7d92d00cb6c697cd413f2a578af16028a0cb59fd76e596fb676a7"
+      },
+      "source": {
+        "path": "sources/pinzell.svg",
+        "sha256": "2a10c85259868d6e2c4ebf5b139400c5ffce3abe97e1966a51d4ad7e9ab41313"
+      },
+      "revision": 245757110641558
+    },
+    {
+      "id": "img-5b0993d0a5bf5acbb567449a3435faf0f8637c625269fc9110a2de3e644eeb85",
+      "source_id": "edutictac-blocs:poma",
+      "aliases": [
+        "poma"
+      ],
+      "name": "Poma",
+      "names": {
+        "ca": "Poma",
+        "es": "Manzana"
+      },
+      "type": "object",
+      "width": 60,
+      "height": 64,
+      "license": "GPL-3.0-only",
+      "attribution": "Contribuïdors d’EduTicTac Blocs",
+      "source_revision": "49d6ef51d43498321d1647e1d993816895b2d004",
+      "source_path": "templates/assets/poma.svg",
+      "source_repository": "https://git.edutictac.es/Edutictac/edutictac-blocs",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/poma.png",
+        "sha256": "b3a54c8580c54ae7bfd5b85fd42ab59610a1adc8075955bf1323c27bc379722f"
+      },
+      "thumbnail": {
+        "path": "thumbnails/poma.png",
+        "sha256": "0a648ddc81e53de217917861cf0e52e328b3d6506aa3da12b8e548cd7501d688"
+      },
+      "source": {
+        "path": "sources/poma.svg",
+        "sha256": "0b2ac7e8c1921537783b81ba22ac1512c5515a935b910e23453ce9e03cda59c1"
+      },
+      "revision": 245818865234963
+    },
+    {
+      "id": "img-582ee36b43594a6385a1bfabb4f11591041f8eb98c0efda74e04b1b4863e9c03",
+      "source_id": "edutictac-blocs:punter",
+      "aliases": [
+        "punter"
+      ],
+      "name": "Punter",
+      "names": {
+        "ca": "Punter",
+        "es": "Puntero"
+      },
+      "type": "object",
+      "width": 40,
+      "height": 30,
+      "license": "GPL-3.0-only",
+      "attribution": "Contribuïdors d’EduTicTac Blocs",
+      "source_revision": "49d6ef51d43498321d1647e1d993816895b2d004",
+      "source_path": "templates/assets/punter.svg",
+      "source_repository": "https://git.edutictac.es/Edutictac/edutictac-blocs",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/punter.png",
+        "sha256": "a15345204454d8f94149c024371067463d12fc5e9f8f04a0f7ba415c5faf9294"
+      },
+      "thumbnail": {
+        "path": "thumbnails/punter.png",
+        "sha256": "26e51c187a883b1ba95d9aa5747b9189e41a886788cce0491b875a966c34bbb7"
+      },
+      "source": {
+        "path": "sources/punter.svg",
+        "sha256": "517de26818aad8e029005437b9b5a268ea9f43fc40d8cd9d2022c342d824d644"
+      },
+      "revision": 163301909001454
+    },
+    {
+      "id": "img-a49218cc7439ae6ce3732b210cecfa1696fb2f506e492383ec6ce63a92177433",
+      "source_id": "edutictac-blocs:semafor-groc",
+      "aliases": [
+        "semafor-groc"
+      ],
+      "name": "Semàfor groc",
+      "names": {
+        "ca": "Semàfor groc",
+        "es": "Semáforo amarillo"
+      },
+      "type": "object",
+      "width": 48,
+      "height": 88,
+      "license": "GPL-3.0-only",
+      "attribution": "Contribuïdors d’EduTicTac Blocs",
+      "source_revision": "49d6ef51d43498321d1647e1d993816895b2d004",
+      "source_path": "templates/assets/semafor-groc.svg",
+      "source_repository": "https://git.edutictac.es/Edutictac/edutictac-blocs",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/semafor-groc.png",
+        "sha256": "e74d365dfee3dc6223f4cb55273fd9fba91366e5463e3e414b459b055c8c0ac7"
+      },
+      "thumbnail": {
+        "path": "thumbnails/semafor-groc.png",
+        "sha256": "c91f8fc91683208f27f5ea91704252241e93800df2f0eae221f0e23034cb63f9"
+      },
+      "source": {
+        "path": "sources/semafor-groc.svg",
+        "sha256": "3b06d29a20ad4d8e7a4dcc2a6173ad39690ad496fb0e973451f32b161e97401d"
+      },
+      "revision": 97755202514258
+    },
+    {
+      "id": "img-b62310b1c5f320927b86d8ceb3e09fb05bc42274bbed718e796509a4a9d1a785",
+      "source_id": "edutictac-blocs:semafor-verd",
+      "aliases": [
+        "semafor-verd"
+      ],
+      "name": "Semàfor verd",
+      "names": {
+        "ca": "Semàfor verd",
+        "es": "Semáforo verde"
+      },
+      "type": "object",
+      "width": 48,
+      "height": 88,
+      "license": "GPL-3.0-only",
+      "attribution": "Contribuïdors d’EduTicTac Blocs",
+      "source_revision": "49d6ef51d43498321d1647e1d993816895b2d004",
+      "source_path": "templates/assets/semafor-verd.svg",
+      "source_repository": "https://git.edutictac.es/Edutictac/edutictac-blocs",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/semafor-verd.png",
+        "sha256": "e3b73bdf1a70d0f81e27ed3674e7624cdbaf038d08c68cf2de0888558a6ebcf1"
+      },
+      "thumbnail": {
+        "path": "thumbnails/semafor-verd.png",
+        "sha256": "c3a2ec5f27d48dbaa42bd7c13f6af35c82610b5218f2f23e844b99d31b3ef58f"
+      },
+      "source": {
+        "path": "sources/semafor-verd.svg",
+        "sha256": "d62b4cff9556bfe2bf47a89955f466a68c39188a8c2950d23242f608bbcdc125"
+      },
+      "revision": 215617574984384
+    },
+    {
+      "id": "img-c6e4a5e387823af1f1b3683ce4db74e43ebb20c2f8fb9d3955a447f7e6699ae7",
+      "source_id": "edutictac-blocs:semafor-vermell",
+      "aliases": [
+        "semafor-vermell"
+      ],
+      "name": "Semàfor roig",
+      "names": {
+        "ca": "Semàfor roig",
+        "es": "Semáforo rojo"
+      },
+      "type": "object",
+      "width": 48,
+      "height": 88,
+      "license": "GPL-3.0-only",
+      "attribution": "Contribuïdors d’EduTicTac Blocs",
+      "source_revision": "49d6ef51d43498321d1647e1d993816895b2d004",
+      "source_path": "templates/assets/semafor-vermell.svg",
+      "source_repository": "https://git.edutictac.es/Edutictac/edutictac-blocs",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/semafor-vermell.png",
+        "sha256": "465a38dceed475d8d8d3751807308fb4687955360f113e994e9b679160323323"
+      },
+      "thumbnail": {
+        "path": "thumbnails/semafor-vermell.png",
+        "sha256": "5b6d51ebc44e87c1b6daf67edf0c53b607f0581f38d94c02bd1e06b69fbeccbe"
+      },
+      "source": {
+        "path": "sources/semafor-vermell.svg",
+        "sha256": "bca4aab88bdd14da1c3eba81f4d0b6cf02659f06a9bb5d8ab2155e571d3497f6"
+      },
+      "revision": 167110770946717
+    },
+    {
+      "id": "img-02495e1e887926faeaca45d24f9e930b0a494461e05227d5a8b18c7c4c985a9c",
+      "source_id": "edutictac-blocs:sobre",
+      "aliases": [
+        "sobre"
+      ],
+      "name": "Sobre",
+      "names": {
+        "ca": "Sobre",
+        "es": "Sobre"
+      },
+      "type": "object",
+      "width": 100,
+      "height": 70,
+      "license": "GPL-3.0-only",
+      "attribution": "Contribuïdors d’EduTicTac Blocs",
+      "source_revision": "49d6ef51d43498321d1647e1d993816895b2d004",
+      "source_path": "templates/assets/sobre.svg",
+      "source_repository": "https://git.edutictac.es/Edutictac/edutictac-blocs",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/sobre.png",
+        "sha256": "bbc55dbdc1ea7d3982c7bf306f3e90790322ca95f7f8dc4f308adf5d337e9a38"
+      },
+      "thumbnail": {
+        "path": "thumbnails/sobre.png",
+        "sha256": "05e5c5d9180322fdea0c0a4d4f69fd6cd659853c752798f02baf55516333718a"
+      },
+      "source": {
+        "path": "sources/sobre.svg",
+        "sha256": "97f02d16395228491e7f0041d5d23e80c99c6474f94eb6f7da928d1723d30a2f"
+      },
+      "revision": 203195696995181
+    },
+    {
+      "id": "img-5f12d5e7faf2e48bc638e2a5d7eb8a74ca70a52058c15dffac9743e8106ee6ad",
+      "source_id": "edutictac-blocs:sobre-error",
+      "aliases": [
+        "sobre-error"
+      ],
+      "name": "Sobre amb error",
+      "names": {
+        "ca": "Sobre amb error",
+        "es": "Sobre con error"
+      },
+      "type": "object",
+      "width": 100,
+      "height": 70,
+      "license": "GPL-3.0-only",
+      "attribution": "Contribuïdors d’EduTicTac Blocs",
+      "source_revision": "49d6ef51d43498321d1647e1d993816895b2d004",
+      "source_path": "templates/assets/sobre-error.svg",
+      "source_repository": "https://git.edutictac.es/Edutictac/edutictac-blocs",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/sobre-error.png",
+        "sha256": "9aa0e1733bb29e1ca90c0c1548b4fb0f1c195e9956f54ea2b22730d99ebc7f71"
+      },
+      "thumbnail": {
+        "path": "thumbnails/sobre-error.png",
+        "sha256": "a080027ca64b3337c87794706326958eff0828b9ea4e7a9c65d1e12e25b8dbb9"
+      },
+      "source": {
+        "path": "sources/sobre-error.svg",
+        "sha256": "8b86e0bb98baf2fe3999130dbc1c04b44008a94e1a8d4692c4b73e88cbc9fe6d"
+      },
+      "revision": 109406651559926
+    },
+    {
+      "id": "img-2cf7d332ceb8f764344c6b02e57d4de238448aa706a13a88a1650aea5569a2db",
+      "source_id": "edutictac-blocs:tecla-llum",
+      "aliases": [
+        "tecla-llum"
+      ],
+      "name": "Tecla il·luminada",
+      "names": {
+        "ca": "Tecla il·luminada",
+        "es": "Tecla iluminada"
+      },
+      "type": "object",
+      "width": 52,
+      "height": 176,
+      "license": "GPL-3.0-only",
+      "attribution": "Contribuïdors d’EduTicTac Blocs",
+      "source_revision": "49d6ef51d43498321d1647e1d993816895b2d004",
+      "source_path": "templates/assets/tecla-llum.svg",
+      "source_repository": "https://git.edutictac.es/Edutictac/edutictac-blocs",
+      "changes": "PNG rasterization and thumbnail; original SVG provided unchanged.",
+      "image": {
+        "path": "images/tecla-llum.png",
+        "sha256": "94406019111e3c676fbef39b72b987d62d67a14598bb084764522e22701bb13c"
+      },
+      "thumbnail": {
+        "path": "thumbnails/tecla-llum.png",
+        "sha256": "52e3d7dfe2c18c84c2ab32db4cb53cfc2e767fc8bfeeb9beb71e01434fa163ff"
+      },
+      "source": {
+        "path": "sources/tecla-llum.svg",
+        "sha256": "b87d5e62e48fe9d17598aece104e3e0fded8b591980529c3eb6f984c94c0e4e2"
+      },
+      "revision": 260093974276737
     }
   ]
 }

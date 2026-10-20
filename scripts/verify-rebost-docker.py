@@ -37,8 +37,11 @@ response=Response()
 main.set_student_session(response,'rebost-check')
 headers={'Cookie':response.headers['set-cookie'].split(';')[0], 'Origin':'http://127.0.0.1:8005'}
 base='http://127.0.0.1:8005/api/assets/v1'
-catalog=json.load(urllib.request.urlopen(urllib.request.Request(base+'/items?collection=catalog',headers=headers)))['items']
-assert len(catalog)==12
+catalog=json.load(urllib.request.urlopen(urllib.request.Request(base+'/items?collection=catalog&limit=80',headers=headers)))['items']
+assert len(catalog)==51
+scratch=json.load(urllib.request.urlopen(urllib.request.Request(base+'/items?collection=scratch&limit=80',headers=headers)))['items']
+assert len(scratch)==31
+scratch_original=next(item for item in scratch if 'scratch-apple' in item['aliases'])
 original=next(item for item in catalog if 'bloc' in item['aliases'])
 if not __import__('os').path.exists('/data/check.json'):
     out=io.BytesIO(); Image.new('RGBA',(960,360),(10,30,100,150)).save(out,'PNG')
@@ -49,7 +52,10 @@ if not __import__('os').path.exists('/data/check.json'):
     copied=json.load(urllib.request.urlopen(request))
     assert copied['provenance']['license']=='GPL-3.0-only'
     assert 'Derived image' in copied['provenance']['changes']
-    item={'id':item['id'],'copy_id':copied['id'],'catalog_id':original['id']}
+    request=urllib.request.Request(base+'/items/'+scratch_original['id']+'/copies',data=b'{}',method='POST',headers={**headers,'If-Match':'"'+str(scratch_original['revision'])+'"'})
+    scratch_copy=json.load(urllib.request.urlopen(request))
+    assert scratch_copy['provenance']['license']=='CC-BY-SA-2.0'
+    item={'id':item['id'],'copy_id':copied['id'],'catalog_id':original['id'],'scratch_id':scratch_copy['id']}
     open('/data/check.json','w').write(json.dumps(item))
 else:
     item=json.load(open('/data/check.json'))
@@ -66,11 +72,15 @@ req=urllib.request.Request(base+'/items/'+original['id']+'/source',headers=heade
 assert urllib.request.urlopen(req).read()==saved_source
 req=urllib.request.Request(base+'/items/'+item['copy_id']+'/license',headers=headers)
 assert b'GNU GENERAL PUBLIC LICENSE' in urllib.request.urlopen(req).read()
+req=urllib.request.Request(base+'/items/'+item['scratch_id']+'/license',headers=headers)
+assert b'CC BY-SA 2.0' in urllib.request.urlopen(req).read()
+req=urllib.request.Request(base+'/items/'+item['scratch_id']+'/source',headers=headers)
+assert hashlib.md5(urllib.request.urlopen(req).read()).hexdigest()+'.svg'==scratch_original['source_id'].removeprefix('scratch:')
 with main.get_conn() as db:
     assert db.execute('PRAGMA integrity_check').fetchone()[0]=='ok'
-    assert db.execute('SELECT COUNT(*) FROM assets').fetchone()[0]==2
-    assert db.execute('SELECT COUNT(*) FROM asset_provenance').fetchone()[0]==1
-print('private image, shared catalogue and GPL derivative/source persistence: OK')
+    assert db.execute('SELECT COUNT(*) FROM assets').fetchone()[0]==3
+    assert db.execute('SELECT COUNT(*) FROM asset_provenance').fetchone()[0]==2
+print('private image, EduTicTac/Scratch catalogues and GPL/CC source/license persistence: OK')
 '''
 
 

@@ -1,7 +1,7 @@
 {
   "format": "rebost-blocs-inventory",
   "version": 1,
-  "source_revision": "d848fd55e8d83f1cd38137131034c1a9883c5fb9",
+  "source_revision": "49d6ef51d43498321d1647e1d993816895b2d004",
   "counts": {
     "sprites": 333,
     "costumes": 859,
@@ -10,7 +10,7 @@
     "external_unique_images": 949,
     "external_unique_audio": 355,
     "local_svg": 110,
-    "selected": 12
+    "selected": 51
   },
   "external_policy": "not_bundled; existing Blocs proxy unchanged; media licensing needs a separate review",
   "external_images": [
@@ -1326,661 +1326,771 @@
       "path": "templates/assets/bloc-content.svg",
       "sha256": "3b7aff3979e665447386c5d26f0dd9e41803dd704502527497eca5cc32bcac08",
       "bytes": 529,
-      "status": "not_selected"
+      "status": "selected",
+      "reason": "reviewed reusable artwork"
     },
     {
       "path": "templates/assets/bloc.svg",
       "sha256": "8794f5a04c74bcdc1bab1d28b6d966199f3e8e59e755cbacae20a3f1987d1e21",
       "bytes": 467,
-      "status": "selected"
+      "status": "selected",
+      "reason": "reviewed reusable artwork"
     },
     {
       "path": "templates/assets/boto-corre.svg",
       "sha256": "c4deecb4974106bfe5544a39a117f0bc33bf0c647903d821060c140c6e59eb5c",
       "bytes": 307,
-      "status": "not_selected"
+      "status": "excluded_ui",
+      "reason": "template control or gallery thumbnail"
     },
     {
       "path": "templates/assets/boto-gira.svg",
       "sha256": "cba3bba44ea90ea4af13d25907b9602caf390b341c142e45b6c9c7f9ab0825a3",
       "bytes": 402,
-      "status": "not_selected"
+      "status": "excluded_ui",
+      "reason": "template control or gallery thumbnail"
     },
     {
       "path": "templates/assets/boto-juga.svg",
       "sha256": "d833633aaefd665713da58b7066e1a3208a2aae1d5f1d9b35e5b9f0869c06e9f",
       "bytes": 278,
-      "status": "not_selected"
+      "status": "excluded_ui",
+      "reason": "template control or gallery thumbnail"
     },
     {
       "path": "templates/assets/boto-microbot-0.ca.svg",
       "sha256": "4e1b2dc64961b986c52abee6d2aa1b54d1e5ee6d8fcff25555e206ccaafa84de",
       "bytes": 323,
-      "status": "not_selected"
+      "status": "excluded_ui",
+      "reason": "template control or gallery thumbnail"
     },
     {
       "path": "templates/assets/boto-microbot-0.es.svg",
       "sha256": "46f0420c18be121d1e88363c2ec610c8eca766d8823817cb87f1c8f5b091d816",
       "bytes": 323,
-      "status": "not_selected"
+      "status": "excluded_ui",
+      "reason": "template control or gallery thumbnail"
     },
     {
       "path": "templates/assets/boto-microbot-1.ca.svg",
       "sha256": "5344bb2912e8d486e381a3dd6fa6b63ce20f3f84e21d28a4c877433805bde166",
       "bytes": 319,
-      "status": "not_selected"
+      "status": "excluded_ui",
+      "reason": "template control or gallery thumbnail"
     },
     {
       "path": "templates/assets/boto-microbot-1.es.svg",
       "sha256": "5344bb2912e8d486e381a3dd6fa6b63ce20f3f84e21d28a4c877433805bde166",
       "bytes": 319,
-      "status": "not_selected"
+      "status": "excluded_ui",
+      "reason": "template control or gallery thumbnail"
     },
     {
       "path": "templates/assets/boto-microbot-2.ca.svg",
       "sha256": "27c3b592a6103def9bbef32ab5fe54e6eaa0eefcc45fc0e15478f4d3a203c17e",
       "bytes": 322,
-      "status": "not_selected"
+      "status": "excluded_ui",
+      "reason": "template control or gallery thumbnail"
     },
     {
       "path": "templates/assets/boto-microbot-2.es.svg",
       "sha256": "43b0fddb9e35a3b6092b8e286b0c77022ce013696fdbf244f607b0ba8efaf598",
       "bytes": 323,
-      "status": "not_selected"
+      "status": "excluded_ui",
+      "reason": "template control or gallery thumbnail"
     },
     {
       "path": "templates/assets/boto-microbot-3.ca.svg",
       "sha256": "3250f77965bad089c10709a81467891d05ed3bb92a4112f60b261cfc08eeabed",
       "bytes": 320,
-      "status": "not_selected"
+      "status": "excluded_ui",
+      "reason": "template control or gallery thumbnail"
     },
     {
       "path": "templates/assets/boto-microbot-3.es.svg",
       "sha256": "3250f77965bad089c10709a81467891d05ed3bb92a4112f60b261cfc08eeabed",
       "bytes": 320,
-      "status": "not_selected"
+      "status": "excluded_ui",
+      "reason": "template control or gallery thumbnail"
     },
     {
       "path": "templates/assets/boto-microbot-captura-0.ca.svg",
       "sha256": "34096a44eb94e8de75e75e623c89893b9ef50137e61ee8b754bc45ecfa50dd45",
       "bytes": 320,
-      "status": "not_selected"
+      "status": "excluded_ui",
+      "reason": "template control or gallery thumbnail"
     },
     {
       "path": "templates/assets/boto-microbot-captura-0.es.svg",
       "sha256": "17de91b29e6721ae1d1af4b0642a295df7df9566879145b07bc0045f8c10fe20",
       "bytes": 321,
-      "status": "not_selected"
+      "status": "excluded_ui",
+      "reason": "template control or gallery thumbnail"
     },
     {
       "path": "templates/assets/boto-microbot-captura-1.ca.svg",
       "sha256": "cb47c0e5335a1ed0386e7d6ab207083455abe961b1b8ce9b2333b881a36a5189",
       "bytes": 319,
-      "status": "not_selected"
+      "status": "excluded_ui",
+      "reason": "template control or gallery thumbnail"
     },
     {
       "path": "templates/assets/boto-microbot-captura-1.es.svg",
       "sha256": "cc686b8b0db845fb5727830b4def9fec4f1b1689c9f71a02d61fd326736ebf9d",
       "bytes": 319,
-      "status": "not_selected"
+      "status": "excluded_ui",
+      "reason": "template control or gallery thumbnail"
     },
     {
       "path": "templates/assets/boto-microbot-captura-2.ca.svg",
       "sha256": "bb2bce861cb1c437c81d561a93a05dce824a634c1b16bb52fcab9c720d8559e3",
       "bytes": 316,
-      "status": "not_selected"
+      "status": "excluded_ui",
+      "reason": "template control or gallery thumbnail"
     },
     {
       "path": "templates/assets/boto-microbot-captura-2.es.svg",
       "sha256": "d10fd271a4e7eee92bb1f50c305acd5ed63e98e5f533d624733e740abcff6d43",
       "bytes": 317,
-      "status": "not_selected"
+      "status": "excluded_ui",
+      "reason": "template control or gallery thumbnail"
     },
     {
       "path": "templates/assets/boto-microbot-captura-3.ca.svg",
       "sha256": "66f9a5bcc7776b8cd7667e7f1873f592fb1e75a981d0f5dd3a09fd84ef0de326",
       "bytes": 322,
-      "status": "not_selected"
+      "status": "excluded_ui",
+      "reason": "template control or gallery thumbnail"
     },
     {
       "path": "templates/assets/boto-microbot-captura-3.es.svg",
       "sha256": "14ea4cf4953139cd1f75b289cba1b5d5bf0415d20b50f2748f1cfb65d3b5142e",
       "bytes": 322,
-      "status": "not_selected"
+      "status": "excluded_ui",
+      "reason": "template control or gallery thumbnail"
     },
     {
       "path": "templates/assets/boto-microbot-captura-4.ca.svg",
       "sha256": "e7e926a21d65e90bf42dd1b604c0ed58f541c2163f00389e022fb129125e0db1",
       "bytes": 317,
-      "status": "not_selected"
+      "status": "excluded_ui",
+      "reason": "template control or gallery thumbnail"
     },
     {
       "path": "templates/assets/boto-microbot-captura-4.es.svg",
       "sha256": "c11fc559c0280d9a73adc335ea4399ca2986d775a69864e080b0ee79a17f1628",
       "bytes": 319,
-      "status": "not_selected"
+      "status": "excluded_ui",
+      "reason": "template control or gallery thumbnail"
     },
     {
       "path": "templates/assets/boto-models-bayes.ca.svg",
       "sha256": "d921b055e7d96b1c57ac5c7944e97e76394bc0d8d8e15ec593fb56956fd09f78",
       "bytes": 305,
-      "status": "not_selected"
+      "status": "excluded_ui",
+      "reason": "template control or gallery thumbnail"
     },
     {
       "path": "templates/assets/boto-models-bayes.es.svg",
       "sha256": "d921b055e7d96b1c57ac5c7944e97e76394bc0d8d8e15ec593fb56956fd09f78",
       "bytes": 305,
-      "status": "not_selected"
+      "status": "excluded_ui",
+      "reason": "template control or gallery thumbnail"
     },
     {
       "path": "templates/assets/boto-models-both.ca.svg",
       "sha256": "748bbd770ec5076e1be47badc5e236e78041e5219494cb572b186d320f540234",
       "bytes": 308,
-      "status": "not_selected"
+      "status": "excluded_ui",
+      "reason": "template control or gallery thumbnail"
     },
     {
       "path": "templates/assets/boto-models-both.es.svg",
       "sha256": "748bbd770ec5076e1be47badc5e236e78041e5219494cb572b186d320f540234",
       "bytes": 308,
-      "status": "not_selected"
+      "status": "excluded_ui",
+      "reason": "template control or gallery thumbnail"
     },
     {
       "path": "templates/assets/boto-models-data.ca.svg",
       "sha256": "ce35dc86ac190a759a401437a9fc9225d60ccfb76bcbf0a307c90294f5e9d0c4",
       "bytes": 305,
-      "status": "not_selected"
+      "status": "excluded_ui",
+      "reason": "template control or gallery thumbnail"
     },
     {
       "path": "templates/assets/boto-models-data.es.svg",
       "sha256": "064565976bb6b0ef3f1d81b525dbb191ad775062a0c452d9852c89552bc451bd",
       "bytes": 305,
-      "status": "not_selected"
+      "status": "excluded_ui",
+      "reason": "template control or gallery thumbnail"
     },
     {
       "path": "templates/assets/boto-models-linear.ca.svg",
       "sha256": "69ba11001b0314b2137a14cf2dfe478171302c9daed0b2d30d8d24b83f9067c8",
       "bytes": 306,
-      "status": "not_selected"
+      "status": "excluded_ui",
+      "reason": "template control or gallery thumbnail"
     },
     {
       "path": "templates/assets/boto-models-linear.es.svg",
       "sha256": "69ba11001b0314b2137a14cf2dfe478171302c9daed0b2d30d8d24b83f9067c8",
       "bytes": 306,
-      "status": "not_selected"
+      "status": "excluded_ui",
+      "reason": "template control or gallery thumbnail"
     },
     {
       "path": "templates/assets/boto-numeros-ensenya.ca.svg",
       "sha256": "3479b64bc9f51f9646d363dc84c5ac7799369ae4bba38998377b1064e3970b67",
       "bytes": 316,
-      "status": "not_selected"
+      "status": "excluded_ui",
+      "reason": "template control or gallery thumbnail"
     },
     {
       "path": "templates/assets/boto-numeros-ensenya.es.svg",
       "sha256": "d2d07be798cdf65cd36ee37769fb457d8a4971236177122fa4634f56a9006184",
       "bytes": 317,
-      "status": "not_selected"
+      "status": "excluded_ui",
+      "reason": "template control or gallery thumbnail"
     },
     {
       "path": "templates/assets/boto-numeros-entrena.ca.svg",
       "sha256": "c2f29ab2fa21856a207842e1125e0de6a52b242dbfcd0592ed0b9c9f6c4b934f",
       "bytes": 316,
-      "status": "not_selected"
+      "status": "excluded_ui",
+      "reason": "template control or gallery thumbnail"
     },
     {
       "path": "templates/assets/boto-numeros-entrena.es.svg",
       "sha256": "04cf75975cd1badd51243f91edc8311bca8cb00ddf79ed8e1bff4119a637f613",
       "bytes": 317,
-      "status": "not_selected"
+      "status": "excluded_ui",
+      "reason": "template control or gallery thumbnail"
     },
     {
       "path": "templates/assets/boto-numeros-investiga.ca.svg",
       "sha256": "8bcd776b4729bb0a62e22a37736be4d5a41809868794f4f10178d73c5284d2ca",
       "bytes": 318,
-      "status": "not_selected"
+      "status": "excluded_ui",
+      "reason": "template control or gallery thumbnail"
     },
     {
       "path": "templates/assets/boto-numeros-investiga.es.svg",
       "sha256": "1c94bca3270001cd687f6166d6276e116bfef10c53af026c7a80a3084cd6c50c",
       "bytes": 319,
-      "status": "not_selected"
+      "status": "excluded_ui",
+      "reason": "template control or gallery thumbnail"
     },
     {
       "path": "templates/assets/boto-paper.svg",
       "sha256": "1e2dcdfd4cb6ae7afac9a7aa4004b230bfa24f087f7ed7307806a8c3d48a2a26",
       "bytes": 528,
-      "status": "not_selected"
+      "status": "excluded_ui",
+      "reason": "template control or gallery thumbnail"
     },
     {
       "path": "templates/assets/boto-pedra.svg",
       "sha256": "f6038d7ac522e2330110ff95ac9e4d99c5ecce73481c9afd19d1420d59072c42",
       "bytes": 468,
-      "status": "not_selected"
+      "status": "excluded_ui",
+      "reason": "template control or gallery thumbnail"
     },
     {
       "path": "templates/assets/boto-res.svg",
       "sha256": "b46a117e4571953c20854bf9b1097a4d14d2f203e35ebaec582828aa78a2d05c",
       "bytes": 399,
-      "status": "not_selected"
+      "status": "excluded_ui",
+      "reason": "template control or gallery thumbnail"
     },
     {
       "path": "templates/assets/boto-salta.svg",
       "sha256": "14cb65b0dd31a20440ae92047991f59bc3c91c9562a5faedba09c3aba51f0f91",
       "bytes": 386,
-      "status": "not_selected"
+      "status": "excluded_ui",
+      "reason": "template control or gallery thumbnail"
     },
     {
       "path": "templates/assets/boto-soroll.svg",
       "sha256": "d4d5aa9c5c304a6590d96acb23455cf3b38a5176455de2666b7b66385ae5ccfb",
       "bytes": 321,
-      "status": "not_selected"
+      "status": "excluded_ui",
+      "reason": "template control or gallery thumbnail"
     },
     {
       "path": "templates/assets/boto-tisores.svg",
       "sha256": "7fd4728e752ee07b3049770f82ecc96bda2a56c912e01fcaaec4dd06cf1224d7",
       "bytes": 718,
-      "status": "not_selected"
+      "status": "excluded_ui",
+      "reason": "template control or gallery thumbnail"
     },
     {
       "path": "templates/assets/detectiu.svg",
       "sha256": "e4e7f611e62b6249718035133166abeddbf6553c122b1549fd39f7c74426a123",
       "bytes": 522,
-      "status": "not_selected"
+      "status": "selected",
+      "reason": "reviewed reusable artwork"
     },
     {
       "path": "templates/assets/estrella.svg",
       "sha256": "ae16c584ae24a6073cc00974b00c6ed801e326c785915008ec04a40ec57eb28a",
       "bytes": 274,
-      "status": "selected"
+      "status": "selected",
+      "reason": "reviewed reusable artwork"
     },
     {
       "path": "templates/assets/fons-bosc.svg",
       "sha256": "5031f019fb22d5d05212506f7d90574385c28975613768f84b4db836fbf62ade",
       "bytes": 527,
-      "status": "selected"
+      "status": "selected",
+      "reason": "reviewed reusable artwork"
     },
     {
       "path": "templates/assets/fons-camera.svg",
       "sha256": "74397c4099bbdc408e47c3b16e8b0145f97081b82dd9912d416b92664ea7172e",
       "bytes": 201,
-      "status": "not_selected"
+      "status": "selected",
+      "reason": "reviewed reusable artwork"
     },
     {
       "path": "templates/assets/fons-casa.svg",
       "sha256": "a2776d3480a80509ee274da2d7b750079616c0a9608f438919c431f8113ee1f8",
       "bytes": 693,
-      "status": "not_selected"
+      "status": "selected",
+      "reason": "reviewed reusable artwork"
     },
     {
       "path": "templates/assets/fons-cel.svg",
       "sha256": "ac8d566d277a8e3f6f7a87bf8f4c72609b61ebee946819b859bff863367a0c8a",
       "bytes": 464,
-      "status": "selected"
+      "status": "selected",
+      "reason": "reviewed reusable artwork"
     },
     {
       "path": "templates/assets/fons-correu.svg",
       "sha256": "1c85d1baa8f1c90097ddce95d510285637e7a2251a38a5bf720402780a638e69",
       "bytes": 993,
-      "status": "not_selected"
+      "status": "selected",
+      "reason": "reviewed reusable artwork"
     },
     {
       "path": "templates/assets/fons-detectiu.svg",
       "sha256": "919c634d6904ca0d87b85f057bca577204f31c78604891359592b021bbae5f70",
       "bytes": 1030,
-      "status": "not_selected"
+      "status": "selected",
+      "reason": "reviewed reusable artwork"
     },
     {
       "path": "templates/assets/fons-laberint.svg",
       "sha256": "4adcffd1a340e0c14591f45fdc4a2db64cd1258669e84a5c5057e1b3f3edca56",
       "bytes": 610,
-      "status": "not_selected"
+      "status": "selected",
+      "reason": "reviewed reusable artwork"
     },
     {
       "path": "templates/assets/fons-microbot.svg",
       "sha256": "0b573ed0d411d5fca93086de684cbdb31401b5434e7f0cf31af83d847a090573",
       "bytes": 493,
-      "status": "not_selected"
+      "status": "selected",
+      "reason": "reviewed reusable artwork"
     },
     {
       "path": "templates/assets/fons-models.ca.svg",
       "sha256": "daf53a05d05f9152cde6ff7ce9374c7929b13a23dc731f8117f4c84e1ad3af6e",
       "bytes": 705,
-      "status": "not_selected"
+      "status": "selected",
+      "reason": "reviewed reusable artwork"
     },
     {
       "path": "templates/assets/fons-models.es.svg",
       "sha256": "f5c3cc48c42ad3973244a021e5f912cfee037418f8fb72d209889d9efeaa9837",
       "bytes": 708,
-      "status": "not_selected"
+      "status": "selected",
+      "reason": "reviewed reusable artwork"
     },
     {
       "path": "templates/assets/fons-paper.svg",
       "sha256": "48442e47e4a4a1b58fb6dd1ab2e1fffbb84dbce02b70dc7552799e6138ac93bb",
       "bytes": 418,
-      "status": "selected"
+      "status": "selected",
+      "reason": "reviewed reusable artwork"
     },
     {
       "path": "templates/assets/fons-piano.svg",
       "sha256": "4bacd7717ace8b8c73375896208b5ef44c6b9ccd09a4276215cc31141264f6a2",
       "bytes": 2635,
-      "status": "not_selected"
+      "status": "selected",
+      "reason": "reviewed reusable artwork"
     },
     {
       "path": "templates/assets/fons-pissarra.svg",
       "sha256": "c6e319b682ea28022f89f0dababc9eca22d7d03cd857b16f66b176240004de31",
       "bytes": 620,
-      "status": "selected"
+      "status": "selected",
+      "reason": "reviewed reusable artwork"
     },
     {
       "path": "templates/assets/fons-pista.svg",
       "sha256": "28d13bbec1962c589ab7d50c4109d14cd8a9b30ecc35d2801cb1c6975473124a",
       "bytes": 4631,
-      "status": "not_selected"
+      "status": "selected",
+      "reason": "reviewed reusable artwork"
     },
     {
       "path": "templates/assets/fons-platja.svg",
       "sha256": "2abdacd17c27439d4f0a4dbe2d14d24ec593c294101e8012903e6ffdab52bf7c",
       "bytes": 328,
-      "status": "selected"
+      "status": "selected",
+      "reason": "reviewed reusable artwork"
     },
     {
       "path": "templates/assets/fons-pong.svg",
       "sha256": "9eedce7cb6a4ce66765cd71e1dcfdbce6731322fd6b98701d272a28f8086724a",
       "bytes": 1151,
-      "status": "not_selected"
+      "status": "selected",
+      "reason": "reviewed reusable artwork"
     },
     {
       "path": "templates/assets/galeria-estrela.svg",
       "sha256": "9d7bb9c1d1e2e0295218973aad69599cb8cbfe6e0158b1614d2f7af1f4394873",
       "bytes": 370,
-      "status": "not_selected"
+      "status": "excluded_ui",
+      "reason": "template control or gallery thumbnail"
     },
     {
       "path": "templates/assets/galeria-mandala.ca.svg",
       "sha256": "a1eebfda9dcf99ebe396e5df0aaf94c8418e464a9d295e79a7ee4e93b98b732e",
       "bytes": 479,
-      "status": "not_selected"
+      "status": "excluded_ui",
+      "reason": "template control or gallery thumbnail"
     },
     {
       "path": "templates/assets/galeria-mandala.es.svg",
       "sha256": "7c6c4204d12398a8ab5f608709a6b6c9286241d1bf921c582d4dc187ed82e00e",
       "bytes": 480,
-      "status": "not_selected"
+      "status": "excluded_ui",
+      "reason": "template control or gallery thumbnail"
     },
     {
       "path": "templates/assets/galeria-reciclatge.ca.svg",
       "sha256": "469184b9f44895b17ceddd2ca3e6706067e438aeb5a592caa26482c3c8ecf192",
       "bytes": 1512,
-      "status": "not_selected"
+      "status": "excluded_ui",
+      "reason": "template control or gallery thumbnail"
     },
     {
       "path": "templates/assets/galeria-reciclatge.es.svg",
       "sha256": "3cfc503ad3d9402e8e849eed459d5883741add55781fc14faed525af83de3709",
       "bytes": 1516,
-      "status": "not_selected"
+      "status": "excluded_ui",
+      "reason": "template control or gallery thumbnail"
     },
     {
       "path": "templates/assets/galeria-rescat.ca.svg",
       "sha256": "6b684a17a6bff671cc7079fbbf9aaeb9b3c477498bd4865f3d61fea4115c6445",
       "bytes": 635,
-      "status": "not_selected"
+      "status": "excluded_ui",
+      "reason": "template control or gallery thumbnail"
     },
     {
       "path": "templates/assets/galeria-rescat.es.svg",
       "sha256": "7d2b95bc6b070f3acb9b04f3177733dd1e3e5709e48c59c1d8ebc24660f2653d",
       "bytes": 637,
-      "status": "not_selected"
+      "status": "excluded_ui",
+      "reason": "template control or gallery thumbnail"
     },
     {
       "path": "templates/assets/galeria-robot.svg",
       "sha256": "52b04f632564e1f564ae9cd989e64280f2ecd7e49ac291b3aa3d914bb996be53",
       "bytes": 655,
-      "status": "not_selected"
+      "status": "excluded_ui",
+      "reason": "template control or gallery thumbnail"
     },
     {
       "path": "templates/assets/laboratori-models.svg",
       "sha256": "47f57436f53f5a78a30f93069cbd29ebf9d8f2caaa784b311a99eba5638b6e90",
       "bytes": 443,
-      "status": "not_selected"
+      "status": "selected",
+      "reason": "reviewed reusable artwork"
     },
     {
       "path": "templates/assets/lua-content.svg",
       "sha256": "e40d0c7d959c4898d1356fbe7862ad29972c3d19fa2d603d6b90da3bce0bec17",
       "bytes": 555,
-      "status": "not_selected"
+      "status": "selected",
+      "reason": "reviewed reusable artwork"
     },
     {
       "path": "templates/assets/lua.svg",
       "sha256": "39995891687555d0235c6de4416b494b702a35c5485464ebc6bd1b7597a46677",
       "bytes": 546,
-      "status": "selected"
+      "status": "selected",
+      "reason": "reviewed reusable artwork"
     },
     {
       "path": "templates/assets/ma-dubte.svg",
       "sha256": "74551db3302dd550c2811600ea1fc8606d23bfc705bf1ff44c6b32de6b742ae1",
       "bytes": 347,
-      "status": "not_selected"
+      "status": "selected",
+      "reason": "reviewed reusable artwork"
     },
     {
       "path": "templates/assets/ma-paper.svg",
       "sha256": "0da09fc37b993e1440e5deccd1c6cb6c9509c067832520ba4144749a7dc8ebea",
       "bytes": 402,
-      "status": "not_selected"
+      "status": "selected",
+      "reason": "reviewed reusable artwork"
     },
     {
       "path": "templates/assets/ma-pedra.svg",
       "sha256": "3679922701aa0ecd1a8a5d16d071382880cc933a42cd93f3111213141055c02b",
       "bytes": 342,
-      "status": "not_selected"
+      "status": "selected",
+      "reason": "reviewed reusable artwork"
     },
     {
       "path": "templates/assets/ma-tisores.svg",
       "sha256": "b26163d1f86b862cd9d21c2abae7c25d9bd3a6d660a6ff3c5aea319fd8cf7702",
       "bytes": 592,
-      "status": "not_selected"
+      "status": "selected",
+      "reason": "reviewed reusable artwork"
     },
     {
       "path": "templates/assets/mascota-content.svg",
       "sha256": "6749b9ad4006a3f4a628b7a32d47dc47c67c80b228b5ab69c29a52272505abba",
       "bytes": 883,
-      "status": "selected"
+      "status": "selected",
+      "reason": "reviewed reusable artwork"
     },
     {
       "path": "templates/assets/mascota-dubte.svg",
       "sha256": "be06c01a37d85799862ffe37c122a17ea01e7ac6776ab97f3f49ca4aead4e0fa",
       "bytes": 901,
-      "status": "not_selected"
+      "status": "selected",
+      "reason": "reviewed reusable artwork"
     },
     {
       "path": "templates/assets/mascota-enfadat.svg",
       "sha256": "05f853773cfe6fbac1b5df5fd8a236696ca51a70e77ba6679dea749c97ad8809",
       "bytes": 981,
-      "status": "not_selected"
+      "status": "selected",
+      "reason": "reviewed reusable artwork"
     },
     {
       "path": "templates/assets/mascota-espantat.svg",
       "sha256": "c218d0f7e6468868eceb8a25c7366e1bd6ec568cb87abb2ef6f77670fb4b32a0",
       "bytes": 895,
-      "status": "not_selected"
+      "status": "selected",
+      "reason": "reviewed reusable artwork"
     },
     {
       "path": "templates/assets/mascota-fam.svg",
       "sha256": "5db6c064900f1197a395edf12adc4ecc71b0e2948abbb0c27aa9c38f50c7f496",
       "bytes": 763,
-      "status": "not_selected"
+      "status": "selected",
+      "reason": "reviewed reusable artwork"
     },
     {
       "path": "templates/assets/mascota-trist.svg",
       "sha256": "3572d40950c8c1cf16f4056fa8c5248edc9688bde62de641985eff27e8fbcbae",
       "bytes": 827,
-      "status": "not_selected"
+      "status": "selected",
+      "reason": "reviewed reusable artwork"
     },
     {
       "path": "templates/assets/meta.svg",
       "sha256": "be37993cd21b9a2f0e410d2d9b27f3c6ea784c58ddfde08780bcb93eccf4123b",
       "bytes": 267,
-      "status": "not_selected"
+      "status": "selected",
+      "reason": "reviewed reusable artwork"
     },
     {
       "path": "templates/assets/microbot.svg",
       "sha256": "c2e3b5d2408fc6be9ee1a1215edc47f0c57e49350bd679f5dfd8785c3f26e39f",
       "bytes": 707,
-      "status": "selected"
+      "status": "selected",
+      "reason": "reviewed reusable artwork"
     },
     {
       "path": "templates/assets/pala.svg",
       "sha256": "99b13352c705eddcf6907cb1d890f2fa8cc4edae2bf32fa0362e5967647626a6",
       "bytes": 189,
-      "status": "not_selected"
+      "status": "selected",
+      "reason": "reviewed reusable artwork"
     },
     {
       "path": "templates/assets/piano.svg",
       "sha256": "3257687d0139f555d8ac434bae783d4b8e11897f52722778bd41258ed44081d5",
       "bytes": 746,
-      "status": "not_selected"
+      "status": "selected",
+      "reason": "reviewed reusable artwork"
     },
     {
       "path": "templates/assets/pilota-joc.svg",
       "sha256": "63e0df7c49a72b7e8f8aaf37c3810ef24515a5a7a6242334c8c36a4dc521f5ae",
       "bytes": 332,
-      "status": "not_selected"
+      "status": "selected",
+      "reason": "reviewed reusable artwork"
     },
     {
       "path": "templates/assets/pilota.svg",
       "sha256": "1752d995ea38780fa53146cbc04a87a9dba9f0c7a21ceabc4f865c9cf0b9f53c",
       "bytes": 241,
-      "status": "selected"
+      "status": "selected",
+      "reason": "reviewed reusable artwork"
     },
     {
       "path": "templates/assets/pinzell.svg",
       "sha256": "2a10c85259868d6e2c4ebf5b139400c5ffce3abe97e1966a51d4ad7e9ab41313",
       "bytes": 337,
-      "status": "not_selected"
+      "status": "selected",
+      "reason": "reviewed reusable artwork"
     },
     {
       "path": "templates/assets/poma.svg",
       "sha256": "0b2ac7e8c1921537783b81ba22ac1512c5515a935b910e23453ce9e03cda59c1",
       "bytes": 489,
-      "status": "not_selected"
+      "status": "selected",
+      "reason": "reviewed reusable artwork"
     },
     {
       "path": "templates/assets/punter.svg",
       "sha256": "517de26818aad8e029005437b9b5a268ea9f43fc40d8cd9d2022c342d824d644",
       "bytes": 203,
-      "status": "not_selected"
+      "status": "selected",
+      "reason": "reviewed reusable artwork"
     },
     {
       "path": "templates/assets/robot-content.svg",
       "sha256": "21a5c3f48a618d7bb4a50c20e23f4dde4446ec587c5cbdb492e552c98ead4641",
       "bytes": 1112,
-      "status": "not_selected"
+      "status": "selected",
+      "reason": "reviewed reusable artwork"
     },
     {
       "path": "templates/assets/robot-dubte.svg",
       "sha256": "4a558031b6247979d6700d229e23454fb1bd62a730b89983f1385a015d3baa15",
       "bytes": 1237,
-      "status": "not_selected"
+      "status": "selected",
+      "reason": "reviewed reusable artwork"
     },
     {
       "path": "templates/assets/robot.svg",
       "sha256": "75719300469050771dd84ced59ba07bc7573c998097f15993ef9d25539782572",
       "bytes": 1136,
-      "status": "selected"
+      "status": "selected",
+      "reason": "reviewed reusable artwork"
     },
     {
       "path": "templates/assets/semafor-groc.svg",
       "sha256": "3b06d29a20ad4d8e7a4dcc2a6173ad39690ad496fb0e973451f32b161e97401d",
       "bytes": 326,
-      "status": "not_selected"
+      "status": "selected",
+      "reason": "reviewed reusable artwork"
     },
     {
       "path": "templates/assets/semafor-verd.svg",
       "sha256": "d62b4cff9556bfe2bf47a89955f466a68c39188a8c2950d23242f608bbcdc125",
       "bytes": 326,
-      "status": "not_selected"
+      "status": "selected",
+      "reason": "reviewed reusable artwork"
     },
     {
       "path": "templates/assets/semafor-vermell.svg",
       "sha256": "bca4aab88bdd14da1c3eba81f4d0b6cf02659f06a9bb5d8ab2155e571d3497f6",
       "bytes": 326,
-      "status": "not_selected"
+      "status": "selected",
+      "reason": "reviewed reusable artwork"
     },
     {
       "path": "templates/assets/sobre-error.svg",
       "sha256": "8b86e0bb98baf2fe3999130dbc1c04b44008a94e1a8d4692c4b73e88cbc9fe6d",
       "bytes": 500,
-      "status": "not_selected"
+      "status": "selected",
+      "reason": "reviewed reusable artwork"
     },
     {
       "path": "templates/assets/sobre.svg",
       "sha256": "97f02d16395228491e7f0041d5d23e80c99c6474f94eb6f7da928d1723d30a2f",
       "bytes": 360,
-      "status": "not_selected"
+      "status": "selected",
+      "reason": "reviewed reusable artwork"
     },
     {
       "path": "templates/assets/spike-boto-connect.ca.svg",
       "sha256": "222a71d66cf91500c27fd79012f25e8b05757baeeab75b843e2d4a734b9c3fba",
       "bytes": 232,
-      "status": "not_selected"
+      "status": "excluded_ui",
+      "reason": "template control or gallery thumbnail"
     },
     {
       "path": "templates/assets/spike-boto-connect.es.svg",
       "sha256": "171eeb152afc3da172ad30cbe935274ac704df3bed91352dcea85cf99b29041d",
       "bytes": 232,
-      "status": "not_selected"
+      "status": "excluded_ui",
+      "reason": "template control or gallery thumbnail"
     },
     {
       "path": "templates/assets/spike-boto-motor.ca.svg",
       "sha256": "f36aadedad128f401c6a8cc517792739020b241194d0952f70d7735f8fb3f5ec",
       "bytes": 242,
-      "status": "not_selected"
+      "status": "excluded_ui",
+      "reason": "template control or gallery thumbnail"
     },
     {
       "path": "templates/assets/spike-boto-motor.es.svg",
       "sha256": "4e9d9162e4f372b13620f2b76766d833760a3813291cb3704cda8043d3c8c76e",
       "bytes": 244,
-      "status": "not_selected"
+      "status": "excluded_ui",
+      "reason": "template control or gallery thumbnail"
     },
     {
       "path": "templates/assets/spike-boto-stop.ca.svg",
       "sha256": "a3c9032a0c13f561b91d6602cf23e06f0cc5a879cb1254bafb51aad0734bbbc8",
       "bytes": 228,
-      "status": "not_selected"
+      "status": "excluded_ui",
+      "reason": "template control or gallery thumbnail"
     },
     {
       "path": "templates/assets/spike-boto-stop.es.svg",
       "sha256": "8866a50a170a8fecc62969c517fc621fdd616dc651a61938757012684f75935b",
       "bytes": 229,
-      "status": "not_selected"
+      "status": "excluded_ui",
+      "reason": "template control or gallery thumbnail"
     },
     {
       "path": "templates/assets/spike-boto-text.ca.svg",
       "sha256": "fbf713480577cfd7d651387bdbf9980416acae36b60c489a0f9311e2691dc6f8",
       "bytes": 228,
-      "status": "not_selected"
+      "status": "excluded_ui",
+      "reason": "template control or gallery thumbnail"
     },
     {
       "path": "templates/assets/spike-boto-text.es.svg",
       "sha256": "89212b8532fe44267bce2f927f6923d76e2995cbcc92e04aa121fbdbd7f1399e",
       "bytes": 229,
-      "status": "not_selected"
+      "status": "excluded_ui",
+      "reason": "template control or gallery thumbnail"
     },
     {
       "path": "templates/assets/spike-prova.ca.svg",
       "sha256": "b614fc4aa7b72f6b4f97170fbc5d0d611fe3932cd3b07ad03f3d115f9f691924",
       "bytes": 379,
-      "status": "not_selected"
+      "status": "excluded_ui",
+      "reason": "template control or gallery thumbnail"
     },
     {
       "path": "templates/assets/spike-prova.es.svg",
       "sha256": "dc7fd1a7b616cf699bebcee2962b28419a1cb800baf4b72b651596c40b8eb0b7",
       "bytes": 382,
-      "status": "not_selected"
+      "status": "excluded_ui",
+      "reason": "template control or gallery thumbnail"
     },
     {
       "path": "templates/assets/tecla-llum.svg",
       "sha256": "b87d5e62e48fe9d17598aece104e3e0fded8b591980529c3eb6f984c94c0e4e2",
       "bytes": 210,
-      "status": "not_selected"
+      "status": "selected",
+      "reason": "reviewed reusable artwork"
     }
   ]
 }

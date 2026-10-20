@@ -1,12 +1,12 @@
-# Primer catálogo común del Rebost
+# Catálogo común del Rebost
 
-20-10-2026. Implementación y pruebas locales; sin publicar ni desplegar el stack instalado.
+20-10-2026. Catálogo ampliado a 51 imágenes propias; validación local antes de publicar.
 El catálogo ya se puede elegir en los botones de personaje/fondo de Blocs en pruebas locales;
 la conexión con un segundo editor sigue pendiente.
 
 ## Inventario real
 
-Inventario reproducible de Blocs `d848fd55e8d83f1cd38137131034c1a9883c5fb9`:
+Inventario reproducible de Blocs `49d6ef51d` (revisión completa en el manifiesto):
 
 | Grupo | Cantidad | Tratamiento |
 |---|---:|---|
@@ -15,25 +15,40 @@ Inventario reproducible de Blocs `d848fd55e8d83f1cd38137131034c1a9883c5fb9`:
 | Entradas de fondos | 85 | Metadatos del catálogo externo. |
 | Imágenes externas únicas referenciadas | 949 | Inventariadas, no descargadas ni empaquetadas en esta entrega. |
 | Entradas de sonidos / audio único referenciado | 353 / 355 | Fuera del alcance inicial de imágenes. |
-| SVG locales de plantillas de Blocs | 110 | Hash, ruta y estado registrados; solo doce seleccionados. |
-| Primera selección | 12 | Siete personajes y cinco fondos locales, con fuentes y licencia. |
+| SVG locales de plantillas de Blocs | 110 | Hash, ruta, estado y motivo registrados. |
+| Selección ampliada | 51 | 17 personajes/expresiones, 16 fondos y 18 objetos, con fuentes y licencia. |
+| Controles y miniaturas excluidos | 59 | Botones específicos de plantillas y vistas de galería; no son ilustraciones reutilizables. |
 
 El inventario completo está en [rebost-catalog-inventory.json](rebost-catalog-inventory.json).
 Las carpetas públicas `static/templates/icons` y `static/templates/backdrops` son copias
 producidas por el generador de plantillas, no otro catálogo independiente. Sus fuentes son
 `templates/assets`, que se han usado para evitar importar dos veces el mismo recurso.
 
-La documentación actual de Blocs (`docs/deployment.md`, `docs/architecture.md`) mantiene una
-política de proxy para los recursos de Scratch y excluye empaquetarlos. Esta entrega respeta
-esa política; **no concluye que todas las imágenes de Scratch estén prohibidas ni que tengan
-una licencia uniforme**. La auditoría de condiciones y marcas por recurso queda pendiente.
-Las páginas legales oficiales consultadas no pudieron recuperarse de forma fiable; no se ha
-usado un foro o una licencia de código de Scratch como autorización para redistribuir imágenes.
-La presencia de un archivo en la caché tampoco equivale a permiso para añadirlo al catálogo.
+La ampliación solo incorpora arte local propio de las plantillas. No descarga imágenes del
+catálogo externo ni cambia su acceso habitual mediante el proxy de Blocs.
+
+### Revisión del catálogo externo de Scratch (20-10-2026)
+
+Fuentes oficiales consultadas:
+
+- [Condiciones de Scratch, actualizadas el 22-01-2026, apartados 7.1–7.3](https://mitscratch.freshdesk.com/en/support/solutions/articles/4000219182-scratch-terms-of-service).
+  Distinguen código, materiales de apoyo y marcas. La licencia del código no concede por sí
+  sola derechos sobre los gráficos. El apartado 7.2 remite a la licencia aplicable al material.
+- [Ayuda oficial sobre reutilización de imágenes y sprites, 18-07-2024](https://mitscratch.freshdesk.com/en/support/solutions/articles/4000156892-may-i-use-remix-scratch-support-materials-sprites-images-sounds-or-sample-projects-i-ve-found-on).
+  Indica Creative Commons Attribution-ShareAlike para la mayoría de materiales, con excepciones
+  de marcas; no identifica por hash la licencia y versión de cada archivo.
+
+La auditoría inicial dejó los 949 archivos externos sin incorporar. Una revisión posterior
+ha permitido añadir una selección histórica explícita en una colección separada:
+[Catàleg Scratch: 31 imágenes y sus evidencias](rebost-scratch.md). La revisión restante sigue abierta. La revisión no acredita una licencia concreta para cada hash; no concluye
+que esté prohibido reutilizar todos los recursos de Scratch. Para incorporar una selección
+harán falta procedencia verificable, licencia y versión, atribución y comprobación de marcas
+por recurso. No se asigna GPL ni CC genérica a ese conjunto por pertenecer a una biblioteca.
+El inventario conserva los hashes externos para continuar esa revisión sin descargarlos.
 
 ## Selección y licencia
 
-Se han seleccionado solo recursos descritos por Blocs como gráficos propios de sus plantillas,
+Se han seleccionado recursos descritos por Blocs como gráficos propios de sus plantillas,
 comprobando que sus bytes coinciden con el árbol de la revisión registrada. No hay una licencia
 particular por SVG; se conserva la licencia del proyecto: `package.json` declara GPL-3.0,
 `Dockerfile` precisa GPL-3.0-only, y se adjunta su `LICENSE` íntegro. No se aplica la licencia MIT
@@ -53,6 +68,18 @@ del código de Commons a estas imágenes ni se asignan licencias nuevas.
 | `beach` | `fons-platja.svg` | Platja / Playa |
 | `sky` | `fons-cel.svg` | Cel / Cielo |
 | `classroom` | `fons-pissarra.svg` | Aula |
+
+La tabla anterior conserva las doce correspondencias iniciales. La selección ampliada añade
+expresiones de Bloc, Lua, Robot y Pip; un detective; escenarios de casa, correo, laberinto,
+música, pistas y modelos; y objetos como manzana, piano, pincel, pelota, sobres y semáforos.
+Las dos versiones del fondo de modelos contienen texto distinto y mantienen IDs separadas.
+El manifiesto contiene la lista completa y los nombres en ambos idiomas. No se cambian los
+IDs del catálogo original de Blocs ni se crea otra biblioteca dentro del editor.
+
+Los doce registros iniciales permanecen idénticos, incluidos hashes y revisiones. Cada fuente
+conserva su revisión de origen si sus bytes no cambian. `--check` verifica esa revisión, los
+archivos del árbol de trabajo y la selección; nuevos commits de código ajenos al arte no
+obligan a alterar la procedencia de las imágenes. La regeneración es idempotente.
 
 Cada entrada tiene una ID central opaca estable `img-<sha256(namespace + ID lógico antiguo)>`, además
 de `source_id` y `aliases` con el ID antiguo. Se conserva el identificador antiguo sin cambiar
@@ -144,8 +171,30 @@ La nueva demo local del catálogo usa el puerto **18616**, con cuenta y datos de
 separados. La demo privada anterior de 18615 se conserva; las cookies de ambas tienen nombres
 distintos para evitar sobrescribir sesiones compartidas por host. No se ha publicado el código.
 
-Resultados locales: **34 pruebas específicas de Rebost/catálogo aprobadas**, incluidas las
+Resultados de la primera selección: **34 pruebas específicas de Rebost/catálogo aprobadas**, incluidas las
 pruebas de navegador en castellano y valenciano. Regresiones de itinerarios, Quiosc y backup
 comprobadas (solo dos integraciones Docker de Quiosc omitidas por ser opt-in). La comprobación
 Docker del catálogo con red desactivada recupera la imagen privada, catálogo, fuente y licencia
 de una copia después de reiniciar. Compilación de imagen y validación de JS/manifest correctas.
+
+
+## Validación de la ampliación a 51 imágenes
+
+- 39 pruebas de Rebost/catálogo aprobadas, incluidas es/va en navegador, paginación
+  40→51, filtros, búsqueda bilingüe, privacidad, cuotas y copia con fuentes/licencia.
+- Regeneración completa repetida: todos los archivos idénticos; `--check` correcto.
+- Los doce registros iniciales conservan IDs, revisiones y hashes de PNG y SVG.
+- Imagen Docker compilada y probada sin red con volumen temporal: catálogo, copia
+  privada, fuente/licencia y persistencia después del reinicio.
+- Aceptación Blocs es/ca con ratón y contexto táctil: selección de personajes, objeto
+  Manzana/Poma y fondo Casa, movimiento, editor nativo y guardado/reapertura anónima
+  de `.sb3` con fuentes y créditos. Regresión de selectores de disfraces y revisión IA.
+
+Activado únicamente en el entorno local de Commons, sin push ni publicación de imágenes.
+Se ha conservado una instantánea SQLite privada y la imagen previa antes de recrear
+solo `id-api`; portal, Blocs y Authentik permanecen en sus contenedores actuales.
+La comprobación local confirma 51 entradas instaladas y HTTP 200 en salud, gestor y Blocs.
+La prueba táctil automatizada no sustituye la comprobación manual desde un iPad.
+
+
+El gestor y el selector incorporan también la colección separada [Catàleg Scratch](rebost-scratch.md). No se suman sus 31 imágenes a las 51 propias ni se cambia la licencia de unas por otras.

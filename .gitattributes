@@ -1,0 +1,3 @@
+# Preserve the recorded bytes and checksums of vendored Scratch media and license snapshots.
+services/id-api/assets/catalog-scratch/sources/*.svg -text -whitespace
+services/id-api/assets/catalog-scratch/licenses/*.txt -text -whitespace
