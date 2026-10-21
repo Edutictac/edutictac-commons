@@ -1,14 +1,2 @@
-import {defineConfig} from 'vite';
-import vue from '@vitejs/plugin-vue';
-
-export default defineConfig({
-  plugins: [vue()],
-  publicDir: false,
-  define: {'process.env.NODE_ENV': JSON.stringify('production'), __VUE_OPTIONS_API__: false, __VUE_PROD_DEVTOOLS__: false, __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: false},
-  build: {
-    outDir: 'services/portal/public/assets', emptyOutDir: false,
-    lib: {entry: 'services/portal/src/rebost/main.js', formats: ['es'], fileName: () => 'rebost-ui.js'},
-    rolldownOptions: {external: ['/assets/client.js']},
-    minify: true, sourcemap: false
-  }
-});
+import {portalBuild} from './vite.portal.shared.mjs';
+export default portalBuild('services/portal/src/rebost/main.js', 'rebost-ui.js');

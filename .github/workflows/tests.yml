@@ -19,6 +19,9 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci
+      - run: npm run build:portal
+      - name: Comprovar bundles versionats
+        run: git diff --exit-code -- services/portal/public/assets/rebost-ui.js services/portal/public/assets/teacher-itineraries.js
       - run: npx playwright install --with-deps chromium
       - run: npm test
 

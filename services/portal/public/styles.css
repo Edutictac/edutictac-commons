@@ -752,6 +752,33 @@ button:disabled {
   margin-top: 12px;
 }
 
+/* Itineraries need room for complete activities, unlike compact PIN cards. */
+#itinerariesPanel .itinerary-cards {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  gap: 12px;
+}
+
+#itinerariesPanel .itinerary-card {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 12px;
+  background: var(--panel);
+  overflow-wrap: anywhere;
+}
+
+#itinerariesPanel .itinerary-card ol {
+  margin: 0;
+  padding-inline-start: 1.5rem;
+}
+
+#itinerariesPanel .itinerary-card .actions {
+  margin: 8px 0 12px;
+}
+
 .credential {
   border: 1px solid var(--line);
   border-radius: 6px;

@@ -140,3 +140,11 @@ npx playwright test tests/browser/teacher-itineraries.spec.js
 
 Las pruebas de API usan una base SQLite temporal; las de navegador simulan las
 respuestas de la API y cubren escritorio y móvil. No modifican el stack activo.
+
+## Interfaz Vue del panel docente
+
+El editor se implementa ahora como un componente Vue independiente del resto del
+portal. Conserva las rutas y los contratos anteriores; los cambios entre grupos
+invalidan también los guardados pendientes. Creación con Enter, borradores,
+idiomas y recuperación de errores tienen pruebas de navegador, además de los
+casos de API con SQLite temporal. [Arquitectura y compilación](portal-vue.md).

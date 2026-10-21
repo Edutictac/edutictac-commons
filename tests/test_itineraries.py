@@ -231,3 +231,64 @@ def test_revoked_collaborator_cannot_access_even_the_itinerary_they_created(api,
 def test_itinerary_title_cannot_be_blank(api):
     client, module, url = api
     assert client.post("/api/teacher/itineraries", json={"title": " \n\t ", "group_id": "group"}).status_code == 422
+
+
+@pytest.mark.parametrize('language,touch', [('es', False), ('va', True)])
+def test_vue_editor_with_real_api_and_persistence(api, language, touch):
+    """Exercise compiled Vue and actual endpoints against the disposable fixture DB."""
+    playwright = pytest.importorskip('playwright.sync_api')
+    import socket
+    import threading
+    import time
+    import uvicorn
+    from starlette.staticfiles import StaticFiles
+
+    client, module, _ = api
+    module.app.mount('/', StaticFiles(directory=Path(__file__).parents[1] / 'services/portal/public', html=True))
+    listener = socket.socket()
+    listener.bind(('127.0.0.1', 0)); listener.listen(128)
+    address = f'http://127.0.0.1:{listener.getsockname()[1]}'
+    server = uvicorn.Server(uvicorn.Config(module.app, log_level='error'))
+    thread = threading.Thread(target=server.run, kwargs={'sockets': [listener]}, daemon=True)
+    thread.start()
+    deadline = time.monotonic() + 8
+    while not server.started:
+        assert thread.is_alive() and time.monotonic() < deadline
+        time.sleep(.01)
+    try:
+        with playwright.sync_playwright() as p:
+            browser = p.chromium.launch(executable_path='/usr/bin/chromium', args=['--no-sandbox'])
+            # Synthetic fixture token only; no access to installed Commons or personal sessions.
+            context = browser.new_context(extra_http_headers={'Authorization': 'Bearer test-only-teacher'}, has_touch=touch, viewport={'width':1024, 'height':900})
+            context.add_init_script(f"localStorage.setItem('edutictac-portal-lang','{language}');localStorage.setItem('edutictac-commons-state',JSON.stringify({{group:{{id:'group',group_code:'group'}}}}))")
+            page = context.new_page(); errors = []
+            page.on('pageerror', lambda error: errors.append(str(error)))
+            page.route('**/*', lambda route: route.continue_() if route.request.url.startswith(address + '/') else route.abort())
+            page.goto(address + '/teacher.html')
+            # This offline fixture deliberately has no OIDC provider configured.
+            page.locator('#oidcSetupDialog button[type=submit]').click()
+            page.locator('summary').filter(has=page.locator('[data-i18n="teacher.itineraries"]')).click()
+            output = page.locator('#itinerariesOutput')
+            playwright.expect(output.locator('li > span')).to_have_text(['a', 'b', 'c'])
+            output.locator('[data-itinerary-assignment="b"][data-itinerary-action="up"]').click()
+            playwright.expect(output.locator('li > span')).to_have_text(['b', 'a', 'c'])
+            assert [row['assignment_id'] for row in client.get('/api/teacher/itineraries?group_id=group').json()['itineraries'][0]['items']] == ['b', 'a', 'c']
+            page.reload()
+            page.locator('#oidcSetupDialog button[type=submit]').click()
+            page.locator('summary').filter(has=page.locator('[data-i18n="teacher.itineraries"]')).click()
+            playwright.expect(output.locator('li > span')).to_have_text(['b', 'a', 'c'])
+            output.locator('[data-itinerary-assignment="c"][data-itinerary-action="remove"]').click()
+            playwright.expect(output.locator('li')).to_have_count(2)
+            assert {row['id'] for row in client.get('/api/teacher/activity-assignments').json()['assignments'] if row['group_id'] == 'group'} == {'a', 'b', 'c'}
+            page.locator('#itineraryTitle').fill('Històries compartides')
+            page.locator('#itineraryTitle').press('Enter')
+            playwright.expect(output.locator('article')).to_have_count(2)
+            output.locator('article').filter(has=page.get_by_text('Històries compartides', exact=True)).locator('[data-select-group-itinerary]').click()
+            playwright.expect(output.locator('article').filter(has=page.get_by_text('Històries compartides', exact=True)).get_by_role('status')).to_be_visible()
+            assert next(row for row in client.get('/api/teacher/itineraries?group_id=group').json()['itineraries'] if row['is_selected'])['title'] == 'Històries compartides'
+            page.screenshot(path=f'/tmp/commons-itineraries-vue-{language}.png', full_page=True)
+            assert not errors
+            context.close(); browser.close()
+    finally:
+        server.should_exit = True
+        thread.join(timeout=8); listener.close()

@@ -4,7 +4,7 @@
 > Repo: `edutictac-commons`  
 > Pista: **B — Stack Docker replicable**  
 > Data inicial: 2026-09-14
-> Última revisió: 2026-10-18
+> Última revisió: 2026-10-21
 
 Aquest document resumeix el treball que toca fer en aquest repositori. El
 roadmap complet de la candidatura 4D viu en el repo
@@ -25,6 +25,34 @@ Cada canvi funcional ha de deixar:
 - una comprovació reproduïble (`make test-flow`, `make release-check` o prova
   equivalent);
 - cap secret, dada real o artefacte local en el repositori.
+
+## Migració gradual de les interfícies a Vue — desenvolupament local
+
+Ordre acordat el 21-10-2026: començar pel **Rebost central**, reutilitzar la
+mateixa base de compilació i continuar amb el portal. Esta línia de treball no
+canvia l'estat de la versió publicada ni dona per completades les proves de camp.
+
+- [x] Rebost central i selector compartit de Blocs/Llibres en Vue. Catàlegs
+  públics, imatges privades, crèdits i famílies Scratch conservats.
+  Commit inicial `bdacb14`; [compilació i comprovacions](rebost-vue.md).
+- [x] Editor docent d'itineraris en Vue: creació, ordre, retirada de passos,
+  incorporació de l'activitat seleccionada i recorregut actiu. API i permisos
+  existents, conflictes entre docents i respostes tardanes protegits.
+  [Components i pla del portal](portal-vue.md).
+- [x] Configuració Vite comuna per als panells del portal i adaptador dels
+  quatre idiomes existents. Bundles estàtics versionats i comprovats en CI.
+- [ ] Continuar el tauler docent amb selecció/gestió d'aules i membres;
+  després, credencials, assignacions, Recursos i resultats. Mantindre els PIN
+  acabats de generar només en memòria i les comprovacions de permisos.
+- [ ] Migrar el tauler de l'alumnat, mantenint codi/PIN i l'historial/progrés.
+- [ ] Migrar els formularis propis de Play per tipus d'activitat, conservant
+  H5P, publicació i exportadors existents.
+- [ ] Revisar Recursos com a projecte separat; Administració i Quiosc després,
+  amb proves específiques de les operacions i recuperació que executen.
+
+Scratch/Blocs conserva React; Llibres conserva el motor eXeLearning. EduHoot
+queda fora d'esta migració. Vue no modifica l'autenticació: alumnat amb codi/PIN
+i docents amb Authentik. Cada fase es prova en local abans de publicar-la.
 
 ## Estat verificat — 2026-10-18
 

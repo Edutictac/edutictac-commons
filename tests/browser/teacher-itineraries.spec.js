@@ -84,6 +84,8 @@ test('selecció i retirada del recorregut actiu del grup', async ({ page }) => {
   const output = page.locator('#itinerariesOutput');
   const science = output.locator('article').filter({ has: page.getByText('Science', { exact: true }) });
   const reading = output.locator('article').filter({ has: page.getByText('Reading', { exact: true }) });
+  // Full itinerary cards must not inherit the narrow credential/PIN columns.
+  await expect.poll(async () => (await science.boundingBox())?.width || 0).toBeGreaterThan(200);
   await expect(science.getByRole('status')).toHaveText('Actiu per a l’alumnat');
   await output.getByRole('button', { name: 'Usar amb l’alumnat: Reading', exact: true }).click();
   await expect(reading.getByRole('status')).toHaveText('Actiu per a l’alumnat');
@@ -187,3 +189,90 @@ test(`una resposta tardana ${status} no substituïx els itineraris del grup nou`
   await expect(page.getByText('Old group response', { exact: true })).toHaveCount(0);
 });
 }
+
+test('crear amb Enter conserva el títol com a text i canviar idioma conserva l’esborrany', async ({page}) => {
+  await editor(page);
+  const title = '<img src=x onerror=alert(1)> Un camí';
+  let body;
+  await page.route('**/api/teacher/itineraries', async route => {
+    if (route.request().method() !== 'POST') return route.fallback();
+    body = route.request().postDataJSON();
+    return route.fulfill({json: {itinerary: {id: 'created'}}});
+  });
+  await page.route('**/api/teacher/itineraries?group_id=group', route => route.fulfill({json: {itineraries: [{id: 'created', title, group_id: 'group', items: []}]}}));
+  await page.locator('#itineraryTitle').fill(title);
+  await page.locator('#itineraryTitle').press('Enter');
+  await expect(page.locator('#itinerariesOutput strong')).toHaveText(title);
+  expect(body).toEqual({title, group_id: 'group'});
+  await expect(page.locator('#itineraryTitle')).toHaveValue('');
+  expect(await page.locator('#itinerariesOutput img').count()).toBe(0);
+  await page.locator('#itineraryTitle').fill('Següent recorregut');
+  await page.locator('[data-lang=en]').click();
+  await expect(page.locator('#createItinerary')).toHaveText('Create itinerary');
+  await expect(page.locator('#itineraryTitle')).toHaveValue('Següent recorregut');
+});
+
+test('perdre sessió lleva els itineraris i desactiva l’edició', async ({page}) => {
+  await editor(page);
+  await page.route('**/api/teacher/itineraries?group_id=group', route => route.fulfill({status: 401, json: {detail: 'session_required'}}));
+  await page.locator('#loadItineraries').click();
+  await expect(page.locator('#itinerariesOutput article')).toHaveCount(0);
+  await expect(page.locator('#itinerariesOutput [role=alert]')).toBeVisible();
+  await expect(page.locator('#createItinerary')).toBeDisabled();
+  await expect(page.locator('#loadItineraries')).toBeDisabled();
+  await expect(page.locator('#teacherOidcLogin')).toBeVisible();
+});
+
+for (const status of [200, 409, 401]) {
+  test(`un guardat antic ${status} no desbloqueja ni altera el guardat del grup nou`, async ({page}) => {
+    await editor(page, {twoGroups: true});
+    let oldStarted, releaseOld, newStarted, releaseNew;
+    const oldRequest = new Promise(resolve => {oldStarted = resolve;});
+    const heldOld = new Promise(resolve => {releaseOld = resolve;});
+    const newRequest = new Promise(resolve => {newStarted = resolve;});
+    const heldNew = new Promise(resolve => {releaseNew = resolve;});
+    await page.route('**/api/teacher/itineraries/journey/items', async route => {
+      oldStarted(); await heldOld;
+      return route.fulfill({status, json: status === 200 ? {itinerary: {id: 'journey'}} : {detail: 'old write rejected'}});
+    });
+    await page.route('**/api/teacher/groups/other/itinerary', async route => {
+      newStarted(); await heldNew;
+      return route.fulfill({json: {selected_itinerary_id: 'other-journey'}});
+    });
+    await page.getByRole('button', {name: 'Pujar: Activity b', exact: true}).click();
+    await oldRequest;
+    await page.locator('[data-select-group=other]').click();
+    const select = page.getByRole('button', {name: 'Usar amb l’alumnat: Other science', exact: true});
+    await select.click();
+    await newRequest;
+    const response = page.waitForResponse(value => value.url().endsWith('/itineraries/journey/items'));
+    releaseOld(); await response;
+    await expect(select).toBeDisabled();
+    await expect(page.locator('#itinerariesOutput [role=alert]')).toHaveCount(0);
+    await expect(page.locator('#teacherOidcLogin')).not.toBeVisible();
+    releaseNew();
+    await expect(select).toBeEnabled();
+    await expect(page.locator('#itinerariesOutput')).toContainText('Other science');
+    await expect(page.locator('#itinerariesOutput')).not.toContainText('Science');
+  });
+}
+
+test('si no arriba el mòdul d’itineraris, la resta del tauler continua disponible', async ({page}) => {
+  await page.route('**/assets/teacher-itineraries.js', route => route.fulfill({status: 503, body: ''}));
+  await page.route('**/api/**', route => {
+    const path = new URL(route.request().url()).pathname;
+    if (path === '/api/teacher/summary') return route.fulfill({json: {groups: [], active: 0, total: 0}});
+    if (path === '/api/teacher/activity-assignments') return route.fulfill({json: {assignments: []}});
+    if (path === '/api/teacher/identities') return route.fulfill({json: {identities: []}});
+    if (path === '/api/setup/status') return route.fulfill({json: {pending: false}});
+    return route.fulfill({status: 401, json: {detail: 'test unauthenticated'}});
+  });
+  await page.goto('/teacher.html');
+  await page.locator('summary').filter({has: page.locator('[data-i18n="teacher.itineraries"]')}).click();
+  await page.locator('[data-lang=es]').click();
+  await expect(page.locator('#itinerariesPanel')).toContainText('Recarga la página');
+  await expect(page.locator('#refreshDashboard')).toBeEnabled();
+  await expect(page.locator('#teacherOidcLogin')).not.toBeVisible();
+  await page.locator('#refreshDashboard').click();
+  await expect(page.locator('#teacherOutput')).toBeVisible();
+});
