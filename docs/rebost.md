@@ -295,3 +295,7 @@ en originales, copias privadas y proyectos `.sb3`. [Procedencia, alcance y gener
 Ampliació del 21-10-2026: el Catàleg Scratch passa de 31 a **61 imatges** amb un lot
 de 30 disfresses de famílies ja revisades. Els 31 recursos inicials es mantenen
 intactes; [evidències i proves](rebost-scratch.md).
+
+## Interfície compartida
+
+La interfície central usa Vue i continua servint el selector de Blocs i Llibres. Consulta [components, compilació i contractes](rebost-vue.md).

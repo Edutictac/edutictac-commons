@@ -11,50 +11,6 @@
   <script type="module" src="/assets/library.js"></script>
 </head>
 <body>
-  <header>
-    <a href="/">← Commons</a>
-    <nav class="lang-switcher" aria-label="Idioma">
-      <button type="button" data-lang="va">Valencià</button>
-      <button type="button" data-lang="es">Castellano</button>
-    </nav>
-  </header>
-  <main>
-    <h1>EduTicTac Rebost</h1>
-    <p id="intro"></p>
-    <p id="status" role="status" aria-live="polite"></p>
-    <section id="access" hidden>
-      <p id="accessHint"></p>
-      <a id="studentLogin" href="/student.html?next=%2Fassets%2F"></a>
-      <a id="oidcLogin" href="/api/auth/oidc/login?next=%2Fassets%2F"></a>
-    </section>
-    <fieldset id="controls" disabled hidden>
-      <legend id="mine"></legend>
-      <div class="collections" role="group" id="collections">
-        <button id="mineTab" type="button" aria-pressed="true"></button>
-        <button id="catalogTab" type="button" aria-pressed="false"></button>
-        <button id="scratchTab" type="button" aria-pressed="false"></button>
-      </div>
-      <p id="collectionHint"></p>
-      <div id="uploadArea">
-      <section id="drop" tabindex="0" role="button">
-        <strong id="uploadText"></strong>
-        <p id="formats"></p>
-        <input id="files" type="file" accept="image/png,image/jpeg,image/webp" multiple hidden>
-      </section>
-      <label><span id="uploadTypeLabel"></span><select id="uploadType"></select></label>
-      </div>
-      <div class="filters">
-        <label><span id="searchLabel"></span><input id="search" type="search" maxlength="200"></label>
-        <label><span id="filterLabel"></span><select id="filter"></select></label>
-      </div>
-      <p id="empty" hidden></p>
-      <section id="grid" aria-label="Imatges"></section>
-      <button id="more" type="button" hidden></button>
-    </fieldset>
-    <dialog id="preview">
-      <button id="closePreview" type="button"></button>
-      <img id="previewImage" alt="">
-    </dialog>
-  </main>
+  <div id="rebost"></div>
 </body>
 </html>
