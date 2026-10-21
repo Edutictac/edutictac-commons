@@ -29,3 +29,15 @@ El wrapper local usa `EDUTICTAC_ID_OIDC_ROLE_CLAIM=groups` por defecto, igual qu
 blueprint y `.env.example`, conservando una claim explícita distinta cuando se
 configure. Una sesión anterior con rol incorrecto requiere volver a entrar; no
 se alteran cuentas, contraseñas ni grupos para corregir la configuración.
+
+## Revisión de libros del alumnado
+
+El alumnado de código/PIN puede enviar copias privadas. Solo los responsables de
+su aula (`created_by_teacher_id` o `group_memberships`) pueden consultar y decidir
+las solicitudes; se reutiliza `require_group_access`. Administradores pueden
+gestionar también solicitudes huérfanas. Aprobar comprueba que la identidad y su
+vínculo con el aula sigan activos. Se aplican origen e `If-Match` a las decisiones.
+Las cuentas OIDC de alumno aún no tienen aula enlazada: deben usar código/PIN.
+El banco guarda y valida las revisiones en su misma SQLite; la copia se hace
+pública únicamente con aprobación. El proxy no admite datos de identidad o aula
+proporcionados por el cliente.

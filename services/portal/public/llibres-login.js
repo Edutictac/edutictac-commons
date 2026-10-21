@@ -30,8 +30,16 @@ retry.href = "/api/auth/oidc/login?next=" + encodeURIComponent("/llibres-login.h
     const response = await fetch("/api/llibres/me", {credentials: "same-origin", cache: "no-store"});
     if (!response.ok) throw new Error("unavailable");
     const result = await response.json();
-    if (result.can_publish) {
+    if (result.can_submit) {
+      title.textContent = lang === "va" ? "Ja pots enviar el llibre al teu docent" : "Ya puedes enviar el libro a tu docente";
+      message.textContent = text.done;
+    } else if (result.can_publish) {
       title.textContent = text.ready; message.textContent = text.done;
+    } else if (result.reason === "review_class_required") {
+      title.textContent = lang === "va" ? "Entra amb el codi i PIN de l’aula" : "Entra con el código y PIN del aula";
+      message.textContent = lang === "va" ? "El codi de Commons vincula l’enviament amb el teu docent." : "El código de Commons vincula el envío con tu docente.";
+      retry.href = "/student.html?next=" + encodeURIComponent("/llibres-login.html?lang=" + lang);
+      retry.textContent = title.textContent; retry.hidden = false;
     } else {
       const teacher = result.reason === "publication_teacher_required";
       title.textContent = teacher ? text.teacher : text.missing;

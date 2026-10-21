@@ -65,3 +65,65 @@ def test_revoked_teacher_cannot_publish_and_public_reads_forward_no_identity(ups
     assert calls[-1][2]['headers']=={}
     assert client.get('/api/llibres/source.zip').status_code==200
     assert calls[-1][2]['headers']=={}
+
+
+def test_pupil_can_only_submit_to_own_class_and_cannot_approve(upstream):
+    module,calls=upstream
+    # Reuse a real signed, revocable pupil session from the existing fixture.
+    pupil=TestClient(module.app)
+    module.set_student_session(response:=Response(),'a')
+    pupil.headers['Cookie']=response.headers['set-cookie'].split(';')[0]
+    pupil.headers['Origin']='http://testserver'
+    assert pupil.get('/api/llibres/me').json()['can_submit'] is True
+    assert pupil.post('/api/llibres/submissions/'+'a'*32,content=b'zip',headers={'X-Llibres-Group':'spoofed'}).status_code==200
+    assert calls[-1][2]['headers']['X-Llibres-Group']=='group'
+    assert pupil.post('/api/llibres/mine/'+'a'*32,content=b'zip').status_code==401
+    assert pupil.get('/api/llibres/reviews').status_code==401
+    assert pupil.post('/api/llibres/reviews/'+'a'*32,json={'decision':'approve'}).status_code==401
+    assert pupil.post('/api/llibres/submissions/'+'a'*32,content=b'zip',headers={'Origin':'https://evil.invalid'}).status_code==403
+    with module.get_conn() as db:db.execute("UPDATE student_identities SET active=0 WHERE id='a'")
+    assert pupil.get('/api/llibres/me').json()['can_submit'] is False
+    assert pupil.post('/api/llibres/submissions/'+'a'*32,content=b'zip').status_code==401
+
+
+def test_teacher_review_is_limited_to_current_class_membership(upstream,monkeypatch):
+    module,calls=upstream
+    client=teacher(module)
+    teacher_id=client.get('/api/auth/me').json()['identity']['id']
+    # An old compatibility cookie must not replace the individual reviewer.
+    client.headers['Cookie'] += '; '+module.TEACHER_COOKIE+'='+module.make_cookie({'teacher':True,'teacher_id':'legacy-other'})
+    with module.get_conn() as db:db.execute("UPDATE groups SET created_by_teacher_id=? WHERE id='group'",(teacher_id,))
+    with module.get_conn() as db:
+        pupil_owner=module.rebost.bind(db,'student','commons','a')
+    import books
+    class ReviewClient:
+        def __init__(self,**kwargs):pass
+        async def __aenter__(self):return self
+        async def __aexit__(self,*args):pass
+        async def request(self,method,url,**kwargs):
+            calls.append((method,url,kwargs))
+            data={'group_id':'group','owner':pupil_owner} if '/review-scope/' in url else ({'items':[],'more':False} if url.endswith('/reviews') else {})
+            return SimpleNamespace(status_code=200,headers={'content-type':'application/json'},content=json.dumps(data).encode())
+    monkeypatch.setattr(books.httpx,'AsyncClient',ReviewClient)
+    assert client.get('/api/llibres/reviews').status_code==200
+    assert json.loads(calls[-1][2]['content'])['groups']==['group']
+    assert client.get('/api/llibres/reviews?all_classes=1').status_code==200
+    assert json.loads(calls[-1][2]['content'])['all_classes'] is False
+    admin=teacher(module,'administrador',subject='synthetic-admin')
+    assert admin.get('/api/llibres/reviews').status_code==200
+    assert json.loads(calls[-1][2]['content'])['all_classes'] is True
+    key='b'*32
+    assert client.post('/api/llibres/reviews/'+key,json={'decision':'approve'},headers={'X-Llibres-Group':'spoof'}).status_code==200
+    assert calls[-1][2]['headers']['X-Llibres-Group']=='group'
+    assert client.get('/api/llibres/reviews/'+key+'/files/cover.png').status_code==200
+    outsider=teacher(module,subject='other-teacher')
+    assert outsider.post('/api/llibres/reviews/'+key,json={'decision':'approve'}).status_code==404
+    assert outsider.get('/api/llibres/reviews/'+key+'/files/index.html').status_code==404
+    with module.get_conn() as db:
+        db.execute("UPDATE groups SET created_by_teacher_id='elsewhere' WHERE id='group'")
+        db.execute("INSERT INTO group_memberships VALUES ('group',?,'teacher','2026')",(teacher_id,))
+    assert client.get('/api/llibres/reviews/'+key+'/files/index.html').status_code==200
+    with module.get_conn() as db:db.execute("UPDATE student_identities SET active=0 WHERE id='a'")
+    assert client.post('/api/llibres/reviews/'+key,json={'decision':'approve'}).status_code==409
+    with module.get_conn() as db:db.execute('DELETE FROM group_memberships')
+    assert client.get('/api/llibres/reviews/'+key+'/files/index.html').status_code==404

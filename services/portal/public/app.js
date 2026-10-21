@@ -207,7 +207,7 @@ async function loadBlocsLink() {
 // Only these Commons pages may request a return after code/PIN access.
 function returnAfterStudentLogin() {
   const next = new URLSearchParams(window.location.search).get("next");
-  if (!["/assets/", "/blocs-access.html"].includes(next)) return false;
+  if (!["/assets/", "/blocs-access.html", "/llibres-login.html?lang=es", "/llibres-login.html?lang=va"].includes(next)) return false;
   window.location.replace(next);
   return true;
 }

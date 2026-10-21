@@ -567,8 +567,14 @@ def require_group_owner(request: Request, group_id: str) -> str:
     return teacher_id
 
 
-def require_group_access(request: Request, group_id: str) -> str:
-    teacher_id = require_teacher(request)
+def require_group_access(request: Request, group_id: str, *, individual: bool = False) -> str:
+    if individual:
+        identity = oidc_cookie(request)
+        if not identity or identity.get("role") not in {"profesor", "administrador"}:
+            raise HTTPException(status_code=401, detail="individual teacher authentication required")
+        teacher_id = str(identity["id"])
+    else:
+        teacher_id = require_teacher(request)
     with get_conn() as conn:
         row = conn.execute(
             """
@@ -2347,7 +2353,7 @@ install_quiosc(app, require_quiosc_teacher, require_quiosc_group_access,
 rebost = RebostLibrary(get_conn, DB_PATH, oidc_cookie, current_identity)
 app.include_router(rebost.router())
 from books import install_books
-install_books(app, rebost, oidc_cookie, RESOURCES_API_URL, APP_TOKEN)
+install_books(app, rebost, oidc_cookie, RESOURCES_API_URL, APP_TOKEN, require_group_access)
 
 
 @app.middleware("http")
