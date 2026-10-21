@@ -1,0 +1,340 @@
+{
+  "format": "rebost-scratch-costume-review",
+  "version": 1,
+  "review_date": "2026-10-21",
+  "historical_revision": "fa7ed724dd3070486ccf12424bd633f95572bdfd",
+  "decision": "approved_for_catalogue",
+  "review": "Historical family/costume/MD5 match, SHA-256 recorded, safe SVG and visible offline rendering verified. Contact sheet visually reviewed: generic unbranded poses/colour variants. Historical CC BY-SA 2.0 evidence retained.",
+  "items": [
+    {
+      "family": "Ball",
+      "costume": "ball-b",
+      "md5ext": "ad7dc51cafd73e8279073e33b0eab335.svg",
+      "sha256": "d8cf55afbdafd49de152656527c4f0e224bd7e14df2a0b34605656ed0e8c2fb8",
+      "type": "object",
+      "names": {
+        "ca": "Pilota (2)",
+        "es": "Pelota (2)"
+      }
+    },
+    {
+      "family": "Ball",
+      "costume": "ball-c",
+      "md5ext": "f221a2edf87aff3615c0c003e616b31b.svg",
+      "sha256": "994c9e13c48d85413a2b8cc44294f5ab74952f9581a6c41a3ac6cca0618041c7",
+      "type": "object",
+      "names": {
+        "ca": "Pilota (3)",
+        "es": "Pelota (3)"
+      }
+    },
+    {
+      "family": "Ball",
+      "costume": "ball-d",
+      "md5ext": "db144b2a19f4f1ab31e30d58f00447dc.svg",
+      "sha256": "7faf84a4c43afd7d423c0a23ce90033e5915bb37b0cf8338cf0b3174f23b30a2",
+      "type": "object",
+      "names": {
+        "ca": "Pilota (4)",
+        "es": "Pelota (4)"
+      }
+    },
+    {
+      "family": "Ball",
+      "costume": "ball-e",
+      "md5ext": "1c44b7494dec047371f74c705f1d99fc.svg",
+      "sha256": "27c48143e86aae78c48439517c91ad117331f81b735b85e33e8b9000bfea11e1",
+      "type": "object",
+      "names": {
+        "ca": "Pilota (5)",
+        "es": "Pelota (5)"
+      }
+    },
+    {
+      "family": "Bat",
+      "costume": "bat-b",
+      "md5ext": "bc6dd12fc9e407c7774959cdf427f8b5.svg",
+      "sha256": "68339a0be6e1df986599bc7aa63c699fde7976ef72339e66e9a3d05c5ed0024a",
+      "type": "sprite",
+      "names": {
+        "ca": "Ratpenat (2)",
+        "es": "Murciélago (2)"
+      }
+    },
+    {
+      "family": "Bat",
+      "costume": "bat-c",
+      "md5ext": "60f5bfce5d9b11bfcd199a6aa5454b3f.svg",
+      "sha256": "58d96e991b9aab0131b3f7148b939742502d1e651566d7b2294678cd6a1d3428",
+      "type": "sprite",
+      "names": {
+        "ca": "Ratpenat (3)",
+        "es": "Murciélago (3)"
+      }
+    },
+    {
+      "family": "Bat",
+      "costume": "bat-d",
+      "md5ext": "698c2a48e774f9959d57c9618b156c20.svg",
+      "sha256": "2ec9e1703481d0b9a3a2936dda616e6a9ed80a28962731d2e6e8c4d7cb2df3ec",
+      "type": "sprite",
+      "names": {
+        "ca": "Ratpenat (4)",
+        "es": "Murciélago (4)"
+      }
+    },
+    {
+      "family": "Bear",
+      "costume": "bear-b",
+      "md5ext": "6f303e972f33fcb7ef36d0d8012d0975.svg",
+      "sha256": "ccf1e60d5633b12a9b5f0f615102b3d8062c957076076c5d7a9d143351c2281f",
+      "type": "sprite",
+      "names": {
+        "ca": "Os (2)",
+        "es": "Oso (2)"
+      }
+    },
+    {
+      "family": "Butterfly 1",
+      "costume": "butterfly1-b",
+      "md5ext": "49c9f952007d870a046cff93b6e5e098.svg",
+      "sha256": "f871a88e42beafed1176e0d92a9bb6fee7f0d558bf938bd4ed4381d9b8c39cde",
+      "type": "sprite",
+      "names": {
+        "ca": "Papallona 1 (2)",
+        "es": "Mariposa 1 (2)"
+      }
+    },
+    {
+      "family": "Butterfly 1",
+      "costume": "butterfly1-c",
+      "md5ext": "34b76c1835c6a7fc2c47956e49bb0f52.svg",
+      "sha256": "224875c39e2bc1f5c98b02531b335ab2f991a7cdd7ebf33a93caf3f6d3fa4932",
+      "type": "sprite",
+      "names": {
+        "ca": "Papallona 1 (3)",
+        "es": "Mariposa 1 (3)"
+      }
+    },
+    {
+      "family": "Butterfly 2",
+      "costume": "butterfly2-b",
+      "md5ext": "e96f4c6913107c9b790d37bb65507c14.svg",
+      "sha256": "66fbea6a11850ef70633d38861ed313442ca1a39efbf8baa63cadb361e772873",
+      "type": "sprite",
+      "names": {
+        "ca": "Papallona 2 (2)",
+        "es": "Mariposa 2 (2)"
+      }
+    },
+    {
+      "family": "Crab",
+      "costume": "crab-b",
+      "md5ext": "49839aa1b0feed02a3c759db5f8dee71.svg",
+      "sha256": "c3635eaa1a94de70f8d411676128eeb504da3c9aa5a07b4261588dac7f571ad9",
+      "type": "sprite",
+      "names": {
+        "ca": "Cranc (2)",
+        "es": "Cangrejo (2)"
+      }
+    },
+    {
+      "family": "Dinosaur1",
+      "costume": "dinosaur1-b",
+      "md5ext": "7f89417968116ada83d4ddaad22403b3.svg",
+      "sha256": "243925bc6bc13875d7b5a36af0e0bf2ecf2db41a66455784699ff0d4b2598f06",
+      "type": "sprite",
+      "names": {
+        "ca": "Dinosaure (2)",
+        "es": "Dinosaurio (2)"
+      }
+    },
+    {
+      "family": "Dinosaur1",
+      "costume": "dinosaur1-c",
+      "md5ext": "22d94ee5daf557284465425a61186234.svg",
+      "sha256": "d97eeb353c7a7869e5fc57418dba541a36b337e53c584faa54512bc5d676703c",
+      "type": "sprite",
+      "names": {
+        "ca": "Dinosaure (3)",
+        "es": "Dinosaurio (3)"
+      }
+    },
+    {
+      "family": "Dinosaur1",
+      "costume": "dinosaur1-d",
+      "md5ext": "af158d368bf3da576369be1130e18acd.svg",
+      "sha256": "0da7272d46c748cf66dc4bcba983437be80f404b34dc3dc5b7f6f296bd68cdf6",
+      "type": "sprite",
+      "names": {
+        "ca": "Dinosaure (4)",
+        "es": "Dinosaurio (4)"
+      }
+    },
+    {
+      "family": "Dog1",
+      "costume": "dog1-b",
+      "md5ext": "d5a72e1eb23a91df4b53c0b16493d1e6.svg",
+      "sha256": "2f97e96750c12f86c86dd8dc6b24e93df3b537bfe19552b75c34958339ce8076",
+      "type": "sprite",
+      "names": {
+        "ca": "Gos (2)",
+        "es": "Perro (2)"
+      }
+    },
+    {
+      "family": "Fish",
+      "costume": "fish-b",
+      "md5ext": "7a0c31c0087f342867d4754f8dc57541.svg",
+      "sha256": "f0b10a445201d21f04b9a189f24de25fff3412a33e665ecde64a20570cbad361",
+      "type": "sprite",
+      "names": {
+        "ca": "Peix (2)",
+        "es": "Pez (2)"
+      }
+    },
+    {
+      "family": "Fish",
+      "costume": "fish-c",
+      "md5ext": "4a3478b3cdc3e8688a671be88c2775fd.svg",
+      "sha256": "7629c9b00317541572b26003042a35dec7ffa11a4a94e595f8c46df0c1ca8ca6",
+      "type": "sprite",
+      "names": {
+        "ca": "Peix (3)",
+        "es": "Pez (3)"
+      }
+    },
+    {
+      "family": "Fish",
+      "costume": "fish-d",
+      "md5ext": "886e0bb732453eb8d3a849b4eab54943.svg",
+      "sha256": "a1c615ebed667d5d8d760eb33a228a12317527521d2605f2b4e3063ea8eeb3fe",
+      "type": "sprite",
+      "names": {
+        "ca": "Peix (4)",
+        "es": "Pez (4)"
+      }
+    },
+    {
+      "family": "Ladybug2",
+      "costume": "ladybug2-b",
+      "md5ext": "3f48228829b77fc47d6d89b5729b2957.svg",
+      "sha256": "8b63c65f2d5cad4e3449aa6b35ea06aeb58034e5d8e83564b4e99524486d2590",
+      "type": "sprite",
+      "names": {
+        "ca": "Marieta 2 (2)",
+        "es": "Mariquita 2 (2)"
+      }
+    },
+    {
+      "family": "Octopus",
+      "costume": "octopus-b",
+      "md5ext": "9b5a2cd287229bf36ffcc176ed72cc0c.svg",
+      "sha256": "3bd0451c20fb21a8439787f76bf165f95bda3237b0ca2551c1bd017c56605106",
+      "type": "sprite",
+      "names": {
+        "ca": "Polp (2)",
+        "es": "Pulpo (2)"
+      }
+    },
+    {
+      "family": "Octopus",
+      "costume": "octopus-c",
+      "md5ext": "7d33a531087188b29deae879f23f76bc.svg",
+      "sha256": "364a93550dcaa91cc9b892f645ac96bb5aceee2f9bf98cf9c072b095a6ba14ee",
+      "type": "sprite",
+      "names": {
+        "ca": "Polp (3)",
+        "es": "Pulpo (3)"
+      }
+    },
+    {
+      "family": "Octopus",
+      "costume": "octopus-d",
+      "md5ext": "f582f162c4438d82c9e2a0a87a3e02ce.svg",
+      "sha256": "993fd756a2ead3d7a7c078564f87ecb237c1ff71dec7fed5527df69a8a7a9f38",
+      "type": "sprite",
+      "names": {
+        "ca": "Polp (4)",
+        "es": "Pulpo (4)"
+      }
+    },
+    {
+      "family": "Octopus",
+      "costume": "octopus-e",
+      "md5ext": "5d6e17d6260134d0402ba487a419d7c3.svg",
+      "sha256": "20414cad288d98f7ebdc8ba64969b4bb8327c0a335c3de7f29e6d2b3f57f9dc4",
+      "type": "sprite",
+      "names": {
+        "ca": "Polp (5)",
+        "es": "Pulpo (5)"
+      }
+    },
+    {
+      "family": "Parrot",
+      "costume": "parrot-b",
+      "md5ext": "036fad20b674197358f8c0b2dc64e17e.svg",
+      "sha256": "7d0840882528e432c3bf1102600aa624d837a032c39c8368ed517d9a31f59aff",
+      "type": "sprite",
+      "names": {
+        "ca": "Lloro (2)",
+        "es": "Loro (2)"
+      }
+    },
+    {
+      "family": "Pencil",
+      "costume": "pencil-b",
+      "md5ext": "f017876452a24d118fc0b1753caefad9.svg",
+      "sha256": "0a8504d29abac610b5acce175dc0605c368142a6de6c8efb66349f62f62f4f2a",
+      "type": "object",
+      "names": {
+        "ca": "Llapis (2)",
+        "es": "Lápiz (2)"
+      }
+    },
+    {
+      "family": "Rabbit",
+      "costume": "rabbit-b",
+      "md5ext": "1ca3f829a2c9f7fa4d1df295fe5f787c.svg",
+      "sha256": "fbfb09c264e2c09ed2d43b0f14ad9db4f990ed05c62bbee82ae42921f895d6c7",
+      "type": "sprite",
+      "names": {
+        "ca": "Conill (2)",
+        "es": "Conejo (2)"
+      }
+    },
+    {
+      "family": "Rabbit",
+      "costume": "rabbit-c",
+      "md5ext": "49169d752f20d27fb71022b16044d759.svg",
+      "sha256": "2c4d7ef35da2894a1539fdcfd65a2bae5ed9eb8d454c2c54588a48daa4807805",
+      "type": "sprite",
+      "names": {
+        "ca": "Conill (3)",
+        "es": "Conejo (3)"
+      }
+    },
+    {
+      "family": "Rabbit",
+      "costume": "rabbit-d",
+      "md5ext": "90677c6f16380ef077d6115f6a6371ff.svg",
+      "sha256": "7562fb467277052c43bb637a12ac44cc4b2dc37b9234d91667e23d0e451cc56a",
+      "type": "sprite",
+      "names": {
+        "ca": "Conill (4)",
+        "es": "Conejo (4)"
+      }
+    },
+    {
+      "family": "Rabbit",
+      "costume": "rabbit-e",
+      "md5ext": "137976ec71439e2f986caeaa70e4c932.svg",
+      "sha256": "657bbebad9ed852ef98330f28cfad640a265e581b7a69503051dfbc65cce1ff3",
+      "type": "sprite",
+      "names": {
+        "ca": "Conill (5)",
+        "es": "Conejo (5)"
+      }
+    }
+  ]
+}

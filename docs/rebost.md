@@ -290,3 +290,8 @@ La guía de ejecución está en Blocs `docs/rebost-bindings.md`. Todo continúa 
 Colección separada `collection=scratch`, con 31 imágenes históricas revisadas bajo CC BY-SA 2.0.
 Visible en el gestor y en el selector compartido de Blocs; conserva fuentes, atribución y licencia
 en originales, copias privadas y proyectos `.sb3`. [Procedencia, alcance y generación](rebost-scratch.md).
+
+
+Ampliació del 21-10-2026: el Catàleg Scratch passa de 31 a **61 imatges** amb un lot
+de 30 disfresses de famílies ja revisades. Els 31 recursos inicials es mantenen
+intactes; [evidències i proves](rebost-scratch.md).

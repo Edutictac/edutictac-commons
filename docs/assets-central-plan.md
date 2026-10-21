@@ -419,3 +419,8 @@ Una primera selecció històrica de 31 imatges de Scratch s'incorpora com a
 Conserva CC BY-SA 2.0, font SVG i atribució en còpies i derivats, sense alterar
 les 51 imatges pròpies ni les seues ID. [Revisió i abast](rebost-scratch.md).
 La resta de la biblioteca externa, sons i disfresses addicionals continuen pendents.
+
+
+Ampliació del 21-10-2026: el Catàleg Scratch passa de 31 a **61 imatges** amb un lot
+de 30 disfresses de famílies ja revisades. Els 31 recursos inicials es mantenen
+intactes; [evidències i proves](rebost-scratch.md).

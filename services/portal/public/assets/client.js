@@ -16,13 +16,14 @@ export class RebostClient {
     return response;
   }
   async me() { return (await this.request('/me')).json(); }
-  async list({q = '', type = '', cursor = '', collection = 'mine'} = {}) {
-    return (await this.request('/items?' + new URLSearchParams({q, type, cursor, collection}))).json();
+  async list({q = '', type = '', cursor = '', collection = 'mine', grouped = false} = {}) {
+    return (await this.request('/items?' + new URLSearchParams({q, type, cursor, collection, ...(grouped ? {grouped: 'true'} : {})}))).json();
   }
   itemPath(id) {
     if (!/^img-[a-f0-9]{64}$/.test(id)) throw new Error('invalid_id');
     return '/items/' + id;
   }
+  async family(id) { return (await this.request(this.itemPath(id) + '/family')).json(); }
   async read(id, thumbnail = false) {
     return (await this.request(this.itemPath(id) + (thumbnail ? '/thumbnail' : '/content'))).blob();
   }

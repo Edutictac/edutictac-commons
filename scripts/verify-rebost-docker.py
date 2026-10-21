@@ -40,7 +40,14 @@ base='http://127.0.0.1:8005/api/assets/v1'
 catalog=json.load(urllib.request.urlopen(urllib.request.Request(base+'/items?collection=catalog&limit=80',headers=headers)))['items']
 assert len(catalog)==51
 scratch=json.load(urllib.request.urlopen(urllib.request.Request(base+'/items?collection=scratch&limit=80',headers=headers)))['items']
-assert len(scratch)==31
+assert len(scratch)==61
+groups=json.load(urllib.request.urlopen(urllib.request.Request(base+'/items?collection=scratch&grouped=true&limit=80',headers=headers)))['items']
+assert len(groups)==31
+bat=next(item for item in groups if 'scratch-bat' in item['aliases'])
+family=json.load(urllib.request.urlopen(urllib.request.Request(base+'/items/'+bat['id']+'/family',headers=headers)))
+assert family['count']==4 and family['items'][0]['id']==bat['id']
+assert all('rotation_center' in item for item in family['items'])
+family_signature=hashlib.sha256(json.dumps(family,sort_keys=True).encode()).hexdigest()
 scratch_original=next(item for item in scratch if 'scratch-apple' in item['aliases'])
 original=next(item for item in catalog if 'bloc' in item['aliases'])
 if not __import__('os').path.exists('/data/check.json'):
@@ -55,7 +62,7 @@ if not __import__('os').path.exists('/data/check.json'):
     request=urllib.request.Request(base+'/items/'+scratch_original['id']+'/copies',data=b'{}',method='POST',headers={**headers,'If-Match':'"'+str(scratch_original['revision'])+'"'})
     scratch_copy=json.load(urllib.request.urlopen(request))
     assert scratch_copy['provenance']['license']=='CC-BY-SA-2.0'
-    item={'id':item['id'],'copy_id':copied['id'],'catalog_id':original['id'],'scratch_id':scratch_copy['id']}
+    item={'id':item['id'],'copy_id':copied['id'],'catalog_id':original['id'],'scratch_id':scratch_copy['id'],'family_signature':family_signature}
     open('/data/check.json','w').write(json.dumps(item))
 else:
     item=json.load(open('/data/check.json'))
@@ -64,6 +71,7 @@ with urllib.request.urlopen(req) as result:
     assert result.status==200 and result.headers['Cache-Control']=='private, no-store'
     image=Image.open(io.BytesIO(result.read())); assert image.size==(960,360)
 assert item['catalog_id']==original['id']
+assert item['family_signature']==family_signature
 req=urllib.request.Request(base+'/items/'+item['copy_id']+'/source',headers=headers)
 with urllib.request.urlopen(req) as result:
     assert result.status==200 and result.headers['Content-Disposition'].startswith('attachment;')

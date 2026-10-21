@@ -24,16 +24,16 @@ def scratch(client, **filters):
 def test_scratch_is_distinct_readonly_bilingual_and_available_to_both_users(api):
     _, a, b, _ = api
     items = scratch(a)
-    assert len(items) == 31 and items == scratch(b)
+    assert len(items) == 61 and items == scratch(b)
     assert len(a.get('/api/assets/v1/items', params={'collection': 'catalog', 'limit': 80}).json()['items']) == 51
     assert a.get('/api/assets/v1/items').json()['items'] == []
     assert all(item['readonly'] and item['collection'] == 'scratch' and item['license'] == 'CC-BY-SA-2.0' for item in items)
-    for kind, count in [('sprite', 15), ('background', 10), ('object', 6)]:
+    for kind, count in [('sprite', 40), ('background', 10), ('object', 11)]:
         assert len(scratch(a, type=kind)) == count
     assert scratch(a, q='Murciélago') == scratch(a, q='Ratpenat')
     assert scratch(a, q='scratch-apple')[0]['names'] == {'es': 'Manzana', 'ca': 'Poma'}
     profile = a.get('/api/assets/v1/me').json()
-    assert profile['catalog_items'] == 51 and profile['scratch_items'] == 31
+    assert profile['catalog_items'] == 51 and profile['scratch_items'] == 61
     assert 'scratch_catalog' in profile['capabilities']
     assert not any(word in item['source_path'].lower() for item in items for word in ['gobo', 'pico', 'nano', 'giga', 'tera', 'scratch cat'])
 
@@ -118,3 +118,37 @@ def test_scratch_builder_rejects_active_svg_and_external_references():
             builder.reviewed_svg(('<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10">' + child + '</svg>').encode())
     with pytest.raises(ValueError):
         builder.reviewed_svg(b'<!DOCTYPE svg [<!ENTITY x "bad">]><svg/>')
+
+
+def test_additional_costumes_preserve_the_first_31_records():
+    manifest=json.loads((PACKAGE/'manifest.json').read_text())
+    current={item['id']:item for item in manifest['items']}
+    baseline=json.loads((ROOT/'tests/fixtures/scratch-first-selection.json').read_text())
+    assert len(baseline)==31
+    for expected in baseline:
+        item=current[expected['id']]
+        assert {key:item[key] for key in ['id','revision','name','aliases']}=={key:expected[key] for key in ['id','revision','name','aliases']}
+        for role in ['image','thumbnail','source']:
+            assert item[role]['sha256']==expected[role+'_sha256']
+
+
+def test_reviewed_batch_has_30_matching_historical_costumes_with_translated_names(api):
+    _,a,_,_=api
+    batch=json.loads((ROOT/'scripts/scratch-costume-batch.json').read_text())
+    assert batch['decision']=='approved_for_catalogue' and len(batch['items'])==30
+    items={item['source_id'].removeprefix('scratch:'):item for item in scratch(a)}
+    for costume in batch['items']:
+        item=items[costume['md5ext']]
+        assert item['names']==costume['names'] and item['type']==costume['type']
+        assert item['source_path'].endswith('#'+costume['family']+'/'+costume['costume'])
+        assert hashlib.sha256(a.get(path(item)+'/source').content).hexdigest()==costume['sha256']
+        assert item['license']=='CC-BY-SA-2.0'
+
+
+def test_extra_legacy_shapes_are_inert_and_editor_metadata_is_not_rendered():
+    spec=importlib.util.spec_from_file_location('scratch_builder',ROOT/'scripts/build-scratch-catalog.py')
+    builder=importlib.util.module_from_spec(spec);spec.loader.exec_module(builder)
+    raw=b'<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><g data-paper-data="{}"><polyline points="0,0 5,5" opacity="0.5" style="mix-blend-mode:normal"/></g></svg>'
+    root,w,h=builder.reviewed_svg(raw)
+    assert (w,h)==(10,10)
+    assert all('data-paper-data' not in node.attrib for node in root.iter())

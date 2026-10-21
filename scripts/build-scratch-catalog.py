@@ -59,17 +59,31 @@ SELECTION = [
     ('Winter', 'background', 'Hivern', 'Invierno'),
     ('Woods', 'background', 'Bosc', 'Bosque'),
 ]
+BATCH_PATH = ROOT / 'scripts/scratch-costume-batch.json'
+
+
+def costume_batch():
+    batch = json.loads(BATCH_PATH.read_text())
+    if batch.get('format') != 'rebost-scratch-costume-review' or batch.get('version') != 1 or batch.get('historical_revision') != GUI or batch.get('decision') != 'approved_for_catalogue':
+        raise ValueError('Costume batch is not reviewed')
+    ids = [row['md5ext'] for row in batch['items']]
+    if len(ids) != 30 or len(ids) != len(set(ids)):
+        raise ValueError('Unexpected costume batch')
+    return batch['items']
+
+
 TAGS = {'svg', 'circle', 'clipPath', 'defs', 'desc', 'ellipse', 'g', 'linearGradient',
-        'path', 'polygon', 'radialGradient', 'rect', 'stop', 'title', 'use'}
+        'path', 'polygon', 'polyline', 'radialGradient', 'rect', 'stop', 'title', 'use'}
 ATTRS = {'clip-path', 'clip-rule', 'cx', 'cy', 'd', 'enable-background', 'fill', 'fill-rule',
          'gradientUnits', 'height', 'id', 'offset', 'overflow', 'points', 'r', 'rx', 'ry',
          'stop-color', 'stop-opacity', 'stroke', 'stroke-linecap', 'stroke-linejoin',
-         'stroke-width', 'style', 'transform', 'version', 'viewBox', 'width',
+         'stroke-width', 'stroke-miterlimit', 'stroke-dasharray', 'stroke-dashoffset',
+         'font-size', 'font-weight', 'font-family', 'text-anchor', 'opacity', 'style', 'transform', 'version', 'viewBox', 'width',
          'x', 'x1', 'x2', 'y', 'y1', 'y2', '{http://www.w3.org/1999/xlink}href',
          '{http://www.w3.org/XML/1998/namespace}space'}
 STYLES = {'fill', 'fill-rule', 'clip-rule', 'stroke', 'stroke-width', 'stroke-linecap',
           'stroke-linejoin', 'stroke-miterlimit', 'opacity', 'fill-opacity',
-          'stroke-opacity', 'enable-background', 'overflow', 'stop-color', 'stop-opacity'}
+          'stroke-opacity', 'mix-blend-mode', 'enable-background', 'overflow', 'stop-color', 'stop-opacity'}
 
 
 def sha(data):
@@ -92,7 +106,12 @@ def reviewed_svg(raw):
     for node in root.iter():
         if node.tag not in {'{http://www.w3.org/2000/svg}' + tag for tag in TAGS}:
             raise ValueError('Unreviewed SVG element')
-        for key, value in node.attrib.items():
+        for key, value in list(node.attrib.items()):
+            if key == 'data-paper-data':
+                # Legacy editor metadata is not part of the drawing or renderer input.
+                json.loads(value)
+                del node.attrib[key]
+                continue
             if key not in ATTRS or re.search(r'(?i)https?:|data:|javascript:|@|expression|[\\\x00-\x08\x0b\x0c\x0e-\x1f]', value):
                 raise ValueError('Unreviewed SVG attribute')
             if key.endswith('}href') and (not value.startswith('#') or value[1:] not in ids):
@@ -149,8 +168,11 @@ def main():
     args = parser.parse_args()
     if args.check:
         manifest = json.loads((OUT / 'manifest.json').read_text())
-        if len(manifest['items']) != len(SELECTION) or manifest['source_revision'] != GUI:
+        if len(manifest['items']) != len(SELECTION) + len(costume_batch()) or manifest['source_revision'] != GUI:
             raise ValueError('Unreviewed selection/revision')
+        review=json.loads((OUT / manifest['review_file']['path']).read_text())
+        if review.get('costume_batch_sha256') != sha(BATCH_PATH.read_bytes()):
+            raise ValueError('Reviewed costume selection changed; rebuild required')
         for item in manifest['items']:
             for key in ('image', 'thumbnail', 'source'):
                 record = item[key]
@@ -192,7 +214,8 @@ def main():
     libraries = {}
     evidence = {'terms_url': TERMS_URL, 'terms_sha256': sha(terms),
                 'license_source_url': LICENSE_URL, 'license_source_sha256': sha(license_raw),
-                'scope': 'Explicit unbranded historical selection; first costume only. No general clearance of the Scratch library.',
+                'scope': 'Explicit unbranded historical selection and reviewed additional costumes. No general clearance of the Scratch library.',
+                'costume_batch_sha256': sha(BATCH_PATH.read_bytes()),
                 'items': []}
     for kind in ('sprites', 'backdrops'):
         url = f'https://raw.githubusercontent.com/scratchfoundation/scratch-gui/{GUI}/src/lib/libraries/{kind}.json'
@@ -210,22 +233,42 @@ def main():
         context = browser.new_context(java_script_enabled=False, device_scale_factor=1)
         context.route('**/*', lambda route: route.abort())
         page = context.new_page()
-        for name, kind, ca, es in SELECTION:
+        selection = [(name, kind, ca, es, None) for name, kind, ca, es in SELECTION]
+        selection += [(row['family'], row['type'], row['names']['ca'], row['names']['es'], row) for row in costume_batch()]
+        for name, kind, ca, es, variant in selection:
             library = 'backdrops' if kind == 'background' else 'sprites'
             original = libraries[library][name]
-            costume = original if kind == 'background' else original['costumes'][0]
+            if variant:
+                costume = next((entry for entry in original['costumes'] if entry['name'] == variant['costume'] and entry['md5ext'] == variant['md5ext']), None)
+                if costume is None:
+                    raise ValueError('Reviewed costume missing from historical family')
+            else:
+                costume = original if kind == 'background' else original['costumes'][0]
             md5ext = costume['md5ext']
             raw = cached(md5ext, 'https://assets.scratch.mit.edu/internalapi/asset/' + md5ext + '/get/')
             if hashlib.md5(raw).hexdigest() + '.svg' != md5ext:
                 raise ValueError('Downloaded asset does not match historical identity')
+            if variant and sha(raw) != variant['sha256']:
+                raise ValueError('Reviewed costume checksum changed')
             svg, width, height = reviewed_svg(raw)
-            alias = 'scratch-' + re.sub(r'[^a-z0-9]+', '-', name.lower()).strip('-')
+            box=[float(value) for value in svg.get('viewBox',f'0 0 {width} {height}').replace(',', ' ').split()]
+            if len(box)!=4 or not all(math.isfinite(value) for value in box) or box[2]<=0 or box[3]<=0:
+                raise ValueError('Invalid original viewBox')
+            # SVG defaults to xMidYMid meet: preserve aspect ratio and account for letterboxing.
+            factor=min(width/box[2],height/box[3])
+            pivot={'x':(costume['rotationCenterX']-box[0])*factor+(width-box[2]*factor)/2,
+                   'y':(costume['rotationCenterY']-box[1])*factor+(height-box[3]*factor)/2}
+            if not all(math.isfinite(value) and abs(value)<=8192 for value in pivot.values()):
+                raise ValueError('Invalid original rotation centre')
+            alias_name = variant['costume'] if variant else name
+            alias = 'scratch-' + re.sub(r'[^a-z0-9]+', '-', alias_name.lower()).strip('-')
+            source_fragment = name.strip() + ('/' + variant['costume'] if variant else '')
             item = {'id': 'img-' + sha(('scratch:' + md5ext).encode()),
                     'source_id': 'scratch:' + md5ext, 'aliases': [alias], 'name': ca,
                     'names': {'ca': ca, 'es': es}, 'type': kind, 'width': width, 'height': height,
                     'license': 'CC-BY-SA-2.0', 'attribution': ATTRIBUTION,
                     'source_revision': GUI, 'source_repository': 'https://github.com/scratchfoundation/scratch-gui',
-                    'source_path': f'src/lib/libraries/{library}.json#{name.strip()}',
+                    'source_path': f'src/lib/libraries/{library}.json#{source_fragment}',
                     'changes': 'PNG rasterization and thumbnail; original SVG provided unchanged.'}
             def render(w, h):
                 svg.set('viewBox', svg.get('viewBox', f'0 0 {width} {height}'))
@@ -248,7 +291,10 @@ def main():
                 item[role] = {'path': path, 'sha256': sha(data)}
             item['revision'] = int(sha(canonical(item))[:12], 16)
             items.append(item)
-            evidence['items'].append({'id': item['id'], 'original_name': name, 'md5ext': md5ext, 'sha256': sha(raw)})
+            reviewed = {'id': item['id'], 'original_name': name, 'md5ext': md5ext, 'sha256': sha(raw), 'rotation_center': pivot}
+            if variant:
+                reviewed.update({'costume': variant['costume'], 'review_batch': '2026-10-21-additional-costumes'})
+            evidence['items'].append(reviewed)
         browser.close()
     review = json.dumps(evidence, ensure_ascii=False, indent=2).encode() + b'\n'
     (OUT / 'reviews/review.json').write_bytes(review)

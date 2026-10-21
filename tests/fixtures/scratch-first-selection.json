@@ -1,0 +1,343 @@
+[
+  {
+    "id": "img-b6b9a959b5bc1da90b67a05b2a192520775abf435975f0e68c93a1675ef0a21e",
+    "revision": 42276302829671,
+    "name": "Poma",
+    "aliases": [
+      "scratch-apple"
+    ],
+    "image_sha256": "c8f87d01aac7004cc693ec59ad811a138966bec037c93dd5edb98a2c02aa8401",
+    "thumbnail_sha256": "e31baa25df015970ea6d85c38022a9666c450322b922298a2ab350ec6c3781ee",
+    "source_sha256": "76947a7ac0c7aa06fb0930e4f4da4830ee459a68d32c5a400ef5899174849d6f"
+  },
+  {
+    "id": "img-01cd2252e2ce2e574e77479c2f91ebd6096f7a9b4183f2828f70e3c67368fb0b",
+    "revision": 143000776897615,
+    "name": "Pilota",
+    "aliases": [
+      "scratch-ball"
+    ],
+    "image_sha256": "57e96032815d4c6f075de00f788c0cd93b64b85c17a80250107f5db745d62dab",
+    "thumbnail_sha256": "2003d5cfb9501b09d021a1d26b450b8f490cb5e0a2d29425d668f0becd78975e",
+    "source_sha256": "ef5efb1ce6eb56dd10a3a504b6533df7f1c81a510cf0e377c1afe1513e7e914f"
+  },
+  {
+    "id": "img-8ffe13937feb217eb2f8a6f0b67d2bd8886d1db20bbc26f4b1b66bfa1ebfb91f",
+    "revision": 111173161780912,
+    "name": "Plàtans",
+    "aliases": [
+      "scratch-bananas"
+    ],
+    "image_sha256": "051bfeef732bd4ca3220593cfde43d9f4d4a338213289647f8e1df7d6d4ec511",
+    "thumbnail_sha256": "5194eddd8a725a536d389728b51aef780a79c5be88ee73b4bca9787dbca48260",
+    "source_sha256": "9c6646f667e3c530cd98ca17264874739c2f5b776fa598f2c195e62fbe550f2e"
+  },
+  {
+    "id": "img-1d7ade5373e1ceeb542cc43c2318b4befe59809bc7ba709997a0f30bcddbd621",
+    "revision": 25101645001352,
+    "name": "Ratpenat",
+    "aliases": [
+      "scratch-bat"
+    ],
+    "image_sha256": "59e0ff1ea2f8920bffa75c398055d34e27d22a6554655e18a815b2cdee7657c4",
+    "thumbnail_sha256": "4033c18726fcc493add64973c2352df7acbdb6923ce887b55ea4351b85efc2ad",
+    "source_sha256": "1fe3153f8eb81ff696c912591796b85f03faa6d64f6d230ebe30cf4c12692804"
+  },
+  {
+    "id": "img-00c18e9a1a4194ce39cf90efa412baa9d23136051bf46298d496e2b7791594d9",
+    "revision": 205377587385338,
+    "name": "Os",
+    "aliases": [
+      "scratch-bear"
+    ],
+    "image_sha256": "87f9acd8e3f9842c611cedef64817b4500d16bab3af61ce453fb0cdc293278d2",
+    "thumbnail_sha256": "b03cb24e1ac7015e5d62eae5863ac4552085511568866ccf2e1c05b20a59dc6a",
+    "source_sha256": "69eed348899d031444503719803a30d23443192df1ad553b39e36523b836f003"
+  },
+  {
+    "id": "img-4fe6c75aa1d8b760c5f896603dd9f2186549f9a52042a5b876a511029a4a64fd",
+    "revision": 74434150091658,
+    "name": "Papallona 1",
+    "aliases": [
+      "scratch-butterfly-1"
+    ],
+    "image_sha256": "9956180a413a09370b0f312d9d83bf4b609fe2bd3ef7b35e08b507381384d329",
+    "thumbnail_sha256": "8a4ecff745e7314322e0cae6285fa616c95597ced8fcd1349b67f6d5cbcaca9d",
+    "source_sha256": "902676e10cf33c0b0eef2fc31998c8e184948a0f2bf587c0701958d16fc0511e"
+  },
+  {
+    "id": "img-d678e2cd4930db0e5e23cba2ef29ea8de96141c9004b7d1d9658f8ffa29cf850",
+    "revision": 235459326268549,
+    "name": "Papallona 2",
+    "aliases": [
+      "scratch-butterfly-2"
+    ],
+    "image_sha256": "f99337f0546da1301a7e95dfd54e59751cb885decc6d1d8b81622c8d7f54e383",
+    "thumbnail_sha256": "30321d1f476454d5d78c269f32e62a504c25f89c6a0c0e364c427418a24536c3",
+    "source_sha256": "e86c9937f4f6645a38a783ac665a00a03e065fc91470207ca980a1ab602c44cd"
+  },
+  {
+    "id": "img-058bf8baa1c4ef674d5891a30a2a75a74af4a8fca1636358e259a3c9ae642c1d",
+    "revision": 169562393338704,
+    "name": "Cranc",
+    "aliases": [
+      "scratch-crab"
+    ],
+    "image_sha256": "580c5857ecac705607349cef9724123040d775d6b4c62fa8079608c9bb9517a8",
+    "thumbnail_sha256": "072c661d128359b243a7229ab7f7eb227176960e0f1f6b676aeab7e81dc7df32",
+    "source_sha256": "8e1af186b30a89fa3509b192cd555a0e29835f190e2aa4e4d93f93b7fe41d611"
+  },
+  {
+    "id": "img-5542f98aa9fc2ac0477aca8825bab20a3116dc7ec4db2f1a87555d94645495e4",
+    "revision": 187288787345339,
+    "name": "Dinosaure",
+    "aliases": [
+      "scratch-dinosaur1"
+    ],
+    "image_sha256": "f874d778c027023d4898df353328c293dd424151ba023d09240877eb8b18892e",
+    "thumbnail_sha256": "9abf2cfd201929da5c3674813e33791934e08532a1ea67555fb71637becb9479",
+    "source_sha256": "b5a074173968b55db5db941559877d37c84fbd8f601b71a067fb3519b037319d"
+  },
+  {
+    "id": "img-d0fd25e97fa89a397ed6981cb67423e5e3d982cb1f2979dc6ba5da6154e2ce88",
+    "revision": 112338571636463,
+    "name": "Gos",
+    "aliases": [
+      "scratch-dog1"
+    ],
+    "image_sha256": "902e62d947d59951c315672da695270481f30619065e888c802970b46ccce1f3",
+    "thumbnail_sha256": "a990f33b6152a3f8640af02381d24f2c008191256b7e64195c8d94d80acbcde7",
+    "source_sha256": "060039baa042d72d70bd315650e29e67f049bbd28a6887da6583570446a667f9"
+  },
+  {
+    "id": "img-b8b04fa7fe4ad146066faa1c3d89390c56654b7b702e91314f319f39b4dfba5f",
+    "revision": 227384441156058,
+    "name": "Ànec",
+    "aliases": [
+      "scratch-duck"
+    ],
+    "image_sha256": "3c2fd7997127be522cd1d0089c58b53e3edaa81cafc1f5b5c286b2ce9b5e88c8",
+    "thumbnail_sha256": "27a021f06961acbbb8871bb985956dfe6f78dc5b8c2578612534290f7385ca03",
+    "source_sha256": "ba55c809079acf42097d110bc4ef0b407166f58eed3e769c0907c7fce7dfe0a3"
+  },
+  {
+    "id": "img-b944af7a3359c9ed495af101c5c92ca6f09241d6e68753d49d0ae34c0b825dc2",
+    "revision": 33563203724369,
+    "name": "Peix",
+    "aliases": [
+      "scratch-fish"
+    ],
+    "image_sha256": "04cc476af6c6ddf230634adc6c16d3f05eb4fb5abe362f808affee2d20b5124f",
+    "thumbnail_sha256": "777cade5bfbc353abe85670007dc6f3f80724ab38f01d33c87b763145695da9d",
+    "source_sha256": "11f7dc782e24a9b9152567333b82da1ff0f035e153c25339904e6c98c9e157ac"
+  },
+  {
+    "id": "img-a38888de1aadf490ae3496d884e4e96e5dc0cea1f7803c82d4469a2ca7aba047",
+    "revision": 193616325320813,
+    "name": "Granota",
+    "aliases": [
+      "scratch-frog"
+    ],
+    "image_sha256": "7be88804ce45e929a9c6a2ff5ce982bc73459317ca10e73d7effe659f64fe41d",
+    "thumbnail_sha256": "5efa2257c60a80ed164b1cfe284ce8b184b8c2b1487fb621f465b2cb5a30439c",
+    "source_sha256": "69546db6fad006fe4cc299999c8f075c2bb655613f96f27e18390d1afe5318d7"
+  },
+  {
+    "id": "img-f6fa7a91bd6ddc2522ae632dd3c3ffee82bee3337736e5d5cb9998bccbdb5d6d",
+    "revision": 275593721996507,
+    "name": "Marieta 1",
+    "aliases": [
+      "scratch-ladybug1"
+    ],
+    "image_sha256": "0061af791b96070571beb94796d34766e972e6365ceb85879f0bc0368515691b",
+    "thumbnail_sha256": "fc36b9684d0fb2d9736361777f7ba7eccf38572fd312f86c445a47cf35346fc2",
+    "source_sha256": "4680b4ab384f26a3645c146cc332297a68fec92d6e8706a75924e04dedba4463"
+  },
+  {
+    "id": "img-6c93c7e5c752167c249d4445d6fbccb05e8894204f883c1734981b049bbc66d2",
+    "revision": 158195565626455,
+    "name": "Marieta 2",
+    "aliases": [
+      "scratch-ladybug2"
+    ],
+    "image_sha256": "641b7758000464cbb1d2f3eaa710890a02a1484e71c5ca41431543973c5cd95a",
+    "thumbnail_sha256": "a4bf0ebbc118a8db2d4ee8b1fa39dada10161479429a3fb1adaafb2f5cd77037",
+    "source_sha256": "f91aa0f23fdc9533bece022d3ab24eb08a09548d8af9cec0543c84cbcf0d7c0a"
+  },
+  {
+    "id": "img-97e343e7389146f7c3171d84fe608e293e25c442187d61be23a7218bb79de901",
+    "revision": 90790100150150,
+    "name": "Polp",
+    "aliases": [
+      "scratch-octopus"
+    ],
+    "image_sha256": "7ed4a3e7517a44b84799b999d22f4ba67dc1953cfb05dcd9c6a546f3824be024",
+    "thumbnail_sha256": "8a454756fcf18eccebadc944c7147bc855f411648b53f5bb6129f2f9a8816eec",
+    "source_sha256": "19bfc816e5322d10258292d51661ee1f4c1d78eed4d36034df82d2ed1966ea70"
+  },
+  {
+    "id": "img-4833d24142f4df6a41a6a626d2b346df1b0946cb884ec5d607fc83f84cc98393",
+    "revision": 103698556362274,
+    "name": "Lloro",
+    "aliases": [
+      "scratch-parrot"
+    ],
+    "image_sha256": "ad0c01820ff650e33977a272295a6c585d468e68a9773a00ea30d15b9cfcbb8f",
+    "thumbnail_sha256": "b77b8bc4af834f330b80d88df0859b2662b4439048ffc7cad3b6eec00ff3d9cc",
+    "source_sha256": "7dda5f0cb59a33c6834ccacd6070a6c23319b3ee9bcd0df682822862162c89cb"
+  },
+  {
+    "id": "img-d00b6cd6f32784f3f599c742abfddf4f4b703c68736082288fc30471a25de6d7",
+    "revision": 6305094779492,
+    "name": "Llapis",
+    "aliases": [
+      "scratch-pencil"
+    ],
+    "image_sha256": "d5b69ec8fb31eabe45db48e0ba5f299b38d2780e6e4a8f9221b9ec214cec6201",
+    "thumbnail_sha256": "649807805f7f78a352028c042309591bc9ebd32ee07ddae82d93021481fd5ab7",
+    "source_sha256": "c809bfd59cd5233f0dabdac553243ea11b5db36ec72c2f8652faf7ecffcb9c87"
+  },
+  {
+    "id": "img-60e3ac678f3b8c319e46e15197a9a69eb58c48bdab88e10bdbabe7d1f4545b19",
+    "revision": 133257766336213,
+    "name": "Conill",
+    "aliases": [
+      "scratch-rabbit"
+    ],
+    "image_sha256": "0c0bd6d277fdf3d54685c049b4d189bc0dac231e38c7803c725f65350549212b",
+    "thumbnail_sha256": "badf09701a72f6429007644b751fcfb4fe15c18ce4195d22650b0581255d063c",
+    "source_sha256": "1a31814c65b92b1454bfb65d9310dfcd3967796ee68fba33a168a86958d1e8f7"
+  },
+  {
+    "id": "img-7f2b33b3e3d7ab2668a80f348c8073202159ddc7bd286c7957ea9a221e9b5569",
+    "revision": 220879321640304,
+    "name": "Estrela",
+    "aliases": [
+      "scratch-star"
+    ],
+    "image_sha256": "ab784323fec76916433ce0fe22a84883765977d1e172e9888772b0131f23ca96",
+    "thumbnail_sha256": "4e140edb1ab859a0aba987adebeb26397dd679a9b78972e1e0ddc00b4d3fe9e0",
+    "source_sha256": "91770b52b6e41eb2e99f042e9631ef7832f7693136baf92aab447994c3e90981"
+  },
+  {
+    "id": "img-e49759295a4e4a1ce99a5950f29e174f1913cb9f60289d879094b5db5bcd396b",
+    "revision": 206945901130495,
+    "name": "Arbre",
+    "aliases": [
+      "scratch-tree1"
+    ],
+    "image_sha256": "c61deb68e30ae243a576c3db055e40b63a02052942d16467e00d95bc49629b18",
+    "thumbnail_sha256": "3c0b5474a8a5bd96f6a95959ae8efd6dc9150dff2596701bc0514e1cc1cc2402",
+    "source_sha256": "544572b6d6634fc0ffcf2e5510e3839e8108531c85794724ba851bc9f0badc57"
+  },
+  {
+    "id": "img-8301f6419737dfce53e5b480a9ca2188be57ecb2a4caa46e6deadc8043b1f4e9",
+    "revision": 16082803227582,
+    "name": "Cel blau",
+    "aliases": [
+      "scratch-blue-sky"
+    ],
+    "image_sha256": "c6a68ab433d662130210d585c97e2ef4db059a1b6d522bae02a9d9e99e41d8eb",
+    "thumbnail_sha256": "9a817e64cbb4c68ffcdd666b22af6e3838c850a6e4c01f85a56bcd32c52a585c",
+    "source_sha256": "27016673732aa3307b9bfb0dc7f932cc6d3d2d2b11257c024338cc826d18c99a"
+  },
+  {
+    "id": "img-19ef2806c092ee839d0419ac8eab5b1472e702cdc499f34dad51f42e6ca6855a",
+    "revision": 115790944744026,
+    "name": "Cel blau 2",
+    "aliases": [
+      "scratch-blue-sky-2"
+    ],
+    "image_sha256": "7cc479d6615015ee0f32d5a8e082e24f4858d364c2a5f4d1e71e4ee8c472f6a6",
+    "thumbnail_sha256": "9e3dccf629722b64b684a1f87bf4a7b313fb17d9bb9beba7664954b3afd4b965",
+    "source_sha256": "6e8ae9c8c60985cf108e9bb5df488ae1985690de95387d5e3e5f53b33dfbba38"
+  },
+  {
+    "id": "img-a8a9c687b83a500e18a4e55637b604074997679a3a5acfbe2c8aff9f93a2631d",
+    "revision": 262469673476719,
+    "name": "Cors",
+    "aliases": [
+      "scratch-hearts"
+    ],
+    "image_sha256": "e90ae59b1962466cd5385a69fd5d2eb6f3396c1fca2b7577c79f56fc4956efbe",
+    "thumbnail_sha256": "c490e5b8ee1d8d61d7ad889af7f15af571d2437419761d70bc2073ff18e2badf",
+    "source_sha256": "d1ee57faeb555ddf70f737de5665aac24fb01fd9969f5e7563190583b231cde8"
+  },
+  {
+    "id": "img-d4370a6ab5e520aed1800c05d7ea2a4739ecb0f3334e8dec6fe7aa1d0fb16fe6",
+    "revision": 272618956504804,
+    "name": "Juràssic",
+    "aliases": [
+      "scratch-jurassic"
+    ],
+    "image_sha256": "fc64471dcf2bfcdcbc3615341516101ffa57cd8bd9bb524884f77ec2d453c20e",
+    "thumbnail_sha256": "f4f1229d788c8c88eee297bd4997ba987e1212a5ead3789fad27e886b8b2b2dd",
+    "source_sha256": "18447d9eb2bceb2edfa7b2fb495614964d87df596f382335c97091c6d13cd6ae"
+  },
+  {
+    "id": "img-06577779bfd4cd9f75e58ee577a78c86975ff7b306ba8f7a1eefca4f30a2ed30",
+    "revision": 36580232333047,
+    "name": "Llum",
+    "aliases": [
+      "scratch-light"
+    ],
+    "image_sha256": "6ef4097e63d13e777ca41f7fb0929b1848006f1c5c1e89fe531f17123cafa1f6",
+    "thumbnail_sha256": "4e063070d3f84c8d08cd76c5d1688e6234dab155855c1e4c0168efd181f92b78",
+    "source_sha256": "5670208ec762dff7d17b1351d76991e7f393159a3bb524a05731e22a485cb1c7"
+  },
+  {
+    "id": "img-d70c9b5a353f9cb90a06ba7d92988a6a60fed3f7865efb6f089d36c926d11cab",
+    "revision": 262214082406087,
+    "name": "Festa",
+    "aliases": [
+      "scratch-party"
+    ],
+    "image_sha256": "afca53601c3fe59ad27fcec489341c58ed8d72502222d2e28b12b284a36c4438",
+    "thumbnail_sha256": "48b53437d022313fa37486ed8af110ef76db1edfd1287658f279fe1890dd48e7",
+    "source_sha256": "a25d7e4a9962fc14037814c23d8200cf668cdb906d9bc3be1dffc9e9212c57f1"
+  },
+  {
+    "id": "img-a7091d62bb90fab64694210722def83b5e982c105c725151b2472d3d73679850",
+    "revision": 15013252289927,
+    "name": "Raigs",
+    "aliases": [
+      "scratch-rays"
+    ],
+    "image_sha256": "f25673632ff3cbfc3dca189ad99880b5a0275e57b10a2f43dd7cf67f0bd554d3",
+    "thumbnail_sha256": "8e9e1675b516f340bc2fe2908282c7150f82f029e5c267c4f9da013d3ea6a549",
+    "source_sha256": "d560b7c89be9c2cbcf24a09e0ab623c830a0ef85079271210a8e6f0ea47086a3"
+  },
+  {
+    "id": "img-12aea7752ebe7ff39f256f06c6976f1d5c9b2019e82e1d9c2e3c037e0eefc786",
+    "revision": 56561434190131,
+    "name": "Ratlles",
+    "aliases": [
+      "scratch-stripes"
+    ],
+    "image_sha256": "802e0cbacaff8b0cbd5e70d65b187312fd3e22a509cb58cfabb87eaaf63d352d",
+    "thumbnail_sha256": "91c1c4dda466b85d36bbf05be94c7e876c6673672f91c1be50dff31d314335b3",
+    "source_sha256": "22a063dec351241be384d983e0074287fcf51c5b53aeb8336ad2962599ad76b7"
+  },
+  {
+    "id": "img-18e19c4442cf0dbd106a728b32b7b3414f1ff14c9cb4e8ceda7814c60ea5f7ab",
+    "revision": 128735161259200,
+    "name": "Hivern",
+    "aliases": [
+      "scratch-winter"
+    ],
+    "image_sha256": "13520c6d03e1de8a69acd7c01af20be3a1dc3d6161a3c2a730cfbd71ed388281",
+    "thumbnail_sha256": "afd34d276dcc37f070fdbd13e0d660970814472ea246a9dbd87db7f9ffcd6abb",
+    "source_sha256": "d5f0482c0df4e151c8ecda953dd3c0bdff74d58ae8b231e991067cced7b6373e"
+  },
+  {
+    "id": "img-32cffc180612b3d2a7020ce4cba972be07aead45c2524b2b2a471057a874ba8f",
+    "revision": 3572891413165,
+    "name": "Bosc",
+    "aliases": [
+      "scratch-woods"
+    ],
+    "image_sha256": "9e330ebe3f25f5ad72ebbd9b9a8d3f39101b627b070aafb9d2a1a2ff4d28299f",
+    "thumbnail_sha256": "accc176ffcc3231d52f7773700bc907fe9c0aaf4a647e5481e3d7b36f9a7adc7",
+    "source_sha256": "46b6a5f5382a5b9a1e2a0559977ca8145c47ccd95d90fe9ffc476610be037a34"
+  }
+]

@@ -2,7 +2,7 @@ import {RebostClient} from './client.js';
 
 const TEXT = {
   es: {
-    choose: 'Usar en el proyecto', pickHint: 'Elige una imagen para tu proyecto.',
+    hideCostumes: 'Ocultar disfraces', costumes: 'Ver disfraces', costumeCount: 'disfraces', addFamily: 'Añadir personaje con disfraces', saveImage: 'Guardar esta imagen', choose: 'Usar en el proyecto', pickHint: 'Elige una imagen para tu proyecto.',
     intro: 'Guarda tus imágenes y encuentra personajes y fondos del catálogo.',
     scratch: 'Catálogo Scratch', scratchHint: 'Selección de imágenes de Scratch. Conserva los créditos y la licencia CC BY-SA 2.0.', catalog: 'Catálogo EduTicTac', collection: 'Colección', privateHint: 'Tus imágenes son privadas.',
     catalogHint: 'Guarda una copia en Mis imágenes para reutilizarla. Se conserva su licencia.',
@@ -28,7 +28,7 @@ const TEXT = {
     origin_required: 'Abre el Rebost desde la dirección de Commons.'
   },
   ca: {
-    choose: 'Usa en el projecte', pickHint: 'Tria una imatge per al teu projecte.',
+    hideCostumes: 'Amagar disfresses', costumes: 'Veure disfresses', costumeCount: 'disfresses', addFamily: 'Afegir personatge amb disfresses', saveImage: 'Guarda esta imatge', choose: 'Usa en el projecte', pickHint: 'Tria una imatge per al teu projecte.',
     intro: 'Guarda les teues imatges i troba personatges i fons del catàleg.',
     scratch: 'Catàleg Scratch', scratchHint: 'Selecció d’imatges de Scratch. Conserva els crèdits i la llicència CC BY-SA 2.0.', catalog: 'Catàleg EduTicTac', collection: 'Col·lecció', privateHint: 'Les teues imatges són privades.',
     catalogHint: 'Guarda una còpia en Les meues imatges per a reutilitzar-la. Es conserva la llicència.',
@@ -60,6 +60,7 @@ const picking = params.get('mode') === 'pick' && window.parent !== window;
 const pickType = params.get('type') === 'background' ? 'background' : 'sprite';
 const permittedTypes = picking ? (pickType === 'background' ? ['background'] : ['sprite', 'object', 'illustration']) : null;
 const nonce = params.get('request') || '';
+const familySelection = picking && pickType === 'sprite' && params.get('supports_families') === '1' && params.get('selection') === 'sprite';
 if (picking) {
   document.body.classList.add('picking');
   const locale = params.get('lang');
@@ -137,8 +138,10 @@ async function run(operation) {
 }
 function node(tag, content) { const element = document.createElement(tag); if (content) element.textContent = content; return element; }
 function button(label, handler) { const b = node('button', label); b.type = 'button'; b.addEventListener('click', handler); return b; }
-async function card(item) {
-  const article = node('article'); article.dataset.id = item.id;
+async function card(item, nested = false) {
+  const article = node(nested ? 'section' : 'article');
+  if (nested) article.className = 'family-costume';
+  const group = !nested && item.collection === 'scratch' && item.family && item.family.count > 1; article.dataset.id = item.id;
   const displayName = ['catalog', 'scratch'].includes(item.collection) ? item.names[text === TEXT.es ? 'es' : 'ca'] : item.name;
   const picture = node('img'); picture.alt = displayName;
   const blob = await api.read(item.id, true); const url = URL.createObjectURL(blob); urls.push(url); picture.src = url;
@@ -150,14 +153,14 @@ async function card(item) {
   const actions = node('div'); actions.className = 'actions';
   article.append(view);
   if (picking) {
-    article.append(node('h2', displayName), node('span', text[item.type]));
-    actions.append(button(text.choose, () => {
+    article.append(node(nested ? 'h3' : 'h2', displayName), node('span', text[item.type]));
+    actions.append(button(group && familySelection ? text.addFamily : text.choose, () => {
       window.parent.postMessage({format: 'rebost-selection', version: 1, request: nonce,
-        id: item.id, name: displayName}, location.origin);
+        id: item.id, name: displayName, ...(group && familySelection ? {family: true, familyRevision: item.family.revision} : {})}, location.origin);
     }));
   } else if (item.readonly) {
-    article.append(node('h2', displayName), node('span', text[item.type]));
-    actions.append(button(text.saveCopy, () => run(async () => {
+    article.append(node(nested ? 'h3' : 'h2', displayName), node('span', text[item.type]));
+    actions.append(button(group ? text.saveImage : text.saveCopy, () => run(async () => {
       await api.duplicate(item); await chooseCollection('mine');
     })));
   } else {
@@ -172,15 +175,36 @@ async function card(item) {
   }
   const origin = ['catalog', 'scratch'].includes(item.collection) ? item : item.provenance;
   if (origin) {
-    const credit = node('p', origin.attribution + ' · ' + origin.license); credit.className = 'credit'; article.append(credit);
+    if (!nested) {
+      const credit = node('p', origin.attribution + ' · ' + origin.license); credit.className = 'credit'; article.append(credit);
+    }
     if (!picking) actions.append(button(text.source, () => run(() => downloadOriginal(item))),
       button(text.license, () => run(() => downloadOriginal(item, true))));
   }
-  article.append(node('small', item.width + ' × ' + item.height + ' px'), actions);
+  if (group) {
+    article.append(node('span', item.family.count + ' ' + text.costumeCount));
+    const variants = node('div'); variants.className = 'family-variants'; variants.hidden = true;
+    let loaded = false;
+    const toggle = button(text.costumes, () => run(async () => {
+      if (!loaded) {
+        const family = await api.family(item.family.id);
+        if (family.id !== item.family.id || family.revision !== item.family.revision) throw new Error('revision_conflict');
+        const children = [];
+        for (const member of family.items) children.push(await card(member, true));
+        variants.append(...children); loaded = true;
+      }
+      variants.hidden = !variants.hidden;
+      article.classList.toggle('expanded-family', !variants.hidden);
+      toggle.textContent = variants.hidden ? text.costumes : text.hideCostumes;
+      toggle.setAttribute('aria-expanded', String(!variants.hidden));
+    }));
+    toggle.setAttribute('aria-expanded', 'false');
+    actions.append(toggle); article.append(node('small', item.width + ' × ' + item.height + ' px'), actions, variants);
+  } else article.append(node('small', item.width + ' × ' + item.height + ' px'), actions);
   return article;
 }
 async function refresh(more = false) {
-  const result = await api.list({q: $('search').value, type: $('filter').value, cursor: more ? cursor : '', collection});
+  const result = await api.list({q: $('search').value, type: $('filter').value, cursor: more ? cursor : '', collection, grouped: collection === 'scratch'});
   const cards = [];
   for (const item of result.items) cards.push(await card(item));
   if (!more) {

@@ -228,7 +228,7 @@ Primera implementació central local: [Rebost privat, API, permisos i verificaci
 Inclou gestor `/assets/` i client compartit; encara no desplegada ni connectada als editors.
 
 Catàlegs del Rebost: [51 recursos propis de Blocs](docs/rebost-catalog.md) i
-[31 imatges de Scratch amb procedència i llicència](docs/rebost-scratch.md).
+[61 imatges de Scratch amb procedència i llicència](docs/rebost-scratch.md).
 
 Accés compartit amb el login habitual de Commons, complement Compose opcional i proves
 locals sense comptes reals: [Commons, Rebost i Blocs](docs/rebost-commons-access.md).

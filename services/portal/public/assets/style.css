@@ -34,3 +34,10 @@ article .credit {font-size:.85rem;color:#43596d} article h2 {font-size:1.15rem;m
 .picking article h2 {font-size:1.1rem; margin:.25rem 0}
 .picking article .image {height:130px}
 .picking article .credit {font-size:.8rem; margin:.25rem 0}
+
+#grid {align-items:start}
+#grid > .expanded-family {grid-column:1 / -1}
+.family-variants {display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.75rem;border-top:2px solid #b4c5d2;padding-top:.75rem}
+.family-costume {border:1px solid #b4c5d2;border-radius:.5rem;padding:.5rem;display:flex;flex-direction:column;gap:.5rem;background:#f4f7fa}
+.family-costume .image {height:110px}
+.family-costume h3 {font-size:1rem;margin:0}

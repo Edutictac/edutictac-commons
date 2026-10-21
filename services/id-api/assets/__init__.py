@@ -264,20 +264,24 @@ class Library:
         def me(request: Request):
             self.principal(request)
             return {
-                "capabilities": ["private_library", "catalog", "scratch_catalog", "derived_upload"],
+                "capabilities": ["private_library", "catalog", "scratch_catalog", "asset_families", "derived_upload"],
                 "catalog_items": sum(item["metadata"]["collection"]=="catalog" for item in self.catalogue.items.values()),
                 "scratch_items": sum(item["metadata"]["collection"]=="scratch" for item in self.catalogue.items.values()),
+                "scratch_families": len(self.catalogue.families),
                 "limits": {"image_bytes": MAX_IMAGE, "dimension": MAX_DIMENSION,
                            "items": MAX_ITEMS, "library_bytes": MAX_USER_BYTES}}
 
 
         @router.get("/items")
-        def items(request: Request, q: str = "", type: str = "", cursor: str = "", limit: int = 40, collection: str = "mine"):
+        def items(request: Request, q: str = "", type: str = "", cursor: str = "", limit: int = 40, collection: str = "mine", grouped: bool = False):
             owner = self.principal(request)
             if len(q) > 200 or (type and type not in TYPES) or not (1 <= limit <= 80) or (cursor and not ID.fullmatch(cursor)):
                 fail(422, "invalid_filter")
             if collection not in {"mine", "catalog", "scratch"}:
                 fail(422, "invalid_collection")
+            if grouped:
+                if collection!="scratch":fail(422,"invalid_filter")
+                return self.catalogue.list_families(q,type,cursor,limit)
             if collection != "mine":
                 return self.catalogue.list(q, type, cursor, limit, collection)
             search = q.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
@@ -335,6 +339,14 @@ class Library:
                 row = self.row(db, owner, asset_id)
             response.headers["ETag"] = f'"{row["revision"]}"'
             return self.metadata(row)
+
+        @router.get("/items/{asset_id}/family")
+        def family(asset_id: str, request: Request, response: Response):
+            self.principal(request)
+            result=self.catalogue.family(asset_id)
+            if not result:fail(404,"not_found")
+            response.headers["ETag"]=f'"{result["revision"]}"'
+            return result
 
         @router.get("/items/{asset_id}/content")
         @router.get("/items/{asset_id}/thumbnail")

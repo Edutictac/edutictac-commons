@@ -5,6 +5,7 @@ Original Commons code (MIT). Artwork retains its separately recorded license.
 import copy
 import hashlib
 import json
+import math
 from pathlib import Path
 import re
 
@@ -19,6 +20,7 @@ class Catalogue:
         expected_license = "GPL-3.0-only" if collection=="catalog" else "CC-BY-SA-2.0"
         folder=Path(folder).resolve()
         self.items={}
+        self.families={}
         self.total_bytes=0
         manifest_raw=(folder/'manifest.json').read_bytes()
         if len(manifest_raw)>1024*1024:raise ValueError('Catalogue manifest too large')
@@ -79,18 +81,66 @@ class Catalogue:
             public={key:item[key] for key in ['id','source_id','aliases','name','names','type','width','height',
                     'license','attribution','source_revision','source_path','source_repository','changes','revision']}
             public.update({'collection':collection,'readonly':True,'bytes':len(clean)})
+            if collection=='scratch':
+                pivot=approved.get('rotation_center')
+                if not isinstance(pivot,dict) or set(pivot)!={'x','y'} or any(type(value) not in {int,float} or not math.isfinite(value) or abs(value)>8192 for value in pivot.values()):
+                    raise ValueError('Invalid reviewed rotation centre')
+                public['rotation_center']=copy.deepcopy(pivot)
             metadata=canonical(public).decode()
             self.items[item['id']]={'metadata':public,'data':clean,'thumbnail':thumb,
                                    'provenance':(metadata,source,license_text)}
             self.total_bytes+=len(data)+len(thumb)+len(source)
             source_ids.add(source_id);aliases.update(item['aliases'])
+        if collection=='scratch':
+            groups={}
+            for asset_id,item in self.items.items():
+                name=reviewed[asset_id].get('original_name')
+                if not isinstance(name,str) or not 0<len(name)<=100:
+                    raise ValueError('Invalid Scratch family')
+                fragment=item['metadata']['source_path'].split('#',1)[-1]
+                costume=reviewed[asset_id].get('costume')
+                if fragment!=name.strip()+('/'+costume if costume else ''):
+                    raise ValueError('Scratch family does not match reviewed source')
+                groups.setdefault(name,[]).append(asset_id)
+            for name,members in groups.items():
+                primary=[key for key in members if not reviewed[key].get('costume')]
+                if len(primary)!=1 or len(members)>32:
+                    raise ValueError('Invalid Scratch family primary/size')
+                primary=primary[0]
+                members=[primary]+sorted((key for key in members if key!=primary),key=lambda key:reviewed[key]['costume'])
+                meta=self.items[primary]['metadata']
+                if any(self.items[key]['metadata']['type']!=meta['type'] for key in members):
+                    raise ValueError('Mixed Scratch family roles')
+                revision=int(hashlib.sha256(canonical([(key,self.items[key]['metadata']['revision'],self.items[key]['metadata']['rotation_center']) for key in members])).hexdigest()[:12],16)
+                family={'id':primary,'revision':revision,'count':len(members),'names':copy.deepcopy(meta['names'])}
+                self.families[primary]={'family':family,'members':members}
+                for position,key in enumerate(members):
+                    self.items[key]['metadata']['family']={**copy.deepcopy(family),'position':position}
 
     def extend(self, other):
         aliases={alias for item in self.items.values() for alias in item['metadata']['aliases']}
         if self.items.keys() & other.items.keys() or any(aliases.intersection(item['metadata']['aliases']) for item in other.items.values()):
             raise ValueError('Duplicate catalogue identity or alias')
         self.items.update(other.items)
+        self.families.update(other.families)
         self.total_bytes+=other.total_bytes
+
+    def family(self, primary_id):
+        group=self.families.get(primary_id)
+        if not group:return None
+        return {'format':'rebost-asset-family','version':1,**copy.deepcopy(group['family']),
+                'items':[copy.deepcopy(self.items[key]['metadata']) for key in group['members']]}
+
+    def list_families(self,q,kind,cursor,limit):
+        matches=[]
+        for primary,group in sorted(self.families.items()):
+            meta=self.items[primary]['metadata']
+            names=' '.join(' '.join([self.items[key]['metadata']['name'],
+                                    *self.items[key]['metadata']['names'].values(),
+                                    *self.items[key]['metadata']['aliases']]) for key in group['members'])
+            if primary>cursor and (not kind or meta['type']==kind) and q.casefold() in names.casefold():
+                matches.append(copy.deepcopy(meta))
+        return {'items':matches[:limit],'next_cursor':matches[limit-1]['id'] if len(matches)>limit else None}
 
     def get(self, asset_id):
         return self.items.get(asset_id)
