@@ -362,10 +362,16 @@ def test_browser_private_library(api, tmp_path, language, touch):
             playwright.expect(page.locator('article .credit').filter(has_text='CC-BY-SA-2.0')).to_have_count(1)
             assert not errors
             page.screenshot(path=str(tmp_path/f'rebost-{language}.png'))
-            # A second browser without an authenticated individual gets the access screen, no images.
+            # Guests browse the public catalogue; only their personal tab asks for login.
             other=browser.new_context(); second=other.new_page(); second.goto(address+'/assets/')
+            playwright.expect(second.locator('#controls')).to_be_visible()
+            playwright.expect(second.locator('#grid > article')).to_have_count(40)
+            playwright.expect(second.locator('#access')).to_be_hidden()
+            second.locator('#mineTab').click()
             playwright.expect(second.locator('#access')).to_be_visible()
-            playwright.expect(second.locator('#controls')).to_be_hidden()
+            playwright.expect(second.locator('#grid')).to_be_hidden()
+            second.locator('#scratchTab').click()
+            playwright.expect(second.locator('#grid > article')).to_have_count(31)
             other.close(); browser.close()
     finally:
         server.should_exit=True; thread.join(timeout=8); listener.close()

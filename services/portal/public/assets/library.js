@@ -2,6 +2,7 @@ import {RebostClient} from './client.js';
 
 const TEXT = {
   es: {
+    login: 'Entrar', loginToSave: 'Entrar para guardar una copia',
     hideCostumes: 'Ocultar disfraces', costumes: 'Ver disfraces', costumeCount: 'disfraces', addFamily: 'Añadir personaje con disfraces', saveImage: 'Guardar esta imagen', choose: 'Usar en el proyecto', pickHint: 'Elige una imagen para tu proyecto.',
     intro: 'Guarda tus imágenes y encuentra personajes y fondos del catálogo.',
     scratch: 'Catálogo Scratch', scratchHint: 'Selección de imágenes de Scratch. Conserva los créditos y la licencia CC BY-SA 2.0.', catalog: 'Catálogo EduTicTac', collection: 'Colección', privateHint: 'Tus imágenes son privadas.',
@@ -28,6 +29,7 @@ const TEXT = {
     origin_required: 'Abre el Rebost desde la dirección de Commons.'
   },
   ca: {
+    login: 'Entra', loginToSave: 'Entra per a guardar una còpia',
     hideCostumes: 'Amagar disfresses', costumes: 'Veure disfresses', costumeCount: 'disfresses', addFamily: 'Afegir personatge amb disfresses', saveImage: 'Guarda esta imatge', choose: 'Usa en el projecte', pickHint: 'Tria una imatge per al teu projecte.',
     intro: 'Guarda les teues imatges i troba personatges i fons del catàleg.',
     scratch: 'Catàleg Scratch', scratchHint: 'Selecció d’imatges de Scratch. Conserva els crèdits i la llicència CC BY-SA 2.0.', catalog: 'Catàleg EduTicTac', collection: 'Col·lecció', privateHint: 'Les teues imatges són privades.',
@@ -78,7 +80,7 @@ if (picking) {
 const api = new RebostClient();
 const $ = id => document.getElementById(id);
 const types = ['sprite', 'background', 'object', 'illustration'];
-let text, active = false, busy = false, collection = (['catalog', 'scratch'].includes(params.get('collection')) ? params.get('collection') : 'mine'), cursor = '', urls = [], previewUrl = '', searchTimer;
+let text, active = false, authenticated = false, busy = false, collection = (['mine', 'catalog', 'scratch'].includes(params.get('collection')) ? params.get('collection') : ''), cursor = '', urls = [], previewUrl = '', searchTimer;
 function language() {
   text = TEXT[window.i18nPortal.getLang() === 'es' ? 'es' : 'ca'];
   document.documentElement.lang = text === TEXT.es ? 'es' : 'ca';
@@ -100,14 +102,18 @@ function language() {
 }
 function collectionLabels() {
   $('mine').textContent = text[collection === 'catalog' ? 'catalog' : collection === 'scratch' ? 'scratch' : 'mine'];
-  $('mineTab').textContent = text.mine; $('catalogTab').textContent = text.catalog;
+  $('mineTab').textContent = text.mine + (authenticated ? '' : ' · ' + text.login); $('catalogTab').textContent = text.catalog;
   $('scratchTab').textContent = text.scratch;
   $('scratchTab').setAttribute('aria-pressed', String(collection === 'scratch'));
   $('mineTab').setAttribute('aria-pressed', String(collection === 'mine'));
   $('catalogTab').setAttribute('aria-pressed', String(collection === 'catalog'));
   $('collections').setAttribute('aria-label', text.collection);
   $('collectionHint').textContent = picking ? text.pickHint : (collection === 'mine' ? text.privateHint : collection === 'scratch' ? text.scratchHint : text.catalogHint);
-  $('uploadArea').hidden = picking || collection !== 'mine';
+  const locked = collection === 'mine' && !authenticated;
+  $('access').hidden = !locked;
+  $('uploadArea').hidden = picking || collection !== 'mine' || !authenticated;
+  $('grid').hidden = locked;
+  document.querySelector('.filters').hidden = locked;
   $('grid').setAttribute('aria-label', text[collection === 'catalog' ? 'catalog' : collection === 'scratch' ? 'scratch' : 'mine']);
 }
 async function chooseCollection(value) {
@@ -125,7 +131,10 @@ async function downloadOriginal(item, license = false) {
 }
 function message(error) {
   $('status').textContent = text[error.message] || text.error;
-  if (error.status === 401) { active = false; $('access').hidden = false; $('controls').hidden = true; }
+  if (error.status === 401) {
+    authenticated = false; collectionLabels();
+    if (collection === 'mine') { $('grid').replaceChildren(); $('empty').hidden = true; $('more').hidden = true; }
+  }
 }
 async function run(operation) {
   if (busy) return;
@@ -160,7 +169,8 @@ async function card(item, nested = false) {
     }));
   } else if (item.readonly) {
     article.append(node(nested ? 'h3' : 'h2', displayName), node('span', text[item.type]));
-    actions.append(button(group ? text.saveImage : text.saveCopy, () => run(async () => {
+    actions.append(button(authenticated ? (group ? text.saveImage : text.saveCopy) : text.loginToSave, () => run(async () => {
+      if (!authenticated) return chooseCollection('mine');
       await api.duplicate(item); await chooseCollection('mine');
     })));
   } else {
@@ -204,6 +214,10 @@ async function card(item, nested = false) {
   return article;
 }
 async function refresh(more = false) {
+  if (collection === 'mine' && !authenticated) {
+    $('grid').replaceChildren(); $('empty').hidden = true; $('more').hidden = true;
+    collectionLabels(); return;
+  }
   const result = await api.list({q: $('search').value, type: $('filter').value, cursor: more ? cursor : '', collection, grouped: collection === 'scratch'});
   const cards = [];
   for (const item of result.items) cards.push(await card(item));
@@ -240,9 +254,13 @@ window.addEventListener('edutictac:langchange', language);
 window.addEventListener('pagehide', () => urls.forEach(URL.revokeObjectURL));
 language();
 await run(async () => {
-  const profile = await api.me(); $('catalogTab').hidden = !profile.capabilities.includes('catalog');
+  let profile;
+  try { profile = await api.me(); authenticated = true; }
+  catch (error) { if (error.status !== 401) throw error; profile = await api.catalogs(); }
+  if (!collection) collection = authenticated ? 'mine' : 'catalog';
+  $('catalogTab').hidden = !profile.capabilities.includes('catalog');
   $('scratchTab').hidden = !profile.capabilities.includes('scratch_catalog');
   if ((collection === 'catalog' && !profile.capabilities.includes('catalog')) ||
       (collection === 'scratch' && !profile.capabilities.includes('scratch_catalog'))) collection = 'mine';
-  collectionLabels(); active = true; $('controls').hidden = false; $('access').hidden = true; await refresh();
+  collectionLabels(); active = true; $('controls').hidden = false; await refresh();
 });

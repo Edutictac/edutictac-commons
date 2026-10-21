@@ -102,7 +102,7 @@ imatges / Mis imágenes**. El catálogo se distribuye una sola vez con la imagen
 archivos locales inmutables; no crea un usuario de sistema ni duplica entradas por usuario.
 No necesita red, Chromium, otra base de datos o un servicio nuevo en ejecución.
 
-Los usuarios autenticados pueden consultar el catálogo; no pueden renombrar o eliminar sus
+El catálogo se puede consultar sin iniciar sesión; nadie puede renombrar o eliminar sus
 originales. **Guardar en mis imágenes** crea una copia privada explícita y conserva procedencia,
 atribución, licencia íntegra y SVG de origen. Esos datos son protegidos: el PATCH de nombre/tipo
 no permite reemplazarlos ni eliminarlos. Las fuentes y licencia de una copia siguen disponibles
@@ -127,7 +127,8 @@ como texto inerte en comentarios del proyecto y conserva el guardado nativo `.sb
 - Metadatos de catálogo: `collection:"catalog"`, `readonly:true`, `names`, `license`, `attribution`,
   `source_id`, `source_path`, `source_revision`, `source_repository`, `aliases`, `changes` y revisión.
 - `/items/{id}/content` y `/thumbnail` devuelven PNG; `/source` y `/license` descargan adjuntos.
-  Toda consulta exige una identidad individual válida y conserva cabeceras privadas.
+  Las consultas del catálogo son públicas. Las bibliotecas personales exigen una identidad
+  individual válida. Se conservan cabeceras de no almacenamiento y protección de contenido.
 - `POST /items/{id}/copies`, con Origin e If-Match, crea una copia privada; PATCH/DELETE del
   original común devuelven 404. Los antiguos endpoints privados siguen funcionando.
 - La tabla aditiva `asset_provenance` guarda snapshots de fuentes/licencias de copias privadas

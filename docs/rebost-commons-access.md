@@ -138,3 +138,20 @@ manual de l'usuari, separada de les proves automàtiques; no acredita encara tot
 operacions d'edició i guardat en tauleta.
 La revocació remota d'un compte només en Authentik conserva la limitació documentada en
 [Rebost](rebost.md); el tancament de sessió local sí que revoca l'accés central.
+# Catálogos públicos y biblioteca personal
+
+Actualización 21-10-2026: los catálogos revisados EduTicTac y Scratch, sus familias,
+miniaturas, imágenes, fuentes y licencias se pueden leer sin cuenta. El endpoint
+`GET /api/assets/v1/catalogs` comunica las capacidades y cantidades públicas, sin
+identidad ni información personal. `/me` y la colección `mine` conservan el acceso
+individual; las lecturas de identificadores privados también exigen sesión.
+
+El gestor y los selectores incrustados empiezan en el catálogo para visitantes.
+«Mis imágenes · Entrar» muestra los accesos ya existentes de Commons. Consultar,
+buscar, previsualizar o seleccionar una imagen de catálogo no crea una biblioteca
+ni sesión anónima en el servidor. Guardar una copia, subir, modificar y eliminar
+continúan requiriendo una identidad individual y las comprobaciones existentes.
+
+Esta ampliación sustituye la restricción de lectura autenticada de los catálogos
+descrita en verificaciones anteriores. La privacidad de los recursos personales,
+las cuotas, las licencias y las cabeceras de seguridad se conservan.

@@ -1,7 +1,8 @@
-"""Private Commons image library. Original Commons implementation (MIT).
+"""Commons public catalogues and private image library (MIT).
 
 Independent of the Blocs GUI, VM and database. No image transformation UI and no
-network fetches. All content belongs to a verified, individual Commons principal.
+network fetches. Personal content belongs to a verified individual principal;
+reviewed, read-only system catalogues are publicly readable.
 """
 from __future__ import annotations
 
@@ -260,6 +261,15 @@ class Library:
     def router(self):
         router = APIRouter(prefix="/api/assets/v1", tags=["Rebost"])
 
+        @router.get("/catalogs")
+        def catalogs():
+            return {
+                "capabilities": ["catalog", "scratch_catalog", "asset_families"],
+                "catalog_items": sum(item["metadata"]["collection"] == "catalog" for item in self.catalogue.items.values()),
+                "scratch_items": sum(item["metadata"]["collection"] == "scratch" for item in self.catalogue.items.values()),
+                "scratch_families": len(self.catalogue.families),
+            }
+
         @router.get("/me")
         def me(request: Request):
             self.principal(request)
@@ -274,7 +284,6 @@ class Library:
 
         @router.get("/items")
         def items(request: Request, q: str = "", type: str = "", cursor: str = "", limit: int = 40, collection: str = "mine", grouped: bool = False):
-            owner = self.principal(request)
             if len(q) > 200 or (type and type not in TYPES) or not (1 <= limit <= 80) or (cursor and not ID.fullmatch(cursor)):
                 fail(422, "invalid_filter")
             if collection not in {"mine", "catalog", "scratch"}:
@@ -284,6 +293,7 @@ class Library:
                 return self.catalogue.list_families(q,type,cursor,limit)
             if collection != "mine":
                 return self.catalogue.list(q, type, cursor, limit, collection)
+            owner = self.principal(request)
             search = q.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
             with closing(self.connect()) as db:
                 rows = db.execute("""SELECT a.*,c.width,c.height,length(c.data) AS bytes,p.metadata AS provenance FROM assets a
@@ -330,11 +340,11 @@ class Library:
 
         @router.get("/items/{asset_id}")
         def metadata(asset_id: str, request: Request, response: Response):
-            owner = self.principal(request)
             catalog = self.catalogue.get(asset_id)
             if catalog:
                 response.headers["ETag"] = f'"{catalog["metadata"]["revision"]}"'
                 return catalog["metadata"]
+            owner = self.principal(request)
             with closing(self.connect()) as db:
                 row = self.row(db, owner, asset_id)
             response.headers["ETag"] = f'"{row["revision"]}"'
@@ -342,7 +352,6 @@ class Library:
 
         @router.get("/items/{asset_id}/family")
         def family(asset_id: str, request: Request, response: Response):
-            self.principal(request)
             result=self.catalogue.family(asset_id)
             if not result:fail(404,"not_found")
             response.headers["ETag"]=f'"{result["revision"]}"'
@@ -351,12 +360,12 @@ class Library:
         @router.get("/items/{asset_id}/content")
         @router.get("/items/{asset_id}/thumbnail")
         def content(asset_id: str, request: Request):
-            owner = self.principal(request)
             field = "thumbnail" if request.url.path.endswith("/thumbnail") else "data"
             catalog = self.catalogue.get(asset_id)
             if catalog:
                 data = catalog[field]
             else:
+                owner = self.principal(request)
                 with closing(self.connect()) as db:
                     row = self.row(db, owner, asset_id)
                     data = db.execute(f"SELECT {field} FROM asset_contents WHERE id=?", (row["content_id"],)).fetchone()[0]
@@ -365,11 +374,11 @@ class Library:
         @router.get("/items/{asset_id}/source")
         @router.get("/items/{asset_id}/license")
         def source(asset_id: str, request: Request):
-            owner = self.principal(request)
             catalog = self.catalogue.get(asset_id)
             if catalog:
                 provenance = catalog["provenance"]
             else:
+                owner = self.principal(request)
                 with closing(self.connect()) as db:
                     self.row(db, owner, asset_id)
                     row = db.execute("SELECT metadata,source,license_text FROM asset_provenance WHERE asset_id=?", (asset_id,)).fetchone()

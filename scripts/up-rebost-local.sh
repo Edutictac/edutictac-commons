@@ -6,6 +6,7 @@ project_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$project_dir"
 export IMAGE_TAG="${REBOST_LOCAL_TAG:-rebost-local}"
 export BLOCS_TAG="${REBOST_LOCAL_TAG:-rebost-local}"
+export LLIBRES_PUBLIC_BASE_URL="${LLIBRES_PUBLIC_BASE_URL:-http://100.74.151.108:8086}"
 # Dedicated local references keep credentials for other Authentik instances intact.
 if [[ -z "${EDUTICTAC_ID_OIDC_CLIENT_ID:-}" ]]; then
     EDUTICTAC_ID_OIDC_CLIENT_ID="$(pass show "${REBOST_OIDC_CLIENT_ID_PASS:-edutictac/commons-local/oidc-client-id}")"

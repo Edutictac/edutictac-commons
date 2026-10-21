@@ -16,6 +16,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY vendor/edutictac_community ./edutictac_community
 COPY main.py .
 COPY module_guard.py .
+COPY books.py .
 COPY quiosc ./quiosc
 COPY assets ./assets
 COPY entrypoint.sh /entrypoint.sh

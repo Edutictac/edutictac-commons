@@ -107,17 +107,25 @@ def test_catalogue_survives_reload_with_stable_ids_and_revisions(api):
     assert instance.catalogue.list('','','',80)['items']==original
 
 
-def test_license_and_source_are_available_only_to_authenticated_individuals(api):
+def test_catalogue_is_public_but_personal_files_stay_private(api):
     from fastapi.testclient import TestClient
     module,a,_,_=api
     item=catalog(a)[0]
     anonymous=TestClient(module.app)
     for endpoint in ['/api/assets/v1/items?collection=catalog',path(item),path(item)+'/content',path(item)+'/source',path(item)+'/license']:
-        assert anonymous.get(endpoint).status_code==401
+        assert anonymous.get(endpoint).status_code==200
     # Normal user uploads do not invent a licence or claim catalogue provenance.
     own=upload(a).json()
     assert 'provenance' not in own
     assert a.get(path(own)+'/source').status_code==404
+    assert anonymous.get('/api/assets/v1/catalogs').status_code == 200
+    for endpoint in ['/api/assets/v1/me', '/api/assets/v1/items', path(own), path(own)+'/content', path(own)+'/thumbnail', path(own)+'/source', path(own)+'/license']:
+        assert anonymous.get(endpoint).status_code == 401
+    anonymous.headers['Origin'] = 'http://testserver'
+    assert upload(anonymous).status_code == 401
+    assert anonymous.post(path(item)+'/copies',headers=revision(item)).status_code == 401
+    assert anonymous.delete(path(item),headers=revision(item)).status_code == 401
+    assert anonymous.patch(path(item),headers=revision(item),json={'name':'X','type':'sprite'}).status_code == 401
 
 
 @pytest.mark.parametrize('damage',['checksum','traversal','symlink','duplicate_alias','revision'])

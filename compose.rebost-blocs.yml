@@ -3,6 +3,12 @@ services:
   id-api:
     restart: unless-stopped
 
+  recursos-api:
+    restart: unless-stopped
+
+  recursos:
+    restart: unless-stopped
+
   blocs:
     image: ${IMAGE_REGISTRY:-edutictac}/commons-blocs:${BLOCS_TAG:-local}
     build:

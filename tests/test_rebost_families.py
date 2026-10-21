@@ -63,12 +63,12 @@ def test_group_pagination_and_search_do_not_drop_costumes(api):
     assert groups(a,q='Murciélago (3)')==groups(a,q='Ratpenat (3)')
 
 
-def test_family_reads_require_individual_auth_and_do_not_group_private_copies(api):
+def test_family_reads_are_public_and_do_not_group_private_copies(api):
     module,a,b,_=api
     primary=groups(a,q='scratch-bat')['items'][0]
     anonymous=TestClient(module.app)
     for endpoint in ['/api/assets/v1/items?collection=scratch&grouped=true',path(primary)+'/family']:
-        assert anonymous.get(endpoint).status_code==401
+        assert anonymous.get(endpoint).status_code==200
     own=a.post(path(primary)+'/copies',headers=revision(primary)).json()
     assert own['collection']=='mine' and 'family' not in own
     assert a.get(path(own)+'/family').status_code==404

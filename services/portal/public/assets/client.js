@@ -16,6 +16,7 @@ export class RebostClient {
     return response;
   }
   async me() { return (await this.request('/me')).json(); }
+  async catalogs() { return (await this.request('/catalogs')).json(); }
   async list({q = '', type = '', cursor = '', collection = 'mine', grouped = false} = {}) {
     return (await this.request('/items?' + new URLSearchParams({q, type, cursor, collection, ...(grouped ? {grouped: 'true'} : {})}))).json();
   }

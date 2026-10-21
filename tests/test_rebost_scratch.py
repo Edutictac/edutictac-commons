@@ -73,12 +73,12 @@ def test_scratch_copies_and_drawings_preserve_cc_license_and_private_ownership(a
         assert 'CC BY-SA 2.0' in a.get(path(item) + '/license').text
 
 
-def test_scratch_requires_individual_authentication(api):
+def test_reviewed_scratch_catalogue_is_public(api):
     module, a, _, _ = api
     anonymous = TestClient(module.app)
     item = scratch(a)[0]
     for endpoint in ['/api/assets/v1/items?collection=scratch', path(item), path(item) + '/content', path(item) + '/source', path(item) + '/license']:
-        assert anonymous.get(endpoint).status_code == 401
+        assert anonymous.get(endpoint).status_code == 200
 
 
 @pytest.mark.parametrize('damage', ['license', 'review_path', 'review_hash', 'source_identity'])

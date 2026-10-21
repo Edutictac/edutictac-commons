@@ -2346,6 +2346,8 @@ install_quiosc(app, require_quiosc_teacher, require_quiosc_group_access,
 # A shared private image library; no dependency on a particular editor.
 rebost = RebostLibrary(get_conn, DB_PATH, oidc_cookie, current_identity)
 app.include_router(rebost.router())
+from books import install_books
+install_books(app, rebost, oidc_cookie, RESOURCES_API_URL, APP_TOKEN)
 
 
 @app.middleware("http")
