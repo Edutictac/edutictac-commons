@@ -75,8 +75,7 @@ escritorio y móvil. Las pruebas Python usan SQLite temporal para permisos y
 persistencia; cuando Playwright está disponible, comprueban también el
 componente compilado con la API real en castellano y valenciano/táctil.
 
-Quedan para fases posteriores las asignaciones, Recursos y los resultados del
-panel docente. La creación de aulas, las credenciales, el selector y la
+Queda para la fase siguiente Recursos y la cesta del panel docente. La creación de aulas, las credenciales, el selector y la
 colaboración se describen en las fases siguientes. El alumnado mantiene su acceso
 por código y PIN; esta migración no introduce Authentik para estudiantes.
 
@@ -205,3 +204,36 @@ Vue cargado, generación/altas desactivadas y sin tarjetas temporales, catálogo
 público de Rebost operativo y proxy de Llibres disponible. No se recrean la
 API, Authentik o los volúmenes, ni se crean aulas o credenciales en la
 instalación real durante estas comprobaciones.
+
+
+## Asignaciones y resultados
+
+`AssignmentsPanel.vue` presenta el resumen, los enlaces de exportación de
+códigos y una única tabla de actividades. `ResultsPanel.vue` y `useResults.js`
+consultan resultados, marcan o retiran la realización manual y muestran la
+clasificación. Se conservan los endpoints y los permisos existentes; las
+plantillas y los manejadores equivalentes se retiran de `app.js`.
+
+El puente añade `summary` y `dataReady`. Solo se puede seleccionar una actividad
+obtenida del listado autorizado. Un refresco de metadatos se aplica únicamente
+si sigue siendo el vigente y la sesión permanece activa. Un fallo de red no
+expulsa al docente; exige recargar antes de operar sobre resultados antiguos.
+Cambiar de aula, actividad o sesión invalida las lecturas y escrituras del
+contexto anterior, incluidos sus errores 401. Los identificadores se codifican
+individualmente en las rutas; no se separan por dos puntos.
+
+Las marcas se serializan y después se consultan los resultados del servidor.
+Retirar una marca manual conserva las puntuaciones y la realización automática
+por intentos. La clasificación sigue siendo la de la actividad, como define la
+API; no se presenta como una clasificación exclusiva del aula.
+
+Pruebas: 140 casos de navegador aprobados en escritorio y móvil, incluidos
+16 de resultados: marcas, ceros, idiomas, nombres inertes, errores, selección
+rápida y respuestas atrasadas. `tests/test_results_ui.py` añade autorización
+con SQLite temporal y flujos Vue/API en castellano y valenciano táctil. Los
+casos de integración comprueban persistencia de marcas y conservación de
+puntuaciones, sin cuentas o datos de la instalación real.
+
+Regresión conjunta de API/SQLite y navegador real: 25 pruebas aprobadas
+(resultados, credenciales, itinerarios y permisos de aulas). No se modifica
+el backend ni se añaden dependencias.

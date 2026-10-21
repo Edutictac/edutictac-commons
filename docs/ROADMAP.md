@@ -47,8 +47,10 @@ canvia l'estat de la versió publicada ni dona per completades les proves de cam
 - [x] Creació d'aules, noves identitats, regeneració/revocació i targetes de
   credencials en Vue. PIN acabats de generar només en memòria; impressió i CSV
   explícits del lot, neteja en canviar de grup/sessió/navegació.
-- [ ] Continuar amb assignacions, Recursos i resultats del tauler docent,
-  mantenint els contractes i les comprovacions de permisos.
+- [x] Assignacions i resultats del tauler docent en Vue: selecció única, marques
+  manuals i classificació de l’activitat, amb respostes tardanes descartades.
+- [ ] Migrar Recursos i la cistella del tauler docent, mantenint els contractes
+  i fixant el grup de destinació durant cada assignació.
 - [ ] Migrar el tauler de l'alumnat, mantenint codi/PIN i l'historial/progrés.
 - [ ] Migrar els formularis propis de Play per tipus d'activitat, conservant
   H5P, publicació i exportadors existents.

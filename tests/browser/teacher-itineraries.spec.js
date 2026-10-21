@@ -274,5 +274,6 @@ test('si no arriba el mòdul d’itineraris, la resta del tauler continua dispon
   await expect(page.locator('#refreshDashboard')).toBeEnabled();
   await expect(page.locator('#teacherOidcLogin')).not.toBeVisible();
   await page.locator('#refreshDashboard').click();
-  await expect(page.locator('#teacherOutput')).toBeVisible();
+  await expect(page.locator('#assignmentsPanel')).toContainText('Recarga la página');
+  await expect(page.locator('#refreshDashboard')).toBeEnabled();
 });
