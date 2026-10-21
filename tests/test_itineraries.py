@@ -244,6 +244,8 @@ def test_vue_editor_with_real_api_and_persistence(api, language, touch):
     from starlette.staticfiles import StaticFiles
 
     client, module, _ = api
+    with module.get_conn() as db:
+        db.execute("INSERT OR IGNORE INTO group_memberships VALUES ('group','teacher-token','owner','2026')")
     module.app.mount('/', StaticFiles(directory=Path(__file__).parents[1] / 'services/portal/public', html=True))
     listener = socket.socket()
     listener.bind(('127.0.0.1', 0)); listener.listen(128)
@@ -286,6 +288,17 @@ def test_vue_editor_with_real_api_and_persistence(api, language, touch):
             output.locator('article').filter(has=page.get_by_text('Històries compartides', exact=True)).locator('[data-select-group-itinerary]').click()
             playwright.expect(output.locator('article').filter(has=page.get_by_text('Històries compartides', exact=True)).get_by_role('status')).to_be_visible()
             assert next(row for row in client.get('/api/teacher/itineraries?group_id=group').json()['itineraries'] if row['is_selected'])['title'] == 'Històries compartides'
+            page.locator('summary').filter(has=page.locator('[data-i18n="teacher.membersTitle"]')).click()
+            page.locator('#loadGroupMembers').click()
+            playwright.expect(page.locator('#membersOutput tbody tr')).to_have_count(1)
+            page.locator('#memberTeacherId').fill('oidc:test-collaborator')
+            page.locator('#memberTeacherId').press('Enter')
+            playwright.expect(page.locator('#membersOutput tbody tr')).to_have_count(2)
+            assert any(row['teacher_id'] == 'oidc:test-collaborator' for row in client.get('/api/teacher/groups/group/members').json()['members'])
+            page.on('dialog', lambda dialog: dialog.accept())
+            page.locator('[data-remove-member="oidc:test-collaborator"]').click()
+            playwright.expect(page.locator('#membersOutput tbody tr')).to_have_count(1)
+            assert [row['role'] for row in client.get('/api/teacher/groups/group/members').json()['members']] == ['owner']
             page.screenshot(path=f'/tmp/commons-itineraries-vue-{language}.png', full_page=True)
             assert not errors
             context.close(); browser.close()

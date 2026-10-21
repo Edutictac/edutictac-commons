@@ -38,17 +38,27 @@ const state = {
 const $ = (id) => document.getElementById(id);
 const has = (id) => Boolean($(id));
 const t = window.i18nPortal.t;
-let itinerariesPanel = null;
+let itinerariesPanel = null, groupsPanel = null, membersPanel = null;
 
-function syncItineraryContext() {
-  itinerariesPanel?.setContext({
-    teacher: state.teacher, group: state.group,
-    assignments: state.assignments, assignment: state.assignment,
-  });
+function syncTeacherPanels() {
+  const context = {teacher: state.teacher, group: state.group, groups: state.groups,
+    assignments: state.assignments, assignment: state.assignment};
+  itinerariesPanel?.setContext(context);
+  groupsPanel?.setContext(context);
+  membersPanel?.setContext(context);
+}
+
+async function selectTeacherGroup(id) {
+  const group = state.groups.find(item => item.id === id);
+  if (!group || !state.teacher) return;
+  state.group = {id: group.id, group_code: group.name, tenant_id: group.tenant_id};
+  state.assignment = null;
+  saveState();
+  await refreshDashboard();
 }
 
 async function loadItineraries() {
-  syncItineraryContext();
+  syncTeacherPanels();
   await itinerariesPanel?.load();
 }
 
@@ -223,7 +233,7 @@ function returnAfterStudentLogin() {
 }
 
 function saveState() {
-  syncItineraryContext();
+  syncTeacherPanels();
   localStorage.setItem(
     STORAGE_KEY,
     JSON.stringify({
@@ -267,13 +277,13 @@ function setTeacherSession(active) {
     logoutButton.classList.toggle("hidden", !active);
     logoutButton.setAttribute("aria-hidden", active ? "false" : "true");
   }
-  ["teacherSummary", "refreshDashboard", "createBatch", "teacherLogout", "addGroupMember", "loadGroupMembers", "addGroupIdentities", "deleteGroup", "assignFavoriteResources"].forEach((id) => {
+  ["teacherSummary", "refreshDashboard", "createBatch", "teacherLogout", "addGroupIdentities", "assignFavoriteResources"].forEach((id) => {
     const node = $(id);
     if (node) {
       node.disabled = !active;
     }
   });
-  syncItineraryContext();
+  syncTeacherPanels();
 }
 
 function setStudentSession(active) {
@@ -464,19 +474,6 @@ function teacherDashboard(summary, assignments) {
   return `
     <p><strong>${escapeHtml(summary.active)}</strong> ${t("teacher.activeOfTotal", { total: escapeHtml(summary.total) })}</p>
     ${selectedTeacherContext()}
-    <h3>${t("teacher.groups")}</h3>
-    ${table(
-      groups.map((group) => ({
-        ...group,
-        action: `<button class="compact secondary" type="button" data-select-group="${escapeHtml(group.id)}">${t("common.select")}</button>`,
-      })),
-      [
-        { key: "name", label: t("teacher.groupOpaque") },
-        { key: "tenant_id", label: t("teacher.tenant") },
-        { key: "active", label: t("teacher.active") },
-        { key: "action", label: "", html: true },
-      ],
-    )}
     <h3>${state.group ? t("teacher.activeCredentials") : t("teacher.recentCredentials")}</h3>
     ${table(
       selectedIdentities.map((identity) => ({
@@ -761,19 +758,10 @@ async function teacherLogout() {
 }
 
 async function teacherSummary() {
-  const summary = await api("/api/teacher/summary", { method: "GET" });
+  const summary = await api("/api/teacher/summary", {method: "GET"});
   state.groups = summary.groups || [];
-  setOutput(
-    $("teacherOutput"),
-    `
-      <p><strong>${escapeHtml(summary.active)}</strong> ${t("teacher.activeOfTotal", { total: escapeHtml(summary.total) })}</p>
-      ${table(summary.groups, [
-        { key: "name", label: t("teacher.groupOpaque") },
-        { key: "tenant_id", label: t("teacher.tenant") },
-        { key: "active", label: t("teacher.active") },
-      ])}
-    `,
-  );
+  syncTeacherPanels();
+  setOutput($("teacherOutput"), `<p><strong>${escapeHtml(summary.active)}</strong> ${t("teacher.activeOfTotal", {total: escapeHtml(summary.total)})}</p>`);
 }
 
 async function loadTeacherData() {
@@ -820,6 +808,8 @@ async function createBatch() {
     body: JSON.stringify({ tenant_id: tenantId, count, pin_length: 4 }),
   });
   state.group = batch.group;
+  state.groups = [{id: batch.group.id, name: batch.group.group_code, tenant_id: batch.group.tenant_id,
+    active: batch.identities.length}, ...state.groups.filter(group => group.id !== batch.group.id)];
   state.identities = batch.identities;
   state.assignment = null;
   state.assignments = [];
@@ -851,19 +841,16 @@ async function addGroupIdentities() {
   );
 }
 
-async function deleteGroup() {
-  if (!state.teacher) throw new Error(t("teacher.errors.loginFirst"));
-  if (!state.group) throw new Error(t("teacher.errors.selectGroupFirst"));
-  if (!window.confirm(t("teacher.confirmDeleteGroup", { group: state.group.group_code }))) return;
-  await api(`/api/teacher/groups/${encodeURIComponent(state.group.id)}`, { method: "DELETE" });
-  state.group = null;
-  state.assignment = null;
-  state.identities = [];
-  state.assignments = [];
+async function afterGroupDeleted(groupId) {
+  state.groups = state.groups.filter(group => group.id !== groupId);
+  if (state.group?.id === groupId) {
+    state.group = null; state.assignment = null;
+    state.identities = []; state.assignments = [];
+    setEmpty($("teacherOutput"), t("teacher.groupDeleted"));
+    setEmpty($("resultsOutput"), t("teacher.resultsPlaceholder"));
+  }
   saveState();
-  setEmpty($("teacherOutput"), t("teacher.groupDeleted"));
-  setEmpty($("membersOutput"), t("teacher.membersEmpty"));
-  await refreshDashboard();
+  if (state.teacher) await refreshDashboard();
 }
 
 async function regeneratePin(identityId) {
@@ -900,56 +887,6 @@ async function revokeIdentity(identityId) {
     $("teacherOutput"),
     `<p>${t("teacher.revoked", { label: escapeHtml(label) })}</p>${teacherDashboard(summary, assignmentData.assignments || [], identityData.identities || [])}`,
   );
-}
-
-async function loadGroupMembers() {
-  if (!state.teacher) throw new Error(t("teacher.errors.loginFirst"));
-  if (!state.group) throw new Error(t("teacher.errors.selectGroupFirst"));
-  const data = await api(`/api/teacher/groups/${encodeURIComponent(state.group.id)}/members`, { method: "GET" });
-  const members = data.members || [];
-  setOutput(
-    $("membersOutput"),
-    members.length
-      ? table(members.map((member) => ({
-          ...member,
-          action: member.role === "owner"
-            ? ""
-            : `<button class="compact danger" type="button" data-remove-member="${escapeHtml(member.teacher_id)}">${t("teacher.removeMember")}</button>`,
-        })), [
-          { key: "teacher_id", label: t("teacher.memberIdLabel") },
-          { key: "role", label: t("common.status") },
-          { key: "created_at", label: t("common.date") },
-          {
-            key: "action",
-            label: "",
-            html: true,
-          },
-        ])
-      : `<p>${t("common.tableEmpty")}</p>`,
-  );
-}
-
-async function addGroupMember() {
-  if (!state.teacher) throw new Error(t("teacher.errors.loginFirst"));
-  if (!state.group) throw new Error(t("teacher.errors.selectGroupFirst"));
-  const teacherId = $("memberTeacherId").value.trim();
-  if (!teacherId) throw new Error(t("teacher.errors.enterMemberId"));
-  await api(`/api/teacher/groups/${encodeURIComponent(state.group.id)}/members`, {
-    method: "POST",
-    body: JSON.stringify({ teacher_id: teacherId, role: "teacher" }),
-  });
-  $("memberTeacherId").value = "";
-  await loadGroupMembers();
-}
-
-async function removeGroupMember(teacherId) {
-  if (!state.teacher) throw new Error(t("teacher.errors.loginFirst"));
-  if (!state.group) throw new Error(t("teacher.errors.selectGroupFirst"));
-  if (!window.confirm(t("teacher.confirmRemoveMember", { id: teacherId }))) return;
-  await api(`/api/teacher/groups/${encodeURIComponent(state.group.id)}/members/${encodeURIComponent(teacherId)}`, {
-    method: "DELETE",
-  });
-  await loadGroupMembers();
 }
 
 async function studentLogin() {
@@ -1185,21 +1122,6 @@ document.addEventListener("click", (event) => {
     return;
   }
 
-  const groupButton = event.target.closest("[data-select-group]");
-  if (groupButton) {
-    const group = state.groups.find((item) => item.id === groupButton.dataset.selectGroup);
-    if (!group) return;
-    state.group = { id: group.id, group_code: group.name, tenant_id: group.tenant_id };
-    state.assignment = null;
-    saveState();
-    refreshDashboard().catch((error) => {
-      if (has("teacherOutput")) {
-        setOutput($("teacherOutput"), `<p><strong>${t("common.errorLabel")}</strong> ${escapeHtml(error.message)}</p>`);
-      }
-    });
-    return;
-  }
-
   const assignmentButton = event.target.closest("[data-select-assignment]");
   if (assignmentButton) {
     const assignment = state.assignments.find((item) => item.id === assignmentButton.dataset.selectAssignment);
@@ -1259,16 +1181,6 @@ document.addEventListener("click", (event) => {
     toggleManualCompletion(assignmentId, identityId, true).catch((error) => {
       if (has("resultsOutput")) {
         setOutput($("resultsOutput"), `<p><strong>${t("common.errorLabel")}</strong> ${escapeHtml(error.message)}</p>`);
-      }
-    });
-    return;
-  }
-
-  const removeMemberButton = event.target.closest("[data-remove-member]");
-  if (removeMemberButton) {
-    removeGroupMember(removeMemberButton.dataset.removeMember).catch((error) => {
-      if (has("membersOutput")) {
-        setOutput($("membersOutput"), `<p><strong>${t("common.errorLabel")}</strong> ${escapeHtml(error.message)}</p>`);
       }
     });
     return;
@@ -1345,10 +1257,7 @@ bind("teacherSummary", teacherSummary, "teacherOutput");
 bind("refreshDashboard", refreshDashboard, "teacherOutput");
 bind("createBatch", createBatch, "teacherOutput");
 bind("addGroupIdentities", addGroupIdentities, "teacherOutput");
-bind("deleteGroup", deleteGroup, "teacherOutput");
 bind("assignFavoriteResources", assignFavoriteResources, "resourcesOutput");
-bind("addGroupMember", addGroupMember, "membersOutput");
-bind("loadGroupMembers", loadGroupMembers, "membersOutput");
 bind("studentLogin", studentLogin, "studentOutput");
 bind("studentLogout", studentLogout, "studentOutput");
 bind("loadResults", loadResults);
@@ -1389,11 +1298,16 @@ window.addEventListener("edutictac:langchange", () => {
 async function initializePortal() {
   if (has("itinerariesPanel")) {
     try {
-      const {mountItineraries} = await import('/assets/teacher-itineraries.js');
-      itinerariesPanel = mountItineraries($("itinerariesPanel"), {api, onSessionExpired: () => setTeacherSession(false)});
+      const {mountItineraries, mountGroups, mountMembers} = await import('/assets/teacher-itineraries.js');
+      const options = {api, onSessionExpired: () => setTeacherSession(false)};
+      itinerariesPanel = mountItineraries($("itinerariesPanel"), options);
+      groupsPanel = mountGroups($("groupsPanel"), {...options, onSelect: selectTeacherGroup, onDeleted: afterGroupDeleted});
+      membersPanel = mountMembers($("membersPanel"), options);
     } catch {
-      setEmpty($("itinerariesPanel"), t("teacher.itinerary.unavailable"));
-      $("itinerariesPanel").setAttribute("data-i18n", "teacher.itinerary.unavailable");
+      for (const id of ["itinerariesPanel", "groupsPanel", "membersPanel"]) {
+        setEmpty($(id), t("teacher.panelUnavailable"));
+        $(id).setAttribute("data-i18n", "teacher.panelUnavailable");
+      }
     }
   }
 

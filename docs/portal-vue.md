@@ -75,8 +75,9 @@ escritorio y móvil. Las pruebas Python usan SQLite temporal para permisos y
 persistencia; cuando Playwright está disponible, comprueban también el
 componente compilado con la API real en castellano y valenciano/táctil.
 
-Quedan para fases posteriores las aulas, los miembros, las credenciales, las
-asignaciones y los resultados del panel docente. El alumnado mantiene su acceso
+Quedan para fases posteriores la creación de aulas, las credenciales, las
+asignaciones y los resultados del panel docente. El selector y la colaboración
+se han extraído en la fase descrita a continuación. El alumnado mantiene su acceso
 por código y PIN; esta migración no introduce Authentik para estudiantes.
 
 ## Resultado de esta fase (21-10-2026)
@@ -97,3 +98,54 @@ por código y PIN; esta migración no introduce Authentik para estudiantes.
 Para probarlo: abrir `/teacher.html`, entrar como docente, seleccionar un grupo
 con actividades y desplegar **Itinerarios**. Esta fase conserva los recorridos
 existentes y no publica una nueva versión de Commons.
+
+
+## Aulas y colaboración docente
+
+`GroupSelector.vue` muestra una sola tabla de aulas, selecciona el grupo activo
+con `aria-pressed` y permite eliminarlo con la confirmación existente.
+`GroupMembersPanel.vue` consulta, añade y retira colaboradores. Ambos reutilizan
+el mismo bundle y runtime Vue del panel docente; no se añaden servicios ni
+endpoints. Se han retirado sus tablas y manejadores imperativos de `app.js`.
+
+El puente del portal pasa el contexto actual a los tres componentes mediante
+`syncTeacherPanels()`. La selección sigue guardándose en la preferencia anterior
+de Commons. No se guardan los miembros o el identificador que se está escribiendo
+en localStorage. La creación de alumnado y sus PIN continúan en el controlador
+anterior hasta la siguiente fase.
+
+Cambiar de grupo o de sesión vacía los miembros y descarta las operaciones
+anteriores. Un alta pendiente no borra el borrador del grupo nuevo. Una
+eliminación pendiente se aplica al identificador capturado al confirmar; su
+respuesta no borra una selección posterior. Cancelar la confirmación no envía
+la petición. Tras un error al consultar o cambiar colaboradores se retiran los
+datos anteriores y se exige volver a consultarlos antes de continuar.
+
+La API existente permite gestionar miembros y eliminar aulas al propietario
+(o administrador autorizado). Conserva su respuesta 404 cuando el grupo no
+existe o no está autorizado. La interfaz muestra un aviso traducido, no intenta
+inferir la propiedad a partir del nombre y no ofrece retirar filas con rol
+`owner`. El servidor conserva la decisión final en cada petición.
+
+Comprobaciones de esta fase:
+
+- 108 pruebas de navegador aprobadas, incluidas 18 de aulas/colaboración en
+  escritorio y móvil: operaciones, permisos, cambios de idioma, respuestas
+  tardías, confirmación/cancelación, nombres inertes y sesión caducada.
+- Tres pruebas de propiedad con SQLite temporal aprobadas: colaboradores sin
+  permiso de administración, propietario protegido, validación y eliminación
+  limitada al aula capturada.
+- Los dos flujos de navegador con API real en castellano y valenciano se
+  amplían con alta/retirada de colaboradores y comprobación de la persistencia.
+  Captura valenciana revisada.
+
+El commit de la fase anterior es `4850b13`. A petición del usuario, cada fase
+comprobada termina con su commit; la publicación mediante push sigue siendo
+una acción separada.
+
+Activación local de aulas/colaboración: solo se recrea el portal, con la imagen
+anterior conservada como `before-groups-vue-20261021`. Comprobación posterior
+anónima: los tres paneles Vue se montan, los botones de escritura permanecen
+desactivados, el catálogo público de Rebost se abre y el proxy de Llibres sirve
+su interfaz. Los casos con permisos y cambios de datos se prueban únicamente
+con las bases temporales, sin crear aulas o miembros en la instalación real.

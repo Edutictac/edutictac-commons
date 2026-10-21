@@ -72,6 +72,8 @@
             <button id="createBatch" type="button" data-i18n="teacher.generateCredentials">Generar credenciales</button>
           </div>
 
+          <div id="groupsPanel"></div>
+
           <div id="teacherOutput" class="output empty">Encara no hi ha credencials generades.</div>
 
           <div class="subsection-heading">
@@ -84,7 +86,6 @@
             </label>
             <div class="actions">
               <button id="addGroupIdentities" type="button" class="secondary" data-i18n="teacher.addStudents">Añadir al grupo seleccionado</button>
-              <button id="deleteGroup" type="button" class="danger" data-i18n="teacher.deleteGroup">Eliminar grupo</button>
             </div>
           </div>
         </div>
@@ -94,20 +95,7 @@
             <span class="eyebrow" data-i18n="teacher.sharedAccess">Colaboración</span>
             <strong data-i18n="teacher.membersTitle">Docentes con acceso al grupo seleccionado</strong>
           </summary>
-          <div class="panel-content">
-          <p class="hint" data-i18n="teacher.membersHint">Afig un identificador docent pseudònim. Només el propietari pot canviar membres.</p>
-          <div class="grid-fields">
-            <label>
-              <span data-i18n="teacher.memberIdLabel">Identificador docent</span>
-              <input id="memberTeacherId" type="text" placeholder="oidc:..." data-i18n-placeholder="teacher.memberIdPlaceholder" autocomplete="off">
-            </label>
-            <div class="actions">
-              <button id="addGroupMember" type="button" class="secondary" data-i18n="teacher.addMember">Afegir docent</button>
-              <button id="loadGroupMembers" type="button" class="secondary" data-i18n="teacher.loadMembers">Veure membres</button>
-            </div>
-          </div>
-          <div id="membersOutput" class="output empty" data-i18n="teacher.membersEmpty">Selecciona un grup per gestionar la col·laboració.</div>
-          </div>
+          <div id="membersPanel" class="panel-content"></div>
         </details>
 
         <details class="panel teacher-collapsible" data-module="recursos">
