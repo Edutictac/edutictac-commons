@@ -7,15 +7,15 @@ def test_owner_can_manage_collaborators_but_collaborator_cannot(api, monkeypatch
     endpoint = '/api/teacher/groups/group/members'
     assert client.post(endpoint, json={'teacher_id': 'collaborator', 'role': 'teacher'}).status_code == 201
     assert any(row['teacher_id'] == 'collaborator' for row in client.get(endpoint).json()['members'])
-    monkeypatch.setattr(module, 'require_teacher', lambda request: 'collaborator')
+    monkeypatch.setattr(module.commons.auth, 'require_teacher', lambda request: 'collaborator')
     assert len(client.get('/api/teacher/itineraries?group_id=group').json()['itineraries']) == 1
     assert client.get(endpoint).status_code == 404
     assert client.post(endpoint, json={'teacher_id': 'another-teacher', 'role': 'teacher'}).status_code == 404
     assert client.delete(endpoint + '/collaborator').status_code == 404
     assert client.delete('/api/teacher/groups/group').status_code == 404
-    monkeypatch.setattr(module, 'require_teacher', lambda request: 'teacher-token')
+    monkeypatch.setattr(module.commons.auth, 'require_teacher', lambda request: 'teacher-token')
     assert client.delete(endpoint + '/collaborator').status_code == 200
-    monkeypatch.setattr(module, 'require_teacher', lambda request: 'collaborator')
+    monkeypatch.setattr(module.commons.auth, 'require_teacher', lambda request: 'collaborator')
     assert client.get('/api/teacher/itineraries?group_id=group').json()['itineraries'] == []
     assert client.put(items_url, json={'assignment_ids': [], 'expected_assignment_ids': ['a', 'b', 'c']}).status_code == 404
 

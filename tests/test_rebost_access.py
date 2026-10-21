@@ -34,17 +34,18 @@ def test_code_pin_login_owns_rebost_and_logout_revokes(api):
 @pytest.mark.parametrize('claim', ['roles', 'groups'])
 def test_oidc_callback_opens_same_library_and_revokes_on_logout(api, monkeypatch, role, claim):
     module, _, _, _ = api
-    for name,value in {'OIDC_CLIENT_ID':'test-client','OIDC_CLIENT_SECRET':'test-client-secret',
-                       'OIDC_REDIRECT_URL':'http://testserver/api/auth/oidc/callback'}.items():
-        monkeypatch.setattr(module, name, value)
-    monkeypatch.setattr(module, 'OIDC_ROLE_CLAIM', claim)
+    settings = module.commons.settings
+    for name,value in {'oidc_client_id':'test-client','oidc_client_secret':'test-client-secret',
+                       'oidc_redirect_url':'http://testserver/api/auth/oidc/callback'}.items():
+        monkeypatch.setattr(settings, name, value)
+    monkeypatch.setattr(settings, 'oidc_role_claim', claim)
     async def authorize(request, redirect_uri):
-        assert redirect_uri == module.OIDC_REDIRECT_URL
+        assert redirect_uri == settings.oidc_redirect_url
         return RedirectResponse('/verified-provider-boundary')
     async def verified_token(request, claims_options):
         assert module.OIDC_ISSUER_URL in claims_options['iss']['values']
         return {'userinfo':{'sub':'verified-subject','iss':module.OIDC_ISSUER_URL,claim:[role]}}
-    monkeypatch.setattr(module, 'oauth', SimpleNamespace(authentik=SimpleNamespace(
+    monkeypatch.setattr(module.commons, 'oauth', SimpleNamespace(authentik=SimpleNamespace(
         authorize_redirect=authorize, authorize_access_token=verified_token)))
     client = TestClient(module.app); client.headers['Origin'] = 'http://testserver'
     destination = '/llibres-login.html?lang=va' if claim == 'groups' else '/blocs-access.html'

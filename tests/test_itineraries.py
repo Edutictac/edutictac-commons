@@ -49,7 +49,7 @@ def test_order_reaches_student_and_removal_preserves_results(api, monkeypatch):
     with module.get_conn() as conn:
         conn.execute("INSERT INTO student_identities (id, group_id, public_code, pin_hash, created_at, updated_at) VALUES ('pupil', 'group', 'ABC', 'unused', '2026-10-17', '2026-10-17')")
         conn.execute("INSERT INTO scores (id, identity_id, assignment_id, app_id, activity_id, score, created_at) VALUES ('score', 'pupil', 'a', 'play', 'a', 90, '2026-10-17')")
-    monkeypatch.setattr(module, "current_identity", lambda request: {"id": "pupil", "group_id": "group"})
+    monkeypatch.setattr(module.commons.auth, "current_identity", lambda request: {"id": "pupil", "group_id": "group"})
     response = replace(client, url, ["c", "a", "b"])
     assert response.status_code == 200
     assert response.json()["itinerary"]["is_selected"] is True
@@ -91,7 +91,7 @@ def test_authentication_and_group_membership(api, monkeypatch):
     client, module, url = api
     del client.headers["Authorization"]
     assert replace(client, url, []).status_code == 401
-    monkeypatch.setattr(module, "require_teacher", lambda request: "collaborator")
+    monkeypatch.setattr(module.commons.auth, "require_teacher", lambda request: "collaborator")
     assert replace(client, url, []).status_code == 404
     with module.get_conn() as conn:
         conn.execute("INSERT INTO group_memberships VALUES ('group', 'collaborator', 'teacher', '2026-10-17')")
@@ -121,7 +121,7 @@ def test_selected_itinerary_controls_title_and_order_without_hiding_assignments(
     second_url = f'/api/teacher/itineraries/{second["id"]}/items'
     assert client.post(second_url, json={"assignment_id": "c", "position": 0}).status_code == 201
     assert client.post(second_url, json={"assignment_id": "b", "position": 1}).status_code == 201
-    monkeypatch.setattr(module, "current_identity", lambda request: {"id": "pupil", "group_id": "group"})
+    monkeypatch.setattr(module.commons.auth, "current_identity", lambda request: {"id": "pupil", "group_id": "group"})
     assert select(client, second["id"], first).status_code == 200
     dashboard = client.get("/api/student/dashboard").json()
     assert dashboard["selected_itinerary"] == {"id": second["id"], "title": "Reading"}
@@ -155,7 +155,7 @@ def test_selection_requires_current_group_access(api, monkeypatch):
     first = selected_id(client)
     del client.headers["Authorization"]
     assert select(client, None, first).status_code == 401
-    monkeypatch.setattr(module, "require_teacher", lambda request: "collaborator")
+    monkeypatch.setattr(module.commons.auth, "require_teacher", lambda request: "collaborator")
     assert select(client, None, first).status_code == 404
     with module.get_conn() as conn:
         conn.execute("INSERT INTO group_memberships VALUES ('group', 'collaborator', 'teacher', '2026-10-17')")
@@ -163,6 +163,13 @@ def test_selection_requires_current_group_access(api, monkeypatch):
     with module.get_conn() as conn:
         conn.execute("DELETE FROM group_memberships WHERE teacher_id = 'collaborator'")
     assert select(client, first, None).status_code == 404
+
+
+def rerun_baseline(module):
+    """Simula una base anterior a les migracions versionades i torna a migrar."""
+    with module.get_conn() as conn:
+        conn.execute("DELETE FROM _edutictac_migrations WHERE namespace = 'id-api'")
+    module.init_db()
 
 
 def test_selection_migration_is_idempotent_and_preserves_explicit_none(api):
@@ -173,13 +180,13 @@ def test_selection_migration_is_idempotent_and_preserves_explicit_none(api):
         # Simulate the previous database schema, before selection existed.
         conn.execute("DROP TABLE group_itinerary_selection")
         conn.execute("UPDATE itineraries SET updated_at = '2099-01-01' WHERE id = ?", (second,))
-    module.init_db()
+    rerun_baseline(module)
     assert selected_id(client) == second
     assert select(client, first, second).status_code == 200
-    module.init_db()
+    rerun_baseline(module)
     assert selected_id(client) == first
     assert select(client, None, first).status_code == 200
-    module.init_db()
+    rerun_baseline(module)
     assert selected_id(client) is None
     third = client.post("/api/teacher/itineraries", json={"title": "Third", "group_id": "group"}).json()["itinerary"]
     assert third["is_selected"] is False
@@ -199,7 +206,7 @@ def test_inactive_selected_itinerary_can_be_replaced(api):
 
 def test_student_cannot_see_other_group_title(api, monkeypatch):
     client, module, url = api
-    monkeypatch.setattr(module, "current_identity", lambda request: {"id": "other-pupil", "group_id": "other"})
+    monkeypatch.setattr(module.commons.auth, "current_identity", lambda request: {"id": "other-pupil", "group_id": "other"})
     dashboard = client.get("/api/student/dashboard").json()
     assert dashboard["selected_itinerary"] is None
     assert [item["id"] for item in dashboard["assignments"]] == ["foreign"]
@@ -207,10 +214,10 @@ def test_student_cannot_see_other_group_title(api, monkeypatch):
 
 def test_revoked_collaborator_cannot_access_even_the_itinerary_they_created(api, monkeypatch):
     client, module, url = api
-    original_teacher = module.require_teacher
+    original_teacher = module.commons.auth.require_teacher
     with module.get_conn() as conn:
         conn.execute("INSERT INTO group_memberships VALUES ('group', 'collaborator', 'teacher', '2026-10-17')")
-    monkeypatch.setattr(module, "require_teacher", lambda request: "collaborator")
+    monkeypatch.setattr(module.commons.auth, "require_teacher", lambda request: "collaborator")
     created = client.post("/api/teacher/itineraries", json={"title": "Collaborative", "group_id": "group"})
     assert created.status_code == 201
     itinerary_id = created.json()["itinerary"]["id"]
@@ -222,7 +229,7 @@ def test_revoked_collaborator_cannot_access_even_the_itinerary_they_created(api,
     assert client.post(items_url, json={"assignment_id": "b"}).status_code == 404
     assert replace(client, items_url, [], ["a"]).status_code == 404
     assert select(client, itinerary_id, selected_id(client)).status_code == 404
-    monkeypatch.setattr(module, "require_teacher", original_teacher)
+    monkeypatch.setattr(module.commons.auth, "require_teacher", original_teacher)
     # The group owner retains access even when somebody else created the itinerary.
     assert itinerary_id in {item["id"] for item in client.get("/api/teacher/itineraries?group_id=group").json()["itineraries"]}
     assert replace(client, items_url, ["b"], ["a"]).status_code == 200

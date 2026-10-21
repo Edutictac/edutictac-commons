@@ -17,7 +17,7 @@ def test_results_authorization_and_manual_marks(api, monkeypatch):
     path = '/api/teacher/activity-assignments/b'
     assert client.post(path + '/students/outsider/complete').status_code == 404
     assert client.get('/api/teacher/activity-assignments/foreign/results').status_code == 404
-    monkeypatch.setattr(module, 'require_teacher', lambda request: 'collaborator')
+    monkeypatch.setattr(module.commons.auth, 'require_teacher', lambda request: 'collaborator')
     assert client.get(path + '/results').status_code == 404
     with module.get_conn() as conn:
         conn.execute("INSERT INTO group_memberships VALUES ('group', 'collaborator', 'teacher', '2026-10-21')")

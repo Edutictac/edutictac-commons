@@ -7,7 +7,7 @@ def test_assignments_remain_scoped_to_authorized_classrooms(api, monkeypatch):
     client, module, _ = api
     payload = {'group_id':'group', 'app_id':'resource', 'activity_id':'teacher-upload:document', 'title':'Document', 'launch_url':'http://example.test/documents/document'}
     assert client.post('/api/teacher/activity-assignments', json={**payload, 'group_id':'other'}).status_code == 404
-    monkeypatch.setattr(module, 'require_teacher', lambda request: 'collaborator')
+    monkeypatch.setattr(module.commons.auth, 'require_teacher', lambda request: 'collaborator')
     assert client.post('/api/teacher/activity-assignments', json=payload).status_code == 404
     with module.get_conn() as conn:
         conn.execute("INSERT INTO group_memberships VALUES ('group', 'collaborator', 'teacher', '2026-10-21')")
