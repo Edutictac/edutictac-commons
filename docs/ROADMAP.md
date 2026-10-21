@@ -44,9 +44,11 @@ canvia l'estat de la versió publicada ni dona per completades les proves de cam
 - [x] Selector d'aules i eliminació del grup seleccionat en Vue, sense duplicar
   taules. Col·laboració docent: consulta, alta i retirada de membres amb permisos
   comprovats en servidor i respostes d'altres grups descartades.
-- [ ] Migrar la creació d'aules i les credencials; després, assignacions,
-  Recursos i resultats. Mantindre els PIN acabats de generar només en memòria
-  i les comprovacions de permisos.
+- [x] Creació d'aules, noves identitats, regeneració/revocació i targetes de
+  credencials en Vue. PIN acabats de generar només en memòria; impressió i CSV
+  explícits del lot, neteja en canviar de grup/sessió/navegació.
+- [ ] Continuar amb assignacions, Recursos i resultats del tauler docent,
+  mantenint els contractes i les comprovacions de permisos.
 - [ ] Migrar el tauler de l'alumnat, mantenint codi/PIN i l'historial/progrés.
 - [ ] Migrar els formularis propis de Play per tipus d'activitat, conservant
   H5P, publicació i exportadors existents.

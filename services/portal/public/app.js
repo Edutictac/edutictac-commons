@@ -38,14 +38,15 @@ const state = {
 const $ = (id) => document.getElementById(id);
 const has = (id) => Boolean($(id));
 const t = window.i18nPortal.t;
-let itinerariesPanel = null, groupsPanel = null, membersPanel = null;
+let itinerariesPanel = null, groupsPanel = null, membersPanel = null, credentialsPanel = null;
 
 function syncTeacherPanels() {
   const context = {teacher: state.teacher, group: state.group, groups: state.groups,
-    assignments: state.assignments, assignment: state.assignment};
+    assignments: state.assignments, assignment: state.assignment, identities: state.identities};
   itinerariesPanel?.setContext(context);
   groupsPanel?.setContext(context);
   membersPanel?.setContext(context);
+  credentialsPanel?.setContext(context);
 }
 
 async function selectTeacherGroup(id) {
@@ -61,13 +62,6 @@ async function loadItineraries() {
   syncTeacherPanels();
   await itinerariesPanel?.load();
 }
-
-// Guarda temporalment (només en memòria del navegador) els lots d'identitats
-// acabats de generar, mentre el PIN encara és en clar, perquè es puguen
-// imprimir o exportar. El backend mai torna a exposar el PIN després
-// d'aquest moment (vore `services/id-api/main.py`, comentari a
-// `export_codes_csv`), així que aquestes dades no es persisteixen enlloc.
-const pendingBatches = new Map();
 
 function accessibleResourceUrl(rawUrl) {
   if (!rawUrl) return "";
@@ -277,7 +271,7 @@ function setTeacherSession(active) {
     logoutButton.classList.toggle("hidden", !active);
     logoutButton.setAttribute("aria-hidden", active ? "false" : "true");
   }
-  ["teacherSummary", "refreshDashboard", "createBatch", "teacherLogout", "addGroupIdentities", "assignFavoriteResources"].forEach((id) => {
+  ["teacherSummary", "refreshDashboard", "teacherLogout", "assignFavoriteResources"].forEach((id) => {
     const node = $(id);
     if (node) {
       node.disabled = !active;
@@ -323,85 +317,6 @@ function escapeHtml(value) {
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;");
-}
-
-function credentialCards(identities) {
-  return `
-    <div class="cards">
-      ${identities
-        .map(
-          (item) => `
-            <button class="credential" type="button" data-code="${escapeHtml(item.public_code)}" data-pin="${escapeHtml(item.pin)}">
-              <strong>${escapeHtml(item.public_code)}</strong>
-              <span>PIN ${escapeHtml(item.pin)}</span>
-              <small>${t("common.useAsStudent")}</small>
-            </button>
-          `,
-        )
-        .join("")}
-    </div>
-  `;
-}
-
-function batchActions(identities, groupCode) {
-  if (!identities.length) return "";
-  const batchId = `batch-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-  pendingBatches.set(batchId, { identities, groupCode });
-  return `
-    <div class="export-actions" aria-label="${t("teacher.exports")}">
-      <button type="button" class="secondary" data-print-batch="${batchId}">${t("teacher.printBatch")}</button>
-      <button type="button" class="secondary" data-download-batch-csv="${batchId}">${t("teacher.downloadBatchCsv")}</button>
-    </div>
-  `;
-}
-
-function printBatchCards(identities, groupCode) {
-  const win = window.open("", "_blank");
-  if (!win) return;
-  const cards = identities
-    .map(
-      (item) => `
-        <article>
-          <h2>EduTicTac</h2>
-          <p>Codi</p>
-          <strong>${escapeHtml(item.public_code)}</strong>
-          <p>PIN</p>
-          <em>${escapeHtml(item.pin)}</em>
-          <small>${t("common.useAsStudent")}</small>
-        </article>
-      `,
-    )
-    .join("");
-  win.document.write(`<!doctype html>
-<html lang="ca">
-<meta charset="utf-8">
-<title>Targetes EduTicTac ${escapeHtml(groupCode || "")}</title>
-<style>
-body{font-family:Arial,sans-serif;margin:16px;color:#111}
-main{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-article{border:1px dashed #555;padding:10px;min-height:130px;break-inside:avoid}
-h2{font-size:18px;margin:0 0 8px}p{margin:6px 0 2px}strong{font-size:28px}em{display:block;font-style:normal;font-size:22px;color:#555}small{display:block;margin-top:10px}
-@media print{body{margin:8mm}}
-</style>
-<main>${cards}</main>
-</html>`);
-  win.document.close();
-  win.focus();
-  win.addEventListener("load", () => win.print());
-}
-
-function downloadBatchCsv(identities, groupCode) {
-  const rows = [["codi", "pin"], ...identities.map((item) => [item.public_code, item.pin])];
-  const csv = rows.map((row) => row.map((value) => `"${String(value).replaceAll('"', '""')}"`).join(",")).join("\r\n");
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = `edutictac-${groupCode || "grup"}.csv`;
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  URL.revokeObjectURL(url);
 }
 
 function groupLinks(group) {
@@ -468,32 +383,9 @@ function table(rows, columns) {
 function teacherDashboard(summary, assignments) {
   const groups = summary.groups || [];
   const groupNames = new Map(groups.map((group) => [group.id, group.name]));
-  const selectedIdentities = state.group
-    ? state.identities.filter((identity) => identity.group_id === state.group.id)
-    : state.identities;
   return `
     <p><strong>${escapeHtml(summary.active)}</strong> ${t("teacher.activeOfTotal", { total: escapeHtml(summary.total) })}</p>
     ${selectedTeacherContext()}
-    <h3>${state.group ? t("teacher.activeCredentials") : t("teacher.recentCredentials")}</h3>
-    ${table(
-      selectedIdentities.map((identity) => ({
-        ...identity,
-        group_name: groupNames.get(identity.group_id) || identity.group_name || identity.group_id,
-        pin_rotated_at: identity.pin_rotated_at || "",
-        action: `
-          <div class="inline-actions">
-            <button class="compact secondary" type="button" data-regenerate-pin="${escapeHtml(identity.id)}">${t("teacher.regeneratePin")}</button>
-            <button class="compact danger" type="button" data-revoke-identity="${escapeHtml(identity.id)}">${t("teacher.revoke")}</button>
-          </div>
-        `,
-      })),
-      [
-        { key: "public_code", label: t("common.code") },
-        { key: "group_name", label: t("common.group") },
-        { key: "pin_rotated_at", label: t("teacher.pinUpdated") },
-        { key: "action", label: "", html: true },
-      ],
-    )}
     <h3>${t("teacher.assignments")}</h3>
     ${table(
       assignments.map((assignment) => ({
@@ -797,48 +689,12 @@ async function refreshDashboard() {
   }
 }
 
-async function createBatch() {
-  if (!state.teacher) {
-    throw new Error(t("teacher.errors.loginFirst"));
-  }
-  const tenantId = $("tenantId").value.trim() || "centre";
-  const count = Number($("identityCount").value || 6);
-  const batch = await api("/api/identities/batch", {
-    method: "POST",
-    body: JSON.stringify({ tenant_id: tenantId, count, pin_length: 4 }),
-  });
-  state.group = batch.group;
-  state.groups = [{id: batch.group.id, name: batch.group.group_code, tenant_id: batch.group.tenant_id,
-    active: batch.identities.length}, ...state.groups.filter(group => group.id !== batch.group.id)];
-  state.identities = batch.identities;
-  state.assignment = null;
-  state.assignments = [];
+function afterClassCreated({group, count}) {
+  state.group = group;
+  state.groups = [{id: group.id, name: group.group_code, tenant_id: group.tenant_id, active: count},
+    ...state.groups.filter(item => item.id !== group.id)];
+  state.identities = []; state.assignment = null; state.assignments = [];
   saveState();
-  setOutput(
-    $("teacherOutput"),
-    `
-      <p>${t("teacher.groupCreated")} <strong>${escapeHtml(batch.group.group_code)}</strong></p>
-      <p>${t("teacher.pickCardHint")}</p>
-      ${groupLinks(batch.group)}
-      ${batchActions(batch.identities, batch.group.group_code)}
-      ${credentialCards(batch.identities)}
-    `,
-  );
-}
-
-async function addGroupIdentities() {
-  if (!state.teacher) throw new Error(t("teacher.errors.loginFirst"));
-  if (!state.group) throw new Error(t("teacher.errors.selectGroupFirst"));
-  const count = Number($("additionalIdentityCount").value || 6);
-  const batch = await api(`/api/teacher/groups/${encodeURIComponent(state.group.id)}/identities`, {
-    method: "POST",
-    body: JSON.stringify({ count, pin_length: 4 }),
-  });
-  const [summary, assignmentData, identityData] = await loadTeacherData();
-  setOutput(
-    $("teacherOutput"),
-    `<p>${t("teacher.identitiesAdded", { count: batch.identities.length })}</p>${batchActions(batch.identities, state.group.group_code)}${credentialCards(batch.identities)}${teacherDashboard(summary, assignmentData.assignments || [], identityData.identities || [])}`,
-  );
 }
 
 async function afterGroupDeleted(groupId) {
@@ -851,42 +707,6 @@ async function afterGroupDeleted(groupId) {
   }
   saveState();
   if (state.teacher) await refreshDashboard();
-}
-
-async function regeneratePin(identityId) {
-  if (!state.teacher) {
-    throw new Error(t("teacher.errors.loginFirst"));
-  }
-  const identity = state.identities.find((item) => item.id === identityId);
-  const regenerated = await api(`/api/identities/${encodeURIComponent(identityId)}/regenerate-pin`, {
-    method: "POST",
-  });
-  const [summary, assignmentData, identityData] = await loadTeacherData();
-  setOutput(
-    $("teacherOutput"),
-    `
-      <p>${t("teacher.pinRegenerated")} <strong>${escapeHtml(identity ? identity.public_code : regenerated.id)}</strong>.</p>
-      <p class="pin-notice">${t("teacher.newPin")} <strong>${escapeHtml(regenerated.pin)}</strong>. ${t("teacher.pinStoreHint")}</p>
-      ${teacherDashboard(summary, assignmentData.assignments || [], identityData.identities || [])}
-    `,
-  );
-}
-
-async function revokeIdentity(identityId) {
-  if (!state.teacher) {
-    throw new Error(t("teacher.errors.loginFirst"));
-  }
-  const identity = state.identities.find((item) => item.id === identityId);
-  const label = identity ? identity.public_code : identityId;
-  if (!window.confirm(t("teacher.confirmRevoke", { label }))) {
-    return;
-  }
-  await api(`/api/identities/${encodeURIComponent(identityId)}/revoke`, { method: "POST" });
-  const [summary, assignmentData, identityData] = await loadTeacherData();
-  setOutput(
-    $("teacherOutput"),
-    `<p>${t("teacher.revoked", { label: escapeHtml(label) })}</p>${teacherDashboard(summary, assignmentData.assignments || [], identityData.identities || [])}`,
-  );
 }
 
 async function studentLogin() {
@@ -1098,30 +918,6 @@ function bind(id, fn, outputId = "resultsOutput") {
 }
 
 document.addEventListener("click", (event) => {
-  const card = event.target.closest(".credential");
-  if (card) {
-    if (has("studentCode") && has("studentPin") && has("studentOutput")) {
-      $("studentCode").value = card.dataset.code;
-      $("studentPin").value = card.dataset.pin;
-      setOutput($("studentOutput"), `<p>${t("common.credentialLoaded")}</p>`);
-    }
-    return;
-  }
-
-  const printBatchButton = event.target.closest("[data-print-batch]");
-  if (printBatchButton) {
-    const batch = pendingBatches.get(printBatchButton.dataset.printBatch);
-    if (batch) printBatchCards(batch.identities, batch.groupCode);
-    return;
-  }
-
-  const downloadBatchButton = event.target.closest("[data-download-batch-csv]");
-  if (downloadBatchButton) {
-    const batch = pendingBatches.get(downloadBatchButton.dataset.downloadBatchCsv);
-    if (batch) downloadBatchCsv(batch.identities, batch.groupCode);
-    return;
-  }
-
   const assignmentButton = event.target.closest("[data-select-assignment]");
   if (assignmentButton) {
     const assignment = state.assignments.find((item) => item.id === assignmentButton.dataset.selectAssignment);
@@ -1141,26 +937,6 @@ document.addEventListener("click", (event) => {
     if (has("itinerariesOutput")) {
       loadItineraries().catch(() => {});
     }
-    return;
-  }
-
-  const pinButton = event.target.closest("[data-regenerate-pin]");
-  if (pinButton) {
-    regeneratePin(pinButton.dataset.regeneratePin).catch((error) => {
-      if (has("teacherOutput")) {
-        setOutput($("teacherOutput"), `<p><strong>${t("common.errorLabel")}</strong> ${escapeHtml(error.message)}</p>`);
-      }
-    });
-    return;
-  }
-
-  const revokeButton = event.target.closest("[data-revoke-identity]");
-  if (revokeButton) {
-    revokeIdentity(revokeButton.dataset.revokeIdentity).catch((error) => {
-      if (has("teacherOutput")) {
-        setOutput($("teacherOutput"), `<p><strong>${t("common.errorLabel")}</strong> ${escapeHtml(error.message)}</p>`);
-      }
-    });
     return;
   }
 
@@ -1255,8 +1031,6 @@ bind("logoutSessionButton", logoutSession);
 bind("teacherLogout", teacherLogout, "teacherOutput");
 bind("teacherSummary", teacherSummary, "teacherOutput");
 bind("refreshDashboard", refreshDashboard, "teacherOutput");
-bind("createBatch", createBatch, "teacherOutput");
-bind("addGroupIdentities", addGroupIdentities, "teacherOutput");
 bind("assignFavoriteResources", assignFavoriteResources, "resourcesOutput");
 bind("studentLogin", studentLogin, "studentOutput");
 bind("studentLogout", studentLogout, "studentOutput");
@@ -1298,13 +1072,14 @@ window.addEventListener("edutictac:langchange", () => {
 async function initializePortal() {
   if (has("itinerariesPanel")) {
     try {
-      const {mountItineraries, mountGroups, mountMembers} = await import('/assets/teacher-itineraries.js');
+      const {mountItineraries, mountGroups, mountMembers, mountCredentials} = await import('/assets/teacher-itineraries.js');
       const options = {api, onSessionExpired: () => setTeacherSession(false)};
       itinerariesPanel = mountItineraries($("itinerariesPanel"), options);
       groupsPanel = mountGroups($("groupsPanel"), {...options, onSelect: selectTeacherGroup, onDeleted: afterGroupDeleted});
       membersPanel = mountMembers($("membersPanel"), options);
+      credentialsPanel = mountCredentials($("credentialsPanel"), {...options, onCreated: afterClassCreated, onRefresh: refreshDashboard});
     } catch {
-      for (const id of ["itinerariesPanel", "groupsPanel", "membersPanel"]) {
+      for (const id of ["itinerariesPanel", "groupsPanel", "membersPanel", "credentialsPanel", "credentialsDetails"]) {
         setEmpty($(id), t("teacher.panelUnavailable"));
         $(id).setAttribute("data-i18n", "teacher.panelUnavailable");
       }

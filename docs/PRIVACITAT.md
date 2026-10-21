@@ -99,10 +99,19 @@ un pseudònim derivat per HMAC.
 
 ## PIN
 
-El PIN és privat i **mai es guarda en text pla**. El servidor conserva només un
+El PIN és privat i **el servidor mai el guarda en text pla**. Conserva només un
 hash PBKDF2-SHA256 amb salt (210 000 iteracions). El PIN només es mostra **una
 vegada**, en el moment de generar o regenerar la credencial. Si es perd, es
 regenera (mai es recupera l'antic).
+
+El tauler docent manté els PIN acabats de generar només en memòria del navegador,
+per a mostrar el lot i permetre'n la impressió o la descàrrega explícita en CSV.
+No es guarden en localStorage, sessionStorage o IndexedDB. Desapareixen en
+recarregar, canviar de grup, tancar/perdre la sessió o abandonar la pàgina;
+les respostes tardanes d'una operació anterior no els tornen a mostrar. Els
+fitxers de targetes o CSV amb PIN són exportacions demanades pel docent. Les
+exportacions ordinàries del grup no permeten recuperar els PIN.
+
 
 ## Cookies
 

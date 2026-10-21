@@ -75,9 +75,9 @@ escritorio y móvil. Las pruebas Python usan SQLite temporal para permisos y
 persistencia; cuando Playwright está disponible, comprueban también el
 componente compilado con la API real en castellano y valenciano/táctil.
 
-Quedan para fases posteriores la creación de aulas, las credenciales, las
-asignaciones y los resultados del panel docente. El selector y la colaboración
-se han extraído en la fase descrita a continuación. El alumnado mantiene su acceso
+Quedan para fases posteriores las asignaciones, Recursos y los resultados del
+panel docente. La creación de aulas, las credenciales, el selector y la
+colaboración se describen en las fases siguientes. El alumnado mantiene su acceso
 por código y PIN; esta migración no introduce Authentik para estudiantes.
 
 ## Resultado de esta fase (21-10-2026)
@@ -111,8 +111,8 @@ endpoints. Se han retirado sus tablas y manejadores imperativos de `app.js`.
 El puente del portal pasa el contexto actual a los tres componentes mediante
 `syncTeacherPanels()`. La selección sigue guardándose en la preferencia anterior
 de Commons. No se guardan los miembros o el identificador que se está escribiendo
-en localStorage. La creación de alumnado y sus PIN continúan en el controlador
-anterior hasta la siguiente fase.
+en localStorage. La creación de alumnado y sus PIN se extraen en la fase de credenciales
+que se describe a continuación.
 
 Cambiar de grupo o de sesión vacía los miembros y descarta las operaciones
 anteriores. Un alta pendiente no borra el borrador del grupo nuevo. Una
@@ -149,3 +149,59 @@ anónima: los tres paneles Vue se montan, los botones de escritura permanecen
 desactivados, el catálogo público de Rebost se abre y el proxy de Llibres sirve
 su interfaz. Los casos con permisos y cambios de datos se prueban únicamente
 con las bases temporales, sin crear aulas o miembros en la instalación real.
+
+
+## Creación de aulas y credenciales
+
+`CredentialsPanel.vue` y `useCredentials.js` controlan la creación de aulas,
+el alta de identidades, la regeneración de PIN y la revocación. La entrada
+Vue existente monta también este panel; `Teleport` mantiene el formulario de
+creación antes del selector y el detalle de credenciales después. Se conservan
+los identificadores de controles y los endpoints de la API. No cambia la base
+de datos ni el acceso del alumnado por código/PIN.
+
+El portal recibe de `afterClassCreated` solo metadatos de grupo y el número de
+identidades. Los PIN no pasan al estado persistido ni a la lista de identidades
+del controlador anterior. Se eliminan `pendingBatches`, las plantillas de
+tarjetas y los manejadores de credenciales de `app.js`; no hay dos editores.
+
+Los PIN del último lote, o los regenerados en esta vista, se mantienen en un
+estado Vue temporal. Cambiar de grupo, cerrar/perder la sesión, desmontar o
+navegar los descarta. `pagehide` oculta las tarjetas inmediatamente y borra su
+estado incluso si el navegador conserva la página para volver atrás. Las
+respuestas antiguas no vuelven a introducir PINs en otra aula. No se usa
+localStorage, sessionStorage, IndexedDB ni un servicio externo para guardarlos.
+
+`credentialExports.js` ofrece impresión y CSV únicamente al pulsar sus botones.
+La impresión usa nodos de texto, una ventana sin `opener` y una CSP sin scripts;
+el CSV escapa celdas y neutraliza prefijos de fórmulas. Estos archivos explícitos
+contienen el lote que el docente ha pedido guardar. Las exportaciones habituales
+del grupo siguen conteniendo solo códigos, sin recuperar PINs del servidor.
+
+Crear/añadir/rotar/revocar desactiva nuevos envíos mientras espera respuesta. Si
+la mutación termina pero falla el refresco de metadatos, se mantienen las tarjetas
+recibidas para poder guardarlas y se indica que hay que actualizar el tablero;
+no se repite automáticamente la creación. Al rotar o revocar se retira cualquier
+PIN anterior del lote. Los permisos continúan comprobándose en el servidor.
+
+Pruebas nuevas: creación con Enter, conservación del grupo al recargar, CSV e
+impresión explícitos, altas, rotación, revocación, idioma, respuesta tardía,
+fallo de refresco, doble envío y limpieza de la memoria de navegación. Los flujos
+con API real y SQLite temporal comprueban también el login de alumnado, la
+revocación de su sesión tras rotar el PIN y la imposibilidad de crear aulas
+como estudiante. No se usan cuentas o aulas de la instalación real.
+
+Validación de credenciales (21-10-2026): 124 pruebas de navegador aprobadas;
+tras la revisión final de textos e impresión, las 16 de credenciales vuelven
+a pasar. Cuatro flujos con API real y SQLite temporal aprobados: los dos de
+itinerarios/miembros y los dos de credenciales, en castellano y valenciano.
+Las capturas se toman solo después de retirar los PIN y se revisa la versión
+valenciana. Compilación del portal, sintaxis de `app.js` y comprobación de
+espacios correctas; el bundle de Rebost permanece idéntico.
+
+Activado únicamente el portal local con rollback
+`before-credentials-vue-20261021`. Comprobación anónima posterior: formulario
+Vue cargado, generación/altas desactivadas y sin tarjetas temporales, catálogo
+público de Rebost operativo y proxy de Llibres disponible. No se recrean la
+API, Authentik o los volúmenes, ni se crean aulas o credenciales en la
+instalación real durante estas comprobaciones.
