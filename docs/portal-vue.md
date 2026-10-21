@@ -75,8 +75,8 @@ escritorio y móvil. Las pruebas Python usan SQLite temporal para permisos y
 persistencia; cuando Playwright está disponible, comprueban también el
 componente compilado con la API real en castellano y valenciano/táctil.
 
-Queda para la fase siguiente Recursos y la cesta del panel docente. La creación de aulas, las credenciales, el selector y la
-colaboración se describen en las fases siguientes. El alumnado mantiene su acceso
+Las asignaciones, los resultados, Recursos, la creación de aulas, las
+credenciales, el selector y la colaboración se describen en las fases siguientes. El alumnado mantiene su acceso
 por código y PIN; esta migración no introduce Authentik para estudiantes.
 
 ## Resultado de esta fase (21-10-2026)
@@ -237,3 +237,57 @@ puntuaciones, sin cuentas o datos de la instalación real.
 Regresión conjunta de API/SQLite y navegador real: 25 pruebas aprobadas
 (resultados, credenciales, itinerarios y permisos de aulas). No se modifica
 el backend ni se añaden dependencias.
+
+
+## Recursos y cesta del panel docente
+
+`ResourcesPanel.vue` y `useResources.js` extraen búsqueda, favoritos y asignación
+del controlador anterior. `resourceAssignment.js` conserva los identificadores
+de Play, EduHoot y documentos, y adapta los enlaces localhost para el acceso
+local/Tailnet. Rechaza protocolos distintos de HTTP/HTTPS y URL con credenciales.
+Los títulos se interpolan como texto. Las tarjetas tienen un ancho propio,
+independiente de las credenciales compactas.
+
+El catálogo se consulta sin sesión docente; favoritos y escritura requieren
+la sesión existente. Una respuesta 401 del servicio de favoritos muestra la
+indicación de acceder a Recursos, sin cerrar la sesión docente de Commons.
+Un 401 vigente al crear asignaciones sí desactiva esa sesión. El módulo
+Recursos desactivado no permite enviar consultas ni asignaciones desde el panel.
+
+Cada operación captura grupo e identificadores antes de su primer envío.
+Los recursos se envían secuencialmente, con nuevos envíos bloqueados hasta
+terminar. Cambiar de aula o sesión invalida la respuesta y detiene los envíos
+restantes: la petición ya enviada puede guardarse en su aula original, pero
+no cambia la selección nueva ni continúa la cesta en ella.
+
+Los recursos confirmados se retiran de la cesta visible. Si falla un envío,
+se indica cuántos se confirmaron, se bloquean nuevos envíos y se pide revisar
+el tablero y volver a abrir la cesta. No se reintenta automáticamente. La API
+existente no ofrece transacciones ni claves de idempotencia: si se pierde una
+respuesta no puede garantizarse si ese último recurso llegó a guardarse.
+Volver a cargar favoritos recupera la cesta del banco original; no elimina
+favoritos ni deduplica asignaciones históricas. Un fallo de refresco posterior
+al guardado tiene un aviso distinto para evitar volver a enviar la operación.
+
+Validación: suite completa **164 pruebas de navegador aprobadas**, con 24
+casos de Recursos en escritorio/móvil (idiomas, búsqueda con Enter, proveedores,
+favoritos, permisos, errores parciales, contexto cambiado, respuestas atrasadas,
+HTML inerte, URL peligrosas y guardado con refresco fallido). La regresión de
+asignaciones/resultados, credenciales, itinerarios y permisos aportó 25 pruebas
+Python aprobadas; Recursos añade otras tres, incluyendo dos flujos Vue/API/SQLite
+real en castellano y valenciano táctil. Tras ajustar las tarjetas se repite el
+flujo valenciano y se revisa su captura. No hay nuevas dependencias ni cambios
+de esquema, autenticación o backend. Rebost se recompila sin diferencias.
+
+Activación local: solo portal, rollback `before-resources-vue-20261021`, sin
+recrear API, Authentik, editores ni volúmenes. El commit anterior de
+asignaciones/resultados es `50735e8`; esta fase se compromete por separado.
+El siguiente bloque del roadmap es el panel del alumnado, conservando código/PIN
+sin Authentik. Recursos como aplicación completa sigue siendo una fase aparte.
+
+Comprobación posterior de la instalación local: los siete paneles Vue se montan,
+el bundle servido coincide byte a byte con el compilado y las escrituras están
+bloqueadas para visitantes. El catálogo público de Rebost se muestra, las
+imágenes privadas requieren sesión y el proxy de Llibres responde. Sin errores
+JavaScript. Tras el ajuste final de tarjetas pasan de nuevo los 24 casos de
+Recursos; no se han usado cuentas reales ni creado aulas en la instalación.

@@ -779,6 +779,24 @@ button:disabled {
   margin: 8px 0 12px;
 }
 
+/* Resource titles and actions need their own layout, separate from PIN cards. */
+#resourcesPanel .cards {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: 12px;
+}
+
+#resourcesPanel .card {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 12px;
+  background: var(--panel);
+  overflow-wrap: anywhere;
+}
+
 .credential {
   border: 1px solid var(--line);
   border-radius: 6px;

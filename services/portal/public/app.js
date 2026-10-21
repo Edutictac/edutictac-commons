@@ -32,26 +32,25 @@ const state = {
   studentAssignments: [],
   studentItinerary: null,
   showStudentHistory: false,
-  resources: [],
-  basket: [],
   enabledModules: null,
 };
 
 const $ = (id) => document.getElementById(id);
 const has = (id) => Boolean($(id));
 const t = window.i18nPortal.t;
-let itinerariesPanel = null, groupsPanel = null, membersPanel = null, credentialsPanel = null, assignmentsPanel = null, resultsPanel = null;
+let itinerariesPanel = null, groupsPanel = null, membersPanel = null, credentialsPanel = null, assignmentsPanel = null, resultsPanel = null, resourcesPanel = null;
 let teacherDataSequence = 0;
 
 function syncTeacherPanels() {
   const context = {teacher: state.teacher, group: state.group, groups: state.groups,
-    assignments: state.assignments, assignment: state.assignment, identities: state.identities, summary: state.summary, dataReady: state.dataReady};
+    assignments: state.assignments, assignment: state.assignment, identities: state.identities, summary: state.summary, dataReady: state.dataReady, resourcesEnabled: !state.enabledModules || state.enabledModules.has("recursos")};
   itinerariesPanel?.setContext(context);
   groupsPanel?.setContext(context);
   membersPanel?.setContext(context);
   credentialsPanel?.setContext(context);
   assignmentsPanel?.setContext(context);
   resultsPanel?.setContext(context);
+  resourcesPanel?.setContext(context);
 }
 
 async function selectTeacherGroup(id) {
@@ -215,6 +214,7 @@ async function loadEnabledModules() {
     const data = await api("/api/modules/status", { method: "GET" });
     if (!Array.isArray(data.enabled)) return;
     state.enabledModules = new Set(data.enabled);
+    syncTeacherPanels();
     document.querySelectorAll("[data-module]").forEach((node) => {
       node.hidden = !state.enabledModules.has(node.dataset.module);
     });
@@ -289,7 +289,7 @@ function setTeacherSession(active) {
     logoutButton.classList.toggle("hidden", !active);
     logoutButton.setAttribute("aria-hidden", active ? "false" : "true");
   }
-  ["teacherSummary", "refreshDashboard", "teacherLogout", "assignFavoriteResources"].forEach((id) => {
+  ["teacherSummary", "refreshDashboard", "teacherLogout"].forEach((id) => {
     const node = $(id);
     if (node) {
       node.disabled = !active;
@@ -361,106 +361,6 @@ function table(rows, columns) {
       </tbody>
     </table>
   `;
-}
-
-function resourceActivityId(resource) {
-  if (resource.provider === PLAY_APP && resource.external_id.startsWith(`${PLAY_APP}:`)) {
-    return resource.external_id.slice(`${PLAY_APP}:`.length);
-  }
-  return resource.external_id;
-}
-
-function resourceAppId(resource) {
-  if (resource.provider === PLAY_APP) return PLAY_APP;
-  if (resource.provider === EDUHOOT_APP) return EDUHOOT_APP;
-  return "resource";
-}
-
-function renderResources(data, { basket = false } = {}) {
-  const output = $("resourcesOutput");
-  if (!output) return;
-  state.resources = data.items || [];
-  if (!state.resources.length) {
-    setEmpty(output, t("teacher.resourcesEmpty"));
-    return;
-  }
-  const basketHint = basket ? `<p class="hint">${t("teacher.basketHint", { count: state.resources.length })}</p>` : "";
-  setOutput(output, `${basketHint}<div class="cards">${state.resources.map((resource) => `
-    <article class="card">
-      <strong>${escapeHtml(resource.title || resource.external_id)}</strong>
-      <small>${escapeHtml(resource.provider || resource.format || "recurs")} · ${escapeHtml(resource.subject || "")}</small>
-      <button class="compact secondary" type="button" data-assign-resource="${escapeHtml(resource.external_id)}">${t("teacher.assignResource")}</button>
-    </article>`).join("")}</div>`);
-}
-
-async function loadResources() {
-  const output = $("resourcesOutput");
-  if (!output) return;
-  const query = new URLSearchParams({ limit: "24" });
-  const search = $("resourceSearch")?.value.trim();
-  if (search) query.set("q", search);
-  output.textContent = t("teacher.resourcesLoading");
-  try {
-    state.basket = [];
-    renderResources(await api(`/resources-api/resources?${query}`, { method: "GET" }));
-  } catch (error) {
-    setEmpty(output, t("teacher.resourcesUnavailable"));
-  }
-}
-
-async function loadFavoriteResources() {
-  const output = $("resourcesOutput");
-  if (!output) return;
-  output.textContent = t("teacher.resourcesLoading");
-  try {
-    const data = await api("/resources-api/teacher/favorites?limit=48", { method: "GET" });
-    state.basket = data.items || [];
-    renderResources(data, { basket: true });
-  } catch (error) {
-    setEmpty(output, t("teacher.favoritesUnavailable"));
-  }
-}
-
-async function assignFavoriteResources() {
-  if (!state.teacher) throw new Error(t("teacher.errors.loginFirst"));
-  if (!state.group) throw new Error(t("teacher.errors.selectGroupFirst"));
-  if (!state.basket.length) throw new Error(t("teacher.errors.emptyBasket"));
-  const output = $("resourcesOutput");
-  if (output) output.textContent = t("teacher.assigningBasket");
-  let lastAssignment = null;
-  for (const resource of state.basket) {
-    const result = await api("/api/teacher/activity-assignments", {
-      method: "POST",
-      body: JSON.stringify({
-        group_id: state.group.id,
-        app_id: resourceAppId(resource),
-        activity_id: resourceActivityId(resource),
-        title: resource.title || resource.external_id,
-        launch_url: accessibleResourceUrl(resource.play_url || resource.source_url || resource.reuse_url || resource.download_url || ""),
-      }),
-    });
-    lastAssignment = result.assignment;
-  }
-  state.assignment = lastAssignment;
-  await loadTeacherData();
-  setOutput(output, `<p>${t("teacher.basketAssigned", { count: state.basket.length })}</p>`);
-}
-
-async function assignResource(resource) {
-  if (!state.group) throw new Error("Selecciona primer un grup.");
-  const assignment = await api("/api/teacher/activity-assignments", {
-    method: "POST",
-      body: JSON.stringify({
-        group_id: state.group.id,
-        app_id: resourceAppId(resource),
-        activity_id: resourceActivityId(resource),
-        title: resource.title || resource.external_id,
-        launch_url: accessibleResourceUrl(resource.play_url || resource.source_url || resource.reuse_url || resource.download_url || ""),
-      }),
-  });
-  state.assignment = assignment.assignment;
-  await loadTeacherData();
-  setOutput($("resourcesOutput"), `<p>Recurs assignat: <strong>${escapeHtml(assignment.assignment.title)}</strong>.</p>`);
 }
 
 function studentDashboard(assignments) {
@@ -665,6 +565,12 @@ function afterClassCreated({group, count}) {
     ...state.groups.filter(item => item.id !== group.id)];
   state.identities = []; state.assignment = null; state.assignments = [];
   saveState();
+}
+
+async function afterResourcesAssigned({groupId, assignment, selectedId}) {
+  if (!state.teacher || state.group?.id !== groupId) return;
+  if (state.assignment?.id === selectedId) { state.assignment = assignment; saveState(); }
+  await refreshDashboard();
 }
 
 async function afterGroupDeleted(groupId) {
@@ -889,17 +795,6 @@ document.addEventListener("click", (event) => {
     });
     return;
   }
-
-  const resourceButton = event.target.closest("[data-assign-resource]");
-  if (resourceButton) {
-    const resource = state.resources.find((item) => item.external_id === resourceButton.dataset.assignResource);
-    if (!resource) return;
-    assignResource(resource).catch((error) => {
-      if (has("resourcesOutput")) {
-        setOutput($("resourcesOutput"), `<p><strong>${t("common.errorLabel")}</strong> ${escapeHtml(error.message)}</p>`);
-      }
-    });
-  }
 });
 
 bind("teacherOidcLogin", teacherOidcLogin);
@@ -907,28 +802,8 @@ bind("logoutSessionButton", logoutSession);
 bind("teacherLogout", teacherLogout, "teacherOutput");
 bind("teacherSummary", teacherSummary, "teacherOutput");
 bind("refreshDashboard", refreshDashboard, "teacherOutput");
-bind("assignFavoriteResources", assignFavoriteResources, "resourcesOutput");
 bind("studentLogin", studentLogin, "studentOutput");
 bind("studentLogout", studentLogout, "studentOutput");
-
-if (has("searchResources")) {
-  $("searchResources").addEventListener("click", () => {
-    loadResources();
-  });
-}
-if (has("loadFavoriteResources")) {
-  $("loadFavoriteResources").addEventListener("click", () => {
-    loadFavoriteResources();
-  });
-}
-if (has("resourceSearch")) {
-  $("resourceSearch").addEventListener("keydown", (event) => {
-    if (event.key === "Enter") {
-      event.preventDefault();
-      loadResources();
-    }
-  });
-}
 
 window.addEventListener("edutictac:langchange", () => {
   if (!has("studentOutput")) {
@@ -946,7 +821,7 @@ window.addEventListener("edutictac:langchange", () => {
 async function initializePortal() {
   if (has("itinerariesPanel")) {
     try {
-      const {mountItineraries, mountGroups, mountMembers, mountCredentials, mountAssignments, mountResults} = await import('/assets/teacher-itineraries.js');
+      const {mountItineraries, mountGroups, mountMembers, mountCredentials, mountAssignments, mountResults, mountResources} = await import('/assets/teacher-itineraries.js');
       const options = {api, onSessionExpired: () => setTeacherSession(false)};
       itinerariesPanel = mountItineraries($("itinerariesPanel"), options);
       groupsPanel = mountGroups($("groupsPanel"), {...options, onSelect: selectTeacherGroup, onDeleted: afterGroupDeleted});
@@ -954,8 +829,9 @@ async function initializePortal() {
       credentialsPanel = mountCredentials($("credentialsPanel"), {...options, onCreated: afterClassCreated, onRefresh: refreshDashboard});
       assignmentsPanel = mountAssignments($("assignmentsPanel"), {...options, onSelect: selectTeacherAssignment});
       resultsPanel = mountResults($("resultsPanel"), options);
+      resourcesPanel = mountResources($("resourcesPanel"), {...options, onAssigned: afterResourcesAssigned});
     } catch {
-      for (const id of ["itinerariesPanel", "groupsPanel", "membersPanel", "credentialsPanel", "credentialsDetails", "assignmentsPanel", "resultsPanel"]) {
+      for (const id of ["itinerariesPanel", "groupsPanel", "membersPanel", "credentialsPanel", "credentialsDetails", "assignmentsPanel", "resultsPanel", "resourcesPanel"]) {
         setEmpty($(id), t("teacher.panelUnavailable"));
         $(id).setAttribute("data-i18n", "teacher.panelUnavailable");
       }

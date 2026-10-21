@@ -49,8 +49,8 @@ canvia l'estat de la versió publicada ni dona per completades les proves de cam
   explícits del lot, neteja en canviar de grup/sessió/navegació.
 - [x] Assignacions i resultats del tauler docent en Vue: selecció única, marques
   manuals i classificació de l’activitat, amb respostes tardanes descartades.
-- [ ] Migrar Recursos i la cistella del tauler docent, mantenint els contractes
-  i fixant el grup de destinació durant cada assignació.
+- [x] Recursos i cistella del tauler docent en Vue: cerca, favorits i assignació,
+  grup de destinació fix, aturada en canviar d’aula i errors parcials explícits.
 - [ ] Migrar el tauler de l'alumnat, mantenint codi/PIN i l'historial/progrés.
 - [ ] Migrar els formularis propis de Play per tipus d'activitat, conservant
   H5P, publicació i exportadors existents.

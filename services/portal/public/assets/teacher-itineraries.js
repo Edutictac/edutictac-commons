@@ -3650,23 +3650,224 @@ var ys = { class: "actions" }, bs = ["disabled"], xs = ["disabled"], Ss = ["aria
 		], 10, Ss)], 64));
 	}
 };
+// services/portal/src/teacher/resourceAssignment.js
+function Ns(e, t, n = window.location) {
+	if (typeof e.external_id != "string" || !e.external_id) throw Error("invalid_resource");
+	let r = e.play_url || e.source_url || e.reuse_url || e.download_url || "", i = "";
+	if (r) {
+		let e = new URL(r, n.origin);
+		if (!["http:", "https:"].includes(e.protocol) || e.username || e.password) throw Error("invalid_resource_url");
+		let t = (e) => [
+			"localhost",
+			"127.0.0.1",
+			"[::1]",
+			"::1"
+		].includes(e);
+		t(e.hostname) && !t(n.hostname) && (e.hostname = n.hostname, e.port === "8086" && n.port === "18082" && (e.port = "18086")), i = e.toString();
+	}
+	let a = ["edutictac-play", "eduhoot"].includes(e.provider) ? e.provider : "resource";
+	return {
+		group_id: t,
+		app_id: a,
+		activity_id: a === "edutictac-play" && e.external_id.startsWith("edutictac-play:") ? e.external_id.slice(15) : e.external_id,
+		title: e.title || e.external_id,
+		launch_url: i
+	};
+}
+// services/portal/src/teacher/useResources.js
+function Ps(e, t, n) {
+	let r = /* @__PURE__ */ Wt({
+		teacher: !1,
+		group: null,
+		dataReady: !1,
+		resourcesEnabled: !0
+	}), i = /* @__PURE__ */ L(""), a = /* @__PURE__ */ L([]), o = /* @__PURE__ */ L(!1), s = /* @__PURE__ */ L(!1), c = /* @__PURE__ */ L(!1), l = /* @__PURE__ */ L(!1), u = /* @__PURE__ */ L(!1), d = /* @__PURE__ */ L(""), f = /* @__PURE__ */ L(0), p = 0, m = 0, h = !0, g = Mi(() => !r.value.teacher || !r.value.group || !r.value.dataReady || !r.value.resourcesEnabled || c.value || l.value || u.value);
+	function _(e) {
+		return h && e === p;
+	}
+	function v(e) {
+		(e.teacher !== r.value.teacher || e.group?.id !== r.value.group?.id || e.resourcesEnabled !== r.value.resourcesEnabled) && (p++, m++, a.value = [], o.value = !1, s.value = !1, c.value = !1, u.value = !1, d.value = "", f.value = 0), r.value = e;
+	}
+	async function y(t = !1) {
+		if (!r.value.resourcesEnabled || l.value || t && !r.value.teacher) return;
+		let n = p, h = ++m;
+		a.value = [], o.value = !1, s.value = t, c.value = !0, d.value = "", u.value = !1, f.value = 0;
+		try {
+			let r = new URLSearchParams({ limit: "24" });
+			i.value.trim() && r.set("q", i.value.trim());
+			let s = await e(t ? "/resources-api/teacher/favorites?limit=48" : "/resources-api/resources?" + r, { method: "GET" });
+			if (!_(n) || h !== m) return;
+			if (!Array.isArray(s.items)) throw Error("invalid_resources");
+			a.value = s.items, o.value = !0;
+		} catch {
+			_(n) && h === m && (d.value = t ? "teacher.favoritesUnavailable" : "teacher.resourcesUnavailable");
+		} finally {
+			_(n) && h === m && (c.value = !1);
+		}
+	}
+	async function b(i) {
+		if (g.value) return;
+		let o = p, c = r.value.group.id, m = r.value.assignment?.id, v = i ? [i] : [...a.value];
+		if (!v.length || !i && !s.value) return;
+		let y;
+		try {
+			y = v.map((e) => Ns(e, c));
+		} catch {
+			d.value = "teacher.invalidResource";
+			return;
+		}
+		l.value = !0, d.value = "", f.value = 0;
+		let b = null, x = null;
+		try {
+			for (let t = 0; t < v.length && _(o); t++) {
+				let n = await e("/api/teacher/activity-assignments", {
+					method: "POST",
+					body: JSON.stringify(y[t])
+				});
+				if (!_(o)) break;
+				if (!n.assignment?.id || n.assignment.group_id !== c) throw Error("invalid_assignment");
+				b = n.assignment, f.value++, s.value && (a.value = a.value.filter((e) => e !== v[t]));
+			}
+		} catch (e) {
+			x = e, _(o) && (u.value = !0, e.status === 401 ? (t(), d.value = "teacher.errors.loginFirst") : d.value = "teacher.resourceAssignmentError");
+		}
+		try {
+			_(o) && b && (await n({
+				groupId: c,
+				assignment: b,
+				selectedId: m
+			}), _(o) && !x && (d.value = "teacher.basketAssigned"));
+		} catch (e) {
+			_(o) && (u.value = !0, e.status === 401 && t(), d.value = "teacher.resourceRefreshError");
+		} finally {
+			h && (l.value = !1);
+		}
+	}
+	return Xn(() => {
+		h = !1, p++, m++, a.value = [];
+	}), {
+		context: r,
+		search: i,
+		rows: a,
+		loaded: o,
+		basket: s,
+		loading: c,
+		pending: l,
+		blocked: u,
+		feedback: d,
+		completedCount: f,
+		unavailable: g,
+		setContext: v,
+		load: y,
+		assign: b
+	};
+}
+// services/portal/src/teacher/ResourcesPanel.vue
+var Fs = ["placeholder"], Is = { class: "actions" }, Ls = ["disabled"], Rs = ["disabled"], zs = ["disabled"], Bs = { key: 0 }, Vs = ["aria-busy"], Hs = {
+	key: 0,
+	role: "status"
+}, Us = {
+	key: 1,
+	role: "status"
+}, Ws = {
+	key: 2,
+	role: "status"
+}, Gs = { key: 3 }, Ks = {
+	key: 4,
+	class: "hint"
+}, qs = {
+	key: 5,
+	class: "cards"
+}, Js = [
+	"data-assign-resource",
+	"disabled",
+	"onClick"
+], Ys = {
+	__name: "ResourcesPanel",
+	props: {
+		api: Function,
+		onSessionExpired: Function,
+		onAssigned: Function
+	},
+	setup(e, { expose: t }) {
+		let n = e, r = Ia(), { context: i, search: a, rows: o, loaded: s, basket: c, loading: l, pending: u, feedback: d, completedCount: f, unavailable: p, setContext: m, load: h, assign: g } = Ps(n.api, n.onSessionExpired, n.onAssigned);
+		return t({ setContext: m }), (e, t) => (J(), Y(G, null, [
+			X("form", {
+				class: "grid-fields",
+				onSubmit: t[3] ||= Oa((e) => R(h)(!1), ["prevent"])
+			}, [X("label", null, [X("span", null, E(R(r)("teacher.resourcesSearch")), 1), xn(X("input", {
+				id: "resourceSearch",
+				"onUpdate:modelValue": t[0] ||= (e) => /* @__PURE__ */ I(a) ? a.value = e : null,
+				type: "search",
+				placeholder: R(r)("teacher.resourcesPlaceholder")
+			}, null, 8, Fs), [[Ta, R(a)]])]), X("div", Is, [
+				X("button", {
+					id: "searchResources",
+					type: "submit",
+					class: "secondary",
+					disabled: R(u) || !R(i).resourcesEnabled
+				}, E(R(r)("teacher.resourcesButton")), 9, Ls),
+				X("button", {
+					id: "loadFavoriteResources",
+					type: "button",
+					class: "secondary",
+					disabled: R(u) || !R(i).teacher || !R(i).resourcesEnabled,
+					onClick: t[1] ||= (e) => R(h)(!0)
+				}, E(R(r)("teacher.favoritesButton")), 9, Rs),
+				X("button", {
+					id: "assignFavoriteResources",
+					type: "button",
+					disabled: R(p) || !R(c) || !R(o).length,
+					onClick: t[2] ||= (e) => R(g)()
+				}, E(R(r)("teacher.assignBasket")), 9, zs)
+			])], 32),
+			R(i).teacher && R(i).group ? (J(), Y("p", Bs, [li(E(R(r)("teacher.groupSelected")) + " ", 1), X("strong", null, E(R(i).group.group_code || R(i).group.name), 1)])) : Z("", !0),
+			X("div", {
+				id: "resourcesOutput",
+				class: T(["output", { empty: !R(o).length }]),
+				"aria-busy": R(l) || R(u)
+			}, [
+				R(d) ? (J(), Y("p", Hs, E(R(r)(R(d), { count: R(f) })), 1)) : Z("", !0),
+				R(u) ? (J(), Y("p", Us, E(R(r)("teacher.assigningBasket")), 1)) : R(l) ? (J(), Y("p", Ws, E(R(r)("teacher.resourcesLoading")), 1)) : !R(o).length && !R(d) ? (J(), Y("p", Gs, E(R(r)(R(s) ? "teacher.resourcesEmpty" : "teacher.resourcesHint")), 1)) : Z("", !0),
+				R(c) && R(o).length ? (J(), Y("p", Ks, E(R(r)("teacher.basketHint", { count: R(o).length })), 1)) : Z("", !0),
+				R(o).length ? (J(), Y("div", qs, [(J(!0), Y(G, null, U(R(o), (e, t) => (J(), Y("article", {
+					key: t,
+					class: "card"
+				}, [
+					X("strong", null, E(e.title || e.external_id), 1),
+					X("small", null, E(e.provider || e.format || "resource") + " · " + E(e.subject || ""), 1),
+					X("button", {
+						class: "compact secondary",
+						type: "button",
+						"data-assign-resource": e.external_id,
+						disabled: R(p),
+						onClick: (t) => R(g)(e)
+					}, E(R(r)("teacher.assignResource")), 9, Js)
+				]))), 128))])) : Z("", !0)
+			], 10, Vs)
+		], 64));
+	}
+};
 // services/portal/src/teacher/main.js
-function Ns(e, t) {
+function Xs(e, t) {
 	return Ma(ro, t).mount(e);
 }
-function Ps(e, t) {
+function Zs(e, t) {
 	return Ma(po, t).mount(e);
 }
-function Fs(e, t) {
+function Qs(e, t) {
 	return Ma(Eo, t).mount(e);
 }
-function Is(e, t) {
+function $s(e, t) {
 	return Ma(ts, t).mount(e);
 }
-function Ls(e, t) {
+function ec(e, t) {
 	return Ma(_s, t).mount(e);
 }
-function Rs(e, t) {
+function tc(e, t) {
 	return Ma(Ms, t).mount(e);
 }
-export { Ls as mountAssignments, Is as mountCredentials, Ps as mountGroups, Ns as mountItineraries, Fs as mountMembers, Rs as mountResults };
+function nc(e, t) {
+	return Ma(Ys, t).mount(e);
+}
+export { ec as mountAssignments, $s as mountCredentials, Zs as mountGroups, Xs as mountItineraries, Qs as mountMembers, nc as mountResources, tc as mountResults };
