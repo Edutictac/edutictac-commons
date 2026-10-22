@@ -9,6 +9,12 @@
 
   var translations = {
     es: {
+      "admin.loadError": "No se pudo cargar el panel. Recarga la página.",
+      "admin.operationError": "No se pudo completar la operación. Actualiza el estado antes de volver a intentarlo.",
+      "admin.teacherError": "No se pudo crear el docente. Comprueba el estado antes de volver a intentarlo.",
+      "admin.clearCredential": "Ocultar contraseña temporal",
+      "admin.tracking": "Seguimiento de la operación del servidor.",
+      "admin.resumeTracking": "Reanudar seguimiento",
       "secondary.title": "Segunda copia del centro (opcional)",
       "secondary.help": "Utiliza un NAS o un disco USB montado en el servidor, en otro dispositivo. No hace falta nube.",
       "secondary.mount": "Punto de montaje del NAS o USB",
@@ -155,6 +161,12 @@
       "job.reconnecting": "⏳ Reconectando... el propio panel puede estar reiniciándose durante la operación.",
     },
     ca: {
+      "admin.loadError": "No s’ha pogut carregar el panell. Recarrega la pàgina.",
+      "admin.operationError": "No s’ha pogut completar l’operació. Actualitza l’estat abans de tornar-ho a intentar.",
+      "admin.teacherError": "No s’ha pogut crear el docent. Comprova l’estat abans de tornar-ho a intentar.",
+      "admin.clearCredential": "Ocultar contrasenya temporal",
+      "admin.tracking": "Seguiment de l’operació del servidor.",
+      "admin.resumeTracking": "Reprendre seguiment",
       "secondary.title": "Segona còpia del centre (opcional)",
       "secondary.help": "Utilitza un NAS o un disc USB muntat en el servidor, en un altre dispositiu. No cal núvol.",
       "secondary.mount": "Punt de muntatge del NAS o USB",
@@ -340,6 +352,12 @@
       "images.rollbackCancelled": "Rollback cancel·lat.",
     },
     en: {
+      "admin.loadError": "Could not load the panel. Reload the page.",
+      "admin.operationError": "Could not complete the operation. Refresh status before trying again.",
+      "admin.teacherError": "Could not create the teacher. Check status before trying again.",
+      "admin.clearCredential": "Hide temporary password",
+      "admin.tracking": "Tracking the server operation.",
+      "admin.resumeTracking": "Resume tracking",
       "secondary.title": "Second school backup (optional)",
       "secondary.help": "Use a NAS or USB drive mounted on the server, on another device. Cloud storage is not required.",
       "secondary.mount": "NAS or USB mount point",

@@ -35,7 +35,7 @@ async function mockModules(page, { configured = true, conflict = false } = {}) {
 async function advanceJob(page) {
   // fetch/JSON callbacks can finish after click() even with a frozen clock.
   // Advance only once the next poll is registered and no request is in flight.
-  await expect.poll(() => page.evaluate(() => jobPollTimer !== null && !jobPollInFlight)).toBe(true);
+  await expect(page.locator('#jobTracking')).toHaveAttribute('data-state','waiting');
   await page.clock.fastForward(3100);
 }
 
