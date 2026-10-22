@@ -1360,6 +1360,7 @@
   var lang = detectLang();
 
   function t(key, vars) {
+    if (key === 'home.title' && window.commonsDeployment?.mode === 'federated') return 'EduTicTac Commons';
     var chain = lang === "va" ? ["va", "ca", "es"] : [lang, "es"];
     var value = key;
     for (var i = 0; i < chain.length; i++) {

@@ -15,6 +15,15 @@ const state = {
 const $ = (id) => document.getElementById(id);
 const has = (id) => Boolean($(id));
 const t = window.i18nPortal.t;
+const deployment = window.commonsDeployment || {};
+const federated = deployment.mode === 'federated';
+function configuredUrl(value) {
+  if (typeof value !== 'string' || !value) return null;
+  try {
+    const url = new URL(value);
+    return url.protocol === 'https:' && !url.username && !url.password ? url.href : null;
+  } catch { return null; }
+}
 let itinerariesPanel = null, groupsPanel = null, membersPanel = null, credentialsPanel = null, assignmentsPanel = null, resultsPanel = null, resourcesPanel = null, adminGroupsPanel = null;
 let teacherDataSequence = 0, identityStatusSequence = 0;
 let studentPanel = null;
@@ -58,7 +67,7 @@ async function loadItineraries() {
 }
 
 function setAuthentikLinks() {
-  const url = `${window.location.protocol}//${window.location.hostname}:9000/`;
+  const url = configuredUrl(deployment.authentikUrl) || `${window.location.protocol}//${window.location.hostname}:9000/`;
   ["authentikHomeLink", "authentikNavLink", "oidcSetupLink", "firstRunSetupLink"].forEach((id) => {
     const link = $(id);
     if (link) link.href = url;
@@ -132,6 +141,7 @@ function ensureFirstRunDialog() {
 }
 
 async function checkFirstRunSetup() {
+  if (federated) return;
   try {
     const status = await api("/api/setup/status", { method: "GET" });
     if (!status.pending) return;
@@ -164,6 +174,13 @@ function setApplicationLinks() {
         eduhootHomeLink: `${window.location.origin}/eduhoot/`,
         adminHomeLink: `${window.location.origin}/admin/`,
       };
+  if (federated) {
+    for (const [id, app] of Object.entries({playHomeLink:'play',resourcesHomeLink:'recursos',eduhootHomeLink:'eduhoot'})) {
+      const url = configuredUrl(deployment.applications?.[app]);
+      if (url) links[id] = url;
+    }
+    document.querySelectorAll('a[href="/admin/"], a[href="/quiosc.html"]').forEach(link => { link.hidden = true; });
+  }
   Object.entries(links).forEach(([id, url]) => {
     const link = $(id);
     if (link) link.href = url;
@@ -179,7 +196,8 @@ async function loadEnabledModules() {
     state.enabledModules = new Set(data.enabled);
     syncTeacherPanels();
     document.querySelectorAll("[data-module]").forEach((node) => {
-      node.hidden = !state.enabledModules.has(node.dataset.module);
+      const publicApp = federated && configuredUrl(deployment.applications?.[node.dataset.module]);
+      node.hidden = (federated && node.dataset.module === 'quiosc') || (!state.enabledModules.has(node.dataset.module) && !publicApp);
     });
   } catch {
     // Older API images and source-only development retain the existing links.
@@ -188,6 +206,12 @@ async function loadEnabledModules() {
 
 async function loadBlocsLink() {
   if (!has("blocsHomeLink")) return;
+  const publicUrl = federated && configuredUrl(deployment.applications?.blocs);
+  if (publicUrl) {
+    $("blocsHomeLink").href = publicUrl;
+    $("blocsHomeLink").hidden = false;
+    return;
+  }
   try {
     const data = await api("/blocs/status", { method: "GET" });
     $("blocsHomeLink").hidden = data.enabled !== true;
@@ -308,15 +332,17 @@ async function checkOidc() {
   const button = $("teacherOidcLogin");
   if (!button) return;
   try {
-    const setup = await api("/api/setup/status", { method: "GET" });
-    if (setup.pending) {
-      button.disabled = true;
-      return;
+    if (!federated) {
+      const setup = await api("/api/setup/status", { method: "GET" });
+      if (setup.pending) {
+        button.disabled = true;
+        return;
+      }
     }
     const status = await api("/api/auth/oidc/status", { method: "GET" });
     button.disabled = !status.enabled;
-    button.title = status.enabled ? status.issuer : "OIDC no configurado en este entorno";
-    if (!status.enabled) showOidcSetupNotice();
+    button.title = status.enabled ? status.issuer : (federated ? t('common.session.unavailable') : "OIDC no configurado en este entorno");
+    if (!status.enabled && !federated) showOidcSetupNotice();
   } catch (error) {
     button.disabled = true;
   }
