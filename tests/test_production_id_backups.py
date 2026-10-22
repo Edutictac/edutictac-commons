@@ -212,3 +212,36 @@ def test_telegram_http_error_never_exposes_credential_url(tmp_path,monkeypatch):
     with pytest.raises(RuntimeError,match='^notification delivery failed$') as error:
         module.send_telegram({'telegram_helper':str(helper)},'test')
     assert error.value.__suppress_context__
+
+
+def test_combined_backup_recovers_bank_wal_publications_and_configuration(encrypted_backup, tmp_path, monkeypatch):
+    module, base, out, env, gpg, recipient, _ = encrypted_backup
+    bank = tmp_path / 'bank.db'
+    with sqlite3.connect(bank) as db:
+        db.execute('PRAGMA journal_mode=WAL')
+        db.execute('CREATE TABLE publications (id TEXT PRIMARY KEY, content BLOB)')
+        db.execute("INSERT INTO publications VALUES ('synthetic-book', x'010203')")
+    config = tmp_path / 'bank-config'; config.mkdir()
+    (config / 'compose.yml').write_text('services: {}\n')
+    (config / 'service.env').write_text('SYNTHETIC_TOKEN=not-a-real-credential\n')
+    report = module.backup(base, out, env, gpg, recipient, resources_db=bank, resources_config=config)
+    with recover(out / report['name'], gpg) as archive:
+        assert archive.extractfile('configuration/resources/service.env').read() == (config / 'service.env').read_bytes()
+        restored = sqlite3.connect(':memory:')
+        restored.deserialize(archive.extractfile('resources/recursos.db').read())
+        assert restored.execute('SELECT count(*) FROM publications').fetchone()[0] == 1
+        restored.close()
+    offsite = load('production-id-offsite')
+    monkeypatch.setenv('GNUPGHOME', str(gpg))
+    offsite.verify_recovery((out / report['name']).read_bytes())
+
+
+def test_combined_backup_failure_does_not_record_success(encrypted_backup, tmp_path):
+    module, base, out, env, gpg, recipient, _ = encrypted_backup
+    module.backup(base, out, env, gpg, recipient)
+    previous = (out / 'latest.json').read_bytes()
+    bad = tmp_path / 'corrupt.db'; bad.write_bytes(b'not a sqlite database')
+    with pytest.raises(Exception):
+        module.backup(base, out, env, gpg, recipient, resources_db=bad, resources_config=tmp_path)
+    assert (out / 'latest.json').read_bytes() == previous
+    assert not list(out.glob('*.partial'))

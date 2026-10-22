@@ -48,7 +48,16 @@ def add_bytes(archive, name, content):
     archive.addfile(info, io.BytesIO(content))
 
 
-def backup(base, output, env_file, gpg_home, recipient, owner=None, keep=30):
+def snapshot_database(source, destination):
+    with sqlite3.connect(source.resolve().as_uri() + '?mode=ro', uri=True) as src, sqlite3.connect(destination) as dst:
+        src.backup(dst, pages=128, sleep=0.1)
+        dst.execute('PRAGMA journal_mode=DELETE')
+        if dst.execute('PRAGMA integrity_check').fetchone()[0] != 'ok':
+            raise RuntimeError('snapshot integrity check failed')
+
+
+def backup(base, output, env_file, gpg_home, recipient, owner=None, keep=30,
+           resources_db=None, resources_config=None):
     os.umask(0o077)
     if keep < 2:
         raise ValueError('keep must be at least two')
@@ -59,7 +68,10 @@ def backup(base, output, env_file, gpg_home, recipient, owner=None, keep=30):
     if owner is not None:
         os.chown(output, owner, owner)
     source = base / 'data/id.db'
-    if shutil.disk_usage(output).free < source.stat().st_size * 3 + 256 * 1024**2:
+    if bool(resources_db) != bool(resources_config):
+        raise ValueError('resources database and configuration must be backed up together')
+    required = source.stat().st_size + (resources_db.stat().st_size if resources_db else 0)
+    if shutil.disk_usage(output).free < required * 3 + 256 * 1024**2:
         raise RuntimeError('insufficient backup disk space')
     stamp = datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')
     name = f'id-api-{stamp}.tar.gz.gpg'
@@ -70,13 +82,11 @@ def backup(base, output, env_file, gpg_home, recipient, owner=None, keep=30):
     try:
         with tempfile.TemporaryDirectory(prefix='.snapshot-', dir=output) as directory:
             snapshot = Path(directory) / 'id.db'
-            with sqlite3.connect(source.resolve().as_uri() + '?mode=ro', uri=True) as src, sqlite3.connect(snapshot) as dst:
-                src.backup(dst, pages=128, sleep=0.1)
-                # Only the disposable snapshot changes journal mode. It must restore
-                # as one self-contained file without depending on WAL sidecars.
-                dst.execute('PRAGMA journal_mode=DELETE')
-                if dst.execute('PRAGMA integrity_check').fetchone()[0] != 'ok':
-                    raise RuntimeError('snapshot integrity check failed')
+            # Book owners exist in identity before publication: snapshot the bank first.
+            resources_snapshot = Path(directory) / 'recursos.db'
+            if resources_db:
+                snapshot_database(resources_db, resources_snapshot)
+            snapshot_database(source, snapshot)
             manifest = {'created_at': stamp, 'database_sha256': digest(snapshot),
                         'format': 'edutictac-id-backup', 'version': 1, 'files': {}}
             files = [('id.db', snapshot), ('legacy/main.py', base / 'main.py'),
@@ -85,6 +95,10 @@ def backup(base, output, env_file, gpg_home, recipient, owner=None, keep=30):
             for item in ['compose.yml', 'service.env']:
                 if (base / 'docker' / item).exists():
                     files.append(('configuration/docker/' + item, base / 'docker' / item))
+            if resources_db:
+                files.append(('resources/recursos.db', resources_snapshot))
+                for item in ['compose.yml', 'service.env']:
+                    files.append(('configuration/resources/' + item, resources_config / item))
             command = ['gpg', '--homedir', str(gpg_home), '--batch', '--yes',
                        '--trust-model', 'always', '--recipient', recipient, '--encrypt']
             with partial.open('xb') as encrypted:
@@ -140,9 +154,12 @@ def main():
     parser.add_argument('--gpg-home', type=Path, required=True)
     parser.add_argument('--recipient', required=True)
     parser.add_argument('--owner', type=int)
+    parser.add_argument('--resources-db', type=Path)
+    parser.add_argument('--resources-config', type=Path)
     args = parser.parse_args()
     try:
-        print(json.dumps(backup(args.base, args.output, args.env_file, args.gpg_home, args.recipient, args.owner)))
+        print(json.dumps(backup(args.base, args.output, args.env_file, args.gpg_home, args.recipient, args.owner,
+                                resources_db=args.resources_db, resources_config=args.resources_config)))
     except Exception:
         # Neither external command diagnostics nor exception values may disclose credentials.
         parser.exit(1, 'ID API backup failed; no successful backup status was recorded.\n')

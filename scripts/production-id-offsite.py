@@ -119,17 +119,21 @@ def verify_recovery(ciphertext):
                 raise ValueError('backup member too large')
             if hashlib.sha256(archive.extractfile(member).read()).hexdigest() != expected:
                 raise ValueError('backup content digest mismatch')
-        data = archive.extractfile('id.db').read()
-        if hashlib.sha256(data).hexdigest() != manifest['database_sha256']:
-            raise ValueError('database manifest mismatch')
-        # Do not extract any archive paths. Only a known DB file is written privately.
-        with tempfile.TemporaryDirectory(prefix='id-backup-check-') as directory:
-            database = Path(directory) / 'id.db'
-            database.write_bytes(data)
-            os.chmod(database, 0o600)
-            with sqlite3.connect(database.as_uri() + '?mode=ro', uri=True) as conn:
-                if conn.execute('PRAGMA integrity_check').fetchone()[0] != 'ok':
-                    raise ValueError('recovered database integrity failed')
+        databases = ['id.db']
+        if 'resources/recursos.db' in manifest['files']:
+            databases.append('resources/recursos.db')
+        for name in databases:
+            data = archive.extractfile(name).read()
+            if name == 'id.db' and hashlib.sha256(data).hexdigest() != manifest['database_sha256']:
+                raise ValueError('database manifest mismatch')
+            # Never extract arbitrary archive paths; write known DB bytes privately.
+            with tempfile.TemporaryDirectory(prefix='commons-backup-check-') as directory:
+                database = Path(directory) / 'snapshot.db'
+                database.write_bytes(data)
+                os.chmod(database, 0o600)
+                with sqlite3.connect(database.as_uri() + '?mode=ro', uri=True) as conn:
+                    if conn.execute('PRAGMA integrity_check').fetchone()[0] != 'ok':
+                        raise ValueError('recovered database integrity failed')
 
 
 def write_status(path, value):

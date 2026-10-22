@@ -1,8 +1,8 @@
 # Despliegue federado de Commons en producción (edutictac.es)
 
 Estado: **fase 1 desplegada y validada el 22-10-2026: identidad funciona en
-Docker, con copias automáticas, recuperación NAS y avisos activos.** Banco,
-Play y EduHoot no se han reiniciado. **Fase 2 publicada con HTTPS y OIDC
+Docker, con copias automáticas, recuperación NAS y avisos activos.** Play y
+EduHoot no se han reiniciado. La API del Banc se actualiza en la fase Llibres descrita al final. **Fase 2 publicada con HTTPS y OIDC
 el 22-10-2026; pendiente la aceptación humana del acceso docente y aula.**
 EduTicTac está en uso: avanzar paso a paso. Cada fase se
 ejecuta solo tras confirmación explícita.
@@ -843,3 +843,51 @@ libros de prueba en el catálogo local ni en producción.
 
 Commits de los módulos: Banc `b30d903`, API `813e261`. Los commits de esta fase
 son locales, pendientes de push y despliegue de producción.
+
+
+### Llibres: API del Banc conectada y copias ampliadas — 22-10-2026
+
+Fase autorizada tras preparar el editor privado. El Banc pasa de su venv/systemd
+al perfil Docker de recursos-api, conservando la misma base y dirección
+`127.0.0.1:8004`. Imagen `sha256:4cb010c29a46b4e4dc8f4649d2c04eba813267c2d635806b1252fccb57d83854`.
+Unidad antigua desactivada y código conservado para reversión. Perfil y protocolo
+operativo: `recursos-api/docs/PRODUCTION_LLIBRES.md`.
+
+Ensayo en copia consistente: todas las filas de las nueve tablas originales
+conservadas; mismos contratos públicos, interfaz anterior con favoritos
+persistentes, publicación y revisión por aula. Copia cifrada recuperada del NAS.
+El primer arranque falló por una lista tmpfs mal expresada: reversión automática
+con escrituras bloqueadas, perfil corregido probado completo y nuevo cambio
+correcto. No restaurar esa copia antigua después de reabrir escrituras.
+
+La ID API conserva imagen `a719fc…`, datos, cookies y configuración OIDC. Añade
+`EDUTICTAC_RESOURCES_API_URL` y `EDUTICTAC_ID_APP_TOKEN`; se convierte a host
+network con escucha explícita en `127.0.0.1:8005`. Su red bridge anterior no
+alcanzaba el loopback del Banc: los primeros intentos de configuración se
+revirtieron; la conexión corregida se ensayó sobre copia de identidad antes de
+aplicarse. No se añade proxy ni se expone un puerto adicional. El token permanece
+en archivos protegidos y nunca se entrega al navegador. `/api/internal/` se
+bloquea en el nginx público del Banc. La pausa de mantenimiento está retirada.
+
+Las copias automáticas existentes admiten opcionalmente `--resources-db` y
+`--resources-config`: snapshot del Banc antes de identidad, archivos de Compose y
+entorno protegidos dentro del mismo archivo cifrado. Réplica y recuperación NAS
+comprueban ambas bases, con la misma retención. Activación mediante drop-in
+`/etc/systemd/system/edutictac-id-backup.service.d/resources.conf`; helper anterior
+guardado en la preparación privada del Banc. Recuperación combinada posterior
+verificada: `id-api-20261022T182922Z.tar.gz.gpg`. Los libros y sus imágenes están en
+la base del Banc; documentos generales requieren cobertura al activar su interfaz.
+
+123 pruebas API/configuración, 16 de copias y 6 de permisos; 15 comprobaciones del
+perfil Llibres del VPS correctas. Llibres conecta ahora sus rutas API con Commons,
+pero mantiene `publication-status=false`, puerto interno 8182 y sin vhost público.
+Imagen del editor `sha256:cf0563a8e48c31243daa091765abd96dded5d4b3c4f906720565e8e6a34bee53`.
+Salud pública de ambas API, catálogo a través de Commons, permisos anónimos y
+redirección docente al proveedor/callback originales comprobados. No se ha
+utilizado una cuenta real ni publicado libros de prueba en producción.
+
+Pendiente de la siguiente fase: actualizar frontend público del Banc (todavía
+sin Vue ni consulta de libros), HTTPS de Llibres, habilitar publicación y comprobar
+el recorrido con cuentas reales. Play y EduHoot permanecen intactos; no retirar
+el modo demo de Play. No afirmar validación humana de sesión/aula por comprobar
+solamente una redirección.
