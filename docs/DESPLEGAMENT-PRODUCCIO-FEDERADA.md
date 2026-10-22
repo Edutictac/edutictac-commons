@@ -683,3 +683,13 @@ Además se revisan portada, panel docente, alumnado y Rebost a 393, 768 y 1440
 píxeles y con preferencia oscura: sin desbordamiento ni errores JavaScript.
 Capturas de portada móvil/escritorio, modo oscuro y panel docente inspeccionadas.
 Despliegue limitado a la imagen del portal; sin cambios de API ni de datos.
+
+
+Diseño publicado en `https://commons.edutictac.es/` con imagen
+`sha256:0faef31c1721c14fe85276accf168307d82a585275b7d7e2c74a9d8831b5b3d7`.
+Copia de configuración previa e informe en
+`/opt/edutictac-commons-portal/visual-refresh-20261022/` (privado).
+La configuración pública, incluido el indicador beta, permanece idéntica.
+Identidad, banco, Play y EduHoot conservan sus procesos y fechas de arranque.
+La comprobación de aceptación humana del aula y las integraciones posteriores
+siguen pendientes como se describe en sus apartados; el cambio es visual.
