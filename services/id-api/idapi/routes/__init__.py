@@ -1,9 +1,10 @@
 """Routers propis de l'ID API, en l'ordre en què es munten."""
 
-from . import apps, assignments, groups, itineraries, sessions, student, system
+from . import apps, assignments, groups, itineraries, sessions, student, system, play
 
 ROUTERS = [
     system.router,
+    play.router,
     sessions.router,
     groups.router,
     student.router,

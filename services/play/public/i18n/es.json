@@ -209,5 +209,31 @@
   "catalogSave": "Guardar catálogo",
   "catalogSaved": "Catálogo guardado.",
   "catalogError": "No se ha podido guardar el catálogo.",
-  "catalogTokenRequired": "Guarda primero el token de administración."
+  "catalogTokenRequired": "Guarda primero el token de administración.",
+  "productionNotice": "Las actividades del alumnado necesitan la aprobación de su docente para publicarse en el Banco de Recursos.",
+  "teacherLogin": "Acceso docente",
+  "reviewsTitle": "Revisar actividades",
+  "reviewsEmpty": "No hay actividades para revisar.",
+  "reviewOpen": "Revisar",
+  "reviewFeedback": "Comentario para el alumno",
+  "reviewApprove": "Aprobar y publicar en el Banco",
+  "reviewReturn": "Devolver para corregir",
+  "feedbackRequired": "Escribe un comentario para devolver la actividad.",
+  "reviewError": "No se pudieron cargar las revisiones.",
+  "reviewDecisionError": "No se pudo completar la revisión. Actualiza el estado antes de volver a intentarlo.",
+  "reviewApproved": "Actividad aprobada y publicada en el Banco de Recursos.",
+  "reviewReturned": "Actividad devuelta al alumno.",
+  "reviewWithdrawn": "Actividad retirada del Banco de Recursos.",
+  "reviewSubmit": "Enviar a mi docente",
+  "reviewSent": "Actividad enviada a tu docente. Todavía no es pública.",
+  "reviewSubmitError": "No se pudo enviar la actividad.",
+  "refresh": "Actualizar",
+  "reviewStatus": {
+    "draft": "Borrador privado",
+    "pending": "Pendiente de revisión",
+    "approved": "Aprobada y publicada",
+    "returned": "Devuelta para corregir",
+    "withdrawn": "Retirada"
+  },
+  "anonymousNotice": "Las actividades guardadas sin cuenta son públicas y caducan a las 24 horas. Accede desde Commons para trabajar con tu aula."
 }

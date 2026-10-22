@@ -2,7 +2,7 @@ const { defineConfig, devices } = require('@playwright/test');
 
 module.exports = defineConfig({
   testDir: './tests/browser',
-  testIgnore: ['**/play.spec.js', '**/moodle-h5p.spec.js'],
+  testIgnore: ['**/play.spec.js', '**/play-vue.spec.js', '**/moodle-h5p.spec.js'],
   fullyParallel: true,
   workers: 2,
   use: { baseURL: 'http://127.0.0.1:18082', serviceWorkers: 'block' },

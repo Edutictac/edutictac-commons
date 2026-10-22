@@ -13,7 +13,7 @@ from typing import Any
 from urllib.parse import quote
 
 
-SUPPORTED_TYPES = {"multiple-choice", "true-false", "memory", "matching", "classify", "ordering", "fill-blanks", "find-words", "drag-text", "mark-words", "dialog-cards", "crossword"}
+SUPPORTED_TYPES = {"multiple-choice", "true-false", "memory", "matching", "classify", "ordering", "fill-blanks", "find-words", "drag-text", "mark-words", "dialog-cards", "crossword", "compound"}
 PUBLIC_VISIBILITY = "public"
 DEFAULT_LICENSE = "CC BY-SA"
 
@@ -49,6 +49,7 @@ def build_publish_payload(
     *,
     public_base_url: str,
     author_pseudonym: str = "",
+    url_prefix: str = "/play",
 ) -> dict[str, Any]:
     """Build the versioned Recursos publication payload without network I/O.
 
@@ -66,10 +67,11 @@ def build_publish_payload(
     base = public_base_url.rstrip("/")
     if not base:
         raise RecursosContractError("public_base_url is required")
+    base += "/" + url_prefix.strip("/") if url_prefix.strip("/") else ""
     version = activity_version(activity)
     metadata = {
         "title": _text(activity.get("title"), field="title", required=True, limit=200),
-        "description": _text(activity.get("description"), field="description", limit=2000),
+        "description": _text(activity.get("description") or activity.get("question"), field="description", limit=2000),
         "type": activity_type,
         "language": _text(activity.get("language") or "es", field="language", limit=12),
         "subject": _text(activity.get("subject"), field="subject", limit=120),
@@ -85,7 +87,7 @@ def build_publish_payload(
         "idempotency_key": f"edutictac-play:{activity_id}:{version}",
         "metadata": metadata,
         "visibility": PUBLIC_VISIBILITY,
-        "canonical_url": f"{base}/play/{quote(activity_id)}",
-        "download_url": f"{base}/play/api/activities/{quote(activity_id)}/download",
+        "canonical_url": f"{base}/{quote(activity_id)}",
+        "download_url": f"{base}/api/activities/{quote(activity_id)}/download",
         "package": {"format": "h5p", "delivery": "download_url"},
     }

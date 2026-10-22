@@ -209,5 +209,31 @@
   "catalogSave": "Save catalogue",
   "catalogSaved": "Catalogue saved.",
   "catalogError": "Could not save catalogue.",
-  "catalogTokenRequired": "Save the administration token first."
+  "catalogTokenRequired": "Save the administration token first.",
+  "productionNotice": "Pupil activities need their teacher’s approval before publication in the Resource Bank.",
+  "teacherLogin": "Teacher login",
+  "reviewsTitle": "Review activities",
+  "reviewsEmpty": "No activities to review.",
+  "reviewOpen": "Review",
+  "reviewFeedback": "Feedback for the pupil",
+  "reviewApprove": "Approve and publish in the Bank",
+  "reviewReturn": "Return for changes",
+  "feedbackRequired": "Add feedback before returning the activity.",
+  "reviewError": "Could not load reviews.",
+  "reviewDecisionError": "Could not complete the review. Refresh status before trying again.",
+  "reviewApproved": "Activity approved and published in the Resource Bank.",
+  "reviewReturned": "Activity returned to the pupil.",
+  "reviewWithdrawn": "Activity withdrawn from the Resource Bank.",
+  "reviewSubmit": "Send to my teacher",
+  "reviewSent": "Activity sent to your teacher. It is not public yet.",
+  "reviewSubmitError": "Could not send the activity.",
+  "refresh": "Refresh",
+  "reviewStatus": {
+    "draft": "Private draft",
+    "pending": "Awaiting review",
+    "approved": "Approved and published",
+    "returned": "Returned for changes",
+    "withdrawn": "Withdrawn"
+  },
+  "anonymousNotice": "Activities saved without an account are public and expire after 24 hours. Open Play from Commons to work with your class."
 }

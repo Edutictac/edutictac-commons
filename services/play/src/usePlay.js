@@ -8,6 +8,7 @@ export function usePlay(){
  const language=ref(['es','ca','va','en'].includes(storedLang)?storedLang:'es'),dictionary=ref({});
  const t=key=>key.split('.').reduce((value,k)=>value?.[k],dictionary.value)||key;
  const view=ref('home'),ready=ref(false),busy=ref(false),form=ref(newActivity()),saved=ref(null),formError=ref(''),message=ref(''),messageError=ref(false),imageTasks=ref(0),demoUrl=ref('');
+ const capabilities=ref({}),submission=ref(null),integrated=ref(false);
  const drafts={},catalog=ref({}),catalogDraft=reactive({subjects:'',educational_stages:'',levels:'',tags:''}),catalogMessage=ref('');
  const library=reactive({items:[],total:0,offset:0,hasMore:false,term:'',type:'',loading:false,error:false});
  const bank=reactive({items:[],term:'',loading:false,error:false}),bankDialog=ref();
@@ -32,7 +33,7 @@ export function usePlay(){
   try{
    if(preview)localStorage.setItem(DRAFT,JSON.stringify(payload));
    const data=await post(preview?'/previews':'/activities',payload);if(current!==epoch||!active)return;
-   saved.value=data;view.value='previewPanel';message.value=preview?'':'saved';messageError.value=false;
+   saved.value=data;if(!preview)await loadPublication();if(current!==epoch||!active)return;view.value='previewPanel';message.value=preview?'':'saved';messageError.value=false;
    if(!preview)localStorage.removeItem(DRAFT);
    history.replaceState({},'',preview?base+'/'+bridge.query():base+'/'+data.id+bridge.query());
   }catch(error){if(current===epoch&&active){const text=error.details?.join(' ');formError.value=text||t(preview?'previewError':'saveError');message.value='saveError';messageError.value=true;}}
@@ -54,8 +55,22 @@ export function usePlay(){
   catch{if(current===epoch){message.value='deleteError';messageError.value=true;if(inLibrary)library.error=true;}}
   finally{if(current===epoch)busy.value=false;}
  }
+ async function loadPublication(){
+  const current=epoch;
+  try{const data=await api('/publication/me');if(current!==epoch||!active)return;capabilities.value=data;
+   submission.value=null;
+   if(data.can_submit&&saved.value?.id&&!saved.value.id.startsWith('preview-')){const id=saved.value.id;const result=await api('/submissions/'+id);if(current===epoch&&saved.value?.id===id&&active)submission.value=result;}
+  }catch{if(current===epoch){capabilities.value={};submission.value=null;}}
+ }
+ async function submitReview(){
+  if(busy.value||!capabilities.value.can_submit||!saved.value?.id)return;
+  busy.value=true;const current=epoch,id=saved.value.id;
+  try{const result=await post('/submissions/'+id,{revision:submission.value?.revision||0},{'X-Play-Review':'1'});if(current!==epoch||!active)return;submission.value=result;message.value='reviewSent';messageError.value=false;}
+  catch{if(current===epoch){message.value='reviewSubmitError';messageError.value=true;}}
+  finally{if(current===epoch)busy.value=false;}
+ }
  async function publication(withdraw=false){
-  if(busy.value||!saved.value?.id||saved.value.id.startsWith('preview-'))return;busy.value=true;const current=epoch,id=saved.value.id;message.value=withdraw?'unpublishRecursosLoading':'publishRecursosLoading';
+  if(busy.value||!capabilities.value.can_publish||!saved.value?.id||saved.value.id.startsWith('preview-'))return;busy.value=true;const current=epoch,id=saved.value.id;message.value=withdraw?'unpublishRecursosLoading':'publishRecursosLoading';
   try{const data=await post('/recursos/'+(withdraw?'unpublish':'publish'),{activity_id:id});if(current!==epoch||saved.value?.id!==id||!active)return;saved.value.recursos=data;message.value=withdraw?'unpublishRecursosDone':'publishRecursosDone';messageError.value=false;}
   catch{if(current===epoch){message.value=withdraw?'unpublishRecursosError':'publishRecursosError';messageError.value=true;}}
   finally{if(current===epoch)busy.value=false;}
@@ -86,18 +101,19 @@ export function usePlay(){
  function closeBank(){++bankSeq;bankDialog.value?.close();}
  async function copy(){try{await navigator.clipboard.writeText(location.href);message.value='copied';messageError.value=false;}catch{message.value='copyError';messageError.value=true;}}
  async function boot(){
+  const bootEpoch=epoch;
   await changeLanguage(language.value);try{await bridge.launch();}catch{formError.value=t('launchError');return;}
-  void bridge.flush();void loadCatalog();
-  api('/config').then(data=>{try{const url=new URL(data.commonsUrl);if(data.demo&&['http:','https:'].includes(url.protocol)&&!url.username&&!url.password)demoUrl.value=url.href;}catch{}}).catch(()=>{});
+  if(bootEpoch!==epoch||!active)return;void bridge.flush();void loadCatalog();await loadPublication();if(bootEpoch!==epoch||!active)return;
+  api('/config').then(data=>{integrated.value=Boolean(data.integrated);try{const url=new URL(data.commonsUrl);if(data.demo&&['http:','https:'].includes(url.protocol)&&!url.username&&!url.password)demoUrl.value=url.href;}catch{}}).catch(()=>{});
   const id=location.pathname.match(new RegExp('^'+base+'/([A-Za-z0-9]{8})$'))?.[1]||new URLSearchParams(location.search).get('activity');
-  if(id){try{if(!/^[A-Za-z0-9]{8}$/.test(id))throw Error();const data=await api('/activities/'+id);saved.value=data;form.value=hydrate(data);drafts[form.value.type]=form.value;view.value='previewPanel';message.value='saved';}catch{formError.value=t('libraryError');}}
+  if(id){try{if(!/^[A-Za-z0-9]{8}$/.test(id))throw Error();const data=await api('/activities/'+id);if(bootEpoch!==epoch||!active)return;saved.value=data;await loadPublication();if(bootEpoch!==epoch||!active)return;form.value=hydrate(data);drafts[form.value.type]=form.value;view.value='previewPanel';message.value='saved';}catch{formError.value=t('libraryError');}}
   else{try{const draft=JSON.parse(localStorage.getItem(DRAFT)||'null');if(draft&&TYPES.includes(draft.type)){form.value=hydrate(draft);drafts[form.value.type]=form.value;}}catch{localStorage.removeItem(DRAFT);}}
   ready.value=true;document.documentElement.dataset.playReady='true';
  }
- function hide(){active=false;++epoch;++librarySeq;++bankSeq;++catalogSeq;adminToken.value='';adminInput.value='';busy.value=false;bankDialog.value?.close();}
- function show(event){if(event.persisted){active=true;void loadCatalog();if(view.value==='library')void loadLibrary();}}
+ function hide(){active=false;++epoch;++librarySeq;++bankSeq;++catalogSeq;adminToken.value='';adminInput.value='';capabilities.value={};submission.value=null;busy.value=false;bankDialog.value?.close();}
+ function show(event){if(event.persisted){active=true;if(!ready.value){void boot();return;}void loadCatalog();void loadPublication();if(view.value==='library')void loadLibrary();}}
  function online(){void bridge.flush();}
  onMounted(()=>{void boot();window.addEventListener('online',online);window.addEventListener('pagehide',hide);window.addEventListener('pageshow',show);});
  onBeforeUnmount(()=>{hide();window.removeEventListener('online',online);window.removeEventListener('pagehide',hide);window.removeEventListener('pageshow',show);});
- return {base,TYPES,CHILD_TYPES,TYPE_LABELS,language,t,view,ready,busy,form,saved,formError,message,messageError,imageTasks,savingDisabled,demoUrl,catalog,catalogDraft,catalogMessage,library,bank,bankDialog,adminInput,adminToken,published,editorTitle,choose,go,changeLanguage,saveActivity,loadLibrary,openLibrary,filterLibrary,applyToken,removeActivity,publication,saveCatalog,openBank,loadBank,addFromBank,closeBank,copy,onStatement:bridge.report};
+ return {capabilities,submission,integrated,submitReview,loadPublication,base,TYPES,CHILD_TYPES,TYPE_LABELS,language,t,view,ready,busy,form,saved,formError,message,messageError,imageTasks,savingDisabled,demoUrl,catalog,catalogDraft,catalogMessage,library,bank,bankDialog,adminInput,adminToken,published,editorTitle,choose,go,changeLanguage,saveActivity,loadLibrary,openLibrary,filterLibrary,applyToken,removeActivity,publication,saveCatalog,openBank,loadBank,addFromBank,closeBank,copy,onStatement:bridge.report};
 }

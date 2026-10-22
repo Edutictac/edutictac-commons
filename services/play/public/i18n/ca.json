@@ -209,5 +209,31 @@
   "catalogSave": "Guardar catàleg",
   "catalogSaved": "Catàleg guardat.",
   "catalogError": "No s’ha pogut guardar el catàleg.",
-  "catalogTokenRequired": "Guarda primer el token d’administració."
+  "catalogTokenRequired": "Guarda primer el token d’administració.",
+  "productionNotice": "Les activitats de l’alumnat necessiten l’aprovació del seu docent per a publicar-se en el Banc de Recursos.",
+  "teacherLogin": "Accés docent",
+  "reviewsTitle": "Revisar activitats",
+  "reviewsEmpty": "No hi ha activitats per a revisar.",
+  "reviewOpen": "Revisar",
+  "reviewFeedback": "Comentari per a l’alumne",
+  "reviewApprove": "Aprovar i publicar en el Banc",
+  "reviewReturn": "Tornar per a corregir",
+  "feedbackRequired": "Escriu un comentari per a tornar l’activitat.",
+  "reviewError": "No s’han pogut carregar les revisions.",
+  "reviewDecisionError": "No s’ha pogut completar la revisió. Actualitza l’estat abans de tornar-ho a intentar.",
+  "reviewApproved": "Activitat aprovada i publicada en el Banc de Recursos.",
+  "reviewReturned": "Activitat tornada a l’alumne.",
+  "reviewWithdrawn": "Activitat retirada del Banc de Recursos.",
+  "reviewSubmit": "Enviar al meu docent",
+  "reviewSent": "Activitat enviada al teu docent. Encara no és pública.",
+  "reviewSubmitError": "No s’ha pogut enviar l’activitat.",
+  "refresh": "Actualitzar",
+  "reviewStatus": {
+    "draft": "Esborrany privat",
+    "pending": "Pendent de revisió",
+    "approved": "Aprovada i publicada",
+    "returned": "Tornada per a corregir",
+    "withdrawn": "Retirada"
+  },
+  "anonymousNotice": "Les activitats guardades sense compte són públiques i caduquen a les 24 hores. Accedix des de Commons per a treballar amb la teua aula."
 }

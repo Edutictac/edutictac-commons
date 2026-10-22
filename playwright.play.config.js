@@ -2,7 +2,8 @@ const { defineConfig, devices } = require('@playwright/test');
 
 module.exports = defineConfig({
   testDir: './tests/browser',
-  testMatch: /play\.spec\.js/,
+  testMatch: ['**/play.spec.js', '**/play-vue.spec.js'],
+  workers: 2,
   use: { baseURL: 'http://127.0.0.1:18183', serviceWorkers: 'block' },
   expect: { timeout: 10000 },
   projects: [

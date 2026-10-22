@@ -8,6 +8,8 @@ import re
 import secrets
 import shutil
 import time
+import os
+import tempfile
 from datetime import datetime, timezone
 
 from .config import ACTIVITIES_DIR
@@ -28,7 +30,16 @@ def new_id() -> str:
 def save_activity(activity: dict) -> None:
     folder = ACTIVITIES_DIR / activity["id"]
     folder.mkdir(parents=True, exist_ok=True)
-    (folder / "activity.json").write_text(json.dumps(activity, ensure_ascii=False, indent=2), encoding="utf-8")
+    handle, temporary = tempfile.mkstemp(prefix='.activity-', dir=folder)
+    try:
+        with os.fdopen(handle, 'w', encoding='utf-8') as stream:
+            json.dump(activity, stream, ensure_ascii=False, indent=2)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(temporary, folder / 'activity.json')
+    finally:
+        if os.path.exists(temporary):
+            os.unlink(temporary)
 
 
 def read_activity(activity_id: str) -> dict | None:
@@ -109,7 +120,7 @@ def is_owned(activity: dict, creator_hash: str) -> bool:
 
 
 def public_activity(activity: dict, creator_hash: str = "") -> dict:
-    result = {key: value for key, value in activity.items() if key != "owner_key_hash"}
+    result = {key: value for key, value in activity.items() if key not in {"owner_key_hash", "review", "owner_group_id"}}
     result["owned"] = is_owned(activity, creator_hash)
     return result
 

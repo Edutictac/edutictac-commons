@@ -18,6 +18,7 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import parse_qs, unquote, urlparse
 from urllib.request import Request as UpstreamRequest, urlopen
 
+from playcore import reviews
 from playcore.catalog import read_catalog, read_catalog_labels, save_catalog
 from playcore.config import (
     ACTIVITIES_DIR,
@@ -86,6 +87,16 @@ class Handler(BaseHTTPRequestHandler):
 
         if not COMMONS_AUTH_ME_URL:
             return {}
+        if COMMONS_API_URL:
+            try:
+                scope = reviews.access(self)
+                identity = {'id': scope['actor'], 'role': 'profesor' if scope['role'] == 'teacher' else 'alumno',
+                            'provider': 'authentik' if scope['role'] == 'teacher' else 'commons'}
+                if scope['role'] == 'student':
+                    identity['group_id'] = scope['group_id']
+                return identity
+            except reviews.ReviewError:
+                return {}
         cookie = self.headers.get("Cookie", "").strip()
         if not cookie:
             return {}
@@ -143,7 +154,15 @@ class Handler(BaseHTTPRequestHandler):
         if visibility == "public":
             return True
         identity = self.authenticated_identity_id() or self.identity_id()
-        return bool(identity and activity.get("owner_id") == identity)
+        if identity and activity.get('owner_id') == identity:
+            return True
+        group = activity.get('review', {}).get('group_id')
+        if group:
+            try:
+                return bool(reviews.access(self, group).get('can_review'))
+            except reviews.ReviewError:
+                pass
+        return False
 
     def send_json(self, status: int, payload: dict) -> None:
         body = json.dumps(payload, ensure_ascii=False).encode()
@@ -161,6 +180,11 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_GET(self) -> None:  # noqa: N802
         path = self.normalize_path(self.path)
+        if reviews.dispatch(self, path, "GET"):
+            return
+        if path == "/api/publication/login":
+            self.redirect_teacher_login()
+            return
         if path == "/api/health":
             self.send_json(HTTPStatus.OK, {"status": "ok", "service": "edutictac-play"})
             return
@@ -168,6 +192,7 @@ class Handler(BaseHTTPRequestHandler):
             self.send_json(HTTPStatus.OK, {
                 "demo": bool(PLAY_DEMO_COMMONS_URL),
                 "commonsUrl": PLAY_DEMO_COMMONS_URL or None,
+                "integrated": bool(COMMONS_AUTH_ME_URL),
             })
             return
         if path == "/api/catalog":
@@ -262,6 +287,10 @@ class Handler(BaseHTTPRequestHandler):
         return secrets.compare_digest(token, PLAY_ADMIN_TOKEN)
 
     def do_DELETE(self) -> None:  # noqa: N802
+        with reviews.LOCK:
+            self.delete_locked()
+
+    def delete_locked(self) -> None:
         path = self.normalize_path(self.path)
         match = re.fullmatch(rf"/api/activities/({ACTIVITY_ID_PATTERN})", path)
         if not match:
@@ -286,6 +315,9 @@ class Handler(BaseHTTPRequestHandler):
         if not authorized:
             self.send_json(HTTPStatus.FORBIDDEN, {"error": "Borrado no autorizado."})
             return
+        if activity and activity.get('review', {}).get('status') == 'approved':
+            self.send_json(HTTPStatus.CONFLICT, {'error': 'withdraw_review_first'})
+            return
         if not activity or not delete_activity(match.group(1)):
             self.send_json(HTTPStatus.NOT_FOUND, {"error": "Actividad no encontrada."})
             return
@@ -293,6 +325,8 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self) -> None:  # noqa: N802
         route = self.normalize_path(self.path)
+        if reviews.dispatch(self, route, "POST"):
+            return
         if route == "/api/catalog":
             if not self.require_teacher():
                 return
@@ -317,7 +351,9 @@ class Handler(BaseHTTPRequestHandler):
         if route not in {"/api/activities", "/api/previews"}:
             self.send_json(HTTPStatus.NOT_FOUND, {"error": "Ruta no encontrada."})
             return
-        identity = self.authenticated_identity_id() or (self.identity_id() if not COMMONS_AUTH_ME_URL else "")
+        authenticated = self.authenticated_identity()
+        identity = str(authenticated.get('id', '')) or (self.identity_id() if not COMMONS_AUTH_ME_URL else '')
+        student = bool(identity and authenticated.get('provider') != 'authentik' and authenticated.get('group_id'))
         try:
             length = int(self.headers.get("Content-Length", "0"))
             if length > MAX_BODY:
@@ -332,15 +368,30 @@ class Handler(BaseHTTPRequestHandler):
             return
         if route == "/api/previews":
             activity["id"] = f"preview-{new_id()}"
+            if identity:
+                activity['visibility'] = 'private'
+                activity['owner_id'] = identity
             PREVIEWS[activity["id"]] = activity
             self.send_json(HTTPStatus.CREATED, activity)
             return
         activity["id"] = new_id()
-        requested_visibility = str(payload.get("visibility", PLAY_DEFAULT_VISIBILITY)).strip().lower()
+        if COMMONS_AUTH_ME_URL and not PLAY_DEMO_COMMONS_URL:
+            try:
+                scope = reviews.access(self)
+                identity = scope['actor']
+                student = scope['role'] == 'student'
+                if student:
+                    authenticated['group_id'] = scope['group_id']
+            except reviews.ReviewError as exc:
+                self.send_json(exc.status, {'error': exc.code})
+                return
+        requested_visibility = str(payload.get('visibility', PLAY_DEFAULT_VISIBILITY)).strip().lower()
         if requested_visibility not in VISIBILITIES:
             self.send_json(HTTPStatus.UNPROCESSABLE_ENTITY, {"errors": ["Visibilidad no válida."]})
             return
-        activity["visibility"] = requested_visibility if identity else "public"
+        activity['visibility'] = 'private' if student else requested_visibility if identity else 'public'
+        if student:
+            activity['owner_group_id'] = authenticated['group_id']
         if identity:
             activity["owner_id"] = identity
         else:
@@ -373,100 +424,40 @@ class Handler(BaseHTTPRequestHandler):
         self.send_json(HTTPStatus.OK, catalog)
 
     def publish_recursos_activity(self) -> None:
-        if not RECURSOS_API_URL or not RECURSOS_INGEST_TOKEN or not PLAY_PUBLIC_URL:
-            self.send_json(HTTPStatus.SERVICE_UNAVAILABLE, {"error": "La integración con Recursos no está configurada."})
-            return
         try:
-            length = int(self.headers.get("Content-Length", "0"))
-            if length > 4096:
-                raise ValueError("El contenido es demasiado grande.")
-            payload = json.loads(self.rfile.read(length))
-            activity_id = str(payload.get("activity_id", "")).strip()
-            if not ID_RE.fullmatch(activity_id):
-                raise ValueError("Actividad no válida.")
-            activity = read_activity(activity_id)
-            if not activity:
-                self.send_json(HTTPStatus.NOT_FOUND, {"error": "Actividad no encontrada."})
-                return
-            publish_payload = build_publish_payload(activity, public_base_url=PLAY_PUBLIC_URL)
-            upstream = UpstreamRequest(
-                f"{RECURSOS_API_URL}/api/integrations/recursos/activities/{activity_id}/publish",
-                data=json.dumps(publish_payload, ensure_ascii=False).encode(),
-                headers={"Authorization": f"Bearer {RECURSOS_INGEST_TOKEN}", "Content-Type": "application/json"},
-                method="POST",
-            )
-            with urlopen(upstream, timeout=10) as response:
-                body = response.read()
-                status = response.status
-        except (ValueError, json.JSONDecodeError, RecursosContractError) as exc:
-            self.send_json(HTTPStatus.BAD_REQUEST, {"error": str(exc)})
-            return
-        except HTTPError as exc:
-            try:
-                body = exc.read()
-                payload = json.loads(body.decode())
-            except (OSError, ValueError, json.JSONDecodeError):
-                payload = {"error": "Recursos rechazó la publicación."}
-            self.send_json(exc.code, payload)
-            return
-        except (URLError, TimeoutError, OSError):
-            self.send_json(HTTPStatus.BAD_GATEWAY, {"error": "No se ha podido contactar con Recursos."})
-            return
-        try:
-            response_payload = json.loads(body.decode())
-        except (ValueError, json.JSONDecodeError):
-            response_payload = {"error": "Respuesta no válida de Recursos."}
-        if status < 300 and isinstance(response_payload, dict):
-            activity["recursos"] = response_payload
-            save_activity(activity)
-        self.send_json(status, response_payload)
+            reviews.check_write(self, strict=False)
+            payload = reviews.read_body(self)
+            with reviews.LOCK:
+                data = reviews.activity(str(payload.get('activity_id', '')))
+                scope = reviews.access(self) if COMMONS_AUTH_ME_URL else {}
+                if COMMONS_AUTH_ME_URL and (not scope.get('can_publish') or data.get('review') or data.get('owner_id') != scope.get('actor')):
+                    raise reviews.ReviewError(403, 'activity_owner_required')
+                output = reviews.publish(data, False)
+                data['recursos'] = output
+                if not False:
+                    data['visibility'] = 'public'
+                save_activity(data)
+            self.send_json(200, output)
+        except reviews.ReviewError as exc:
+            self.send_json(exc.status, {'error': exc.code})
 
     def unpublish_recursos_activity(self) -> None:
-        if not RECURSOS_API_URL or not RECURSOS_INGEST_TOKEN:
-            self.send_json(HTTPStatus.SERVICE_UNAVAILABLE, {"error": "La integración con Recursos no está configurada."})
-            return
         try:
-            length = int(self.headers.get("Content-Length", "0"))
-            if length > 4096:
-                raise ValueError("El contenido es demasiado grande.")
-            payload = json.loads(self.rfile.read(length))
-            activity_id = str(payload.get("activity_id", "")).strip()
-            if not ID_RE.fullmatch(activity_id):
-                raise ValueError("Actividad no válida.")
-            activity = read_activity(activity_id)
-            if not activity:
-                self.send_json(HTTPStatus.NOT_FOUND, {"error": "Actividad no encontrada."})
-                return
-            upstream = UpstreamRequest(
-                f"{RECURSOS_API_URL}/api/integrations/recursos/activities/{activity_id}/unpublish",
-                data=b"",
-                headers={"Authorization": f"Bearer {RECURSOS_INGEST_TOKEN}"},
-                method="POST",
-            )
-            with urlopen(upstream, timeout=10) as response:
-                body = response.read()
-                status = response.status
-        except (ValueError, json.JSONDecodeError) as exc:
-            self.send_json(HTTPStatus.BAD_REQUEST, {"error": str(exc)})
-            return
-        except HTTPError as exc:
-            try:
-                response_payload = json.loads(exc.read().decode())
-            except (OSError, ValueError, json.JSONDecodeError):
-                response_payload = {"error": "Recursos rechazó la retirada."}
-            self.send_json(exc.code, response_payload)
-            return
-        except (URLError, TimeoutError, OSError):
-            self.send_json(HTTPStatus.BAD_GATEWAY, {"error": "No se ha podido contactar con Recursos."})
-            return
-        try:
-            response_payload = json.loads(body.decode())
-        except (ValueError, json.JSONDecodeError):
-            response_payload = {"error": "Respuesta no válida de Recursos."}
-        if status < 300 and isinstance(response_payload, dict):
-            activity["recursos"] = response_payload
-            save_activity(activity)
-        self.send_json(status, response_payload)
+            reviews.check_write(self, strict=False)
+            payload = reviews.read_body(self)
+            with reviews.LOCK:
+                data = reviews.activity(str(payload.get('activity_id', '')))
+                scope = reviews.access(self) if COMMONS_AUTH_ME_URL else {}
+                if COMMONS_AUTH_ME_URL and (not scope.get('can_publish') or data.get('review') or data.get('owner_id') != scope.get('actor')):
+                    raise reviews.ReviewError(403, 'activity_owner_required')
+                output = reviews.publish(data, True)
+                data['recursos'] = output
+                if not True:
+                    data['visibility'] = 'public'
+                save_activity(data)
+            self.send_json(200, output)
+        except reviews.ReviewError as exc:
+            self.send_json(exc.status, {'error': exc.code})
 
     def forward_commons_score(self) -> None:
         if not COMMONS_API_URL:
