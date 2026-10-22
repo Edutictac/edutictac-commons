@@ -1,7 +1,8 @@
 # Despliegue federado de Commons en producción (edutictac.es)
 
-Estado: **plan redactado 22-10-2026, nada ejecutado en el VPS.** Retomar por la
-fase 1. Cada fase se ejecuta solo tras confirmación explícita.
+Estado: **preparación de la fase 1 revisada el 22-10-2026; ningún cambio aplicado
+en producción.** EduTicTac está en uso: avanzar paso a paso. Cada fase se
+ejecuta solo tras confirmación explícita.
 
 ## Objetivo
 
@@ -59,7 +60,8 @@ Ejecutar la **imagen Docker `commons-id-api`** (la misma que instalan los
 centros) en lugar de copiar código al venv:
 
 - la versión nueva espera `/data` (`quiosc.db`, `modules.json`) y Pillow;
-- artefacto probado y con digest; vuelta atrás = volver a arrancar systemd;
+- artefacto probado y con digest; vuelta atrás = restaurar la base previa y
+  volver a arrancar systemd (no usar el código antiguo con la base migrada);
 - contenedor `127.0.0.1:8005`, volumen `/opt/edutictac-id-api/data:/data`
   (uid 1000 coincide con samgua), `--memory=384m`, `restart unless-stopped`.
 
@@ -85,9 +87,13 @@ Ventana de cambio (minutos):
    y login de alumnado; `journalctl -u recursos-api` sin 502.
 7. Si todo bien: `systemctl disable edutictac-id-api` (sin borrar nada).
 
-Vuelta atrás: parar contenedor, restaurar `id.db.bak-<fecha>`,
-`systemctl start edutictac-id-api`. Probarla también antes de dar por cerrada
-la fase.
+Vuelta atrás: con ambos servicios detenidos y sin conexiones a SQLite,
+preservar aparte la base migrada y sus ficheros WAL/SHM, restaurar la copia
+consistente previa con sus permisos y arrancar `edutictac-id-api`.
+No mezclar la base restaurada con WAL/SHM de la migrada. Ensayar la
+restauración y el arranque del código antiguo sobre copias antes del cambio.
+Durante la ventana deben impedirse escrituras de consumidores: una restauración
+posterior perdería las escrituras nuevas. El ensayo previo no autoriza el corte.
 
 Además en esta fase: copia diaria cifrada o al NAS de `id.db` (patrón
 `backup pass→NAS`) y alerta en n8n si `/api/health` falla.
@@ -120,3 +126,33 @@ Además en esta fase: copia diaria cifrada o al NAS de `id.db` (patrón
   (sin grupo de pilotos).
 - Copias del id-api al NAS por la tailnet (patrón `backup pass→NAS`).
 - Resto de recomendaciones del plan aceptadas.
+
+## Primer paso: comprobación sin cambios (22-10-2026)
+
+Petición expresa: avanzar sin prisa porque `edutictac.es` está en producción.
+Revisión por SSH en solo lectura, sin reinicios, cambios de configuración,
+cuentas de prueba ni escrituras de aplicación:
+
+- ID API, Recursos API y Play activos. Health interno de identidad, portada
+  pública del banco y Play responden HTTP 200.
+- SQLite abierta con `mode=ro`: `quick_check=ok`, modo WAL, 1 grupo,
+  50 identidades, 0 sesiones, 0 resultados y 0 asignaciones.
+- Puerto 8005 ocupado por el servicio actual; 18005 libre para el ensayo futuro.
+- UID de la base 1000; 36 GiB disponibles. El fichero tiene permisos 0644:
+  revisar acceso al directorio y permisos de copia/base en la preparación,
+  sin modificarlos durante esta auditoría.
+- Acceso SSH comprobado por el puerto predeterminado; el 2222 del inventario
+  anterior no se ha vuelto a comprobar. Verificar el acceso vigente antes de
+  cada operación, sin modificar SSH.
+
+Ensayo local repetido con **solo el esquema SQL** leído de producción y
+50 identidades ficticias: migración conserva todos los campos anteriores,
+reconstruye la pertenencia del propietario y mantiene integridad. Health,
+login correcto, rechazo de PIN incorrecto y creación batch con/sin autorización
+comprobados. Ninguna credencial ni fila real se ha copiado al entorno local.
+Dos pruebas automatizadas de migración también aprobadas.
+
+Siguiente paso acotado: preparar la copia consistente y ensayar en aislamiento
+la imagen exacta candidata y la restauración con el código antiguo. Esto aún
+no se ha realizado: no hay contenedor candidato desplegado en el VPS, no se
+ha cambiado el servicio ni se da por completada la fase 1.
