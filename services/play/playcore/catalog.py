@@ -32,7 +32,6 @@ CATALOG_LABELS_DEFAULT = {
     "basico": {"es": "Básico", "ca": "Bàsic", "en": "Basic"},
     "intermedio": {"es": "Intermedio", "ca": "Intermedi", "en": "Intermediate"},
     "avanzado": {"es": "Avanzado", "ca": "Avançat", "en": "Advanced"},
-    "ciencias": {"es": "Ciencias", "ca": "Ciències", "en": "Science"},
     "repaso": {"es": "Repaso", "ca": "Repàs", "en": "Revision"},
     "vocabulario": {"es": "Vocabulario", "ca": "Vocabulari", "en": "Vocabulary"},
     "comprension": {"es": "Comprensión", "ca": "Comprensió", "en": "Comprehension"},
