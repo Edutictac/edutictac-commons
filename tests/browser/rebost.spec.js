@@ -93,3 +93,33 @@ test('family revision mismatch is explained without displaying stale costumes', 
   await expect(page.locator('.family-costume')).toHaveCount(0);
   await expect(page.locator('#controls')).toBeEnabled();
 });
+
+
+test('visitant veu la sessió i ha d’entrar abans de guardar, sense còpies falses',async({page})=>{
+  await mockAPI(page);let copies=0;
+  await page.route('**/copies',route=>{copies++;return route.fulfill({json:{}});});
+  await page.goto('/assets/?collection=catalog');await page.locator('[data-lang=es]').click();
+  await expect(page.locator('#sessionStatus')).toContainText('Sin identificar');
+  await expect(page.locator('#oidcLogin')).toBeVisible();
+  await page.getByRole('button',{name:'Entrar para guardar una copia',exact:true}).click();
+  await expect(page.locator('#status')).toContainText('Para guardar esta imagen, entra');
+  expect(copies).toBe(0);
+});
+
+for(const refreshFails of [false,true]) {
+  test(`guardar una còpia confirma el resultat, refresc fallit=${refreshFails}`,async({page})=>{
+    await mockAPI(page,true);let copies=0;
+    await page.route('**/copies',route=>{copies++;return route.fulfill({json:{item:{...item,collection:'mine',readonly:false}}});});
+    if(refreshFails)await page.route('**/items?**',route=>{
+      if(new URL(route.request().url()).searchParams.get('collection')==='mine')return route.fulfill({status:500,json:{detail:'operation_failed'}});
+      return route.fallback();
+    });
+    await page.goto('/assets/?collection=catalog');await page.locator('[data-lang=es]').click();
+    await expect(page.locator('#sessionStatus')).toContainText('Sesión iniciada');
+    await expect(page.locator('#oidcLogin')).toBeHidden();
+    await page.getByRole('button',{name:/^Guardar (esta imagen|en mis imágenes)$/}).click();
+    await expect(page.locator('#status')).toContainText(refreshFails?'La imagen se ha guardado, pero':'Imagen guardada en Mis imágenes');
+    expect(copies).toBe(1);
+    if(!refreshFails)await expect(page.locator('article input')).toHaveCount(1);
+  });
+}

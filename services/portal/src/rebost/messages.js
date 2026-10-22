@@ -1,5 +1,9 @@
 export const TEXT = {
   es: {
+    checkingSession: 'Comprobando sesión…', signedIn: 'Sesión iniciada · Tu biblioteca privada está disponible.',
+    signedOut: 'Sin identificar · Puedes explorar los catálogos. Entra para guardar imágenes.',
+    login_required: 'Para guardar esta imagen, entra con tu cuenta de EduTicTac o con tu código y PIN. Después vuelve al catálogo y pulsa Guardar.',
+    image_saved: 'Imagen guardada en Mis imágenes.', saved_refresh_failed: 'La imagen se ha guardado, pero no se pudo actualizar la lista. Recarga la página para verla.',
     login: 'Entrar', loginToSave: 'Entrar para guardar una copia',
     hideCostumes: 'Ocultar disfraces', costumes: 'Ver disfraces', costumeCount: 'disfraces', addFamily: 'Añadir personaje con disfraces', saveImage: 'Guardar esta imagen', choose: 'Usar en el proyecto', pickHint: 'Elige una imagen para tu proyecto.',
     intro: 'Guarda tus imágenes y encuentra personajes y fondos del catálogo.',
@@ -12,8 +16,8 @@ export const TEXT = {
     sprite: 'Personaje', background: 'Fondo', object: 'Objeto', illustration: 'Ilustración',
     name: 'Nombre', save: 'Guardar cambios', duplicate: 'Duplicar', remove: 'Eliminar', view: 'Ver imagen',
     empty: 'Todavía no hay imágenes que coincidan con esta búsqueda.', more: 'Mostrar más', close: 'Cerrar',
-    access: 'Entra con tu cuenta del centro o con tu código y PIN para abrir tu biblioteca privada.',
-    student: 'Entrar como alumnado', oidc: 'Entrar con la cuenta del centro', working: 'Guardando…',
+    access: 'Entra con tu cuenta de EduTicTac o con tu código y PIN para abrir tu biblioteca privada.',
+    student: 'Entrar como alumnado', oidc: 'Entrar con la cuenta de EduTicTac', working: 'Guardando…',
     confirm: '¿Eliminar esta imagen de tu biblioteca? Las copias incorporadas a proyectos se conservan.',
     success: 'Cambios guardados.', error: 'No se ha podido completar la operación. Vuelve a intentarlo.',
     session_required: 'Entra de nuevo para abrir tu biblioteca privada.', invalid_image: 'Usa una imagen válida PNG, JPEG o WebP.',
@@ -27,6 +31,10 @@ export const TEXT = {
     origin_required: 'Abre el Rebost desde la dirección de Commons.'
   },
   ca: {
+    checkingSession: 'Comprovant la sessió…', signedIn: 'Sessió iniciada · La teua biblioteca privada està disponible.',
+    signedOut: 'Sense identificar · Pots explorar els catàlegs. Entra per a guardar imatges.',
+    login_required: 'Per a guardar esta imatge, entra amb el teu compte d’EduTicTac o amb el teu codi i PIN. Després torna al catàleg i prem Guarda.',
+    image_saved: 'Imatge guardada en Les meues imatges.', saved_refresh_failed: 'La imatge s’ha guardat, però no s’ha pogut actualitzar la llista. Recarrega la pàgina per a vore-la.',
     login: 'Entra', loginToSave: 'Entra per a guardar una còpia',
     hideCostumes: 'Amagar disfresses', costumes: 'Veure disfresses', costumeCount: 'disfresses', addFamily: 'Afegir personatge amb disfresses', saveImage: 'Guarda esta imatge', choose: 'Usa en el projecte', pickHint: 'Tria una imatge per al teu projecte.',
     intro: 'Guarda les teues imatges i troba personatges i fons del catàleg.',
@@ -39,8 +47,8 @@ export const TEXT = {
     sprite: 'Personatge', background: 'Fons', object: 'Objecte', illustration: 'Il·lustració',
     name: 'Nom', save: 'Guarda els canvis', duplicate: 'Duplica', remove: 'Elimina', view: 'Mostra la imatge',
     empty: 'Encara no hi ha imatges que coincidisquen amb esta cerca.', more: 'Mostra’n més', close: 'Tanca',
-    access: 'Entra amb el teu compte del centre o amb el teu codi i PIN per a obrir la biblioteca privada.',
-    student: 'Entra com a alumnat', oidc: 'Entra amb el compte del centre', working: 'Guardant…',
+    access: 'Entra amb el teu compte d’EduTicTac o amb el teu codi i PIN per a obrir la biblioteca privada.',
+    student: 'Entra com a alumnat', oidc: 'Entra amb el compte d’EduTicTac', working: 'Guardant…',
     confirm: 'Vols eliminar esta imatge de la biblioteca? Les còpies incorporades a projectes es conserven.',
     success: 'Canvis guardats.', error: 'No s’ha pogut completar l’operació. Torna a intentar-ho.',
     session_required: 'Torna a entrar per a obrir la biblioteca privada.', invalid_image: 'Usa una imatge vàlida PNG, JPEG o WebP.',

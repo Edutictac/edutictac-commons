@@ -2775,7 +2775,14 @@ var Za = ["aria-label"], Qa = ["src", "alt"], $a = ["value"], eo = {
 		}
 		function E() {
 			return l(async () => {
-				a.value && await n.duplicate(t.item), await d("mine");
+				if (!a.value) return await d("mine"), "login_required";
+				await n.duplicate(t.item);
+				try {
+					await d("mine");
+				} catch (e) {
+					return h(e), "saved_refresh_failed";
+				}
+				return "image_saved";
 			});
 		}
 		function te() {
@@ -2830,7 +2837,13 @@ var Za = ["aria-label"], Qa = ["src", "alt"], $a = ["value"], eo = {
 								type: "button",
 								onClick: i[4] ||= (t) => {
 									U(l)(async () => {
-										await U(n).update(e.item, g.value, _.value), await U(u)();
+										await U(n).update(e.item, g.value, _.value);
+										try {
+											await U(u)();
+										} catch (e) {
+											return U(h)(e), "saved_refresh_failed";
+										}
+										return "success";
 									});
 								}
 							}, P(U(r).save), 1),
@@ -2838,7 +2851,13 @@ var Za = ["aria-label"], Qa = ["src", "alt"], $a = ["value"], eo = {
 								type: "button",
 								onClick: i[5] ||= (t) => {
 									U(l)(async () => {
-										await U(n).duplicate(e.item), await U(u)();
+										await U(n).duplicate(e.item);
+										try {
+											await U(u)();
+										} catch (e) {
+											return U(h)(e), "saved_refresh_failed";
+										}
+										return "image_saved";
 									});
 								}
 							}, P(U(r).duplicate), 1),
@@ -2877,6 +2896,12 @@ var Za = ["aria-label"], Qa = ["src", "alt"], $a = ["value"], eo = {
 	}
 }, oo = {
 	es: {
+		checkingSession: "Comprobando sesión…",
+		signedIn: "Sesión iniciada · Tu biblioteca privada está disponible.",
+		signedOut: "Sin identificar · Puedes explorar los catálogos. Entra para guardar imágenes.",
+		login_required: "Para guardar esta imagen, entra con tu cuenta de EduTicTac o con tu código y PIN. Después vuelve al catálogo y pulsa Guardar.",
+		image_saved: "Imagen guardada en Mis imágenes.",
+		saved_refresh_failed: "La imagen se ha guardado, pero no se pudo actualizar la lista. Recarga la página para verla.",
 		login: "Entrar",
 		loginToSave: "Entrar para guardar una copia",
 		hideCostumes: "Ocultar disfraces",
@@ -2915,9 +2940,9 @@ var Za = ["aria-label"], Qa = ["src", "alt"], $a = ["value"], eo = {
 		empty: "Todavía no hay imágenes que coincidan con esta búsqueda.",
 		more: "Mostrar más",
 		close: "Cerrar",
-		access: "Entra con tu cuenta del centro o con tu código y PIN para abrir tu biblioteca privada.",
+		access: "Entra con tu cuenta de EduTicTac o con tu código y PIN para abrir tu biblioteca privada.",
 		student: "Entrar como alumnado",
-		oidc: "Entrar con la cuenta del centro",
+		oidc: "Entrar con la cuenta de EduTicTac",
 		working: "Guardando…",
 		confirm: "¿Eliminar esta imagen de tu biblioteca? Las copias incorporadas a proyectos se conservan.",
 		success: "Cambios guardados.",
@@ -2936,6 +2961,12 @@ var Za = ["aria-label"], Qa = ["src", "alt"], $a = ["value"], eo = {
 		origin_required: "Abre el Rebost desde la dirección de Commons."
 	},
 	ca: {
+		checkingSession: "Comprovant la sessió…",
+		signedIn: "Sessió iniciada · La teua biblioteca privada està disponible.",
+		signedOut: "Sense identificar · Pots explorar els catàlegs. Entra per a guardar imatges.",
+		login_required: "Per a guardar esta imatge, entra amb el teu compte d’EduTicTac o amb el teu codi i PIN. Després torna al catàleg i prem Guarda.",
+		image_saved: "Imatge guardada en Les meues imatges.",
+		saved_refresh_failed: "La imatge s’ha guardat, però no s’ha pogut actualitzar la llista. Recarrega la pàgina per a vore-la.",
 		login: "Entra",
 		loginToSave: "Entra per a guardar una còpia",
 		hideCostumes: "Amagar disfresses",
@@ -2974,9 +3005,9 @@ var Za = ["aria-label"], Qa = ["src", "alt"], $a = ["value"], eo = {
 		empty: "Encara no hi ha imatges que coincidisquen amb esta cerca.",
 		more: "Mostra’n més",
 		close: "Tanca",
-		access: "Entra amb el teu compte del centre o amb el teu codi i PIN per a obrir la biblioteca privada.",
+		access: "Entra amb el teu compte d’EduTicTac o amb el teu codi i PIN per a obrir la biblioteca privada.",
 		student: "Entra com a alumnat",
-		oidc: "Entra amb el compte del centre",
+		oidc: "Entra amb el compte d’EduTicTac",
 		working: "Guardant…",
 		confirm: "Vols eliminar esta imatge de la biblioteca? Les còpies incorporades a projectes es conserven.",
 		success: "Canvis guardats.",
@@ -2997,11 +3028,7 @@ var Za = ["aria-label"], Qa = ["src", "alt"], $a = ["value"], eo = {
 }, so = ["hidden"], co = {
 	class: "lang-switcher",
 	"aria-label": "Idioma"
-}, lo = { id: "intro" }, uo = {
-	id: "status",
-	role: "status",
-	"aria-live": "polite"
-}, fo = ["hidden"], po = { id: "accessHint" }, mo = ["target"], ho = ["target"], go = ["disabled", "hidden"], _o = { id: "mine" }, vo = ["aria-label"], yo = ["aria-pressed"], bo = ["hidden", "aria-pressed"], xo = ["hidden", "aria-pressed"], So = { id: "collectionHint" }, Co = ["hidden"], wo = ["aria-label", "onKeydown"], To = { id: "uploadText" }, Eo = { id: "formats" }, Do = { id: "uploadTypeLabel" }, Oo = ["value"], ko = ["hidden"], Ao = { id: "searchLabel" }, jo = { id: "filterLabel" }, Mo = ["value"], No = ["hidden"], Po = ["aria-label", "hidden"], Fo = ["hidden"], Io = ["aria-label"], Lo = ["src", "alt"];
+}, lo = { id: "intro" }, uo = ["hidden"], fo = { id: "accessHint" }, po = ["target"], mo = ["target"], ho = ["disabled", "hidden"], go = { id: "mine" }, _o = ["aria-label"], vo = ["aria-pressed"], yo = ["hidden", "aria-pressed"], bo = ["hidden", "aria-pressed"], xo = { id: "collectionHint" }, So = ["hidden"], Co = ["aria-label", "onKeydown"], wo = { id: "uploadText" }, To = { id: "formats" }, Eo = { id: "uploadTypeLabel" }, Do = ["value"], Oo = ["hidden"], ko = { id: "searchLabel" }, Ao = { id: "filterLabel" }, jo = ["value"], Mo = ["hidden"], No = ["aria-label", "hidden"], Po = ["hidden"], Fo = ["aria-label"], Io = ["src", "alt"];
 // services/portal/src/rebost/main.js
 Ja({
 	__name: "RebostApp",
@@ -3036,7 +3063,8 @@ Ja({
 			if (!p.value && D) {
 				p.value = !0, x.value = "working";
 				try {
-					await e(), D && (x.value = "");
+					let t = await e();
+					D && (x.value = typeof t == "string" ? t : "", x.value && document.getElementById("status")?.scrollIntoView({ block: "nearest" }));
 				} catch (e) {
 					[404, 412].includes(e.status) && await j().catch(() => {}), D && k(e);
 				} finally {
@@ -3079,9 +3107,15 @@ Ja({
 			i || E.value || h.value !== "mine" || !d.value || await A(async () => {
 				try {
 					for (let t of e) await n.add(t, t.name.replace(/\.[^.]+$/, "").slice(0, 200) || "Imatge", v.value);
-				} finally {
-					await j();
+				} catch (e) {
+					throw await j().catch(() => {}), e;
 				}
+				try {
+					await j();
+				} catch (e) {
+					return k(e), "saved_refresh_failed";
+				}
+				return "image_saved";
 			});
 		}
 		function ce() {
@@ -3195,31 +3229,48 @@ Ja({
 		}, "Castellano", 2)])]), Q("main", null, [
 			t[12] ||= Q("h1", null, "EduTicTac Rebost", -1),
 			Q("p", lo, P(u.value.intro), 1),
-			Q("p", uo, P(u.value[x.value] || ""), 1),
+			Q("p", {
+				id: "sessionStatus",
+				class: fe(["session-status", { signed: f.value }]),
+				role: "status"
+			}, P(d.value ? f.value ? u.value.signedIn : u.value.signedOut : u.value.checkingSession), 3),
+			Q("p", {
+				id: "status",
+				class: fe({
+					success: ["success", "image_saved"].includes(x.value),
+					error: x.value && ![
+						"success",
+						"image_saved",
+						"working"
+					].includes(x.value)
+				}),
+				role: "status",
+				"aria-live": "polite"
+			}, P(u.value[x.value] || ""), 3),
 			Q("section", {
 				id: "access",
-				hidden: !E.value
+				hidden: !d.value || f.value
 			}, [
-				Q("p", po, P(u.value.access), 1),
+				Q("p", fo, P(u.value.access), 1),
 				Q("a", {
 					id: "studentLogin",
 					href: "/student.html?next=%2Fassets%2F",
 					target: U(i) ? "_blank" : void 0,
 					rel: "noopener noreferrer"
-				}, P(u.value.student), 9, mo),
+				}, P(u.value.student), 9, po),
 				Q("a", {
 					id: "oidcLogin",
 					href: "/api/auth/oidc/login?next=%2Fassets%2F",
 					target: U(i) ? "_blank" : void 0,
 					rel: "noopener noreferrer"
-				}, P(u.value.oidc), 9, ho)
-			], 8, fo),
+				}, P(u.value.oidc), 9, mo)
+			], 8, uo),
 			Q("fieldset", {
 				id: "controls",
 				disabled: p.value || !d.value,
 				hidden: !d.value
 			}, [
-				Q("legend", _o, P(te.value), 1),
+				Q("legend", go, P(te.value), 1),
 				Q("div", {
 					id: "collections",
 					class: "collections",
@@ -3231,23 +3282,23 @@ Ja({
 						type: "button",
 						"aria-pressed": h.value === "mine",
 						onClick: t[0] ||= (e) => A(() => ae("mine"))
-					}, P(u.value.mine) + P(f.value ? "" : " · " + u.value.login), 9, yo),
+					}, P(u.value.mine) + P(f.value ? "" : " · " + u.value.login), 9, vo),
 					Q("button", {
 						id: "catalogTab",
 						type: "button",
 						hidden: !m.value.includes("catalog"),
 						"aria-pressed": h.value === "catalog",
 						onClick: t[1] ||= (e) => A(() => ae("catalog"))
-					}, P(u.value.catalog), 9, bo),
+					}, P(u.value.catalog), 9, yo),
 					Q("button", {
 						id: "scratchTab",
 						type: "button",
 						hidden: !m.value.includes("scratch_catalog"),
 						"aria-pressed": h.value === "scratch",
 						onClick: t[2] ||= (e) => A(() => ae("scratch"))
-					}, P(u.value.scratch), 9, xo)
-				], 8, vo),
-				Q("p", So, P(U(i) ? u.value.pickHint : h.value === "mine" ? u.value.privateHint : h.value === "scratch" ? u.value.scratchHint : u.value.catalogHint), 1),
+					}, P(u.value.scratch), 9, bo)
+				], 8, _o),
+				Q("p", xo, P(U(i) ? u.value.pickHint : h.value === "mine" ? u.value.privateHint : h.value === "scratch" ? u.value.scratchHint : u.value.catalogHint), 1),
 				Q("div", {
 					id: "uploadArea",
 					hidden: U(i) || h.value !== "mine" || !f.value
@@ -3264,8 +3315,8 @@ Ja({
 					onDragleave: t[6] ||= (e) => S.value = !1,
 					onDrop: Ha(ue, ["prevent"])
 				}, [
-					Q("strong", To, P(u.value.upload), 1),
-					Q("p", Eo, P(u.value.formats), 1),
+					Q("strong", wo, P(u.value.upload), 1),
+					Q("p", To, P(u.value.formats), 1),
 					Q("input", {
 						id: "files",
 						ref_key: "filesInput",
@@ -3277,34 +3328,34 @@ Ja({
 						onClick: t[3] ||= Ha(() => {}, ["stop"]),
 						onChange: le
 					}, null, 544)
-				], 42, wo), Q("label", null, [Q("span", Do, P(u.value.uploadType), 1), wn(Q("select", {
+				], 42, Co), Q("label", null, [Q("span", Eo, P(u.value.uploadType), 1), wn(Q("select", {
 					id: "uploadType",
 					"onUpdate:modelValue": t[7] ||= (e) => v.value = e
 				}, [(X(), Z(J, null, nr(s, (e) => Q("option", {
 					key: e,
 					value: e
-				}, P(u.value[e]), 9, Oo)), 64))], 512), [[Ia, v.value]])])], 8, Co),
+				}, P(u.value[e]), 9, Do)), 64))], 512), [[Ia, v.value]])])], 8, So),
 				Q("div", {
 					class: "filters",
 					hidden: E.value
-				}, [Q("label", null, [Q("span", Ao, P(u.value.search), 1), wn(Q("input", {
+				}, [Q("label", null, [Q("span", ko, P(u.value.search), 1), wn(Q("input", {
 					id: "search",
 					"onUpdate:modelValue": t[8] ||= (e) => g.value = e,
 					type: "search",
 					maxlength: "200",
 					onInput: oe
-				}, null, 544), [[Fa, g.value]])]), Q("label", null, [Q("span", jo, P(u.value.filter), 1), wn(Q("select", {
+				}, null, 544), [[Fa, g.value]])]), Q("label", null, [Q("span", Ao, P(u.value.filter), 1), wn(Q("select", {
 					id: "filter",
 					"onUpdate:modelValue": t[9] ||= (e) => _.value = e,
 					onChange: t[10] ||= (e) => A(() => j())
 				}, [(X(!0), Z(J, null, nr(U(c), (e) => (X(), Z("option", {
 					key: e,
 					value: e
-				}, P(e ? u.value[e] : u.value.all), 9, Mo))), 128))], 544), [[Ia, _.value]])])], 8, ko),
+				}, P(e ? u.value[e] : u.value.all), 9, jo))), 128))], 544), [[Ia, _.value]])])], 8, Oo),
 				Q("p", {
 					id: "empty",
 					hidden: E.value || y.value.length > 0 || p.value
-				}, P(u.value.empty), 9, No),
+				}, P(u.value.empty), 9, Mo),
 				Q("section", {
 					id: "grid",
 					"aria-label": te.value,
@@ -3312,14 +3363,14 @@ Ja({
 				}, [(X(!0), Z(J, null, nr(y.value, (e) => (X(), oi(ao, {
 					key: e.id,
 					item: e
-				}, null, 8, ["item"]))), 128))], 8, Po),
+				}, null, 8, ["item"]))), 128))], 8, No),
 				Q("button", {
 					id: "more",
 					type: "button",
 					hidden: E.value || !b.value,
 					onClick: t[11] ||= (e) => A(() => j(!0))
-				}, P(u.value.more), 9, Fo)
-			], 8, go),
+				}, P(u.value.more), 9, Po)
+			], 8, ho),
 			Q("dialog", {
 				id: "preview",
 				ref_key: "dialog",
@@ -3334,7 +3385,7 @@ Ja({
 				id: "previewImage",
 				src: T.value || void 0,
 				alt: ee.value
-			}, null, 8, Lo)], 40, Io)
+			}, null, 8, Io)], 40, Fo)
 		])], 64));
 	}
 }).mount("#rebost");

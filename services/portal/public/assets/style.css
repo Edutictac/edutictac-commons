@@ -41,3 +41,9 @@ article .credit {font-size:.85rem;color:#43596d} article h2 {font-size:1.15rem;m
 .family-costume {border:1px solid #b4c5d2;border-radius:.5rem;padding:.5rem;display:flex;flex-direction:column;gap:.5rem;background:#f4f7fa}
 .family-costume .image {height:110px}
 .family-costume h3 {font-size:1rem;margin:0}
+
+.session-status {padding:.75rem 1rem; border:2px solid #b7791f; border-radius:.5rem; background:#fff3cd; color:#553600; font-weight:600}
+.session-status.signed {border-color:#21805a; background:#e8f6ef; color:#145234}
+#status:not(:empty) {padding:.75rem 1rem; border-radius:.5rem; position:sticky; top:0; z-index:5; background:#e1edf6}
+#status.success {background:#e8f6ef; color:#145234; border:2px solid #21805a}
+#status.error {background:#fff3cd; color:#553600; border:2px solid #b7791f}

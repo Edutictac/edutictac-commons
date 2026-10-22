@@ -34,7 +34,13 @@ function report(error) {
 async function run(operation) {
   if (busy.value || !alive) return;
   busy.value = true; status.value = 'working';
-  try { await operation(); if (alive) status.value = ''; }
+  try {
+    const message = await operation();
+    if (alive) {
+      status.value = typeof message === 'string' ? message : '';
+      if (status.value) document.getElementById('status')?.scrollIntoView({block: 'nearest'});
+    }
+  }
   catch (error) {
     if ([404, 412].includes(error.status)) await refresh().catch(() => {});
     if (alive) report(error);
@@ -70,7 +76,9 @@ async function upload(files) {
   if (picking || locked.value || collection.value !== 'mine' || !active.value) return;
   await run(async () => {
     try { for (const file of files) await api.add(file, file.name.replace(/\.[^.]+$/, '').slice(0, 200) || 'Imatge', uploadType.value); }
-    finally { await refresh(); }
+    catch (error) { await refresh().catch(() => {}); throw error; }
+    try { await refresh(); } catch (error) { report(error); return 'saved_refresh_failed'; }
+    return 'image_saved';
   });
 }
 function openFiles() { if (active.value && !busy.value) filesInput.value.click(); }
@@ -152,8 +160,9 @@ onBeforeUnmount(() => {
   <main>
     <h1>EduTicTac Rebost</h1>
     <p id="intro">{{ text.intro }}</p>
-    <p id="status" role="status" aria-live="polite">{{ text[status] || '' }}</p>
-    <section id="access" :hidden="!locked">
+    <p id="sessionStatus" class="session-status" :class="{signed: authenticated}" role="status">{{ !active ? text.checkingSession : authenticated ? text.signedIn : text.signedOut }}</p>
+    <p id="status" :class="{success: ['success', 'image_saved'].includes(status), error: status && !['success', 'image_saved', 'working'].includes(status)}" role="status" aria-live="polite">{{ text[status] || '' }}</p>
+    <section id="access" :hidden="!active || authenticated">
       <p id="accessHint">{{ text.access }}</p>
       <a id="studentLogin" href="/student.html?next=%2Fassets%2F" :target="picking ? '_blank' : undefined" rel="noopener noreferrer">{{ text.student }}</a>
       <a id="oidcLogin" href="/api/auth/oidc/login?next=%2Fassets%2F" :target="picking ? '_blank' : undefined" rel="noopener noreferrer">{{ text.oidc }}</a>

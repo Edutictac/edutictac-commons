@@ -615,3 +615,48 @@ el lanzador actual conserva las rutas/puertos locales. No dar ese recorrido
 por validado ni activar Play fuera de demo por haber publicado el portal.
 Integración de Rebost en Blocs, Llibres y salida de demo de Play conservan sus
 fases posteriores. No continuar con ellas sin acordar el siguiente paso.
+
+## Aviso beta y corrección de guardado en Rebost (22-10-2026)
+
+A petición del usuario, el portal muestra una franja **BETA** en portada,
+tauleres, Rebost, acceso a Blocs, ayuda y privacidad. La configuración pública
+`releaseStage: "beta"` permite retirarla posteriormente sin cambiar el código;
+las instalaciones locales mantienen su configuración anterior. El aviso está
+traducido a castellano, valenciano, catalán e inglés. En Privacidad se utiliza
+«cuenta de EduTicTac», sin trasladar nombres de componentes al usuario.
+
+El fallo de guardado comunicado por el usuario se reproduce en producción:
+una petición POST al Rebost con el origen público correcto devolvía
+`403 origin_required` antes de validar la sesión. La API está detrás de un
+proxy TLS y no tenía configurado su origen público. Se añade únicamente
+`REBOST_PUBLIC_ORIGIN=https://commons.edutictac.es` al entorno privado de ID;
+no se desactiva la comprobación de origen ni se amplía indiscriminadamente
+la confianza en cabeceras de proxy. Esta configuración es para el portal
+central; los futuros proxies desde otras aplicaciones necesitan estudiar su
+propio contrato de origen antes de habilitarlos.
+
+Tras copia nueva y recuperación externa verificada, se recrea solo ID con
+la misma imagen. El origen público llega ahora a la validación de sesión
+(401 sin identificar), mientras un origen ajeno sigue devolviendo 403. SQLite
+íntegra y resto de variables preservadas. Estado y configuración previa en
+`/opt/edutictac-id-api/rebost-origin-20261022/`, privado. Para revertir una
+configuración, conservar siempre la base actual; no restaurar datos anteriores.
+
+Rebost muestra siempre el estado de sesión y ofrece los accesos de cuenta
+EduTicTac/código-PIN en los catálogos públicos. Guardar sin sesión explica que
+hay que entrar y no simula una copia. Las subidas y copias confirmadas muestran
+«Imagen guardada en Mis imágenes». Si la escritura termina pero falla la
+recarga del listado, se informa de ambas cosas para evitar duplicados por
+reintento; una pérdida de sesión actualiza también el indicador.
+
+Validación: 44 pruebas de navegador de Rebost, beta, privacidad e idiomas,
+en escritorio/móvil; dos pruebas de API sobre origen tras proxy TLS y guardas
+de escritura/revisión. La prueba de API confirma una subida 201 con el origen
+público y rechazo de otro origen sobre datos desechables. No se usan sesiones
+personales ni se crean imágenes de prueba en la biblioteca de producción.
+
+Portal publicado con imagen
+`sha256:f9b3a2ab9a83d1035102cc5f82aa6c5d355705cd3c052d76dc622f0f6644416c`.
+Configuración previa y resultado en
+`/opt/edutictac-commons-portal/beta-rebost-20261022/`. No se reinician banco,
+Play ni EduHoot. No push de Git ni del registro.

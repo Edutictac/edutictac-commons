@@ -32,7 +32,12 @@ async function toggle() {
     expanded.value = !expanded.value;
   });
 }
-function saveCopy() { return run(async () => { if (authenticated.value) await api.duplicate(props.item); await chooseCollection('mine'); }); }
+function saveCopy() { return run(async () => {
+  if (!authenticated.value) { await chooseCollection('mine'); return 'login_required'; }
+  await api.duplicate(props.item);
+  try { await chooseCollection('mine'); } catch (error) { report(error); return 'saved_refresh_failed'; }
+  return 'image_saved';
+}); }
 function remove() { if (confirm(text.value.confirm)) run(async () => { await api.remove(props.item); await refresh(); }); }
 </script>
 
@@ -56,8 +61,8 @@ function remove() { if (confirm(text.value.confirm)) run(async () => { await api
       <button v-if="picking" type="button" @click="select(item, displayName, group && familySelection)">{{ group && familySelection ? text.addFamily : text.choose }}</button>
       <button v-else-if="item.readonly" type="button" @click="saveCopy">{{ authenticated ? (group ? text.saveImage : text.saveCopy) : text.loginToSave }}</button>
       <template v-else>
-        <button type="button" @click="run(async () => { await api.update(item, name, type); await refresh(); })">{{ text.save }}</button>
-        <button type="button" @click="run(async () => { await api.duplicate(item); await refresh(); })">{{ text.duplicate }}</button>
+        <button type="button" @click="run(async () => { await api.update(item, name, type); try { await refresh(); } catch (error) { report(error); return 'saved_refresh_failed'; } return 'success'; })">{{ text.save }}</button>
+        <button type="button" @click="run(async () => { await api.duplicate(item); try { await refresh(); } catch (error) { report(error); return 'saved_refresh_failed'; } return 'image_saved'; })">{{ text.duplicate }}</button>
         <button type="button" @click="remove">{{ text.remove }}</button>
       </template>
       <template v-if="origin && !picking">
