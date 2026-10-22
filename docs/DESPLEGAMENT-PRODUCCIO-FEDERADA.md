@@ -1,6 +1,7 @@
 # Despliegue federado de Commons en producción (edutictac.es)
 
-Estado: **copia externa verificada, configuración preparada y ensayo aislado
+Estado: **copias automáticas y monitorización activadas, copia externa verificada,
+configuración preparada y ensayo aislado
 de la fase 1 completados el 22-10-2026;
 servicios y datos de producción sin modificar.** EduTicTac está en uso: avanzar paso a paso. Cada fase se
 ejecuta solo tras confirmación explícita.
@@ -240,7 +241,79 @@ utilizando la clave privada existente para comprobar su recuperación:
 Después de preparar y copiar: identidad, banco y Play mantienen los PID
 anteriores y responden HTTP 200. Sin push, despliegue o reinicio.
 
-Pendiente antes del corte: programar y probar la copia periódica de datos
-actualizados, preparar la monitorización, concretar el bloqueo de escrituras
-y acordar la ventana de cambio. Crear una copia nueva inmediatamente antes
-del corte; no usar el snapshot del ensayo como copia de ese futuro corte.
+### Copias periódicas y monitorización activadas
+
+Autorizado el siguiente paso: automatizar copias de datos actuales y comprobar
+su recuperación, manteniendo el servicio público existente.
+
+| Lugar | Timer | Frecuencia (Europe/Madrid) |
+|---|---|---|
+| VPS, root | `edutictac-id-backup.timer` | Diario 03:05, demora aleatoria hasta 5 min |
+| debiandesktop, usuario | `edutictac-id-offsite.timer` | Diario 03:35 y cada 2 horas, demora hasta 5 min |
+| debiandesktop, usuario | `edutictac-id-monitor.timer` | Cada 5 minutos |
+
+Los timers diarios son persistentes: recuperan una ejecución perdida al volver
+a arrancar. La generación en el VPS no depende de que debiandesktop esté encendido.
+El traslado al NAS y la monitorización sí dependen de este ordenador y su
+gestor systemd de usuario, siguiendo el patrón del backup de `pass`.
+
+Implementación versionada:
+
+- [production-id-backup.py](../scripts/production-id-backup.py): copia consistente
+  de `data/id.db` con API SQLite, comprobación de integridad y snapshot autónomo
+  sin dependencia de WAL/SHM. Incluye código antiguo, requisitos, configuración
+  actual y Docker preparada. Cifra antes de crear el archivo final; manifiesto
+  con hashes y metadatos atómicos. Temporales privados eliminados al terminar.
+- En el VPS: `/usr/local/libexec/edutictac-id-backup`, clave GPG **solo pública**
+  en `/opt/edutictac-id-api/backup-gnupg`, archivos cifrados en
+  `/opt/edutictac-id-api/automatic-backups/`. El servicio root usa bloqueo,
+  límites de CPU/memoria y no modifica servicios de aplicación.
+- [production-id-offsite.py](../scripts/production-id-offsite.py): traslado
+  idempotente por SSH, recuperación desde el NAS, hash, descifrado, manifiesto
+  e integridad SQLite antes de registrar un éxito. Un fallo no actualiza la
+  fecha de la última recuperación correcta. Conserva 30 archivos automáticos
+  en origen y destino; no borra las copias manuales previas al despliegue.
+- En debiandesktop: `~/.local/libexec/edutictac-id-offsite`, configuración privada
+  `~/.config/edutictac-production-backups/config.json`, estado sin credenciales
+  en `~/.local/state/edutictac-production-backups/`. No se copian claves privadas
+  al VPS ni al archivo de backup.
+- Monitor: health de identidad en 8005, estado fallido del servicio de backup,
+  último intento de traslado, edad máxima de 36 horas en origen y recuperación,
+  disponibilidad del NAS y hash del archivo recuperado. Los fallos dejan el
+  servicio en error y quedan en el journal. **No se ha activado Telegram ni
+  modificado n8n**: el canal de aviso externo está pendiente de elección.
+
+Primera ejecución de los servicios realizada manualmente antes de habilitar
+los timers: copia `id-api-20261022T114604Z.tar.gz.gpg`, recuperación completa
+desde NAS y monitor correctos. Segunda ejecución del traslado correcta y sin
+duplicados. Timers habilitados con próximas ejecuciones comprobadas.
+
+Validación: 10 pruebas nuevas de backup/monitor más 2 de migración aprobadas;
+cubren cambios confirmados en WAL, cifrado real con claves de prueba,
+restauración, fallo de cifrado, retención, copia idempotente, corrupción en NAS,
+copias caducadas o futuras y rechazo de rutas peligrosas, enlaces y duplicados
+en el TAR. Sintaxis Python y unidades systemd validadas.
+
+Comparación final: todas las filas de la base original y PID/estado/fecha de
+arranque de identidad, banco y Play iguales al inicio. Health y portadas
+públicas HTTP 200. La configuración Docker de identidad sigue sin arrancar.
+
+Estas copias cubren **identidad y su configuración**, no los datos completos
+del resto de Commons ni los futuros archivos binarios de Rebost. Ampliar su
+cobertura antes de habilitar nuevos almacenes de contenido.
+
+Comprobación operativa sin imprimir secretos:
+
+```sh
+# VPS: estado del backup y próxima ejecución
+systemctl show edutictac-id-backup.service --property=Result,ExecMainStatus
+systemctl list-timers edutictac-id-backup.timer
+# debiandesktop: traslado y monitor
+systemctl --user show edutictac-id-offsite.service edutictac-id-monitor.service \
+  --property=Id,Result,ExecMainStatus
+systemctl --user list-timers edutictac-id-offsite.timer edutictac-id-monitor.timer
+```
+
+Pendiente antes del corte: elegir el aviso externo, concretar el bloqueo de
+escrituras y acordar la ventana de cambio. Crear una copia nueva inmediatamente
+antes del corte; no usar el snapshot del ensayo como copia de ese futuro corte.
