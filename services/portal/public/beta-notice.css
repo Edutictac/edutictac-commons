@@ -1,0 +1,28 @@
+.beta-notice {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border-bottom: 2px solid #b7791f;
+  background: #fff3cd;
+  color: #553600;
+  font: 500 1rem/1.5 system-ui, sans-serif;
+}
+
+.beta-notice strong {
+  flex-shrink: 0;
+  padding: 0.15rem 0.5rem;
+  border-radius: 0.35rem;
+  background: #553600;
+  color: #fff3cd;
+  font-size: 0.85rem;
+  letter-spacing: 0.06em;
+}
+
+.beta-notice span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}

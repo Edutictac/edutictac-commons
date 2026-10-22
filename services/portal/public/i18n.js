@@ -10,11 +10,12 @@
 
   var translations = {
     es: {
+      "common.betaNotice": "Versión beta en desarrollo. Algunas funciones pueden cambiar o no estar disponibles todavía.",
       "privacy.title": "Privacidad y datos",
       "privacy.teacherTitle": "Acceso docente",
-      "privacy.teacherText": "El profesorado entra con Authentik. Commons utiliza un identificador del proveedor y un rol para separar sus aulas y recursos. La cookie de sesión también puede contener el nombre de usuario del perfil.",
+      "privacy.teacherText": "El profesorado entra con su cuenta de EduTicTac. Commons utiliza un identificador del proveedor y un rol para separar sus aulas y recursos. La cookie de sesión también puede contener el nombre de usuario del perfil.",
       "privacy.studentTitle": "Acceso del alumnado",
-      "privacy.studentText": "El alumnado utiliza un código y un PIN, sin una cuenta en Authentik. Se guardan las pertenencias a grupos, las actividades asignadas y sus resultados. Utiliza alias y evita nombres reales o datos personales en títulos y archivos.",
+      "privacy.studentText": "El alumnado utiliza un código y un PIN, sin una cuenta de EduTicTac. Se guardan las pertenencias a grupos, las actividades asignadas y sus resultados. Utiliza alias y evita nombres reales o datos personales en títulos y archivos.",
       "privacy.sessionTitle": "Sesiones y dispositivo",
       "privacy.sessionText": "Las cookies necesarias mantienen la sesión y protegen el acceso. La sesión de Commons puede durar hasta 180 días; Rebost exige además una sesión revocable de ocho horas. Cierra sesión en equipos compartidos. El navegador guarda el idioma y preferencias de interfaz.",
       "privacy.storageTitle": "Almacenamiento y copias",
@@ -397,11 +398,12 @@
       "setup.oidcStep3": "Si la instalación es antigua, reinicia Commons después de completar la configuración.",
     },
     ca: {
+      "common.betaNotice": "Versió beta en desenvolupament. Algunes funcions poden canviar o no estar disponibles encara.",
       "privacy.title": "Privacitat i dades",
       "privacy.teacherTitle": "Accés docent",
-      "privacy.teacherText": "El professorat entra amb Authentik. Commons utilitza un identificador del proveïdor i un rol per a separar les seues aules i recursos. La galeta de sessió també pot contindre el nom d’usuari del perfil.",
+      "privacy.teacherText": "El professorat entra amb el seu compte d’EduTicTac. Commons utilitza un identificador del proveïdor i un rol per a separar les seues aules i recursos. La galeta de sessió també pot contindre el nom d’usuari del perfil.",
       "privacy.studentTitle": "Accés de l’alumnat",
-      "privacy.studentText": "L’alumnat utilitza un codi i un PIN, sense un compte en Authentik. Es guarden les pertinences a grups, les activitats assignades i els resultats. Utilitza àlies i evita noms reals o dades personals en títols i fitxers.",
+      "privacy.studentText": "L’alumnat utilitza un codi i un PIN, sense un compte d’EduTicTac. Es guarden les pertinences a grups, les activitats assignades i els resultats. Utilitza àlies i evita noms reals o dades personals en títols i fitxers.",
       "privacy.sessionTitle": "Sessions i dispositiu",
       "privacy.sessionText": "Les galetes necessàries mantenen la sessió i protegixen l’accés. La sessió de Commons pot durar fins a 180 dies; Rebost exigix també una sessió revocable de huit hores. Tanca la sessió en equips compartits. El navegador guarda l’idioma i preferències de la interfície.",
       "privacy.storageTitle": "Emmagatzematge i còpies",
@@ -784,6 +786,7 @@
       "setup.oidcStep3": "Si la instal·lació és antiga, reinicia Commons després de completar la configuració.",
     },
     va: {
+      "common.betaNotice": "Versió beta en desenrotllament. Algunes funcions poden canviar o no estar disponibles encara.",
       "student.refresh": "Actualitzar activitats",
       "student.loading": "Carregant activitats…",
       "student.sessionExpired": "La sessió ha caducat. Entra de nou amb el teu codi i PIN.",
@@ -977,11 +980,12 @@
       "setup.oidcStep3": "Si la instal·lació és antiga, reinicia Commons després de completar la configuració.",
     },
     en: {
+      "common.betaNotice": "Beta version in development. Some features may change or may not be available yet.",
       "privacy.title": "Privacy and data",
       "privacy.teacherTitle": "Teacher access",
-      "privacy.teacherText": "Teachers sign in with Authentik. Commons uses a provider identifier and a role to separate classrooms and resources. The session cookie may also contain the profile username.",
+      "privacy.teacherText": "Teachers sign in with their EduTicTac account. Commons uses a provider identifier and a role to separate classrooms and resources. The session cookie may also contain the profile username.",
       "privacy.studentTitle": "Pupil access",
-      "privacy.studentText": "Pupils use a code and PIN without an Authentik account. Group membership, assigned activities and results are stored. Use aliases and avoid real names or personal information in titles and files.",
+      "privacy.studentText": "Pupils use a code and PIN without an EduTicTac account. Group membership, assigned activities and results are stored. Use aliases and avoid real names or personal information in titles and files.",
       "privacy.sessionTitle": "Sessions and devices",
       "privacy.sessionText": "Necessary cookies maintain sessions and protect access. A Commons session may last up to 180 days; Rebost also requires a revocable eight-hour session. Sign out on shared devices. The browser stores language and interface preferences.",
       "privacy.storageTitle": "Storage and backups",

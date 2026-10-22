@@ -70,8 +70,30 @@ test('avís central accessible i traduït sense prometre sessions comunes',async
   await page.locator('a[href="/privacy.html"]').click();
   for(const language of ['es','va','ca','en']) {
     await page.locator('[data-lang='+language+']').click();
-    await expect(page.locator('[data-i18n="privacy.teacherText"]')).toContainText('Authentik');
+    await expect(page.locator('[data-i18n="privacy.teacherText"]')).toContainText('EduTicTac');
     await expect(page.locator('[data-i18n="privacy.sessionText"]')).toContainText('180');
     await expect(page.locator('h1')).not.toHaveText(/privacy\./);
   }
+});
+
+
+test('avís beta visible en portada i taulers, traduït i sense desbordament',async({page})=>{
+  await setup(page,{...deployment,releaseStage:'beta'});
+  for(const path of ['/','/teacher.html','/student.html','/teacher-help.html','/privacy.html','/assets/','/blocs-access.html']) {
+    await page.goto(path);
+    await expect(page.locator('.beta-notice')).toBeVisible();
+    await expect(page.locator('.beta-notice strong')).toHaveText('BETA');
+    await expect(page.locator('.beta-notice span')).not.toHaveText('common.betaNotice');
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  }
+  await page.goto('/');
+  for(const language of ['es','va','ca','en']) {
+    await page.locator('[data-lang='+language+']').click();
+    await expect(page.locator('.beta-notice span')).toContainText(/beta/i);
+  }
+});
+
+test('el cartell beta es pot retirar amb la configuració del desplegament',async({page})=>{
+  await setup(page);await page.goto('/');
+  await expect(page.locator('.beta-notice')).toHaveCount(0);
 });
