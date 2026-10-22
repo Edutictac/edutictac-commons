@@ -886,8 +886,35 @@ Salud pública de ambas API, catálogo a través de Commons, permisos anónimos 
 redirección docente al proveedor/callback originales comprobados. No se ha
 utilizado una cuenta real ni publicado libros de prueba en producción.
 
-Pendiente de la siguiente fase: actualizar frontend público del Banc (todavía
-sin Vue ni consulta de libros), HTTPS de Llibres, habilitar publicación y comprobar
+El frontend público del Banc se actualizó después a Vue, con consulta y lector
+de libros, como se detalla a continuación. Pendientes: HTTPS de Llibres, habilitar publicación y comprobar
 el recorrido con cuentas reales. Play y EduHoot permanecen intactos; no retirar
 el modo demo de Play. No afirmar validación humana de sesión/aula por comprobar
 solamente una redirección.
+
+### Banc público preparado para Llibres — 22-10-2026
+
+`https://recursos.edutictac.es/` sirve ahora el frontend Vue. Se conservan los
+JSON públicos y sus medios originales en `/var/www/recursos/`; la nueva raíz
+`/var/www/recursos-current` apunta atómicamente a
+`/var/www/recursos-releases/20261022-vue-llibres-cachefix`, con enlaces a datos,
+informes, imágenes y motores existentes. No se modifica SQLite ni se reinician
+contenedores o Play; nginx se recarga para cambiar la raíz.
+
+Consulta pública de libros, filtro Llibres y lector con sandbox sin scripts
+comprobados. Los hashes de catálogo e informe siguen iguales; portadas y salud
+de API/Commons/Play/EduHoot correctas. 90 pruebas de interfaz, 4 de caché, 2 de
+paquete, 2 de regresión y 7 comprobaciones finales sobre HTTPS público correctas.
+El ensayo completo en el VPS confirma que un navegador con el worker anterior
+actualiza al shell Vue y recibe HTML/JS de la versión actual en su caché.
+
+Worker final `recursos-v1.24.4`: la precarga fuerza `cache: "reload"` para evitar
+mezclar archivos antiguos de la caché HTTP durante la actualización. La versión
+inicial `v1.24.3` queda superada por esta corrección. Configuración, línea base y
+resultados privados en `/var/backups/edutictac/recursos-vue-20261022/`.
+Procedimiento, pruebas y retirada segura en el repositorio de Recursos:
+`docs/PRODUCTION-FRONTEND.md`.
+
+Llibres conserva su perfil privado 8182 y publicación desactivada. El siguiente
+paso sigue siendo dominio HTTPS independiente y aceptación con cuentas reales;
+no se ha publicado ningún libro ni creado cuentas para estas comprobaciones.
