@@ -15,7 +15,7 @@ const state = {
 const $ = (id) => document.getElementById(id);
 const has = (id) => Boolean($(id));
 const t = window.i18nPortal.t;
-let itinerariesPanel = null, groupsPanel = null, membersPanel = null, credentialsPanel = null, assignmentsPanel = null, resultsPanel = null, resourcesPanel = null;
+let itinerariesPanel = null, groupsPanel = null, membersPanel = null, credentialsPanel = null, assignmentsPanel = null, resultsPanel = null, resourcesPanel = null, adminGroupsPanel = null;
 let teacherDataSequence = 0, identityStatusSequence = 0;
 let studentPanel = null;
 
@@ -29,6 +29,7 @@ function syncTeacherPanels() {
   assignmentsPanel?.setContext(context);
   resultsPanel?.setContext(context);
   resourcesPanel?.setContext(context);
+  adminGroupsPanel?.setContext(context);
 }
 
 async function selectTeacherGroup(id) {
@@ -448,7 +449,7 @@ bind("refreshDashboard", refreshDashboard, "teacherOutput");
 async function initializePortal() {
   if (has("itinerariesPanel")) {
     try {
-      const {mountItineraries, mountGroups, mountMembers, mountCredentials, mountAssignments, mountResults, mountResources} = await import('/assets/teacher-itineraries.js');
+      const {mountItineraries, mountGroups, mountMembers, mountCredentials, mountAssignments, mountResults, mountResources, mountAdminGroups} = await import('/assets/teacher-itineraries.js');
       const options = {api, onSessionExpired: () => setTeacherSession(false)};
       itinerariesPanel = mountItineraries($("itinerariesPanel"), options);
       groupsPanel = mountGroups($("groupsPanel"), {...options, onSelect: selectTeacherGroup, onDeleted: afterGroupDeleted});
@@ -457,6 +458,7 @@ async function initializePortal() {
       assignmentsPanel = mountAssignments($("assignmentsPanel"), {...options, onSelect: selectTeacherAssignment});
       resultsPanel = mountResults($("resultsPanel"), options);
       resourcesPanel = mountResources($("resourcesPanel"), {...options, onAssigned: afterResourcesAssigned});
+      if (has("adminGroupsPanel")) adminGroupsPanel = mountAdminGroups($("adminGroupsPanel"), {...options, onDeleted: afterGroupDeleted});
     } catch {
       for (const id of ["itinerariesPanel", "groupsPanel", "membersPanel", "credentialsPanel", "credentialsDetails", "assignmentsPanel", "resultsPanel", "resourcesPanel"]) {
         setEmpty($(id), t("teacher.panelUnavailable"));

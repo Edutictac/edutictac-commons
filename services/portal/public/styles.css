@@ -393,6 +393,12 @@ html.i18n-pending body {
   padding-bottom: 18px;
 }
 
+/* El panell d'administració viu dins d'un contenidor de la graella: sense
+   min-width: 0 la taula l'eixamplaria i retallaria els botons en mòbil. */
+#adminGroupsPanel {
+  min-width: 0;
+}
+
 .panel-summary {
   display: grid;
   gap: 4px;

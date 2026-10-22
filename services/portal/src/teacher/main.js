@@ -6,6 +6,7 @@ import CredentialsPanel from './CredentialsPanel.vue';
 import AssignmentsPanel from './AssignmentsPanel.vue';
 import ResultsPanel from './ResultsPanel.vue';
 import ResourcesPanel from './ResourcesPanel.vue';
+import AdminGroupsPanel from './AdminGroupsPanel.vue';
 
 export function mountItineraries(element, options) {
   return createApp(ItinerariesPanel, options).mount(element);
@@ -25,3 +26,7 @@ export function mountAssignments(element, options) { return createApp(Assignment
 export function mountResults(element, options) { return createApp(ResultsPanel, options).mount(element); }
 
 export function mountResources(element, options) { return createApp(ResourcesPanel, options).mount(element); }
+
+export function mountAdminGroups(element, options) {
+  return createApp(AdminGroupsPanel, options).mount(element);
+}

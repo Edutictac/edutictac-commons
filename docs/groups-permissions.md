@@ -90,6 +90,11 @@ L'administració del centre gestiona l'estructura, no el treball pedagògic:
 - l'excepció és la moderació de Llibres, que revisa els enviaments de totes
   les aules.
 
+Al tauler docent, el panell «Grups del centre» només apareix si la sessió és
+d'administració. Llista els grups i, en triar-ne un, obri la mateixa gestió de
+col·laboradors (amb «Fer propietari») i el botó per eliminar el grup. El
+propietari també pot traspassar el seu grup des del panell de col·laboració.
+
 Una persona administradora que també fa classe té accés complet als seus
 propis grups, com qualsevol docent. El cas d'una aula sense docent es resol
 traspassant-la a un altre membre del claustre.
