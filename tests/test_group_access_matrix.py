@@ -1,7 +1,8 @@
 """Matriu d'accés docent a aules: cada ruta contra cada perfil, amb galetes reals.
 
 Cada cas usa una SQLite nova i dades sintètiques. El perfil `former` va crear
-una assignació mentre col·laborava i després va eixir de l'aula.
+una assignació mentre col·laborava i després va eixir de l'aula: ja no hi
+té cap accés, tampoc a les assignacions que va crear.
 """
 import importlib.util
 import json
@@ -63,10 +64,10 @@ EXPECTED = {
     "codes.csv": {"owner": [200, 2], "member": [200, 2], "former": [404, None], "stranger": [404, None], "admin": [404, None]},
     "roster": {"owner": [200, 1], "member": [200, 1], "former": [404, None], "stranger": [404, None], "admin": [404, None]},
     "assignment.create": {"owner": [201, None], "member": [201, None], "former": [404, None], "stranger": [404, None], "admin": [201, None]},
-    "assignments.list": {"owner": [200, 2], "member": [200, 2], "former": [200, 1], "stranger": [200, 1], "admin": [200, 0]},
-    "results.former": {"owner": [200, 1], "member": [200, 1], "former": [200, 1], "stranger": [404, None], "admin": [404, None]},
+    "assignments.list": {"owner": [200, 2], "member": [200, 2], "former": [200, 0], "stranger": [200, 1], "admin": [200, 0]},
+    "results.former": {"owner": [200, 1], "member": [200, 1], "former": [404, None], "stranger": [404, None], "admin": [404, None]},
     "results.owner": {"owner": [200, 1], "member": [200, 1], "former": [404, None], "stranger": [404, None], "admin": [404, None]},
-    "complete": {"owner": [201, None], "member": [201, None], "former": [201, None], "stranger": [404, None], "admin": [404, None]},
+    "complete": {"owner": [201, None], "member": [201, None], "former": [404, None], "stranger": [404, None], "admin": [404, None]},
     "stats.csv": {"owner": [200, 2], "member": [200, 2], "former": [200, 1], "stranger": [200, 2], "admin": [200, 1]},
     "itinerary.create": {"owner": [201, None], "member": [201, None], "former": [404, None], "stranger": [404, None], "admin": [201, None]},
     "itineraries.list": {"owner": [200, 1], "member": [200, 1], "former": [200, 0], "stranger": [200, 1], "admin": [200, 0]},

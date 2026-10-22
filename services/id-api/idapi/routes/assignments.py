@@ -26,11 +26,15 @@ router = APIRouter()
 
 
 def teacher_assignment(conn: sqlite3.Connection, assignment_id: str, teacher_id: str) -> sqlite3.Row:
-    """Assignació activa d'una aula on el docent és propietari o col·laborador."""
+    """Assignació activa d'una aula on el docent és ara propietari o col·laborador.
+
+    Haver creat l'assignació no dona accés: qui ix de l'aula deixa de veure'n
+    els resultats.
+    """
     assignment = conn.execute(
         f"""
-        SELECT a.* FROM activity_assignments a
-        WHERE a.id = ? AND a.active = 1 AND {member_of("a.group_id", "a.created_by_teacher_id")}
+        SELECT a.* FROM activity_assignments a JOIN groups g ON g.id = a.group_id
+        WHERE a.id = ? AND a.active = 1 AND {member_of("a.group_id")}
         """,
         (assignment_id, *teacher_params(teacher_id)),
     ).fetchone()
@@ -79,17 +83,17 @@ def teacher_activity_assignments(
 ) -> dict[str, Any]:
     teacher_id = c.auth.require_teacher(request)
     params: list[Any] = [*teacher_params(teacher_id)]
-    where = f"WHERE active = 1 AND {member_of('a.group_id', 'a.created_by_teacher_id')}"
+    where = f"WHERE a.active = 1 AND {member_of('a.group_id')}"
     if group_id:
-        where += " AND group_id = ?"
+        where += " AND a.group_id = ?"
         params.append(group_id)
     params.append(limit)
     with c.connect() as conn:
         rows = conn.execute(
             f"""
-            SELECT a.* FROM activity_assignments a
+            SELECT a.* FROM activity_assignments a JOIN groups g ON g.id = a.group_id
             {where}
-            ORDER BY created_at DESC, title, app_id, activity_id
+            ORDER BY a.created_at DESC, a.title, a.app_id, a.activity_id
             LIMIT ?
             """,
             params,
