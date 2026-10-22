@@ -367,3 +367,10 @@ el contenedor local `id-api` usa `commons-id-api:0.1.1-alpha32`; sus rutas
 El HTML de Rebost y el bundle del proxy de Llibres sí responden 200.
 Esta fase solo recrea el portal; queda pendiente recuperar la configuración
 local de API compatible con Rebost antes de validar otra vez ese recorrido.
+
+
+La incidència local de la API antiga queda resolta el 22-10-2026 en connectar
+Llibres amb el banc. Recursos API i ID API s'actualitzen preservant els volums
+actius i les dades; catàlegs de Rebost i rutes de llibres tornen a respondre.
+La [connexió local](LLIBRES_LOCAL_CONNECTION.md) recull còpies, imatges,
+comparació de dades i lectura real des de les dos aplicacions.
