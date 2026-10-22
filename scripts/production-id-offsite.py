@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Mirror encrypted ID snapshots to the NAS, or check health and backup age."""
 import argparse
+import fcntl
 from datetime import datetime, timezone
 import hashlib
 import io
@@ -13,9 +14,59 @@ import sqlite3
 import subprocess
 import tarfile
 import tempfile
+import urllib.parse
+import urllib.request
 
 ARCHIVE = re.compile(r'id-api-\d{8}T\d{6}Z\.tar\.gz\.gpg')
 SSH = ['ssh', '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=8', '-o', 'ServerAliveInterval=15', '-o', 'ServerAliveCountMax=2']
+
+
+def send_telegram(config, message):
+    """Reuse secure storage references from the existing helper, without executing it."""
+    helper = Path(config['telegram_helper']).read_text()
+    token_line = re.search(r'^BOT_TOKEN=(.*)$', helper, re.M)
+    chat_line = re.search(r'^CHAT_ID=(.*)$', helper, re.M)
+    if not token_line or not chat_line:
+        raise ValueError('notification credential references unavailable')
+    reference = re.search(r'\$\(pass\s+(?:show\s+)?([A-Za-z0-9_./-]+)', token_line.group(1))
+    chat = shlex.split(chat_line.group(1))
+    if not reference or len(chat) != 1 or not re.fullmatch(r'-?\d+', chat[0]):
+        raise ValueError('unsupported notification credential references')
+    result = subprocess.run(['pass', 'show', reference.group(1)], capture_output=True, timeout=20)
+    if result.returncode or not result.stdout.strip():
+        raise RuntimeError('notification secure storage unavailable')
+    token = result.stdout.decode().splitlines()[0].strip()
+    request = urllib.request.Request('https://api.telegram.org/bot'+token+'/sendMessage',
+        data=urllib.parse.urlencode({'chat_id': chat[0], 'text': message}).encode(), method='POST')
+    # Never propagate raw HTTP errors: their URL contains the bot credential.
+    try:
+        with urllib.request.urlopen(request, timeout=20) as response:
+            if not json.load(response).get('ok'):
+                raise RuntimeError('notification delivery rejected')
+    except Exception:
+        raise RuntimeError('notification delivery failed') from None
+
+
+def notify_transition(config, healthy):
+    if not config.get('telegram_enabled'):
+        return
+    directory = Path(config['state_dir'])
+    directory.mkdir(parents=True, exist_ok=True, mode=0o700)
+    with (directory/'alert.lock').open('a') as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        state_file = directory/'alert-state.json'
+        previous = json.loads(state_file.read_text()).get('announced') if state_file.exists() else None
+        current = 'healthy' if healthy else 'failed'
+        if previous == current:
+            return
+        if not healthy:
+            send_telegram(config, 'EduTicTac Commons: incidencia al comprobar identidad o sus copias de seguridad. '
+                          'Se revisará de nuevo cada cinco minutos. Consulta edutictac-id-monitor.service en debiandesktop.')
+        elif previous == 'failed':
+            send_telegram(config, 'EduTicTac Commons: incidencia resuelta. Identidad responde y las copias '
+                          'del VPS y del NAS vuelven a estar verificadas.')
+        # Persist only acknowledged delivery; a failed send is retried at the next check.
+        write_status(state_file, {'announced': current, 'checked_at': datetime.now(timezone.utc).isoformat()})
 
 
 def remote(host, code, data=None):
@@ -169,11 +220,19 @@ print(pathlib.Path({(config['source_dir']+'/latest.json')!r}).read_text())
 def main():
     os.umask(0o077)
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('command', choices=['mirror', 'check'])
+    parser.add_argument('command', choices=['mirror', 'check', 'notify-test'])
     parser.add_argument('--config', type=Path, required=True)
     args = parser.parse_args()
     try:
         config = json.loads(args.config.read_text())
+        if args.command == 'notify-test':
+            if not config.get('telegram_enabled'):
+                raise ValueError('notifications disabled')
+            send_telegram(config, 'EduTicTac Commons: prueba de avisos correcta. Recibirás un aviso si falla '
+                          'la comprobación de identidad o de sus copias, y otro al recuperarse. '
+                          'Este mensaje es una prueba; no indica ninguna incidencia.')
+            print('{"notification_test":"sent"}')
+            return
         result = mirror(config) if args.command == 'mirror' else check(config)
         result['checked_at'] = datetime.now(timezone.utc).isoformat()
         write_status(Path(config['state_dir'])/(args.command+'-status.json'), result)
@@ -184,7 +243,17 @@ def main():
             write_status(Path(config['state_dir'])/(args.command+'-status.json'), {'result': 'failed'})
         except Exception:
             pass
+        if args.command == 'check':
+            try:
+                notify_transition(config, False)
+            except Exception:
+                parser.exit(1, 'Monitor check and/or notification failed; delivery will be retried.\n')
         parser.exit(1, 'ID API backup/monitor check failed; successful recovery timestamp unchanged.\n')
+    if args.command == 'check':
+        try:
+            notify_transition(config, True)
+        except Exception:
+            parser.exit(1, 'Monitor passed, but notification delivery failed; delivery will be retried.\n')
 
 
 if __name__ == '__main__':

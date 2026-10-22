@@ -280,8 +280,9 @@ Implementación versionada:
 - Monitor: health de identidad en 8005, estado fallido del servicio de backup,
   último intento de traslado, edad máxima de 36 horas en origen y recuperación,
   disponibilidad del NAS y hash del archivo recuperado. Los fallos dejan el
-  servicio en error y quedan en el journal. **No se ha activado Telegram ni
-  modificado n8n**: el canal de aviso externo está pendiente de elección.
+  servicio en error y quedan en el journal. Por autorización posterior del
+  usuario, **Telegram ya está activado**, reutilizando el bot y destinatario
+  del helper existente. No se ha modificado n8n.
 
 Primera ejecución de los servicios realizada manualmente antes de habilitar
 los timers: copia `id-api-20261022T114604Z.tar.gz.gpg`, recuperación completa
@@ -314,6 +315,32 @@ systemctl --user show edutictac-id-offsite.service edutictac-id-monitor.service 
 systemctl --user list-timers edutictac-id-offsite.timer edutictac-id-monitor.timer
 ```
 
-Pendiente antes del corte: elegir el aviso externo, concretar el bloqueo de
-escrituras y acordar la ventana de cambio. Crear una copia nueva inmediatamente
+Pendiente antes del corte: concretar el bloqueo de escrituras y acordar la
+ventana de cambio. Crear una copia nueva inmediatamente
 antes del corte; no usar el snapshot del ensayo como copia de ese futuro corte.
+
+### Avisos Telegram activados y probados
+
+Configuración local: `telegram_enabled: true` y referencia al helper existente
+`~/.local/bin/telegram-notify`. Solo se leen sus referencias de almacenamiento
+seguro: el token se obtiene de `pass` en memoria y el destinatario de la
+configuración existente. No se ejecuta el helper, se copian credenciales ni
+se muestran errores HTTP que pudieran contener el token en su URL.
+
+El monitor notifica una vez al pasar a incidencia y una vez al recuperarse.
+El estado persistente `alert-state.json`, protegido con bloqueo y escritura
+atómica, evita repetir el mensaje cada cinco minutos y sobrevive a reinicios.
+Solo confirma el cambio después de una respuesta correcta de Telegram; si
+falla el envío, lo vuelve a intentar en la siguiente comprobación. Como en
+cualquier entrega HTTP, si se pierde la respuesta tras la entrega podría
+repetirse un aviso al reintentar.
+
+Pruebas: 14 tests de backup/monitor aprobados, incluidos transiciones, ausencia
+de duplicados en comprobaciones repetidas, reintento de fallo y recuperación,
+desactivación y ocultación de errores con credenciales. Monitor real correcto;
+mensaje de prueba identificado como tal aceptado por Telegram. No se simula
+una caída de producción ni se envían alarmas falsas para probarlo.
+
+Los avisos dependen del monitor en debiandesktop y de su conectividad, igual
+que las comprobaciones y el traslado al NAS. El despliegue de identidad sigue
+pendiente y los servicios públicos no se han reiniciado.

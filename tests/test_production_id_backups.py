@@ -162,3 +162,53 @@ def test_recovery_rejects_unsafe_archive_before_writing_files(monkeypatch,kind):
         if kind=='duplicate':archive.addfile(tarfile.TarInfo(name))
     monkeypatch.setattr(module.subprocess,'run',lambda *args,**kwargs:SimpleNamespace(returncode=0,stdout=payload.getvalue()))
     with pytest.raises(ValueError):module.verify_recovery(b'encrypted fixture')
+
+
+def test_alerts_only_notify_failure_and_recovery_transitions(tmp_path,monkeypatch):
+    module=load('production-id-offsite');messages=[]
+    config={'state_dir':str(tmp_path),'telegram_enabled':True}
+    monkeypatch.setattr(module,'send_telegram',lambda config,message:messages.append(message))
+    for healthy in [True,True,False,False,True,True]:module.notify_transition(config,healthy)
+    assert len(messages)==2
+    assert 'incidencia al comprobar' in messages[0]
+    assert 'incidencia resuelta' in messages[1]
+    assert json.loads((tmp_path/'alert-state.json').read_text())['announced']=='healthy'
+
+
+def test_alert_delivery_failure_is_retried_without_acknowledging_it(tmp_path,monkeypatch):
+    module=load('production-id-offsite')
+    config={'state_dir':str(tmp_path),'telegram_enabled':True}
+    module.notify_transition(config,True)
+    original=(tmp_path/'alert-state.json').read_bytes()
+    monkeypatch.setattr(module,'send_telegram',lambda *args: (_ for _ in ()).throw(RuntimeError('offline')))
+    with pytest.raises(RuntimeError):module.notify_transition(config,False)
+    assert (tmp_path/'alert-state.json').read_bytes()==original
+    messages=[]
+    monkeypatch.setattr(module,'send_telegram',lambda config,message:messages.append(message))
+    module.notify_transition(config,False)
+    failed=(tmp_path/'alert-state.json').read_bytes()
+    monkeypatch.setattr(module,'send_telegram',lambda *args: (_ for _ in ()).throw(RuntimeError('offline')))
+    with pytest.raises(RuntimeError):module.notify_transition(config,True)
+    assert (tmp_path/'alert-state.json').read_bytes()==failed
+    monkeypatch.setattr(module,'send_telegram',lambda config,message:messages.append(message))
+    module.notify_transition(config,True)
+    assert len(messages)==2
+
+
+def test_disabled_alerts_do_not_send_or_create_state(tmp_path,monkeypatch):
+    module=load('production-id-offsite')
+    monkeypatch.setattr(module,'send_telegram',lambda *args:pytest.fail('disabled alert sent'))
+    module.notify_transition({'state_dir':str(tmp_path)},False)
+    assert not (tmp_path/'alert-state.json').exists()
+
+
+def test_telegram_http_error_never_exposes_credential_url(tmp_path,monkeypatch):
+    module=load('production-id-offsite');helper=tmp_path/'helper'
+    helper.write_text("BOT_TOKEN=$(pass show fixture/telegram)\nCHAT_ID='123456'\n")
+    monkeypatch.setattr(module.subprocess,'run',lambda *args,**kwargs:SimpleNamespace(returncode=0,stdout=b'fictional-bot-credential\n'))
+    def unavailable(*args,**kwargs):
+        raise RuntimeError('HTTP error at /botfictional-bot-credential/sendMessage')
+    monkeypatch.setattr(module.urllib.request,'urlopen',unavailable)
+    with pytest.raises(RuntimeError,match='^notification delivery failed$') as error:
+        module.send_telegram({'telegram_helper':str(helper)},'test')
+    assert error.value.__suppress_context__
