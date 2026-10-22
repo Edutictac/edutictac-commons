@@ -918,3 +918,27 @@ Procedimiento, pruebas y retirada segura en el repositorio de Recursos:
 Llibres conserva su perfil privado 8182 y publicación desactivada. El siguiente
 paso sigue siendo dominio HTTPS independiente y aceptación con cuentas reales;
 no se ha publicado ningún libro ni creado cuentas para estas comprobaciones.
+
+### Llibres público con HTTPS — 22-10-2026
+
+La fase anterior se ha completado: `https://llibres.edutictac.es/` está publicado
+con vhost y certificado propios. IPv4 e IPv6 devuelven 200 con TLS válido. Los
+14 certificados previos conservan sus hashes. La renovación por webroot y el
+hook exclusivo de recarga de nginx se han ensayado correctamente.
+
+El frontal HTTPS habilita los controles de publicación; el contenedor conserva
+su perfil privado en 127.0.0.1:8182 con indicador desactivado. Los permisos siguen
+en Commons: acceso docente individual, alumnado con código/PIN de aula y revisión
+por su docente responsable. No hay cambios de cookies, secretos, API o datos.
+Los contenedores y Play conservan identificador/arranque; solo se recarga nginx.
+
+28 comprobaciones distintas correctas, incluidas 17 sobre el perfil HTTPS y
+Rebost real, 2 de edición/descarga/reapertura sobre HTTPS, 1 de publicación con
+editor público y API temporal, 2 de revisión con sesiones temporales y 6 de
+permisos de Commons. Las pruebas no crean cuentas ni libros en producción.
+
+Pendiente: aceptación humana con cuenta docente real, aula/código/PIN, envío,
+aprobación y lectura pública en el Banc. Las redirecciones al proveedor y las
+pruebas con identidades sintéticas no sustituyen esa aceptación.
+Procedimiento y retirada en `edutictac-llibres/docs/PRODUCTION.md`; línea base y
+resultados privados en `/opt/edutictac-llibres/https-activation/`.
