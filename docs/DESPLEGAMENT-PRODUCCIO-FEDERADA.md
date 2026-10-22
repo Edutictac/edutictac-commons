@@ -419,3 +419,22 @@ Los archivos conservados no autorizan una reversión que descarte actividad nuev
 
 Siguiente fase, todavía pendiente: preparar `commons.edutictac.es` y el acceso
 OIDC docente, conservando las URL de las aplicaciones.
+
+### Limpieza posterior de credenciales de prueba (22-10-2026)
+
+Después de la migración, el usuario confirma explícitamente que las 50
+credenciales anteriores eran de prueba y ordena eliminarlas. Todas se habían
+creado juntas el 10-09-2026 en el único grupo de `recursos`, con propietario
+técnico y sin sesiones, resultados, asignaciones ni itinerarios guardados.
+
+Se ha creado una copia nueva y verificado su recuperación desde el NAS antes
+de borrar. La eliminación se realiza por la API existente de baja del grupo,
+con autorización de servicio, y retira el grupo de prueba, sus 50 credenciales
+y su pertenencia técnica. **No es una pérdida durante la migración**: se
+preservaron primero y se eliminaron después por petición expresa.
+
+Estado tras la limpieza: cero grupos, identidades de alumnado, sesiones,
+resultados, asignaciones y pertenencias. SQLite íntegra; copia posterior y
+monitorización verificadas. La identidad está preparada para dar de alta aulas
+reales en la fase del portal. No se han reiniciado aplicaciones para esta baja.
+Informe privado: `/opt/edutictac-id-api/backups/test-identity-cleanup-20261022.json`.
