@@ -62,3 +62,16 @@ test('guia federada explica assignació individual i obri el banc públic',async
     await expect(page.locator('[data-i18n="help.step4Text"]')).toHaveCount(0);
   }
 });
+
+
+test('avís central accessible i traduït sense prometre sessions comunes',async({page})=>{
+  await setup(page); await page.goto('/');
+  await expect(page.locator('a[href="/privacy.html"]')).toBeVisible();
+  await page.locator('a[href="/privacy.html"]').click();
+  for(const language of ['es','va','ca','en']) {
+    await page.locator('[data-lang='+language+']').click();
+    await expect(page.locator('[data-i18n="privacy.teacherText"]')).toContainText('Authentik');
+    await expect(page.locator('[data-i18n="privacy.sessionText"]')).toContainText('180');
+    await expect(page.locator('h1')).not.toHaveText(/privacy\./);
+  }
+});
