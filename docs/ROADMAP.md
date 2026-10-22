@@ -56,8 +56,12 @@ Prioritat actualitzada el 22-10-2026: Banc de recursos abans de Play.
   i llançaments existents. Respostes tardanes descartades i PIN només temporal.
 - [x] Primera fase del Banc de recursos en el seu repositori: catàleg, cerca,
   filtres, targetes, favorits, valoracions i paginació en Vue; motors conservats.
-- [ ] Continuar el Banc de recursos amb accés, propostes i panell de fonts.
-  Pla detallat en `recursos/docs/VUE_MIGRATION.md`; API en treball paral·lel.
+- [x] Banc de recursos completat en Vue: accés docent/alumnat, propostes i
+  panell de fonts, amb PIN temporal, confirmació de guardat i protecció dels
+  canvis de sessió. 78 proves de navegador i 3 del service worker aprovades;
+  activat en local i lectura del llibre existent verificada. Detalls en
+  `recursos/docs/VUE_MIGRATION.md`. Acceptació manual amb comptes autoritzats
+  abans de producció. Punt de parada acordat: no començar Play ni altres mòduls.
 - [ ] Migrar els formularis propis de Play per tipus d'activitat, conservant
   H5P, publicació i exportadors existents.
 - [ ] Administració i Quiosc, amb proves específiques de les operacions

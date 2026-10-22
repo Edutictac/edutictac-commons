@@ -374,3 +374,30 @@ Llibres amb el banc. Recursos API i ID API s'actualitzen preservant els volums
 actius i les dades; catàlegs de Rebost i rutes de llibres tornen a respondre.
 La [connexió local](LLIBRES_LOCAL_CONNECTION.md) recull còpies, imatges,
 comparació de dades i lectura real des de les dos aplicacions.
+
+
+## Banc de recursos completat — 22-10-2026
+
+La migració del frontend independent `Edutictac/recursos` queda acabada:
+catàleg, favorits/valoracions/moderació, accés amb Authentik per a docents i
+codi/PIN per a alumnat, propostes i panell administratiu de fonts són Vue.
+Es retiren els formularis i constructors DOM equivalents, sense substituir
+Flash/JClic, el lector de llibres ni els motors dels editors.
+
+78 proves de navegador en escriptori/mòbil i 3 del service worker aprovades.
+El PIN es neteja en enviar/tancar/navegar; les escriptures es bloquegen durant
+un canvi de sessió, i les respostes anteriors no afecten el context nou.
+Les propostes tenen confirmació persistent i distingixen el guardat del refresc.
+Les fonts només es consulten amb permisos administratius i admeten reintent.
+
+Disponible en `http://100.74.151.108:8086/`, imatge frontend
+`recursos:bank-vue-complete-candidate`, anterior preservada com a
+`before-bank-vue-complete-20261022`. Bundle instal·lat idèntic al compilat;
+catàleg, diàlegs i lector/ELPX existents verificats amb dades reals públiques.
+Les proves autenticades de regressió usen contractes sintètics; queda
+acceptació manual amb comptes autoritzats abans de publicar en producció.
+
+Només s’ha recreat el frontend del banc. Les API, Authentik, portal, Blocs,
+Llibres i volums continuen sense canvis. Procediment, proves i límits en
+`recursos/docs/VUE_MIGRATION.md`. Punt de parada indicat per l’usuari: no
+continuar amb Play/Administració/Quiosc; sense push ni desplegament al VPS.
