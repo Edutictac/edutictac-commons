@@ -1,7 +1,7 @@
 # Despliegue federado de Commons en producción (edutictac.es)
 
-Estado: **preparación de la fase 1 revisada el 22-10-2026; ningún cambio aplicado
-en producción.** EduTicTac está en uso: avanzar paso a paso. Cada fase se
+Estado: **copia y ensayo aislado de la fase 1 completados el 22-10-2026;
+servicios y datos de producción sin modificar.** EduTicTac está en uso: avanzar paso a paso. Cada fase se
 ejecuta solo tras confirmación explícita.
 
 ## Objetivo
@@ -35,7 +35,8 @@ backups del host) y Quiosc (solo aula local).
 - Base `/opt/edutictac-id-api/data/id.db` (modo WAL): 1 grupo, 50 identidades
   (10-09-2026), 0 sesiones/puntuaciones/asignaciones. Esquema antiguo: sin
   `avatar_icon`, `launch_url`, `result_id`, membresías ni itinerarios.
-- **Sin copias de seguridad** del id-api.
+- En la auditoría inicial, **sin copias de seguridad** del id-api. Ya existe
+  la copia consistente local descrita al final; la copia externa sigue pendiente.
 - Único consumidor: `recursos-api` vía `EDUTICTAC_ID_API_URL` en
   `/etc/recursos-api.env`. nginx no expone el puerto 8005.
 - `recursos-api` usa solo `POST /api/auth/student` y `POST /api/identities/batch`
@@ -152,7 +153,49 @@ login correcto, rechazo de PIN incorrecto y creación batch con/sin autorizació
 comprobados. Ninguna credencial ni fila real se ha copiado al entorno local.
 Dos pruebas automatizadas de migración también aprobadas.
 
-Siguiente paso acotado: preparar la copia consistente y ensayar en aislamiento
-la imagen exacta candidata y la restauración con el código antiguo. Esto aún
-no se ha realizado: no hay contenedor candidato desplegado en el VPS, no se
-ha cambiado el servicio ni se da por completada la fase 1.
+### Copia y ensayo de migración/restauración completados
+
+Tras autorización para este paso, se ha creado en el VPS una copia mediante
+la API `sqlite3.Connection.backup`, incorporando los registros confirmados
+del WAL. `integrity_check=ok`. Directorio privado:
+`/opt/edutictac-id-api/backups/before-docker-20261022T113140Z/`.
+Contiene base, código antiguo, requisitos, configuración y unidad systemd;
+directorio 0700 y archivos sin permisos de grupo/otros. Los secretos no se
+muestran ni se incorporan a Git. Esta copia está en el mismo servidor:
+la copia externa al NAS y su programación continúan pendientes.
+
+Imagen construida desde el código local de `a0af1a3`, transferida al Docker
+del VPS sin publicar al registro:
+
+- Tag: `commons-id-api:prod-rehearsal-20261022`.
+- ID de imagen: `sha256:a719fc1aacfeea1c74052a1d5f31cdfb1c3d7d7a53e7de04b3c37f71f73cb510`.
+  Es el ID local de Docker, no un digest de manifiesto del registro.
+- Contenedor temporal con red `none`, sin puertos publicados, usuario 1000,
+  límite de memoria 384 MiB, 1 CPU y sin capabilities; solo monta datos de ensayo.
+
+Ensayo sobre copias privadas del servidor, sin extraer datos reales:
+
+1. Arranque del código antiguo copiado en loopback 18005, con secretos
+   ficticios y base de ensayo. Creación de una credencial ficticia y login.
+2. Snapshot consistente previo a migración. Arranque de la imagen candidata
+   exclusivamente sobre otra copia. Comparación de todos los campos y filas
+   preexistentes e integridad SQLite correctas.
+3. HTTP desde dentro del contenedor: health, login con la credencial creada
+   por la versión antigua, rechazo de PIN incorrecto, batch sin autorización
+   denegado y batch autorizado correcto.
+4. Restauración del snapshot previo en un directorio nuevo, sin WAL/SHM
+   migrados. Arranque del código antiguo: login y creación batch correctos.
+5. Procesos y estado systemd de identidad, banco y Play idénticos antes/después;
+   todas las filas de la base original idénticas durante el ensayo.
+   Contenedor temporal retirado y fichero de secretos ficticios eliminado.
+
+Resultado **PASS**, guardado sin credenciales en
+`/opt/edutictac-id-api/rehearsals/20261022T113140Z/report.json`.
+El script de ensayo permanece en `/home/samgua/commons-id-rehearsal.py`;
+no repetirlo sobre el directorio existente (requiere una copia nueva).
+Las bases de ensayo contienen datos privados y no deben compartirse.
+
+No se ha sustituido el servicio ni se da por completada la fase 1. El siguiente
+paso es preparar la configuración definitiva y la copia externa, y acordar
+la ventana de cambio con bloqueo de escrituras y una copia nueva inmediatamente
+antes del corte. No usar el snapshot del ensayo como copia de ese futuro corte.
