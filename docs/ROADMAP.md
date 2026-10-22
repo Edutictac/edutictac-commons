@@ -51,7 +51,8 @@ canvia l'estat de la versió publicada ni dona per completades les proves de cam
   manuals i classificació de l’activitat, amb respostes tardanes descartades.
 - [x] Recursos i cistella del tauler docent en Vue: cerca, favorits i assignació,
   grup de destinació fix, aturada en canviar d’aula i errors parcials explícits.
-- [ ] Migrar el tauler de l'alumnat, mantenint codi/PIN i l'historial/progrés.
+- [x] Tauler de l’alumnat en Vue: codi/PIN, avatar, itinerari, historial/progrés
+  i llançaments existents. Respostes tardanes descartades i PIN només temporal.
 - [ ] Migrar els formularis propis de Play per tipus d'activitat, conservant
   H5P, publicació i exportadors existents.
 - [ ] Revisar Recursos com a projecte separat; Administració i Quiosc després,

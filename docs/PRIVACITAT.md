@@ -195,3 +195,14 @@ Les dades d'ubicació del servidor, el responsable del tractament i el contacte
 de privacitat els ha de completar el centre en `DIRECCIO-DPD.md`.
 
 <!-- updated: 2026-09-19 -->
+
+
+### Tauler de l’alumnat en Vue
+
+El formulari de codi/PIN manté la credencial només en memòria temporal i buida
+el PIN en enviar-lo. No incorpora credencials, perfil, itinerari o resultats a
+l’emmagatzematge persistent del navegador. Tancar o perdre la sessió retira les
+dades visibles; les respostes anteriors no les poden recuperar. La navegació
+neteja també l’estat abans de guardar una pàgina en la memòria cau del navegador.
+El servidor continua comprovant la cookie de l’alumnat i l’aula en cada petició;
+no s’exigix un compte Authentik a l’estudiant.

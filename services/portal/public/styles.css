@@ -856,3 +856,8 @@ pre {
 }
 
 [hidden] { display: none !important; }
+
+/* Keep the pupil table usable without widening the page on small screens. */
+.student-area, .student-area > .panel, #studentPanel { min-width: 0; }
+.student-table-scroll { max-width: 100%; overflow-x: auto; position: relative; }
+.student-table-scroll table { min-width: 520px; }

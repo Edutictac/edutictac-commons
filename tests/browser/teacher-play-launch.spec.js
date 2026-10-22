@@ -23,7 +23,7 @@ test('el botón de Play usa el puerto del servicio Play local', async ({ page })
   expect((await playRequest).url()).toBe('http://127.0.0.1:18084/Ab12Cd34?launch_token=launch-test-token');
 });
 
-test('el botón de Recursos registra el inicio y abre la actividad asignada', async ({ page }) => {
+test('el botón de Recursos registra el inicio y abre la actividad asignada', async ({ page, context }) => {
   const identity = { id: 'test-student', public_code: 'TEST01', avatar_icon: '🚀' };
   let launchAssignment;
   await page.route('**/api/**', (route) => {
@@ -49,14 +49,20 @@ test('el botón de Recursos registra el inicio y abre la actividad asignada', as
     return route.fulfill({ status: 401, json: { detail: 'test unauthenticated' } });
   });
 
-  await page.addInitScript(() => {
-    window.open = (url, target, features) => { window.testResourceWindow = { url, target, features }; };
+  let referrer;
+  await context.route('https://recursos.example.test/**', route => {
+    referrer = route.request().headers().referer;
+    return route.fulfill({contentType: 'text/html', body: '<p>Resource viewer</p>'});
   });
   await page.goto('/student.html');
+  const opened = context.waitForEvent('page');
   await page.getByRole('button', { name: /Abrir recurso|Obrir recurs|Open resource/ }).click();
-  await expect.poll(() => page.evaluate(() => window.testResourceWindow)).toEqual({
-    url: 'https://recursos.example.test/recurso-1', target: '_blank', features: 'noopener,noreferrer',
-  });
+  const popup = await opened;
+  await expect(popup.getByText('Resource viewer')).toBeVisible();
+  expect(popup.url()).toBe('https://recursos.example.test/recurso-1');
+  expect(await popup.evaluate(() => window.opener === null)).toBe(true);
+  expect(referrer).toBeUndefined();
+  await popup.close();
   expect(launchAssignment).toBe('resource-assignment-1');
 });
 

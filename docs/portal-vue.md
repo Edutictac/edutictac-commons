@@ -36,8 +36,8 @@ etiquetas usan CA/VA/ES/EN mediante `src/shared/usePortalTranslations.js` y los
 diccionarios existentes. No se añade otra preferencia de idioma.
 
 Si el módulo no puede descargarse, aparece un mensaje de recarga y el resto
-del portal continúa inicializándose. La adopción de Vue no obliga a cargarlo
-en la portada o en el panel del alumnado.
+del portal continúa inicializándose. La portada no carga Vue; el panel del
+alumnado dispone ahora de su propia entrada compilada.
 
 ## Compilación
 
@@ -47,11 +47,12 @@ npm run build:portal
 ```
 
 `vite.portal.shared.mjs` define una configuración común; las entradas actuales
-son `vite.rebost.config.mjs` y `vite.teacher.config.mjs`. También pueden
-compilarse por separado con `build:rebost` y `build:teacher`.
+son `vite.rebost.config.mjs`, `vite.teacher.config.mjs` y
+`vite.student.config.mjs`. Pueden compilarse por separado con `build:rebost`,
+`build:teacher` y `build:student`.
 
-Los bundles `public/assets/rebost-ui.js` y `teacher-itineraries.js` se versionan.
-CI recompila ambos y comprueba que coincidan con los archivos comprometidos.
+Los bundles `public/assets/rebost-ui.js`, `teacher-itineraries.js` y
+`student-ui.js` se versionan. CI recompila los tres y comprueba que coincidan con los archivos comprometidos.
 El Dockerfile del portal sigue copiando archivos estáticos: Node no forma parte
 del servicio en ejecución. No hay cambios de volúmenes o de base de datos.
 
@@ -291,3 +292,78 @@ bloqueadas para visitantes. El catálogo público de Rebost se muestra, las
 imágenes privadas requieren sesión y el proxy de Llibres responde. Sin errores
 JavaScript. Tras el ajuste final de tarjetas pasan de nuevo los 24 casos de
 Recursos; no se han usado cuentas reales ni creado aulas en la instalación.
+
+
+## Panel del alumnado — 22-10-2026
+
+`src/student/StudentPanel.vue` contiene el formulario, perfil, itinerario y
+actividades; `useStudent.js` controla sesión, cargas, avatar y lanzamientos;
+`launch.js` conserva las rutas directas/proxy y la lista de retornos permitidos.
+`app.js` retira su estado, plantillas HTML y manejadores anteriores. El puente
+solo monta el panel y actualiza la cabecera de sesión. No hay dos implementaciones.
+El bundle `student-ui.js` se carga solo en `/student.html`, mediante la misma
+configuración y versiones MIT ya utilizadas. Node sigue fuera de Docker.
+
+Se mantiene el acceso de alumnado por código y PIN, sin Authentik. La sesión se
+restaura con `/api/student/dashboard`, que exige la cookie del estudiante; una
+cuenta docente en `/api/auth/me` no acredita acceso al panel. El PIN se muestra
+como contraseña, se descarta al enviar y no se guarda en localStorage,
+sessionStorage, IndexedDB o preferencias. El formulario permite Enter y bloquea
+envíos repetidos. Solo los destinos Commons enumerados anteriormente pueden
+recibir una redirección tras el acceso; no se admiten retornos externos.
+
+Cerrar sesión retira inmediatamente perfil, actividades, historial y PIN.
+Respuestas anteriores, incluidas las de avatar y lanzamiento, no los recuperan.
+Un fallo al cerrar sesión permite reintentar y bloquea un nuevo acceso hasta
+confirmar el cierre. `pagehide` limpia el estado y oculta el contenido antes de
+la instantánea de navegación; `pageshow` desde caché vuelve a consultar la sesión.
+Los fallos de carga retiran resultados antiguos y ofrecen reintento; un 401
+vigente exige entrar de nuevo. Los mensajes de error se traducen y no imprimen
+el detalle interno del servidor.
+
+El progreso mantiene ceros, orden del itinerario y actividades finalizadas en
+el historial. Cambiar de idioma traduce la vista sin volver a consultar datos
+ni perder el historial abierto. El avatar conserva las 28 opciones y su PATCH.
+Hay actualización explícita y al volver al panel mediante foco/visibilidad.
+La tabla se desplaza dentro de su contenedor en móvil, sin ensanchar la página.
+
+Play y EduHoot conservan sus endpoints y parámetros de lanzamiento. Para
+recursos/documentos se reserva la pestaña durante el clic, antes de esperar
+la red, y se anula su `opener`. La página aplica `no-referrer` para
+conservar la privacidad del enlace de origen. Una sesión caducada, una URL peligrosa o un error
+cierran la pestaña provisional. Se exige obtener el token existente también
+para enlaces de recursos: ya no se abre silenciosamente tras fallar esa petición.
+Solo HTTP/HTTPS sin credenciales puede abrirse como recurso; se conservan los
+enlaces locales/Tailnet. El documento subido continúa pasando por el proxy
+protegido de Commons. Las herramientas desactivadas no ofrecen botón de inicio.
+
+Las pruebas nuevas cubren credenciales temporales, doble submit, avatar,
+historial, ceros, idiomas, permisos de módulo, errores de sesión/red, lecturas
+y lanzamientos tardíos, pestañas bloqueadas, ausencia de `opener`, URL ejecutables,
+retornos externos y caché de navegación. Los recorridos con API y SQLite real
+usan identidades sintéticas: login con cookie, avatar persistente, orden del
+itinerario, puntuación cero, token de lanzamiento, aislamiento entre aulas,
+prohibición de gestión docente y revocación de la sesión al rotar el PIN.
+No se usan cuentas de la instalación real ni se cambia el backend.
+
+
+Validación final: **214 pruebas de navegador aprobadas**, incluidas 50 nuevas
+del panel del alumnado, en escritorio y móvil. Regresión Python de alumnado,
+itinerarios, credenciales, resultados, Recursos y permisos: **30 aprobadas**.
+Al incorporarse el commit independiente `e234624` de routers/migraciones de la
+API se repiten los dos flujos de alumnado con API real: ambos aprobados.
+La captura valenciana con datos sintéticos se revisa tras vaciar el PIN.
+Compilación de las tres entradas, sintaxis y comprobación de espacios correctas;
+los bundles de Rebost y docente permanecen idénticos.
+
+Activación local del portal con rollback `before-student-vue-20261022`.
+Verificación anónima en `/student.html`: bundle y `app.js` servidos coinciden con
+los archivos probados, formulario activo, PIN vacío y oculto, sin datos de
+alumnado ni errores JavaScript. No se crean cuentas o actividades reales.
+
+Incidencia de entorno detectada durante la verificación complementaria:
+el contenedor local `id-api` usa `commons-id-api:0.1.1-alpha32`; sus rutas
+`/api/assets/v1/items?collection=mine` y `/api/assets/v1/catalogs` devuelven 404.
+El HTML de Rebost y el bundle del proxy de Llibres sí responden 200.
+Esta fase solo recrea el portal; queda pendiente recuperar la configuración
+local de API compatible con Rebost antes de validar otra vez ese recorrido.

@@ -9,7 +9,8 @@
     "test:moodle": "playwright test --config=playwright.moodle.config.js",
     "build:rebost": "vite build --config vite.rebost.config.mjs",
     "build:teacher": "vite build --config vite.teacher.config.mjs",
-    "build:portal": "npm run build:rebost && npm run build:teacher"
+    "build:portal": "npm run build:rebost && npm run build:teacher && npm run build:student",
+    "build:student": "vite build --config vite.student.config.mjs"
   },
   "devDependencies": {
     "@playwright/test": "1.63.0",
