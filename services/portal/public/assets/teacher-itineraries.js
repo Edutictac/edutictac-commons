@@ -3716,16 +3716,17 @@ function Ls(e, t, n) {
 		teacher: !1,
 		group: null,
 		dataReady: !1,
-		resourcesEnabled: !0
+		resourcesEnabled: !0,
+		favoritesEnabled: !0
 	}), i = /* @__PURE__ */ I(""), a = /* @__PURE__ */ I([]), o = /* @__PURE__ */ I(!1), s = /* @__PURE__ */ I(!1), c = /* @__PURE__ */ I(!1), l = /* @__PURE__ */ I(!1), u = /* @__PURE__ */ I(!1), d = /* @__PURE__ */ I(""), f = /* @__PURE__ */ I(0), p = 0, m = 0, h = !0, g = Mi(() => !r.value.teacher || !r.value.group || !r.value.dataReady || !r.value.resourcesEnabled || c.value || l.value || u.value);
 	function _(e) {
 		return h && e === p;
 	}
 	function v(e) {
-		(e.teacher !== r.value.teacher || e.group?.id !== r.value.group?.id || e.resourcesEnabled !== r.value.resourcesEnabled) && (p++, m++, a.value = [], o.value = !1, s.value = !1, c.value = !1, u.value = !1, d.value = "", f.value = 0), r.value = e;
+		(e.teacher !== r.value.teacher || e.group?.id !== r.value.group?.id || e.resourcesEnabled !== r.value.resourcesEnabled || e.favoritesEnabled !== r.value.favoritesEnabled) && (p++, m++, a.value = [], o.value = !1, s.value = !1, c.value = !1, u.value = !1, d.value = "", f.value = 0), r.value = e;
 	}
 	async function y(t = !1) {
-		if (!r.value.resourcesEnabled || l.value || t && !r.value.teacher) return;
+		if (!r.value.resourcesEnabled || l.value || t && (!r.value.teacher || r.value.favoritesEnabled === !1)) return;
 		let n = p, h = ++m;
 		a.value = [], o.value = !1, s.value = t, c.value = !0, d.value = "", u.value = !1, f.value = 0;
 		try {
@@ -3843,19 +3844,21 @@ var Rs = ["placeholder"], zs = { class: "actions" }, Bs = ["disabled"], Vs = ["d
 					class: "secondary",
 					disabled: L(u) || !L(i).resourcesEnabled
 				}, E(L(r)("teacher.resourcesButton")), 9, Bs),
-				X("button", {
+				L(i).favoritesEnabled === !1 ? Q("", !0) : (J(), Y("button", {
+					key: 0,
 					id: "loadFavoriteResources",
 					type: "button",
 					class: "secondary",
 					disabled: L(u) || !L(i).teacher || !L(i).resourcesEnabled,
 					onClick: t[1] ||= (e) => L(h)(!0)
-				}, E(L(r)("teacher.favoritesButton")), 9, Vs),
-				X("button", {
+				}, E(L(r)("teacher.favoritesButton")), 9, Vs)),
+				L(i).favoritesEnabled === !1 ? Q("", !0) : (J(), Y("button", {
+					key: 1,
 					id: "assignFavoriteResources",
 					type: "button",
 					disabled: L(p) || !L(c) || !L(o).length,
 					onClick: t[2] ||= (e) => L(g)()
-				}, E(L(r)("teacher.assignBasket")), 9, Hs)
+				}, E(L(r)("teacher.assignBasket")), 9, Hs))
 			])], 32),
 			L(i).teacher && L(i).group ? (J(), Y("p", Us, [ci(E(L(r)("teacher.groupSelected")) + " ", 1), X("strong", null, E(L(i).group.group_code || L(i).group.name), 1)])) : Q("", !0),
 			X("div", {

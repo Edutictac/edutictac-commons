@@ -2,14 +2,14 @@ import {computed, onBeforeUnmount, ref, shallowRef} from 'vue';
 import {resourceAssignment} from './resourceAssignment.js';
 
 export function useResources(api, onSessionExpired, onAssigned) {
-  const context = shallowRef({teacher: false, group: null, dataReady: false, resourcesEnabled: true});
+  const context = shallowRef({teacher: false, group: null, dataReady: false, resourcesEnabled: true, favoritesEnabled: true});
   const search = ref(''), rows = ref([]), loaded = ref(false), basket = ref(false), loading = ref(false), pending = ref(false), blocked = ref(false);
   const feedback = ref(''), completedCount = ref(0);
   let epoch = 0, readSequence = 0, alive = true;
   const unavailable = computed(() => !context.value.teacher || !context.value.group || !context.value.dataReady || !context.value.resourcesEnabled || loading.value || pending.value || blocked.value);
   function current(version) { return alive && version === epoch; }
   function setContext(next) {
-    if (next.teacher !== context.value.teacher || next.group?.id !== context.value.group?.id || next.resourcesEnabled !== context.value.resourcesEnabled) {
+    if (next.teacher !== context.value.teacher || next.group?.id !== context.value.group?.id || next.resourcesEnabled !== context.value.resourcesEnabled || next.favoritesEnabled !== context.value.favoritesEnabled) {
       epoch++; readSequence++; rows.value = []; loaded.value = false; basket.value = false; loading.value = false; blocked.value = false; feedback.value = ''; completedCount.value = 0;
       // A request already sent may still complete for its captured classroom.
       // Keep writes locked until it settles, even after a context change.
@@ -17,7 +17,7 @@ export function useResources(api, onSessionExpired, onAssigned) {
     context.value = next;
   }
   async function load(favorites = false) {
-    if (!context.value.resourcesEnabled || pending.value || (favorites && !context.value.teacher)) return;
+    if (!context.value.resourcesEnabled || pending.value || (favorites && (!context.value.teacher || context.value.favoritesEnabled === false))) return;
     const version = epoch, sequence = ++readSequence;
     rows.value = []; loaded.value = false; basket.value = favorites; loading.value = true; feedback.value = ''; blocked.value = false; completedCount.value = 0;
     try {

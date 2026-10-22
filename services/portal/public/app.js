@@ -30,7 +30,7 @@ let studentPanel = null;
 
 function syncTeacherPanels() {
   const context = {teacher: state.teacher, group: state.group, groups: state.groups,
-    assignments: state.assignments, assignment: state.assignment, identities: state.identities, summary: state.summary, dataReady: state.dataReady, resourcesEnabled: !state.enabledModules || state.enabledModules.has("recursos")};
+    assignments: state.assignments, assignment: state.assignment, identities: state.identities, summary: state.summary, dataReady: state.dataReady, resourcesEnabled: !state.enabledModules || state.enabledModules.has("recursos"), favoritesEnabled: !federated || deployment.bankFavorites === true};
   itinerariesPanel?.setContext(context);
   groupsPanel?.setContext(context);
   membersPanel?.setContext(context);

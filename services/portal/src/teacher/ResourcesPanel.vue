@@ -12,8 +12,8 @@ defineExpose({setContext});
     <label><span>{{ t('teacher.resourcesSearch') }}</span><input id="resourceSearch" v-model="search" type="search" :placeholder="t('teacher.resourcesPlaceholder')"></label>
     <div class="actions">
       <button id="searchResources" type="submit" class="secondary" :disabled="pending || !context.resourcesEnabled">{{ t('teacher.resourcesButton') }}</button>
-      <button id="loadFavoriteResources" type="button" class="secondary" :disabled="pending || !context.teacher || !context.resourcesEnabled" @click="load(true)">{{ t('teacher.favoritesButton') }}</button>
-      <button id="assignFavoriteResources" type="button" :disabled="unavailable || !basket || !rows.length" @click="assign()">{{ t('teacher.assignBasket') }}</button>
+      <button v-if="context.favoritesEnabled !== false" id="loadFavoriteResources" type="button" class="secondary" :disabled="pending || !context.teacher || !context.resourcesEnabled" @click="load(true)">{{ t('teacher.favoritesButton') }}</button>
+      <button v-if="context.favoritesEnabled !== false" id="assignFavoriteResources" type="button" :disabled="unavailable || !basket || !rows.length" @click="assign()">{{ t('teacher.assignBasket') }}</button>
     </div>
   </form>
   <p v-if="context.teacher && context.group">{{ t('teacher.groupSelected') }} <strong>{{ context.group.group_code || context.group.name }}</strong></p>

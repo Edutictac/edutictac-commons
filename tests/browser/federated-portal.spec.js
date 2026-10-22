@@ -33,6 +33,8 @@ test('accés docent federat no consulta instal·lador ni oferix Quiosc',async({p
   await expect(page.locator('a[href="/quiosc.html"]')).toBeHidden();
   await expect(page.locator('#authentikNavLink')).toHaveAttribute('href',deployment.authentikUrl);
   await expect(page.locator('#teacherResourcesLink')).toHaveAttribute('href',deployment.applications.recursos);
+  await expect(page.locator('#loadFavoriteResources')).toHaveCount(0);
+  await expect(page.locator('#assignFavoriteResources')).toHaveCount(0);
   expect(setupRequests).toEqual([]);
 });
 
