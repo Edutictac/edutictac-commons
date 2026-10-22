@@ -113,9 +113,10 @@ Además en esta fase: copia diaria cifrada o al NAS de `id.db` (patrón
 - Repositorio `edutictac-llibres` con commits y remotos; `llibres.edutictac.es`;
   selector Rebost; publicación al Banc real (confirmar antes).
 
-## Pendiente de decidir
+## Decisiones tomadas (22-10-2026)
 
-- URL de Llibres (`llibres.edutictac.es` propuesta).
-- Quién puede entrar en Commons al principio: todo el profesorado de
-  `id.edutictac.es` o un grupo de pilotos.
-- Destino de las copias del id-api (NAS por tailnet recomendado).
+- Llibres en `llibres.edutictac.es`.
+- Commons abierto a todo el profesorado con cuenta en `id.edutictac.es`
+  (sin grupo de pilotos).
+- Copias del id-api al NAS por la tailnet (patrón `backup pass→NAS`).
+- Resto de recomendaciones del plan aceptadas.
