@@ -97,3 +97,18 @@ test('les imatges esquerra i dreta s’optimitzen sense perdre una càrrega conc
  await expect(page.locator('.matching-row').first().locator('.editor-thumbnail')).toHaveCount(2);await expect(page.locator('#save')).toBeEnabled();await page.locator('#save').click();await expect(page.locator('#download')).toBeVisible();
  const sent=model.calls.find(call=>call.path==='/activities').body;expect(sent.pairs[0].leftImage).toMatch(/^data:image\/webp;base64,/);expect(sent.pairs[0].rightImage).toMatch(/^data:image\/webp;base64,/);
 });
+
+test('Play respecta idioma explícit i variant valenciana sense perdre el formulari',async({page})=>{
+ await mock(page);await page.goto('/play/?lang=va');
+ await expect(page.locator('html')).toHaveAttribute('data-play-ready','true');
+ await expect(page.locator('#language')).toHaveValue('va');
+ await expect(page.locator('[data-type="true-false"]')).toContainText('Verdader/Fals');
+ await page.locator('[data-type="true-false"]').click();
+ await page.locator('#title').fill('La meua activitat');
+ await page.locator('#language').selectOption('ca');
+ await expect(page.locator('[data-type="true-false"]')).toContainText('Veritable/Fals');
+ await expect(page.locator('#title')).toHaveValue('La meua activitat');
+ await page.locator('#language').selectOption('va');
+ await expect(page.locator('#title')).toHaveValue('La meua activitat');
+ await expect.poll(()=>new URL(page.url()).searchParams.get('lang')).toBe('va');
+});

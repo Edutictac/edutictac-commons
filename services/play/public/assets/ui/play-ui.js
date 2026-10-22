@@ -3058,9 +3058,52 @@ function io(e, t) {
 		flush: u
 	};
 }
+// services/portal/public/assets/language-preference.js
+(function() {
+	let e = [
+		"es",
+		"ca",
+		"va",
+		"en"
+	], t = [
+		"edutictac-lang",
+		"edutictac-portal-lang",
+		"edutictac-play-lang"
+	], n = (t) => e.includes(t);
+	function r() {
+		let e = document.cookie.split(";").map((e) => e.trim()).find((e) => e.startsWith("edutictac_language="))?.slice(19);
+		if (n(e)) return e;
+		try {
+			for (let e of t) {
+				let t = localStorage.getItem(e);
+				if (n(t)) return t;
+			}
+		} catch {}
+		return null;
+	}
+	function i() {
+		let e = new URLSearchParams(location.search).get("lang");
+		return n(e) ? e : r();
+	}
+	function a(e) {
+		if (!n(e)) return;
+		try {
+			for (let n of t) localStorage.setItem(n, e);
+		} catch {}
+		let r = location.hostname === "edutictac.es" || location.hostname.endsWith(".edutictac.es");
+		document.cookie = "edutictac_language=" + e + "; Path=/; Max-Age=31536000; SameSite=Lax" + (r ? "; Domain=edutictac.es" : "") + (location.protocol === "https:" ? "; Secure" : "");
+		let i = new URL(location.href);
+		i.searchParams.has("lang") && (i.searchParams.set("lang", e), history.replaceState(history.state, "", i.pathname + i.search + i.hash));
+	}
+	window.commonsLanguage = Object.freeze({
+		read: i,
+		stored: r,
+		remember: a
+	});
+})();
 // services/play/src/usePlay.js
 function ao() {
-	let e = location.pathname === "/play" || location.pathname.startsWith("/play/") ? "/play" : "", t = "edutictac-play-draft", n = localStorage.getItem("edutictac-play-lang"), r = /* @__PURE__ */ V([
+	let e = location.pathname === "/play" || location.pathname.startsWith("/play/") ? "/play" : "", t = "edutictac-play-draft", n = window.commonsLanguage.read(), r = /* @__PURE__ */ V([
 		"es",
 		"ca",
 		"va",
@@ -3122,13 +3165,27 @@ function ao() {
 		});
 	}
 	async function ue(t) {
+		if (![
+			"es",
+			"ca",
+			"va",
+			"en"
+		].includes(t)) return;
 		let n = ++te;
 		try {
 			let a = await fetch(e + "/i18n/" + (t === "va" ? "ca" : t) + ".json");
 			if (!a.ok) throw Error();
 			let o = await a.json();
+			if (t === "va") {
+				let t = await fetch(e + "/i18n/va.json");
+				if (!t.ok) throw Error();
+				o = {
+					...o,
+					...await t.json()
+				};
+			}
 			if (n !== te || !A) return;
-			i.value = o, r.value = t, document.documentElement.lang = t === "va" ? "ca" : t, localStorage.setItem("edutictac-play-lang", t);
+			i.value = o, r.value = t, document.documentElement.lang = t === "va" ? "ca" : t, window.commonsLanguage.remember(t);
 		} catch {
 			d.value = "languageError";
 		}

@@ -1,0 +1,18 @@
+{
+  "trueFalse": "Verdader/Fals",
+  "trueFalseEditor": "Crea el teu verdader/fals",
+  "true": "Verdader",
+  "previewOnly": "Esta és una previsualització.",
+  "download": "Descarregar com a H5P",
+  "saved": "Guardat. Pots compartir l’enllaç o descarregar el fitxer H5P.",
+  "matchingEditor": "Crea la teua activitat de relacionar",
+  "libraryEmpty": "Encara no hi ha activitats guardades.",
+  "libraryConfirmDelete": "Vols eliminar esta activitat?",
+  "libraryYours": "Teua",
+  "libraryDelete": "Eliminar",
+  "deleteActivity": "Eliminar activitat",
+  "deleteConfirm": "Vols eliminar esta activitat? No es pot desfer.",
+  "testPhaseNotice": "Qualsevol activitat que guardes serà pública automàticament durant esta fase. No inclogues dades personals.",
+  "markWordsPlaceholder": "Assenyala els *adjectius* d’esta frase.",
+  "dialogCardsHelp": "Repassa conceptes amb targetes"
+}

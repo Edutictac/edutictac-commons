@@ -183,7 +183,11 @@ function setApplicationLinks() {
   }
   Object.entries(links).forEach(([id, url]) => {
     const link = $(id);
-    if (link) link.href = url;
+    if (link) {
+      const destination = new URL(url, window.location.origin);
+      if (id === 'playHomeLink') destination.searchParams.set('lang', window.i18nPortal.getLang());
+      link.href = destination.href;
+    }
   });
   const teacherResourcesLink = $("teacherResourcesLink");
   if (teacherResourcesLink) teacherResourcesLink.href = links.resourcesHomeLink;
@@ -530,3 +534,5 @@ if (window.commonsDeployment?.mode === 'federated') {
   footer.append(link);
   document.body.append(footer);
 }
+
+window.addEventListener('edutictac:langchange', setApplicationLinks);

@@ -1,10 +1,11 @@
 import {ref,reactive,computed,onMounted,onBeforeUnmount,nextTick} from 'vue';
 import {TYPES,CHILD_TYPES,TYPE_LABELS,newActivity,hydrate,serialize,validate,clone} from './model.js';
 import {commonsBridge} from './commons.js';
+import '../../portal/public/assets/language-preference.js';
 export function usePlay(){
  const base=location.pathname==='/play'||location.pathname.startsWith('/play/')?'/play':'';
  const DRAFT='edutictac-play-draft';
- const storedLang=localStorage.getItem('edutictac-play-lang');
+ const storedLang=window.commonsLanguage.read();
  const language=ref(['es','ca','va','en'].includes(storedLang)?storedLang:'es'),dictionary=ref({});
  const t=key=>key.split('.').reduce((value,k)=>value?.[k],dictionary.value)||key;
  const view=ref('home'),ready=ref(false),busy=ref(false),form=ref(newActivity()),saved=ref(null),formError=ref(''),message=ref(''),messageError=ref(false),imageTasks=ref(0),demoUrl=ref('');
@@ -23,7 +24,8 @@ export function usePlay(){
  async function api(path,options={}){const response=await fetch(base+'/api'+path,{credentials:'same-origin',cache:'no-store',...options,headers:{'X-Play-Creator':creator(),...options.headers}});const data=await response.json();if(!response.ok){const error=new Error('request');error.status=response.status;error.details=Array.isArray(data.errors)?data.errors:[];throw error;}return data;}
  function post(path,payload,headers={}){return api(path,{method:'POST',headers:{'Content-Type':'application/json',...headers},body:JSON.stringify(payload)});}
  async function changeLanguage(value){
-  const seq=++languageSeq;try{const r=await fetch(base+'/i18n/'+(value==='va'?'ca':value)+'.json');if(!r.ok)throw Error();const data=await r.json();if(seq!==languageSeq||!active)return;dictionary.value=data;language.value=value;document.documentElement.lang=value==='va'?'ca':value;localStorage.setItem('edutictac-play-lang',value);}catch{formError.value='languageError';}
+  if(!['es','ca','va','en'].includes(value))return;
+  const seq=++languageSeq;try{const r=await fetch(base+'/i18n/'+(value==='va'?'ca':value)+'.json');if(!r.ok)throw Error();let data=await r.json();if(value==='va'){const variant=await fetch(base+'/i18n/va.json');if(!variant.ok)throw Error();data={...data,...await variant.json()};}if(seq!==languageSeq||!active)return;dictionary.value=data;language.value=value;document.documentElement.lang=value==='va'?'ca':value;window.commonsLanguage.remember(value);}catch{formError.value='languageError';}
  }
  function choose(type){if(!TYPES.includes(type)||savingDisabled.value)return;drafts[form.value.type]=form.value;if(!drafts[type])drafts[type]={...newActivity(type),title:form.value.title,question:form.value.question};form.value=drafts[type];view.value='editor';formError.value='';++epoch;}
  function go(where){if(busy.value)return;++epoch;view.value=where;message.value='';formError.value='';bankDialog.value?.close();++bankSeq;}

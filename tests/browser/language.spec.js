@@ -60,3 +60,20 @@ for (const [locale, expected] of [['ca-ES', 'ca'], ['ca-ES-valencia', 'va']]) {
     await context.close();
   });
 }
+
+test('la preferència d’idioma es conserva entre subdominis, sense sessió',async({page})=>{
+  const helper=require('fs').readFileSync(require('path').join(__dirname,'../../services/portal/public/assets/language-preference.js'),'utf8');
+  await page.route(/^https:\/\/(?:commons\.)?edutictac\.es\//,r=>r.fulfill({contentType:'text/html',body:'<!doctype html><title>Language preference test</title>'}));
+  await page.goto('https://commons.edutictac.es/');await page.addScriptTag({content:helper});
+  await page.evaluate(()=>window.commonsLanguage.remember('va'));
+  await page.goto('https://edutictac.es/play/');await page.addScriptTag({content:helper});
+  expect(await page.evaluate(()=>window.commonsLanguage.read())).toBe('va');
+  await page.evaluate(()=>window.commonsLanguage.remember('es'));
+  await page.goto('https://commons.edutictac.es/');await page.addScriptTag({content:helper});
+  expect(await page.evaluate(()=>window.commonsLanguage.read())).toBe('es');
+  await page.goto('https://edutictac.es/play/?lang=va');await page.addScriptTag({content:helper});
+  expect(await page.evaluate(()=>window.commonsLanguage.read())).toBe('va');
+  await page.evaluate(()=>window.commonsLanguage.remember('en'));
+  await page.reload();await page.addScriptTag({content:helper});
+  expect(await page.evaluate(()=>window.commonsLanguage.read())).toBe('en');
+});

@@ -744,3 +744,36 @@ Copia de configuración previa e informe en
 `/opt/edutictac-commons-portal/rebost-unified-20261022/` (privado).
 Solo se recrea el portal: identidad, banco, Play y EduHoot conservan sus
 procesos; configuración pública y beta idénticas. No push de Git ni del registro.
+
+## Idioma entre Commons, Rebost y Play (22-10-2026)
+
+La preferencia local del portal no cruzaba a `edutictac.es/play/`. Se añade
+`assets/language-preference.js`, compartido por portal/Rebost y empaquetado
+con el cliente Vue de Play. Solo admite ES/CA/VA/EN. Guarda una preferencia
+funcional, sin identidad, en localStorage y en `edutictac_language`, con dominio
+`edutictac.es`, Path=/, SameSite=Lax y Secure bajo HTTPS. En instalaciones
+locales la cookie es del host. El parámetro `lang` explícito tiene prioridad;
+el enlace de Commons a Play lo actualiza al cambiar de idioma. El portal
+revisa la preferencia al recuperar el foco o volver desde otra aplicación.
+No es autenticación y no cambia sesiones ni permisos. Las aplicaciones que
+no consumen esta preferencia aún necesitan revisión: no afirmar persistencia
+universal de todas las aplicaciones.
+
+Valenciano comparte la base catalana de Play. `i18n/va.json` contiene solamente
+las variantes necesarias (por ejemplo `Verdader`, `teua`, `esta`); no se duplica
+el diccionario entero. El cliente de desarrollo combina base y variante y
+conserva el formulario durante el cambio. La opción CA sigue disponible.
+
+La versión pública de Play es anterior al cliente Vue. Su selector solo tenía
+ES/CA/EN y su estado usaba un almacenamiento independiente. Para corregirla
+sin migrar el servidor ni retirar la demo, `scripts/prepare-play-legacy-language.py`
+genera un candidato a partir de una copia de sus archivos públicos: añade VA,
+reutiliza CA en los diccionarios de los módulos antiguos, incluye el helper y
+materializa el diccionario para ese cargador antiguo. Las exportaciones de ese
+generador anterior usan la base CA para VA. No se despliega el Vue nuevo ni se
+modifican actividades, backend o permisos. Ensayo local del candidato con todos
+los POST bloqueados: VA→ES→VA y recarga correctas.
+
+Pruebas: 52 casos de navegador del portal, Rebost e idiomas, incluidos dos casos
+con navegación simulada entre los dos dominios en un contexto sin autenticación;
+22 casos Vue de Play, incluida variante valenciana y conservación de formulario.

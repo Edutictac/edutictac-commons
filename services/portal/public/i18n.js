@@ -1646,6 +1646,8 @@
   }
 
   function storedLang() {
+    var common = window.commonsLanguage?.read();
+    if (common) return common;
     try {
       var keys = [STORAGE_KEY, SHARED_STORAGE_KEY];
       for (var i = 0; i < keys.length; i++) {
@@ -1682,6 +1684,7 @@
   }
 
   var lang = detectLang();
+  window.commonsLanguage?.remember(lang);
 
   function t(key, vars) {
     if (key === 'home.title' && window.commonsDeployment?.mode === 'federated') return 'EduTicTac Commons';
@@ -1735,6 +1738,7 @@
       return;
     }
     lang = newLang;
+    window.commonsLanguage?.remember(lang);
     try {
       localStorage.setItem(STORAGE_KEY, lang);
       localStorage.setItem(SHARED_STORAGE_KEY, lang);
@@ -1767,6 +1771,13 @@
   } else {
     ready();
   }
+
+  function syncLanguagePreference() {
+    var next = window.commonsLanguage?.stored();
+    if (next && next !== lang) setLang(next);
+  }
+  window.addEventListener('pageshow', syncLanguagePreference);
+  window.addEventListener('focus', syncLanguagePreference);
 
   window.i18nPortal = {
     t: t,
