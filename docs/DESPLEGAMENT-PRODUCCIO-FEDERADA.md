@@ -1,6 +1,7 @@
 # Despliegue federado de Commons en producción (edutictac.es)
 
-Estado: **copia y ensayo aislado de la fase 1 completados el 22-10-2026;
+Estado: **copia externa verificada, configuración preparada y ensayo aislado
+de la fase 1 completados el 22-10-2026;
 servicios y datos de producción sin modificar.** EduTicTac está en uso: avanzar paso a paso. Cada fase se
 ejecuta solo tras confirmación explícita.
 
@@ -36,7 +37,7 @@ backups del host) y Quiosc (solo aula local).
   (10-09-2026), 0 sesiones/puntuaciones/asignaciones. Esquema antiguo: sin
   `avatar_icon`, `launch_url`, `result_id`, membresías ni itinerarios.
 - En la auditoría inicial, **sin copias de seguridad** del id-api. Ya existe
-  la copia consistente local descrita al final; la copia externa sigue pendiente.
+  la copia consistente local y la copia externa cifrada descritas al final.
 - Único consumidor: `recursos-api` vía `EDUTICTAC_ID_API_URL` en
   `/etc/recursos-api.env`. nginx no expone el puerto 8005.
 - `recursos-api` usa solo `POST /api/auth/student` y `POST /api/identities/batch`
@@ -161,8 +162,8 @@ del WAL. `integrity_check=ok`. Directorio privado:
 `/opt/edutictac-id-api/backups/before-docker-20261022T113140Z/`.
 Contiene base, código antiguo, requisitos, configuración y unidad systemd;
 directorio 0700 y archivos sin permisos de grupo/otros. Los secretos no se
-muestran ni se incorporan a Git. Esta copia está en el mismo servidor:
-la copia externa al NAS y su programación continúan pendientes.
+muestran ni se incorporan a Git. La copia externa al NAS ya se ha verificado
+como se describe a continuación; su programación periódica sigue pendiente.
 
 Imagen construida desde el código local de `a0af1a3`, transferida al Docker
 del VPS sin publicar al registro:
@@ -195,7 +196,51 @@ El script de ensayo permanece en `/home/samgua/commons-id-rehearsal.py`;
 no repetirlo sobre el directorio existente (requiere una copia nueva).
 Las bases de ensayo contienen datos privados y no deben compartirse.
 
-No se ha sustituido el servicio ni se da por completada la fase 1. El siguiente
-paso es preparar la configuración definitiva y la copia externa, y acordar
-la ventana de cambio con bloqueo de escrituras y una copia nueva inmediatamente
-antes del corte. No usar el snapshot del ensayo como copia de ese futuro corte.
+No se ha sustituido el servicio ni se da por completada la fase 1.
+
+### Configuración preparada y copia externa recuperada
+
+Autorización posterior limitada a preparar la configuración y la copia externa.
+Se ha preparado `/opt/edutictac-id-api/docker/compose.yml`, todavía sin arrancar:
+
+- Imagen fijada por el ID exacto ensayado y `pull_policy: never`; no depende
+  de la resolución futura de un tag del registro.
+- Publicación exclusiva en `127.0.0.1:8005`, volumen existente con
+  `create_host_path: false`, usuario 1000, memoria 384 MiB y 1 CPU.
+- Sin capabilities, `no-new-privileges` y healthcheck HTTP interno.
+- `service.env` privado, copiado de las variables efectivas del proceso
+  actual. Solo cambia `EDUTICTAC_ID_DB` a `/data/id.db`.
+- `docker compose config` validado y su resultado comparado en memoria con
+  los valores esperados. Ni los valores ni el resultado con secretos se
+  muestran o guardan en Git. Directorio 0700, fichero de entorno 0600.
+
+No se ha creado ningún contenedor de este proyecto Compose ni cambiado la
+unidad systemd. No ejecutar `up` hasta la ventana de cambio acordada.
+
+Copia externa cifrada con GPG para los destinatarios actuales de `pass`,
+utilizando la clave privada existente para comprobar su recuperación:
+
+- NAS: `samgua@100.91.205.60`, archivo
+  `/var/services/homes/samgua/05_Backups/edutictac/commons-id-api/commons-id-before-docker-20261022T113739Z.tar.gz.gpg`.
+- Incluye el snapshot consistente previo, código, configuración antigua,
+  unidad systemd y la configuración Docker preparada, incluidas sus variables.
+- El flujo se cifra antes de guardarse o enviarse al NAS. Directorio NAS 0700,
+  archivo 0600. También queda una copia **cifrada** en
+  `~/.local/state/edutictac-production-backups/` de debiandesktop.
+- Archivo recuperado del NAS y SHA-256 comparado; descifrado correcto;
+  base y código coinciden con el manifiesto, SQLite íntegra y 50 identidades.
+  La base descifrada solo se escribe en un temporal privado para comprobarla
+  y se elimina al terminar. No se extraen archivos arbitrarios del TAR.
+- Informe local sin credenciales: `last-recovery-report.json` en el mismo
+  directorio. Script puntual conservado como `offsite-backup-before-docker.py`:
+  usa este snapshot fijo y **no sirve como copia diaria de datos actualizados**.
+- Transferencia por SSH/Python (el intento SFTP/SCP del NAS no funcionó).
+  Sin cambios en claves SSH, permisos sudo ni servicios del NAS.
+
+Después de preparar y copiar: identidad, banco y Play mantienen los PID
+anteriores y responden HTTP 200. Sin push, despliegue o reinicio.
+
+Pendiente antes del corte: programar y probar la copia periódica de datos
+actualizados, preparar la monitorización, concretar el bloqueo de escrituras
+y acordar la ventana de cambio. Crear una copia nueva inmediatamente antes
+del corte; no usar el snapshot del ensayo como copia de ese futuro corte.
