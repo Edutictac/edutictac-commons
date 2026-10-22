@@ -1,0 +1,10 @@
+[Unit]
+Description=Daily encrypted backup of production EduTicTac identity
+
+[Timer]
+OnCalendar=*-*-* 03:05:00 Europe/Madrid
+RandomizedDelaySec=5min
+Persistent=true
+
+[Install]
+WantedBy=timers.target

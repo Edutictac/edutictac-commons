@@ -1,0 +1,9 @@
+[Unit]
+Description=Check production EduTicTac identity health and backup recovery age
+
+[Service]
+Type=oneshot
+UMask=0077
+ExecStart=/usr/bin/python3 %h/.local/libexec/edutictac-id-offsite check --config %h/.config/edutictac-production-backups/config.json
+TimeoutStartSec=5min
+MemoryMax=128M

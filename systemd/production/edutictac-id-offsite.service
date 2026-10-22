@@ -1,0 +1,10 @@
+[Unit]
+Description=Recover and verify encrypted EduTicTac identity backups on the NAS
+
+[Service]
+Type=oneshot
+UMask=0077
+ExecStart=/usr/bin/python3 %h/.local/libexec/edutictac-id-offsite mirror --config %h/.config/edutictac-production-backups/config.json
+TimeoutStartSec=15min
+MemoryMax=512M
+Nice=10

@@ -1,0 +1,17 @@
+[Unit]
+Description=Consistent encrypted backup of production EduTicTac identity
+
+[Service]
+Type=oneshot
+UMask=0077
+ExecStart=/usr/bin/flock -n /run/lock/edutictac-id-backup.lock /usr/bin/python3 /usr/local/libexec/edutictac-id-backup --gpg-home /opt/edutictac-id-api/backup-gnupg --recipient @RECIPIENT@ --owner 1000
+TimeoutStartSec=5min
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
+MemoryMax=512M
+CPUQuota=50%
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=full
