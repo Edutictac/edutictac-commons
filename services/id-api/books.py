@@ -4,6 +4,7 @@ import json
 import httpx
 from fastapi import APIRouter, HTTPException, Request, Response
 from assets import check_origin
+from idapi.access import member_of, teacher_params
 
 
 def install_books(app, library, oidc, bank_url, app_token, group_access):
@@ -39,9 +40,8 @@ def install_books(app, library, oidc, bank_url, app_token, group_access):
             if identity["role"] == "administrador":
                 rows = db.execute("SELECT id,name FROM groups ORDER BY id LIMIT 1001").fetchall()
             else:
-                rows = db.execute("""SELECT g.id,g.name FROM groups g WHERE g.created_by_teacher_id=?
-                  OR EXISTS(SELECT 1 FROM group_memberships m WHERE m.group_id=g.id AND m.teacher_id=?)
-                  ORDER BY g.id LIMIT 1001""", (identity["id"], identity["id"])).fetchall()
+                rows = db.execute(f"""SELECT g.id,g.name FROM groups g WHERE {member_of("g.id")}
+                  ORDER BY g.id LIMIT 1001""", teacher_params(identity["id"])).fetchall()
         if len(rows)>1000: raise HTTPException(413, "publication_limit")
         return {r["id"]:r["name"] for r in rows}
 

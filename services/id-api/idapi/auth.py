@@ -16,6 +16,7 @@ from typing import Any
 from authlib.integrations.starlette_client import OAuth
 from fastapi import HTTPException, Request, Response
 
+from .access import member_of, teacher_params
 from .db import Database, iso_now, now_utc
 from .models import public_identity
 from .security import (
@@ -165,16 +166,13 @@ class Auth:
             teacher_id = self.require_teacher(request)
         with self.db.connect() as conn:
             row = conn.execute(
-                """
+                f"""
                 SELECT g.id
                 FROM groups g
                 WHERE g.id = ?
-                  AND (g.created_by_teacher_id = ? OR EXISTS (
-                      SELECT 1 FROM group_memberships m
-                      WHERE m.group_id = g.id AND m.teacher_id = ?
-                  ))
+                  AND {member_of("g.id")}
                 """,
-                (group_id, teacher_id, teacher_id),
+                (group_id, *teacher_params(teacher_id)),
             ).fetchone()
         if not row and not self.is_oidc_admin(request):
             raise HTTPException(status_code=404, detail="group not found")

@@ -9,6 +9,7 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, Request
 
 from ..context import Commons, commons
+from ..access import member_of, teacher_params
 from ..db import iso_now
 from ..models import (
     GroupItineraryIn,
@@ -23,12 +24,9 @@ router = APIRouter()
 
 def teacher_itinerary(conn: sqlite3.Connection, itinerary_id: str, teacher_id: str) -> sqlite3.Row:
     itinerary = conn.execute(
-        """SELECT i.* FROM itineraries i JOIN groups g ON g.id = i.group_id
-        WHERE i.id = ? AND i.active = 1 AND
-        (g.created_by_teacher_id = ? OR EXISTS (
-            SELECT 1 FROM group_memberships m WHERE m.group_id = i.group_id AND m.teacher_id = ?
-        ))""",
-        (itinerary_id, teacher_id, teacher_id),
+        f"""SELECT i.* FROM itineraries i JOIN groups g ON g.id = i.group_id
+        WHERE i.id = ? AND i.active = 1 AND {member_of("i.group_id")}""",
+        (itinerary_id, *teacher_params(teacher_id)),
     ).fetchone()
     if not itinerary:
         raise HTTPException(status_code=404, detail="itinerary not found")
@@ -76,10 +74,8 @@ def create_itinerary(payload: ItineraryIn, request: Request, c: Commons = Depend
 @router.get("/api/teacher/itineraries")
 def teacher_itineraries(request: Request, group_id: str = "", c: Commons = Depends(commons)) -> dict[str, Any]:
     teacher_id = c.auth.require_teacher(request)
-    params: list[Any] = [teacher_id, teacher_id]
-    where = """WHERE i.active = 1 AND (g.created_by_teacher_id = ? OR EXISTS (
-        SELECT 1 FROM group_memberships m WHERE m.group_id = i.group_id AND m.teacher_id = ?
-    ))"""
+    params: list[Any] = [*teacher_params(teacher_id)]
+    where = f"WHERE i.active = 1 AND {member_of('i.group_id')}"
     if group_id:
         where += " AND i.group_id = ?"
         params.append(group_id)

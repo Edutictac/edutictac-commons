@@ -11,6 +11,7 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi.responses import HTMLResponse, PlainTextResponse
 
+from ..access import member_of, teacher_params
 from ..context import Commons, commons
 from ..db import iso_now
 from ..models import AddIdentitiesIn, BatchIn, GroupIn, GroupMemberIn, public_teacher_identity
@@ -66,10 +67,8 @@ def insert_group(conn: sqlite3.Connection, tenant_id: str, teacher_id: str, ts: 
 
 def accessible_group(conn: sqlite3.Connection, group_id: str, teacher_id: str, columns: str = "id") -> sqlite3.Row:
     group = conn.execute(
-        f"""SELECT {columns} FROM groups WHERE id = ? AND (created_by_teacher_id = ? OR EXISTS (
-            SELECT 1 FROM group_memberships m WHERE m.group_id = groups.id AND m.teacher_id = ?
-        ))""",
-        (group_id, teacher_id, teacher_id),
+        f"SELECT {columns} FROM groups g WHERE g.id = ? AND {member_of('g.id')}",
+        (group_id, *teacher_params(teacher_id)),
     ).fetchone()
     if not group:
         raise HTTPException(status_code=404, detail="group not found")
@@ -193,18 +192,14 @@ def regenerate_pin(identity_id: str, request: Request, pin_length: int = Query(4
     ts = iso_now()
     with c.connect() as conn:
         cur = conn.execute(
-            """
+            f"""
             UPDATE student_identities
             SET pin_hash = ?, updated_at = ?, pin_rotated_at = ?
             WHERE id = ?
               AND active = 1
-              AND group_id IN (
-                  SELECT id FROM groups WHERE created_by_teacher_id = ? OR id IN (
-                      SELECT group_id FROM group_memberships WHERE teacher_id = ?
-                  )
-              )
+              AND group_id IN (SELECT g.id FROM groups g WHERE {member_of("g.id")})
             """,
-            (c.hash_pin(pin), ts, ts, identity_id, teacher_id, teacher_id),
+            (c.hash_pin(pin), ts, ts, identity_id, *teacher_params(teacher_id)),
         )
         if cur.rowcount == 0:
             raise HTTPException(status_code=404, detail="identity not found")
@@ -221,17 +216,13 @@ def revoke_identity(identity_id: str, request: Request, c: Commons = Depends(com
     ts = iso_now()
     with c.connect() as conn:
         cur = conn.execute(
-            """
+            f"""
             UPDATE student_identities
             SET active = 0, updated_at = ?
             WHERE id = ?
-              AND group_id IN (
-                  SELECT id FROM groups WHERE created_by_teacher_id = ? OR id IN (
-                      SELECT group_id FROM group_memberships WHERE teacher_id = ?
-                  )
-              )
+              AND group_id IN (SELECT g.id FROM groups g WHERE {member_of("g.id")})
             """,
-            (ts, identity_id, teacher_id, teacher_id),
+            (ts, identity_id, *teacher_params(teacher_id)),
         )
         if cur.rowcount == 0:
             raise HTTPException(status_code=404, detail="identity not found")
@@ -247,22 +238,19 @@ def teacher_summary(request: Request, c: Commons = Depends(commons)) -> dict[str
     teacher_id = c.auth.require_teacher(request)
     with c.connect() as conn:
         totals = conn.execute(
-            """
+            f"""
             SELECT
                 COUNT(*) AS total,
                 SUM(CASE WHEN active = 1 THEN 1 ELSE 0 END) AS active,
                 SUM(CASE WHEN active = 0 THEN 1 ELSE 0 END) AS inactive
             FROM student_identities
             JOIN groups g ON g.id = student_identities.group_id
-            WHERE g.created_by_teacher_id = ? OR EXISTS (
-                SELECT 1 FROM group_memberships m
-                WHERE m.group_id = g.id AND m.teacher_id = ?
-            )
+            WHERE {member_of("g.id")}
             """,
-            (teacher_id, teacher_id),
+            teacher_params(teacher_id),
         ).fetchone()
         groups = conn.execute(
-            """
+            f"""
             SELECT
                 g.id,
                 g.name,
@@ -272,15 +260,12 @@ def teacher_summary(request: Request, c: Commons = Depends(commons)) -> dict[str
                 SUM(CASE WHEN i.active = 1 THEN 1 ELSE 0 END) AS active
             FROM groups g
             LEFT JOIN student_identities i ON i.group_id = g.id
-            WHERE g.created_by_teacher_id = ? OR EXISTS (
-                SELECT 1 FROM group_memberships m
-                WHERE m.group_id = g.id AND m.teacher_id = ?
-            )
+            WHERE {member_of("g.id")}
             GROUP BY g.id, g.name, g.tenant_id, g.created_at
             ORDER BY g.created_at DESC
             LIMIT 20
             """,
-            (teacher_id, teacher_id),
+            teacher_params(teacher_id),
         ).fetchall()
     return {
         "total": int(totals["total"] or 0),
@@ -305,20 +290,17 @@ def teacher_identities(request: Request, limit: int = Query(200, ge=1, le=500), 
     teacher_id = c.auth.require_teacher(request)
     with c.connect() as conn:
         rows = conn.execute(
-            """
+            f"""
             SELECT i.id, i.public_code, i.active, i.created_at, i.pin_rotated_at,
                    g.id AS group_id, g.name AS group_name, g.tenant_id
             FROM student_identities i
             JOIN groups g ON g.id = i.group_id
             WHERE i.active = 1
-              AND (g.created_by_teacher_id = ? OR EXISTS (
-                  SELECT 1 FROM group_memberships m
-                  WHERE m.group_id = g.id AND m.teacher_id = ?
-              ))
+              AND {member_of("g.id")}
             ORDER BY i.created_at DESC, i.public_code
             LIMIT ?
             """,
-            (teacher_id, teacher_id, limit),
+            (*teacher_params(teacher_id), limit),
         ).fetchall()
     return {"identities": [public_teacher_identity(row) for row in rows]}
 
@@ -329,19 +311,16 @@ def teacher_identity_by_code(public_code: str, request: Request, c: Commons = De
     code = normalize_code(public_code)
     with c.connect() as conn:
         row = conn.execute(
-            """
+            f"""
             SELECT i.id, i.public_code, i.active, i.created_at, i.pin_rotated_at,
                    g.id AS group_id, g.name AS group_name, g.tenant_id
             FROM student_identities i
             JOIN groups g ON g.id = i.group_id
             WHERE i.public_code = ?
               AND i.active = 1
-              AND (g.created_by_teacher_id = ? OR EXISTS (
-                  SELECT 1 FROM group_memberships m
-                  WHERE m.group_id = g.id AND m.teacher_id = ?
-              ))
+              AND {member_of("g.id")}
             """,
-            (code, teacher_id, teacher_id),
+            (code, *teacher_params(teacher_id)),
         ).fetchone()
     if not row:
         raise HTTPException(status_code=404, detail="identity not found")

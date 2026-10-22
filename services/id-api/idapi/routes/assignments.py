@@ -12,6 +12,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi.responses import PlainTextResponse
 
 from ..context import Commons, commons
+from ..access import member_of, teacher_params
 from ..db import iso_now
 from ..models import (
     ActivityAssignmentIn,
@@ -27,14 +28,11 @@ router = APIRouter()
 def teacher_assignment(conn: sqlite3.Connection, assignment_id: str, teacher_id: str) -> sqlite3.Row:
     """Assignació activa d'una aula on el docent és propietari o col·laborador."""
     assignment = conn.execute(
-        """
+        f"""
         SELECT a.* FROM activity_assignments a
-        WHERE a.id = ? AND a.active = 1 AND (a.created_by_teacher_id = ? OR EXISTS (
-            SELECT 1 FROM group_memberships m
-            WHERE m.group_id = a.group_id AND m.teacher_id = ?
-        ))
+        WHERE a.id = ? AND a.active = 1 AND {member_of("a.group_id", "a.created_by_teacher_id")}
         """,
-        (assignment_id, teacher_id, teacher_id),
+        (assignment_id, *teacher_params(teacher_id)),
     ).fetchone()
     if not assignment:
         raise HTTPException(status_code=404, detail="assignment not found")
@@ -52,11 +50,8 @@ def create_activity_assignment(payload: ActivityAssignmentIn, request: Request, 
     ts = iso_now()
     with c.connect() as conn:
         group = conn.execute(
-            """SELECT id FROM groups WHERE id = ? AND
-               (created_by_teacher_id = ? OR EXISTS (
-                 SELECT 1 FROM group_memberships m
-                 WHERE m.group_id = groups.id AND m.teacher_id = ?))""",
-            (payload.group_id, teacher_id, teacher_id),
+            f"SELECT g.id FROM groups g WHERE g.id = ? AND {member_of('g.id')}",
+            (payload.group_id, *teacher_params(teacher_id)),
         ).fetchone()
         if not group and not c.auth.is_oidc_admin(request):
             raise HTTPException(status_code=404, detail="group not found")
@@ -83,10 +78,8 @@ def teacher_activity_assignments(
     c: Commons = Depends(commons),
 ) -> dict[str, Any]:
     teacher_id = c.auth.require_teacher(request)
-    params: list[Any] = [teacher_id, teacher_id]
-    where = """WHERE active = 1 AND (a.created_by_teacher_id = ? OR EXISTS (
-        SELECT 1 FROM group_memberships m
-        WHERE m.group_id = a.group_id AND m.teacher_id = ?))"""
+    params: list[Any] = [*teacher_params(teacher_id)]
+    where = f"WHERE active = 1 AND {member_of('a.group_id', 'a.created_by_teacher_id')}"
     if group_id:
         where += " AND group_id = ?"
         params.append(group_id)
@@ -186,8 +179,8 @@ def teacher_stats_csv(request: Request, group_id: str | None = None, c: Commons 
     out = io.StringIO()
     writer = csv.writer(out)
     writer.writerow(["group_code", "public_code", "app_id", "activity_id", "attempts", "best_score", "last_score_at"])
-    params: list[Any] = [teacher_id, teacher_id]
-    where = "WHERE i.active = 1 AND (g.created_by_teacher_id = ? OR EXISTS (SELECT 1 FROM group_memberships m WHERE m.group_id = g.id AND m.teacher_id = ?))"
+    params: list[Any] = [*teacher_params(teacher_id)]
+    where = f"WHERE i.active = 1 AND {member_of('g.id')}"
     if group_id:
         where += " AND i.group_id = ?"
         params.append(group_id)
