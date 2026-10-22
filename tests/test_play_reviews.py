@@ -152,3 +152,14 @@ def test_private_previews_and_reads_require_an_active_identity(play):
     model['student_active']=False
     assert req('/api/activities/'+key,user='student-a')[0]==404
     assert req('/api/activities',user='student-a')[1]['items']==[]
+
+
+def test_creator_key_does_not_delete_an_authenticated_pupils_work_after_logout(play):
+    req,model,_,_=play
+    creator={'X-Play-Creator':'synthetic-creator-key-123456'}
+    status,data=req('/api/activities',{'title':'Owned pupil work','question':'q','type':'true-false','correct':True},'student-a',creator)
+    assert status==201
+    path='/api/activities/'+data['id']
+    assert req(path,headers=creator,method='DELETE')[0]==401
+    assert req(path,user='student-b',headers=creator,method='DELETE')[0]==401
+    assert req(path,user='student-a',headers=creator,method='DELETE')[0]==200

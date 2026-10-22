@@ -299,6 +299,9 @@ class Handler(BaseHTTPRequestHandler):
         activity = read_activity(match.group(1))
         owner_id = self.authenticated_identity_id() or (self.identity_id() if not COMMONS_AUTH_ME_URL else "")
         authorized = self.admin_authorized()
+        if activity and activity.get('owner_id') and COMMONS_AUTH_ME_URL and not owner_id and not authorized:
+            self.send_json(HTTPStatus.UNAUTHORIZED, {'error': 'session_required'})
+            return
         if owner_id and not authorized:
             authorized = activity is not None and activity.get("owner_id") == owner_id
         if not owner_id and not authorized:

@@ -153,3 +153,9 @@ de permisos de publicació i conservació dels catàlegs de Rebost i llibres.
 No crea activitats o comptes personals. L’acceptació OIDC/alumnat amb comptes
 reals continua pendent abans de producció, junt amb la decisió d’allotjament
 públic. No s’ha fet push ni s’ha modificat el VPS.
+
+També es comprova que la clau de creador del navegador no permeta borrar el
+projecte privat d’un alumne després d’eixir de sessió: els treballs amb
+propietari de Commons exigixen sessió d’eixe propietari. Es conserva el borrat
+amb clau dels treballs anònims antics. Set proves HTTP de revisió aprovades en
+la comprovació final d’este reforç.
