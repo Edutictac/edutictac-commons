@@ -146,6 +146,11 @@ class Auth:
             return False
 
     def require_group_owner(self, request: Request, group_id: str) -> str:
+        """Gestió de l'aula: propietari o administració del centre.
+
+        Administració pot gestionar col·laboradors, propietat i baixa de l'aula,
+        però no les dades pedagògiques (vegeu `require_group_access`).
+        """
         teacher_id = self.require_teacher(request)
         with self.db.connect() as conn:
             row = conn.execute(
@@ -156,7 +161,14 @@ class Auth:
             raise HTTPException(status_code=404, detail="group not found")
         return teacher_id
 
-    def require_group_access(self, request: Request, group_id: str, *, individual: bool = False) -> str:
+    def require_group_access(
+        self, request: Request, group_id: str, *, individual: bool = False, admin: bool = False
+    ) -> str:
+        """Treball pedagògic en l'aula: només propietari o col·laborador actual.
+
+        `admin=True` l'obri també a administració; només ho usa la moderació
+        de Llibres, que revisa els enviaments de totes les aules.
+        """
         if individual:
             identity = self.oidc_cookie(request)
             if not identity or identity.get("role") not in {"profesor", "administrador"}:
@@ -174,7 +186,7 @@ class Auth:
                 """,
                 (group_id, *teacher_params(teacher_id)),
             ).fetchone()
-        if not row and not self.is_oidc_admin(request):
+        if not row and not (admin and self.is_oidc_admin(request)):
             raise HTTPException(status_code=404, detail="group not found")
         return teacher_id
 

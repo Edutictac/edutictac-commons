@@ -57,7 +57,7 @@ def create_activity_assignment(payload: ActivityAssignmentIn, request: Request, 
             f"SELECT g.id FROM groups g WHERE g.id = ? AND {member_of('g.id')}",
             (payload.group_id, *teacher_params(teacher_id)),
         ).fetchone()
-        if not group and not c.auth.is_oidc_admin(request):
+        if not group:
             raise HTTPException(status_code=404, detail="group not found")
         conn.execute(
             """

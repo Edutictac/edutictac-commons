@@ -55,8 +55,12 @@ def install_library(app: FastAPI, c: Commons) -> None:
 
     c.rebost = Library(c.connect, c.settings.db_path, c.auth.oidc_cookie, c.auth.current_identity)
     app.include_router(c.rebost.router())
+    def moderated_group_access(request: Request, group_id: str, **kwargs) -> str:
+        # La moderació de Llibres és l'única tasca d'aula oberta a administració.
+        return c.auth.require_group_access(request, group_id, admin=True, **kwargs)
+
     install_books(app, c.rebost, c.auth.oidc_cookie, c.settings.resources_api_url,
-                  c.settings.app_token, c.auth.require_group_access)
+                  c.settings.app_token, moderated_group_access)
 
     @app.middleware("http")
     async def rebost_private_headers(request: Request, call_next):

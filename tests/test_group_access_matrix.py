@@ -44,17 +44,21 @@ CASES = {
     "itinerary.select": ("PUT", "/api/teacher/groups/G/itinerary", {"itinerary_id": None, "expected_itinerary_id": "itG"}),
     "itinerary.add": ("POST", "/api/teacher/itineraries/itG/items", {"assignment_id": "aG1"}),
     "itinerary.replace": ("PUT", "/api/teacher/itineraries/itG/items", {"assignment_ids": [], "expected_assignment_ids": ["aG2"]}),
+    "owner.transfer": ("PUT", "/api/teacher/groups/G/owner", {"teacher_id": "member", "expected_owner_id": "owner"}),
+    "members.add_owner": ("POST", "/api/teacher/groups/G/members", {"teacher_id": "newbie", "role": "owner"}),
+    "admin.groups": ("GET", "/api/admin/groups", None),
 }
 
-# Comportament actual, cas per cas: estat HTTP i, quan escau, quants
-# elements veu el perfil. Qualsevol canvi d'accés ha de modificar esta taula.
+# Estat HTTP i, quan escau, quants elements veu cada perfil. Administració
+# gestiona aules (col·laboradors, propietat, baixa) però no hi fa treball
+# pedagògic. Qualsevol canvi d'accés ha de modificar esta taula.
 EXPECTED = {
     # cas: owner, member, former, stranger, admin
     "members.list": {"owner": [200, 2], "member": [404, None], "former": [404, None], "stranger": [404, None], "admin": [200, 2]},
     "members.add": {"owner": [201, None], "member": [404, None], "former": [404, None], "stranger": [404, None], "admin": [201, None]},
     "members.remove": {"owner": [200, None], "member": [404, None], "former": [404, None], "stranger": [404, None], "admin": [200, None]},
     "group.delete": {"owner": [200, None], "member": [404, None], "former": [404, None], "stranger": [404, None], "admin": [200, None]},
-    "identities.add": {"owner": [201, 1], "member": [201, 1], "former": [404, None], "stranger": [404, None], "admin": [201, 1]},
+    "identities.add": {"owner": [201, 1], "member": [201, 1], "former": [404, None], "stranger": [404, None], "admin": [404, None]},
     "identity.pin": {"owner": [200, None], "member": [200, None], "former": [404, None], "stranger": [404, None], "admin": [404, None]},
     "identity.revoke": {"owner": [200, None], "member": [200, None], "former": [404, None], "stranger": [404, None], "admin": [404, None]},
     "summary": {"owner": [200, 1], "member": [200, 1], "former": [200, 0], "stranger": [200, 1], "admin": [200, 0]},
@@ -63,17 +67,20 @@ EXPECTED = {
     "cards": {"owner": [200, 13], "member": [200, 13], "former": [404, None], "stranger": [404, None], "admin": [404, None]},
     "codes.csv": {"owner": [200, 2], "member": [200, 2], "former": [404, None], "stranger": [404, None], "admin": [404, None]},
     "roster": {"owner": [200, 1], "member": [200, 1], "former": [404, None], "stranger": [404, None], "admin": [404, None]},
-    "assignment.create": {"owner": [201, None], "member": [201, None], "former": [404, None], "stranger": [404, None], "admin": [201, None]},
+    "assignment.create": {"owner": [201, None], "member": [201, None], "former": [404, None], "stranger": [404, None], "admin": [404, None]},
     "assignments.list": {"owner": [200, 2], "member": [200, 2], "former": [200, 0], "stranger": [200, 1], "admin": [200, 0]},
     "results.former": {"owner": [200, 1], "member": [200, 1], "former": [404, None], "stranger": [404, None], "admin": [404, None]},
     "results.owner": {"owner": [200, 1], "member": [200, 1], "former": [404, None], "stranger": [404, None], "admin": [404, None]},
     "complete": {"owner": [201, None], "member": [201, None], "former": [404, None], "stranger": [404, None], "admin": [404, None]},
     "stats.csv": {"owner": [200, 2], "member": [200, 2], "former": [200, 1], "stranger": [200, 2], "admin": [200, 1]},
-    "itinerary.create": {"owner": [201, None], "member": [201, None], "former": [404, None], "stranger": [404, None], "admin": [201, None]},
+    "itinerary.create": {"owner": [201, None], "member": [201, None], "former": [404, None], "stranger": [404, None], "admin": [404, None]},
     "itineraries.list": {"owner": [200, 1], "member": [200, 1], "former": [200, 0], "stranger": [200, 1], "admin": [200, 0]},
-    "itinerary.select": {"owner": [200, None], "member": [200, None], "former": [404, None], "stranger": [404, None], "admin": [200, None]},
+    "itinerary.select": {"owner": [200, None], "member": [200, None], "former": [404, None], "stranger": [404, None], "admin": [404, None]},
     "itinerary.add": {"owner": [201, None], "member": [201, None], "former": [404, None], "stranger": [404, None], "admin": [404, None]},
     "itinerary.replace": {"owner": [200, None], "member": [200, None], "former": [404, None], "stranger": [404, None], "admin": [404, None]},
+    "owner.transfer": {"owner": [200, 2], "member": [404, None], "former": [404, None], "stranger": [404, None], "admin": [200, 2]},
+    "members.add_owner": {"owner": [422, None], "member": [422, None], "former": [422, None], "stranger": [422, None], "admin": [422, None]},
+    "admin.groups": {"owner": [403, None], "member": [403, None], "former": [403, None], "stranger": [403, None], "admin": [200, 2]},
 }
 
 
@@ -139,6 +146,8 @@ def visible(response):
             return len(body[key])
     if isinstance(body, dict) and "total" in body:
         return body["total"]
+    if isinstance(body, dict) and isinstance(body.get("groups"), list):
+        return len(body["groups"])
     return None
 
 
@@ -175,3 +184,28 @@ def test_group_access_matrix(api, case, actor):
             out.write(json.dumps([case, actor, observed]) + "\n")
         return
     assert observed == EXPECTED[case][actor]
+
+
+def test_admin_rescues_orphaned_classroom_without_reading_pupil_data(api):
+    """La propietària se'n va: administració traspassa l'aula i ella en perd l'accés."""
+    module, pristine = api
+    with closing(sqlite3.connect(pristine)) as source, closing(sqlite3.connect(module.DB_PATH)) as target:
+        source.backup(target)
+    admin, owner, member = (client_for(module, actor) for actor in ("admin", "owner", "member"))
+
+    listed = {group["id"]: group for group in admin.get("/api/admin/groups").json()["groups"]}
+    assert listed["G"]["owner_id"] == "owner" and listed["G"]["collaborators"] == 1
+    assert set(listed["G"]) == {"id", "group_code", "tenant_id", "owner_id", "collaborators", "created_at"}
+    assert admin.get("/api/teacher/activity-assignments/aG2/results").status_code == 404
+
+    stale = admin.put("/api/teacher/groups/G/owner", json={"teacher_id": "member", "expected_owner_id": "someone"})
+    assert stale.status_code == 409
+    moved = admin.put("/api/teacher/groups/G/owner", json={"teacher_id": "member", "expected_owner_id": "owner"})
+    assert moved.status_code == 200
+    assert {(m["teacher_id"], m["role"]) for m in moved.json()["members"]} == {("member", "owner"), ("owner", "teacher")}
+
+    # La nova propietària gestiona l'aula; l'anterior ja no pot.
+    assert owner.get("/api/teacher/groups/G/members").status_code == 404
+    assert member.delete("/api/teacher/groups/G/members/owner").status_code == 200
+    assert owner.get("/api/teacher/activity-assignments/aG2/results").status_code == 404
+    assert member.get("/api/teacher/activity-assignments/aG2/results").status_code == 200

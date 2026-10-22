@@ -52,9 +52,23 @@ class GroupMemberIn(BaseModel):
     @field_validator("role")
     @classmethod
     def _role(cls, value: str) -> str:
+        # La propietat només canvia per traspàs: una aula té un sol propietari.
         value = (value or "teacher").strip().lower()
-        if value not in {"teacher", "owner"}:
-            raise ValueError("role must be teacher or owner")
+        if value != "teacher":
+            raise ValueError("role must be teacher; transfer ownership instead")
+        return value
+
+
+class GroupOwnerIn(BaseModel):
+    teacher_id: str = Field(min_length=3, max_length=128)
+    expected_owner_id: str = Field(max_length=128)
+
+    @field_validator("teacher_id")
+    @classmethod
+    def _teacher_id(cls, value: str) -> str:
+        value = (value or "").strip()
+        if not TEACHER_ID_RE.fullmatch(value):
+            raise ValueError("invalid teacher_id")
         return value
 
 

@@ -14,7 +14,7 @@ from fastapi.responses import HTMLResponse, PlainTextResponse
 from ..access import member_of, teacher_params
 from ..context import Commons, commons
 from ..db import iso_now
-from ..models import AddIdentitiesIn, BatchIn, GroupIn, GroupMemberIn, public_teacher_identity
+from ..models import AddIdentitiesIn, BatchIn, GroupIn, GroupMemberIn, GroupOwnerIn, public_teacher_identity
 from ..security import TEACHER_ID_RE, make_code, make_group_code, make_pin, normalize_code
 
 router = APIRouter()
@@ -108,6 +108,73 @@ def add_group_member(group_id: str, payload: GroupMemberIn, request: Request, c:
             (group_id, payload.teacher_id),
         ).fetchone()
     return {"group_id": group_id, "member": dict(row)}
+
+
+@router.put("/api/teacher/groups/{group_id}/owner")
+def transfer_group_owner(group_id: str, payload: GroupOwnerIn, request: Request, c: Commons = Depends(commons)) -> dict[str, Any]:
+    """Traspassa l'aula a un altre docent; l'anterior hi continua com a col·laborador."""
+    c.auth.require_group_owner(request, group_id)
+    ts = iso_now()
+    with c.connect() as conn:
+        conn.execute("BEGIN IMMEDIATE")
+        group = conn.execute("SELECT created_by_teacher_id FROM groups WHERE id = ?", (group_id,)).fetchone()
+        if not group:
+            raise HTTPException(status_code=404, detail="group not found")
+        previous = group["created_by_teacher_id"] or ""
+        if previous != payload.expected_owner_id:
+            raise HTTPException(status_code=409, detail="group owner changed; reload before editing")
+        if payload.teacher_id == previous:
+            raise HTTPException(status_code=400, detail="teacher already owns this group")
+        conn.execute(
+            "UPDATE groups SET created_by_teacher_id = ?, updated_at = ? WHERE id = ?",
+            (payload.teacher_id, ts, group_id),
+        )
+        if previous:
+            conn.execute(
+                "UPDATE group_memberships SET role = 'teacher' WHERE group_id = ? AND teacher_id = ?",
+                (group_id, previous),
+            )
+        conn.execute(
+            "INSERT INTO group_memberships (group_id, teacher_id, role, created_at) VALUES (?, ?, 'owner', ?) "
+            "ON CONFLICT(group_id, teacher_id) DO UPDATE SET role = 'owner'",
+            (group_id, payload.teacher_id, ts),
+        )
+        rows = conn.execute(
+            "SELECT teacher_id, role, created_at FROM group_memberships WHERE group_id = ? ORDER BY role DESC, created_at",
+            (group_id,),
+        ).fetchall()
+    return {"group_id": group_id, "owner_id": payload.teacher_id, "members": [dict(row) for row in rows]}
+
+
+@router.get("/api/admin/groups")
+def admin_groups(request: Request, c: Commons = Depends(commons)) -> dict[str, Any]:
+    """Aules del centre per a administració: estructura, sense dades de l'alumnat."""
+    if not c.auth.is_oidc_admin(request):
+        raise HTTPException(status_code=403, detail="administrator required")
+    with c.connect() as conn:
+        rows = conn.execute(
+            """
+            SELECT g.id, g.name, g.tenant_id, g.created_by_teacher_id, g.created_at,
+                   (SELECT COUNT(*) FROM group_memberships m
+                    WHERE m.group_id = g.id AND m.role <> 'owner') AS collaborators
+            FROM groups g
+            ORDER BY g.created_at DESC, g.id
+            LIMIT 1000
+            """
+        ).fetchall()
+    return {
+        "groups": [
+            {
+                "id": row["id"],
+                "group_code": row["name"],
+                "tenant_id": row["tenant_id"],
+                "owner_id": row["created_by_teacher_id"] or "",
+                "collaborators": int(row["collaborators"] or 0),
+                "created_at": row["created_at"],
+            }
+            for row in rows
+        ]
+    }
 
 
 @router.post("/api/teacher/groups/{group_id}/identities", status_code=201)
