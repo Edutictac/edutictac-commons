@@ -324,7 +324,7 @@ def test_browser_private_library(api, tmp_path, language, touch):
             playwright.expect(page.locator('article')).to_have_count(1)
             playwright.expect(controls).to_be_enabled()
             with page.expect_download() as download:
-                page.get_by_role('button',name='Descargar original SVG' if language=='es' else 'Descarrega l’original SVG',exact=True).click()
+                page.get_by_role('button',name='Descargar original' if language=='es' else 'Descarrega l’original',exact=True).click()
             assert download.value.suggested_filename.endswith('.source.svg')
             playwright.expect(controls).to_be_enabled()
             page.get_by_role('button',name='Guardar en mis imágenes' if language=='es' else 'Guarda en les meues imatges',exact=True).click()
@@ -362,11 +362,11 @@ def test_browser_private_library(api, tmp_path, language, touch):
             playwright.expect(page.locator('article .credit').filter(has_text='CC-BY-SA-2.0')).to_have_count(1)
             assert not errors
             page.screenshot(path=str(tmp_path/f'rebost-{language}.png'))
-            # Guests browse the public catalogue; only their personal tab asks for login.
+            # Guests browse public catalogues and can sign in from any collection.
             other=browser.new_context(); second=other.new_page(); second.goto(address+'/assets/')
             playwright.expect(second.locator('#controls')).to_be_visible()
             playwright.expect(second.locator('#grid > article')).to_have_count(40)
-            playwright.expect(second.locator('#access')).to_be_hidden()
+            playwright.expect(second.locator('#access')).to_be_visible()
             second.locator('#mineTab').click()
             playwright.expect(second.locator('#access')).to_be_visible()
             playwright.expect(second.locator('#grid')).to_be_hidden()

@@ -2,30 +2,31 @@
 import {computed, onBeforeUnmount, onMounted, provide, ref} from 'vue';
 import {RebostClient} from '/assets/client.js';
 import AssetCard from './AssetCard.vue';
-import {TEXT} from './messages.js';
+import {usePortalTranslations} from '../shared/usePortalTranslations.js';
 
 const api = new RebostClient();
+const federated = window.commonsDeployment?.mode === 'federated';
 const params = new URLSearchParams(location.search);
 const picking = params.get('mode') === 'pick' && window.parent !== window;
 const pickType = params.get('type') === 'background' ? 'background' : 'sprite';
 const familySelection = picking && pickType === 'sprite' && params.get('supports_families') === '1' && params.get('selection') === 'sprite';
 const types = ['sprite', 'background', 'object', 'illustration'];
 const filterTypes = picking ? (pickType === 'background' ? ['background'] : ['sprite', 'object', 'illustration']) : ['', ...types];
-if (picking && ['es', 'ca', 'va'].includes(params.get('lang'))) window.i18nPortal.setLang(params.get('lang') === 'ca' ? 'va' : params.get('lang'));
-const locale = ref(window.i18nPortal.getLang() === 'es' ? 'es' : 'ca');
-const text = computed(() => TEXT[locale.value]);
+if (picking && ['es', 'ca', 'va', 'en'].includes(params.get('lang'))) window.i18nPortal.setLang(params.get('lang'));
+const locale = ref(window.i18nPortal.getLang());
+const t = usePortalTranslations();
 const active = ref(false), authenticated = ref(false), busy = ref(false), capabilities = ref([]);
 const collection = ref(['mine', 'catalog', 'scratch'].includes(params.get('collection')) ? params.get('collection') : '');
 const search = ref(''), filter = ref(picking ? pickType : ''), uploadType = ref('sprite');
 const items = ref([]), cursor = ref(''), status = ref(''), drag = ref(false);
 const filesInput = ref(null), dialog = ref(null), previewUrl = ref(''), previewName = ref('');
 const locked = computed(() => collection.value === 'mine' && !authenticated.value);
-const title = computed(() => text.value[collection.value || 'mine']);
+const title = computed(() => t('rebost.' + (collection.value || 'mine')));
 let alive = true, listGeneration = 0, searchTimer;
 let loadedQuery = '';
-function language() { locale.value = window.i18nPortal.getLang() === 'es' ? 'es' : 'ca'; }
+function language() { locale.value = window.i18nPortal.getLang(); }
 function report(error) {
-  status.value = TEXT[locale.value][error.message] ? error.message : 'error';
+  status.value = t('rebost.' + error.message) !== 'rebost.' + error.message ? error.message : 'error';
   if (error.status === 401) {
     authenticated.value = false;
     if (collection.value === 'mine') { listGeneration++; items.value = []; cursor.value = ''; closePreview(); }
@@ -122,7 +123,7 @@ async function recheckSession() {
   finally { checkingSession = false; }
 }
 function pagehide(event) { if (!event.persisted) { listGeneration++; items.value = []; clearPreview(); } }
-provide('rebost', {api, text, locale, authenticated, picking, familySelection, types, run, refresh, chooseCollection, preview, select, download, report});
+provide('rebost', {api, t, locale, authenticated, picking, familySelection, types, run, refresh, chooseCollection, preview, select, download, report});
 onMounted(async () => {
   document.body.classList.toggle('picking', picking);
   window.addEventListener('edutictac:langchange', language);
@@ -150,49 +151,65 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <header>
-    <a href="/" :hidden="picking"><img :src="'/commons-mark.svg'" alt="" width="32" height="32"> Commons</a>
-    <nav class="lang-switcher" aria-label="Idioma">
-      <button type="button" data-lang="va" :class="{active: locale === 'ca'}">Valencià</button>
-      <button type="button" data-lang="es" :class="{active: locale === 'es'}">Castellano</button>
+  <header class="topbar">
+    <div class="brand-lockup" :hidden="picking">
+      <img :src="'/commons-mark.svg'" alt="" width="46" height="46">
+      <div><p class="eyebrow">EduTicTac Commons</p><h1>EduTicTac Rebost</h1></div>
+    </div>
+    <nav class="topnav" :aria-label="t('common.nav.label')" :hidden="picking">
+      <a href="/">{{ t('common.home') }}</a>
     </nav>
+    <div class="topbar-actions">
+      <p id="sessionStatus" class="status session-status" :class="{signed: authenticated}" role="status">{{ !active ? t('rebost.checkingSession') : authenticated ? t('rebost.signedIn') : t('rebost.signedOut') }}</p>
+      <div class="lang-switcher" role="group" :aria-label="t('common.lang.label')">
+        <button type="button" data-lang="ca" title="Català" :class="{active: locale === 'ca'}" :aria-pressed="locale === 'ca'">CA</button>
+        <button type="button" data-lang="va" title="Valencià" :class="{active: locale === 'va'}" :aria-pressed="locale === 'va'">VA</button>
+        <button type="button" data-lang="es" title="Español" :class="{active: locale === 'es'}" :aria-pressed="locale === 'es'">ES</button>
+        <button type="button" data-lang="en" title="English" :class="{active: locale === 'en'}" :aria-pressed="locale === 'en'">EN</button>
+      </div>
+    </div>
   </header>
-  <main>
-    <h1>EduTicTac Rebost</h1>
-    <p id="intro">{{ text.intro }}</p>
-    <p id="sessionStatus" class="session-status" :class="{signed: authenticated}" role="status">{{ !active ? text.checkingSession : authenticated ? text.signedIn : text.signedOut }}</p>
-    <p id="status" :class="{success: ['success', 'image_saved'].includes(status), error: status && !['success', 'image_saved', 'working'].includes(status)}" role="status" aria-live="polite">{{ text[status] || '' }}</p>
-    <section id="access" :hidden="!active || authenticated">
-      <p id="accessHint">{{ text.access }}</p>
-      <a id="studentLogin" href="/student.html?next=%2Fassets%2F" :target="picking ? '_blank' : undefined" rel="noopener noreferrer">{{ text.student }}</a>
-      <a id="oidcLogin" href="/api/auth/oidc/login?next=%2Fassets%2F" :target="picking ? '_blank' : undefined" rel="noopener noreferrer">{{ text.oidc }}</a>
+  <main class="single-layout rebost-layout">
+    <div class="role-heading">
+      <p class="eyebrow">EduTicTac Rebost</p>
+      <h2>{{ t('rebost.heading') }}</h2>
+      <p id="intro" class="teacher-intro">{{ t('rebost.intro') }}</p>
+    </div>
+    <p id="status" :class="{success: ['success', 'image_saved'].includes(status), error: status && !['success', 'image_saved', 'working'].includes(status)}" role="status" aria-live="polite">{{ status ? t('rebost.' + status) : '' }}</p>
+    <section id="access" class="panel" :hidden="!active || authenticated">
+      <p id="accessHint">{{ t('rebost.access') }}</p>
+      <div class="actions"><a class="button-link secondary" id="studentLogin" href="/student.html?next=%2Fassets%2F" :target="picking ? '_blank' : undefined" rel="noopener noreferrer">{{ t('rebost.student') }}</a>
+      <a class="button-link" id="oidcLogin" href="/api/auth/oidc/login?next=%2Fassets%2F" :target="picking ? '_blank' : undefined" rel="noopener noreferrer">{{ t('rebost.oidc') }}</a></div>
     </section>
     <fieldset id="controls" :disabled="busy || !active" :hidden="!active">
       <legend id="mine">{{ title }}</legend>
-      <div id="collections" class="collections" role="group" :aria-label="text.collection">
-        <button id="mineTab" type="button" :aria-pressed="collection === 'mine'" @click="run(() => chooseCollection('mine'))">{{ text.mine }}{{ authenticated ? '' : ' · ' + text.login }}</button>
-        <button id="catalogTab" type="button" :hidden="!capabilities.includes('catalog')" :aria-pressed="collection === 'catalog'" @click="run(() => chooseCollection('catalog'))">{{ text.catalog }}</button>
-        <button id="scratchTab" type="button" :hidden="!capabilities.includes('scratch_catalog')" :aria-pressed="collection === 'scratch'" @click="run(() => chooseCollection('scratch'))">{{ text.scratch }}</button>
+      <div class="library-toolbar panel">
+        <div id="collections" class="collections" role="group" :aria-label="t('rebost.collection')">
+          <button id="mineTab" class="secondary" type="button" :aria-pressed="collection === 'mine'" @click="run(() => chooseCollection('mine'))">{{ t('rebost.mine') }}{{ authenticated ? '' : ' · ' + t('common.login') }}</button>
+          <button id="catalogTab" class="secondary" type="button" :hidden="!capabilities.includes('catalog')" :aria-pressed="collection === 'catalog'" @click="run(() => chooseCollection('catalog'))">{{ t('rebost.catalog') }}</button>
+          <button id="scratchTab" class="secondary" type="button" :hidden="!capabilities.includes('scratch_catalog')" :aria-pressed="collection === 'scratch'" @click="run(() => chooseCollection('scratch'))">{{ t('rebost.scratch') }}</button>
+        </div>
+        <p id="collectionHint">{{ picking ? t('rebost.pickHint') : collection === 'mine' ? t('rebost.privateHint') : collection === 'scratch' ? t('rebost.scratchHint') : t('rebost.catalogHint') }}</p>
+        <div id="uploadArea" :hidden="picking || collection !== 'mine' || !authenticated">
+          <section id="drop" tabindex="0" role="button" :aria-label="t('rebost.upload')" :class="{drag}" @click="openFiles" @keydown.self.enter.prevent="openFiles" @keydown.self.space.prevent="openFiles" @dragenter.prevent="drag = true" @dragover.prevent="drag = true" @dragleave="drag = false" @drop.prevent="dropped">
+            <strong id="uploadText">{{ t('rebost.upload') }}</strong><p id="formats">{{ t('rebost.formats') }}</p>
+            <input id="files" ref="filesInput" type="file" accept="image/png,image/jpeg,image/webp" multiple hidden @click.stop @change="filesChanged">
+          </section>
+          <label><span id="uploadTypeLabel">{{ t('rebost.uploadType') }}</span><select id="uploadType" v-model="uploadType"><option v-for="value in types" :key="value" :value="value">{{ t('rebost.' + value) }}</option></select></label>
+        </div>
+        <div class="filters" :hidden="locked">
+          <label><span id="searchLabel">{{ t('rebost.search') }}</span><input id="search" v-model="search" type="search" :placeholder="t('rebost.searchPlaceholder')" maxlength="200" @input="searchChanged"></label>
+          <label><span id="filterLabel">{{ t('rebost.filter') }}</span><select id="filter" v-model="filter" @change="run(() => refresh())"><option v-for="value in filterTypes" :key="value" :value="value">{{ value ? t('rebost.' + value) : t('rebost.all') }}</option></select></label>
+        </div>
       </div>
-      <p id="collectionHint">{{ picking ? text.pickHint : collection === 'mine' ? text.privateHint : collection === 'scratch' ? text.scratchHint : text.catalogHint }}</p>
-      <div id="uploadArea" :hidden="picking || collection !== 'mine' || !authenticated">
-        <section id="drop" tabindex="0" role="button" :aria-label="text.upload" :class="{drag}" @click="openFiles" @keydown.self.enter.prevent="openFiles" @keydown.self.space.prevent="openFiles" @dragenter.prevent="drag = true" @dragover.prevent="drag = true" @dragleave="drag = false" @drop.prevent="dropped">
-          <strong id="uploadText">{{ text.upload }}</strong><p id="formats">{{ text.formats }}</p>
-          <input id="files" ref="filesInput" type="file" accept="image/png,image/jpeg,image/webp" multiple hidden @click.stop @change="filesChanged">
-        </section>
-        <label><span id="uploadTypeLabel">{{ text.uploadType }}</span><select id="uploadType" v-model="uploadType"><option v-for="value in types" :key="value" :value="value">{{ text[value] }}</option></select></label>
-      </div>
-      <div class="filters" :hidden="locked">
-        <label><span id="searchLabel">{{ text.search }}</span><input id="search" v-model="search" type="search" maxlength="200" @input="searchChanged"></label>
-        <label><span id="filterLabel">{{ text.filter }}</span><select id="filter" v-model="filter" @change="run(() => refresh())"><option v-for="value in filterTypes" :key="value" :value="value">{{ value ? text[value] : text.all }}</option></select></label>
-      </div>
-      <p id="empty" :hidden="locked || items.length > 0 || busy">{{ text.empty }}</p>
+      <p id="empty" :hidden="locked || items.length > 0 || busy">{{ t('rebost.empty') }}</p>
       <section id="grid" :aria-label="title" :hidden="locked"><AssetCard v-for="item in items" :key="item.id" :item="item" /></section>
-      <button id="more" type="button" :hidden="locked || !cursor" @click="run(() => refresh(true))">{{ text.more }}</button>
+      <button id="more" type="button" :hidden="locked || !cursor" @click="run(() => refresh(true))">{{ t('rebost.more') }}</button>
     </fieldset>
-    <dialog id="preview" ref="dialog" :aria-label="text.view" @close="clearPreview">
-      <button id="closePreview" type="button" @click="closePreview">{{ text.close }}</button>
+    <dialog id="preview" ref="dialog" :aria-label="t('rebost.view')" @close="clearPreview">
+      <button id="closePreview" type="button" @click="closePreview">{{ t('rebost.close') }}</button>
       <img id="previewImage" :src="previewUrl || undefined" :alt="previewName">
     </dialog>
   </main>
+  <footer v-if="federated && !picking" class="admin-entry"><a href="/privacy.html">{{ t('privacy.title') }}</a></footer>
 </template>

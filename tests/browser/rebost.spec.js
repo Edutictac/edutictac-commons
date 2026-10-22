@@ -123,3 +123,49 @@ for(const refreshFails of [false,true]) {
     if(!refreshFails)await expect(page.locator('article input')).toHaveCount(1);
   });
 }
+
+
+test('quatre idiomes compartits: selector únic, noms amb alternativa i errors reactius',async({page})=>{
+  await mockAPI(page);
+  await page.route('**/family',route=>route.fulfill({json:{id,revision:'changed',items:[item]}}));
+  await page.goto('/assets/?collection=scratch');
+  for(const [lang,heading,guest,name] of [
+    ['es','Tu biblioteca de imágenes','Sin identificar','Personaje'],
+    ['va','La teua biblioteca d’imatges','Sense identificar','Personatge'],
+    ['ca','La teva biblioteca d’imatges','Sense identificar','Personatge'],
+    ['en','Your image library','Not signed in','Personaje']]) {
+    await page.locator('[data-lang='+lang+']').click();
+    await expect(page.locator('.role-heading h2')).toHaveText(heading);
+    await expect(page.locator('#sessionStatus')).toHaveText(guest);
+    await expect(page.locator('.lang-switcher .active')).toHaveCount(1);
+    await expect(page.locator('.lang-switcher .active')).toHaveAttribute('data-lang',lang);
+    await expect(page.locator('#grid > article > h2')).toHaveText(name);
+    await expect(page.locator('body')).not.toContainText('rebost.');
+  }
+  await page.getByRole('button',{name:'View costumes',exact:true}).click();
+  await expect(page.locator('#status')).toContainText('This image changed');
+  await page.locator('[data-lang=es]').click();
+  await expect(page.locator('#status')).toContainText('Esta imagen ha cambiado');
+  await page.locator('[data-lang=en]').click();
+  await page.reload();
+  await expect(page.locator('.role-heading h2')).toHaveText('Your image library');
+  await page.goto('/');
+  await expect(page.locator('#welcomeTitle')).toContainText('Your classroom');
+  await page.goto('/assets/');
+  await expect(page.locator('.role-heading h2')).toHaveText('Your image library');
+});
+
+test('selector incrustat respecta anglés i conserva el contracte del projecte',async({page})=>{
+  await mockAPI(page);await page.goto('/assets/');
+  await page.evaluate(()=>{
+    window.selections=[];
+    window.addEventListener('message',event=>{if(event.origin===location.origin)window.selections.push(event.data);});
+    const frame=document.createElement('iframe');frame.id='englishPicker';
+    frame.src='/assets/?mode=pick&collection=scratch&lang=en&type=sprite&request=english-check';
+    document.body.append(frame);
+  });
+  const picker=page.frameLocator('#englishPicker');
+  await picker.getByRole('button',{name:'Use in the project',exact:true}).click();
+  await expect.poll(()=>page.evaluate(()=>window.selections.length)).toBe(1);
+  expect(await page.evaluate(()=>window.selections[0])).toEqual({format:'rebost-selection',version:1,request:'english-check',id,name:'Personaje'});
+});

@@ -32,6 +32,7 @@
     --panel-muted: #1c2725;
     --disabled-bg: #202b29;
     --accent: #2f9c85;
+    --accent-contrast: #071f17;
     --accent-dark: #7fe0c8;
     --soft: #17302b;
     --tint: #1c2440;
@@ -54,6 +55,7 @@
   --panel-muted: #1c2725;
   --disabled-bg: #202b29;
   --accent: #2f9c85;
+  --accent-contrast: #071f17;
   --accent-dark: #7fe0c8;
   --soft: #17302b;
   --tint: #1c2440;

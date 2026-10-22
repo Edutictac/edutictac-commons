@@ -1,66 +1,66 @@
-:root {color-scheme:light; font:18px/1.5 system-ui,sans-serif; color:#183047; background:#f4f7fa}
-* {box-sizing:border-box} body {margin:0} header,main {max-width:1160px; margin:auto; padding:1rem}
-header {display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem}
-a {color:#075985} button,input,select {font:inherit; min-height:46px; border:1px solid #8fa3b6; border-radius:.5rem; padding:.5rem .75rem}
-button {cursor:pointer; background:#fff; color:#183047} button:hover {background:#e1edf6}
-button:disabled {opacity:.6; cursor:wait} :focus-visible {outline:3px solid #075985; outline-offset:3px}
-fieldset {border:0; padding:0; margin:0} legend {font-weight:700; font-size:1.35rem; padding:1rem 0}
-label {display:flex; flex-direction:column; gap:.25rem} .filters {display:flex; flex-wrap:wrap; gap:1rem; margin:1rem 0}
-#drop {text-align:center; border:3px dashed #647f94; border-radius:1rem; padding:1rem; margin-bottom:1rem; background:white; cursor:pointer}
-#drop.drag {background:#dceef5} #status {min-height:1.5em} #access {padding:1rem; background:white; border-radius:1rem} #access a {display:inline-block; padding:.75rem}
-#grid {display:grid; grid-template-columns:repeat(auto-fill,minmax(245px,1fr)); gap:1rem}
-article {border:1px solid #b4c5d2; border-radius:1rem; padding:1rem; background:white; display:flex; flex-direction:column; gap:.6rem}
-article .image {width:100%; height:170px; padding:0; background:repeating-conic-gradient(#ddd 0% 25%,white 0% 50%) 0/20px 20px}
-article img {width:100%; height:100%; object-fit:contain} article input,article select {max-width:100%; width:100%}
-article .actions {display:flex; flex-wrap:wrap; gap:.5rem} article small {color:#43596d}
-[hidden] {display:none!important} dialog {max-width:95vw; max-height:90vh; border:1px solid #647f94; border-radius:1rem}
-dialog img {display:block; max-width:85vw; max-height:70vh; object-fit:contain; background:repeating-conic-gradient(#ddd 0% 25%,white 0% 50%) 0/20px 20px}
-.lang-switcher {display:flex; gap:.5rem} .lang-switcher .active {background:#164e63; color:white}
-@media(max-width:500px) {#grid {grid-template-columns:1fr} h1 {font-size:1.7rem} header,main {padding:.75rem}}
-
-.collections {display:flex;flex-wrap:wrap;gap:.75rem}
-.collections button[aria-pressed="true"] {background:#164e63;color:#fff;border-color:#164e63}
-article .credit {font-size:.85rem;color:#43596d} article h2 {font-size:1.15rem;margin:0}
-
-/* The central page also serves as the shared selector embedded by editors. */
-.picking header {padding:.5rem 1rem; justify-content:flex-end}
-.picking main {padding:.5rem 1rem}
-.picking h1,.picking #intro,.picking #status:empty {display:none}
-.picking legend {font-size:1.1rem; padding:.25rem 0}
-.picking #collectionHint {margin:.4rem 0}
-.picking .filters {margin:.5rem 0}
-.picking #grid {grid-template-columns:repeat(auto-fill,minmax(210px,1fr))}
-.picking article {padding:.6rem; gap:.4rem}
-.picking article h2 {font-size:1.1rem; margin:.25rem 0}
-.picking article .image {height:130px}
-.picking article .credit {font-size:.8rem; margin:.25rem 0}
-
-#grid {align-items:start}
-#grid > .expanded-family {grid-column:1 / -1}
-.family-variants {display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.75rem;border-top:2px solid #b4c5d2;padding-top:.75rem}
-.family-costume {border:1px solid #b4c5d2;border-radius:.5rem;padding:.5rem;display:flex;flex-direction:column;gap:.5rem;background:#f4f7fa}
-.family-costume .image {height:110px}
-.family-costume h3 {font-size:1rem;margin:0}
-
-.session-status {padding:.75rem 1rem; border:2px solid #b7791f; border-radius:.5rem; background:#fff3cd; color:#553600; font-weight:600}
-.session-status.signed {border-color:#21805a; background:#e8f6ef; color:#145234}
-#status:not(:empty) {padding:.75rem 1rem; border-radius:.5rem; position:sticky; top:0; z-index:5; background:#e1edf6}
-#status.success {background:#e8f6ef; color:#145234; border:2px solid #21805a}
-#status.error {background:#fff3cd; color:#553600; border:2px solid #b7791f}
-
-/* Keep the shared library in the same visual family as the Commons portal. */
-:root {color:#203b34; background:#f6f7f2}
-header {padding-block:1.25rem; border-bottom:1px solid #dde5df}
-header > a {display:flex; align-items:center; gap:.6rem; text-decoration:none; font-weight:700}
-header > a img {border-radius:10px}
-main {padding-top:1.5rem}
-h1 {letter-spacing:-.045em; font-size:clamp(1.8rem,4vw,2.35rem); margin-bottom:.5rem}
-button,input,select {border-radius:11px; border-color:#ccd9cf}
-button:hover {background:#e8f3ed}
-.collections button[aria-pressed="true"], .lang-switcher .active {background:#174f43; border-color:#174f43}
-article {border-color:#dde5df; border-radius:20px; box-shadow:0 4px 16px #203b3406}
-article .image {border-radius:12px; overflow:hidden}
-.session-status, #access {border-radius:16px}
-#access a {font-weight:600; color:#1b6653}
-#drop {border-radius:20px; border-color:#7da38d; background:#edf5ef}
-#intro, #collectionHint {color:#5f7168}
+/* Rebost-specific layout. Colours, typography and controls come from /styles.css. */
+.rebost-page .rebost-layout {gap:20px}
+.rebost-page .session-status {font-weight:600}
+.rebost-page .session-status.signed {color:var(--accent-dark); border-color:var(--accent)}
+.rebost-page #status:empty {display:none}
+.rebost-page #status:not(:empty) {
+  position:sticky;
+  top:8px;
+  z-index:5;
+  padding:16px 20px;
+  border:1px solid var(--line);
+  border-radius:16px;
+  background:var(--panel);
+}
+.rebost-page #status.success {color:var(--success-ink); border-color:var(--accent); background:var(--soft)}
+.rebost-page #status.error {color:var(--ink); border-color:var(--warn-border); background:var(--warn-bg)}
+.rebost-page #access {display:grid; gap:8px}
+.rebost-page #access p {color:var(--muted); line-height:1.65}
+.rebost-page #access .actions {margin-bottom:0}
+.rebost-page #controls {min-width:0; margin:0; padding:0; border:0}
+.rebost-page #mine {padding:0 0 14px; font-size:21px; font-weight:700; letter-spacing:-.025em}
+.rebost-page .library-toolbar {display:grid; gap:16px; margin-bottom:20px}
+.rebost-page .collections {display:flex; flex-wrap:wrap; gap:8px}
+.rebost-page .collections button[aria-pressed="true"] {color:var(--accent-contrast); background:var(--accent); border-color:var(--accent)}
+.rebost-page #collectionHint {color:var(--muted); font-size:14px; line-height:1.6}
+.rebost-page .filters {display:grid; grid-template-columns:minmax(0,2fr) minmax(0,1fr); gap:16px}
+.rebost-page .filters label {min-width:0; margin:0}
+.rebost-page select {width:100%; min-height:46px; border:1px solid var(--line); padding:9px 11px; color:var(--ink); background:var(--panel); font:inherit}
+.rebost-page #uploadArea {display:grid; gap:14px}
+.rebost-page #uploadArea > label {max-width:360px; margin:0}
+.rebost-page #drop {padding:24px; border:2px dashed var(--accent); border-radius:16px; text-align:center; background:var(--soft); cursor:pointer}
+.rebost-page #drop.drag {border-style:solid; background:var(--tint)}
+.rebost-page #formats {margin-top:8px; color:var(--muted); font-size:13px}
+.rebost-page #empty {padding:24px; border:1px dashed var(--line); border-radius:16px; color:var(--muted); text-align:center}
+.rebost-page #grid {display:grid; grid-template-columns:repeat(auto-fill,minmax(245px,1fr)); gap:18px; align-items:start}
+.rebost-page #grid article, .rebost-page .family-costume {display:flex; flex-direction:column; min-width:0; gap:10px; padding:18px; border:1px solid var(--line); border-radius:18px; background:var(--panel); box-shadow:0 3px 12px rgba(var(--shadow-rgb),.025)}
+.rebost-page #grid .image {display:block; width:100%; height:170px; padding:0; overflow:hidden; border:1px solid var(--line); border-radius:12px; background:repeating-conic-gradient(var(--line) 0% 25%,var(--panel) 0% 50%) 0/20px 20px}
+.rebost-page #grid img {width:100%; height:100%; object-fit:contain}
+.rebost-page #grid input, .rebost-page #grid select {width:100%; max-width:100%}
+.rebost-page #grid label {margin:0}
+.rebost-page #grid h2 {font-size:18px; letter-spacing:-.025em; overflow-wrap:anywhere}
+.rebost-page #grid .actions {margin:0; gap:8px}
+.rebost-page #grid .actions button {font-size:13px; padding:9px 12px}
+.rebost-page .credit, .rebost-page #grid small {font-size:12px; line-height:1.6; color:var(--muted); overflow-wrap:anywhere}
+.rebost-page #more {margin-top:20px}
+.rebost-page #preview {max-width:95vw; max-height:90vh; padding:18px; border:1px solid var(--line); border-radius:18px; color:var(--ink); background:var(--panel)}
+.rebost-page #preview::backdrop {background:rgb(10 30 24 / 60%)}
+.rebost-page #previewImage {display:block; max-width:85vw; max-height:70vh; margin-top:14px; object-fit:contain; background:repeating-conic-gradient(var(--line) 0% 25%,var(--panel) 0% 50%) 0/20px 20px}
+.rebost-page #grid > .expanded-family {grid-column:1 / -1}
+.rebost-page .family-variants {display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px; padding-top:14px; border-top:1px solid var(--line)}
+.rebost-page .family-costume {padding:12px; box-shadow:none; background:var(--panel-muted)}
+.rebost-page .family-costume .image {height:110px!important}
+/* Embedded selectors retain the same controls in a compact layout. */
+.rebost-page.picking .topbar {padding:8px 16px; justify-content:flex-end}
+.rebost-page.picking .rebost-layout {padding:12px 16px; gap:12px}
+.rebost-page.picking .role-heading {display:none}
+.rebost-page.picking #mine {font-size:18px}
+.rebost-page.picking .library-toolbar {padding:12px; gap:10px; margin-bottom:12px}
+.rebost-page.picking #grid {grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:12px}
+.rebost-page.picking #grid article {padding:12px}
+.rebost-page.picking #grid .image {height:130px}
+@media (max-width:540px) {
+  .rebost-page .filters {grid-template-columns:1fr}
+  .rebost-page #grid {grid-template-columns:1fr}
+  .rebost-page #access .button-link {width:100%}
+}

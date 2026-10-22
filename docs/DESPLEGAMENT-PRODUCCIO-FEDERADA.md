@@ -693,3 +693,37 @@ La configuración pública, incluido el indicador beta, permanece idéntica.
 Identidad, banco, Play y EduHoot conservan sus procesos y fechas de arranque.
 La comprobación de aceptación humana del aula y las integraciones posteriores
 siguen pendientes como se describe en sus apartados; el cambio es visual.
+
+## Rebost: estilos y traducciones compartidos (22-10-2026)
+
+Rebost carga ahora `/styles.css`, la misma base visual del portal. Su hoja
+`assets/style.css` contiene solo la disposición específica de la biblioteca,
+con selectores acotados a `.rebost-page` y variables comunes para colores,
+tipografía, controles, foco, tarjetas y modo oscuro. Se unifican cabecera,
+selector de idioma CA/VA/ES/EN y paneles. La sesión continúa visible en cabecera,
+y las confirmaciones de guardado y accesos a la biblioteca privada se conservan.
+Se mejora el contraste del texto sobre botones del tema oscuro común.
+
+Se retira `src/rebost/messages.js`: los textos pasan al espacio `rebost.*` del
+sistema común `i18n.js`, consumido con `usePortalTranslations`. Hay traducciones
+completas de interfaz en castellano, valenciano, catalán e inglés. El valenciano
+ya no se representa internamente como catalán, ni inglés cae automáticamente
+en valenciano. Se comparte la preferencia persistida con el portal y se
+traducen también avisos que ya estaban visibles. Los selectores incrustados
+respetan los cuatro idiomas sin alterar el contrato `rebost-selection`.
+
+Los nombres de imágenes del catálogo utilizan la traducción disponible y una
+alternativa explícita si falta; no se traducen automáticamente títulos,
+créditos o licencias de recursos de terceros. Los archivos privados mantienen
+el nombre elegido por su propietario. No se duplican diccionarios ni se añaden
+servicios, dependencias, llamadas de IA o cambios de API/datos.
+
+Verificación: 44 pruebas de portal, idiomas y Rebost aprobadas, más cuatro
+casos adicionales en escritorio/móvil para idiomas compartidos, persistencia,
+errores reactivos y selección incrustada en inglés. Suite real de Rebost:
+21 pruebas aprobadas, incluyendo CRUD desde navegador con backend y archivos
+desechables en castellano y valenciano. Capturas revisadas en móvil, escritorio
+y tema oscuro. El ensayo usa cuentas sintéticas locales; no modifica bibliotecas
+personales de producción. Un test antiguo todavía esperaba ocultar el acceso
+al navegar como invitado: se actualiza a la conducta ya publicada de ofrecer
+entrada desde cualquier catálogo, preservando la navegación pública.
