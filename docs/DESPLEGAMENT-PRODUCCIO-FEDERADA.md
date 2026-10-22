@@ -777,3 +777,18 @@ los POST bloqueados: VA→ES→VA y recarga correctas.
 Pruebas: 52 casos de navegador del portal, Rebost e idiomas, incluidos dos casos
 con navegación simulada entre los dos dominios en un contexto sin autenticación;
 22 casos Vue de Play, incluida variante valenciana y conservación de formulario.
+
+Publicado el arreglo estático en el Play existente y el portal con imagen
+`sha256:6be75ab612104155ed52c967d8e939a7c57e2571a87a0fa17ff3a600713ebc5c`.
+Copia previa de Compose y archivos públicos de Play, hashes y resultado en
+`/opt/edutictac-commons-portal/shared-language-20261022/` (privado).
+Se comparan los hashes de origen antes de sobrescribir los archivos públicos.
+Solo se recrea el portal; Play, identidad, Recursos y EduHoot conservan PID o
+contenedor y fecha de arranque. La configuración pública y el modo demo de Play
+permanecen iguales. No se modifican actividades ni se reinicia su servidor.
+
+Verificación pública real con navegador a 393 y 1280 píxeles: Commons en VA →
+Play en VA, cambio a ES → vuelta a Commons y Rebost en ES. Sin crear actividades,
+iniciar sesiones personales ni escribir resultados. La primera sonda intentó
+leer la inicialización de Play antes de terminar la navegación; se corrigió la
+espera, y el recorrido completo quedó verificado. Sin push de Git ni del registro.
