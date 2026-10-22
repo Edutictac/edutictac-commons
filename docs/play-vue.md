@@ -109,3 +109,47 @@ les aules i les sessions: el VPS de la demo no tenia ID API/Commons. No n’hi h
 prou amb retirar l’avís. Queda pendent la resposta de l’usuari sobre Commons
 central o revisió en el Commons de cada centre; no es desplega al VPS mentre
 esta decisió d’identitat no estiga resolta.
+
+## Reforç de sessió i validació local
+
+El retorn de navegació comprova de nou l’actor abans de mostrar una còpia privada;
+el panell queda ocult mentre es valida. Els esborranys nous tenen propietari
+local i no es restauren en una altra sessió. Les càrregues d’imatge simultànies
+de les dos parts d’una relació mantenen dades separades. El service worker no
+intercepta respostes de revisió/identitat/activitats privades i només elimina
+cachés antigues de Play, conservant les dels altres mòduls.
+
+Verificació ampliada: **56 casos de navegador** (54 aprovats en la passada
+conjunta i els dos casos d’imatge repetits després de substituir una mostra PNG
+invàlida de la prova per un PNG generat en canvas), **200 proves Python** de
+Play, identitat, aules, Llibres i Rebost, **111 de Recursos API** i dos del
+service worker. No s’ha alterat el producte per a acceptar una imatge invàlida.
+
+Play està disponible en **http://100.74.151.108:8084/** amb Vue i la revisió
+docent. S’activen només Play i les versions necessàries de les dos API. Es
+reutilitza `/opt/edutictac-commons/compose.yml` junt amb l’override de llibres i
+el nou `/opt/edutictac-commons/compose.play-review-local.yml`, sense modificar
+credencials. La ingesta reutilitza la referència de token existent del banc;
+el seu host HTTP de Play es fixa explícitament a la IP local, sense comodins.
+
+Còpies SQLite coherents i dades de Play protegides en
+`/opt/edutictac-commons/backups/before-play-review-20261022T090631Z/`.
+Imatges anteriors de les API preservades com a `before-play-review-20261022`.
+Tots els registres previs de les dos bases de dades s’han comparat amb les
+còpies i es conserven. Els altres serveis mantenen identificador i hora
+d’arrancada. Nginx del banc es recarrega després del canvi d’IP de Recursos API.
+
+```sh
+docker compose --project-directory /opt/edutictac-commons \
+  -f /opt/edutictac-commons/compose.yml \
+  -f /opt/edutictac-commons/compose.books-local.yml \
+  -f /opt/edutictac-commons/compose.play-review-local.yml \
+  up -d --no-build --pull never --no-deps id-api recursos-api play
+```
+
+No aplicar eixe compose a tot el stack ni usar `--remove-orphans`. El smoke
+anònim confirma bundle exacte, 13 tipus, editor de reptes responsive, absència
+de permisos de publicació i conservació dels catàlegs de Rebost i llibres.
+No crea activitats o comptes personals. L’acceptació OIDC/alumnat amb comptes
+reals continua pendent abans de producció, junt amb la decisió d’allotjament
+públic. No s’ha fet push ni s’ha modificat el VPS.

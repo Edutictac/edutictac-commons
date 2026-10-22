@@ -235,5 +235,6 @@
     "returned": "Returned for changes",
     "withdrawn": "Withdrawn"
   },
-  "anonymousNotice": "Activities saved without an account are public and expire after 24 hours. Open Play from Commons to work with your class."
+  "anonymousNotice": "Activities saved without an account are public and expire after 24 hours. Open Play from Commons to work with your class.",
+  "loginToSave": "To save in Commons, sign in as a teacher or enter through your classroom as a pupil. You can preview without signing in."
 }

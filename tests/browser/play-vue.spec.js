@@ -78,3 +78,22 @@ test('token administratiu es buida del camp i no es persistix',async({page})=>{
  expect(await page.evaluate(()=>localStorage.getItem('edutictac-play-admin-token'))).toBeNull();
  await page.evaluate(()=>window.dispatchEvent(new PageTransitionEvent('pagehide')));await expect(page.locator('#libraryToken')).toHaveValue('');
 });
+
+test('en tornar a una sessió diferent es retiren la còpia privada i el formulari',async({page})=>{
+ await mock(page,{saved:true});await expect(page.locator('#previewTitle')).toHaveText('Pupil quiz');
+ await page.evaluate(()=>window.dispatchEvent(new PageTransitionEvent('pagehide')));await expect(page.locator('#playApp')).toBeHidden();
+ await page.route('**/play/api/publication/me',route=>route.fulfill({json:{can_publish:false,can_submit:false,can_review:false}}));
+ await page.route('**/play/api/activities/'+activity.id,route=>route.fulfill({status:404,json:{error:'not found'}}));
+ await page.evaluate(()=>window.dispatchEvent(new PageTransitionEvent('pageshow',{persisted:true})));
+ await expect(page.locator('#playApp')).toBeVisible();await expect(page.locator('#previewTitle')).toHaveCount(0);await expect(page.locator('#title')).toHaveValue('');
+});
+
+test('les imatges esquerra i dreta s’optimitzen sense perdre una càrrega concurrent',async({page})=>{
+ const model=await mock(page);await page.locator('[data-type=matching]').click();await page.locator('#title').fill('Images');await page.locator('#question').fill('Match');
+ for(let i=0;i<2;i++){await page.locator('.match-left').nth(i).fill('Left '+i);await page.locator('.match-right').nth(i).fill('Right '+i);}
+ const pixels=await page.evaluate(()=>{const canvas=document.createElement('canvas');canvas.width=8;canvas.height=8;const ctx=canvas.getContext('2d');ctx.fillStyle='green';ctx.fillRect(0,0,8,8);return canvas.toDataURL('image/png').split(',')[1];});
+ const file={name:'pixel.png',mimeType:'image/png',buffer:Buffer.from(pixels,'base64')};
+ await Promise.all([page.locator('.matching-row').first().locator('[data-side=left]').setInputFiles(file),page.locator('.matching-row').first().locator('[data-side=right]').setInputFiles(file)]);
+ await expect(page.locator('.matching-row').first().locator('.editor-thumbnail')).toHaveCount(2);await expect(page.locator('#save')).toBeEnabled();await page.locator('#save').click();await expect(page.locator('#download')).toBeVisible();
+ const sent=model.calls.find(call=>call.path==='/activities').body;expect(sent.pairs[0].leftImage).toMatch(/^data:image\/webp;base64,/);expect(sent.pairs[0].rightImage).toMatch(/^data:image\/webp;base64,/);
+});

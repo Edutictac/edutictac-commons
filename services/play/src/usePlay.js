@@ -14,7 +14,7 @@ export function usePlay(){
  const bank=reactive({items:[],term:'',loading:false,error:false}),bankDialog=ref();
  const adminInput=ref(''),adminToken=ref('');
  try{adminToken.value=localStorage.getItem('edutictac-play-admin-token')||'';localStorage.removeItem('edutictac-play-admin-token');}catch{}
- let epoch=0,languageSeq=0,librarySeq=0,bankSeq=0,catalogSeq=0,active=true;
+ let epoch=0,languageSeq=0,librarySeq=0,bankSeq=0,catalogSeq=0,active=true,previousActor='';
  const bridge=commonsBridge(base,id=>{if(saved.value?.id===id&&active)message.value='resultSaved';});
  const savingDisabled=computed(()=>busy.value||imageTasks.value>0);
  const published=computed(()=>['published','updated'].includes(saved.value?.recursos?.status));
@@ -31,12 +31,12 @@ export function usePlay(){
   if(savingDisabled.value)return;const payload=serialize(form.value,language.value),errors=validate(payload,t);formError.value=errors.join(' ');if(errors.length)return;
   busy.value=true;const current=epoch;
   try{
-   if(preview)localStorage.setItem(DRAFT,JSON.stringify(payload));
+   if(preview)localStorage.setItem(DRAFT,JSON.stringify({...payload,_owner:capabilities.value.actor||''}));
    const data=await post(preview?'/previews':'/activities',payload);if(current!==epoch||!active)return;
    saved.value=data;if(!preview)await loadPublication();if(current!==epoch||!active)return;view.value='previewPanel';message.value=preview?'':'saved';messageError.value=false;
    if(!preview)localStorage.removeItem(DRAFT);
    history.replaceState({},'',preview?base+'/'+bridge.query():base+'/'+data.id+bridge.query());
-  }catch(error){if(current===epoch&&active){const text=error.details?.join(' ');formError.value=text||t(preview?'previewError':'saveError');message.value='saveError';messageError.value=true;}}
+  }catch(error){if(current===epoch&&active){const text=error.details?.join(' ');formError.value=error.status===401?t('loginToSave'):text||t(preview?'previewError':'saveError');message.value='saveError';messageError.value=true;}}
   finally{if(current===epoch)busy.value=false;}
  }
  async function loadLibrary(){
@@ -107,11 +107,21 @@ export function usePlay(){
   api('/config').then(data=>{integrated.value=Boolean(data.integrated);try{const url=new URL(data.commonsUrl);if(data.demo&&['http:','https:'].includes(url.protocol)&&!url.username&&!url.password)demoUrl.value=url.href;}catch{}}).catch(()=>{});
   const id=location.pathname.match(new RegExp('^'+base+'/([A-Za-z0-9]{8})$'))?.[1]||new URLSearchParams(location.search).get('activity');
   if(id){try{if(!/^[A-Za-z0-9]{8}$/.test(id))throw Error();const data=await api('/activities/'+id);if(bootEpoch!==epoch||!active)return;saved.value=data;await loadPublication();if(bootEpoch!==epoch||!active)return;form.value=hydrate(data);drafts[form.value.type]=form.value;view.value='previewPanel';message.value='saved';}catch{formError.value=t('libraryError');}}
-  else{try{const draft=JSON.parse(localStorage.getItem(DRAFT)||'null');if(draft&&TYPES.includes(draft.type)){form.value=hydrate(draft);drafts[form.value.type]=form.value;}}catch{localStorage.removeItem(DRAFT);}}
+  else{try{const draft=JSON.parse(localStorage.getItem(DRAFT)||'null');if(draft&&TYPES.includes(draft.type)&&(!draft._owner||draft._owner===capabilities.value.actor)){form.value=hydrate(draft);drafts[form.value.type]=form.value;}}catch{localStorage.removeItem(DRAFT);}}
   ready.value=true;document.documentElement.dataset.playReady='true';
  }
- function hide(){active=false;++epoch;++librarySeq;++bankSeq;++catalogSeq;adminToken.value='';adminInput.value='';capabilities.value={};submission.value=null;busy.value=false;bankDialog.value?.close();}
- function show(event){if(event.persisted){active=true;if(!ready.value){void boot();return;}void loadCatalog();void loadPublication();if(view.value==='library')void loadLibrary();}}
+ function hide(){previousActor=capabilities.value.actor||'';document.getElementById('playApp')?.setAttribute('hidden','');active=false;++epoch;++librarySeq;++bankSeq;++catalogSeq;adminToken.value='';adminInput.value='';capabilities.value={};submission.value=null;busy.value=false;bankDialog.value?.close();}
+ async function show(event){
+  if(!event.persisted)return;active=true;
+  if(!ready.value){await boot();document.getElementById('playApp')?.removeAttribute('hidden');return;}
+  await loadPublication();
+  if(previousActor&&previousActor!==capabilities.value.actor){saved.value=null;form.value=newActivity();Object.keys(drafts).forEach(key=>delete drafts[key]);view.value='home';localStorage.removeItem(DRAFT);}
+  if(saved.value?.visibility==='private'){
+   try{saved.value=await api('/activities/'+saved.value.id);}catch{saved.value=null;form.value=newActivity();view.value='home';}
+  }
+  await nextTick();document.getElementById('playApp')?.removeAttribute('hidden');void loadCatalog();if(view.value==='library')void loadLibrary();
+ }
+
  function online(){void bridge.flush();}
  onMounted(()=>{void boot();window.addEventListener('online',online);window.addEventListener('pagehide',hide);window.addEventListener('pageshow',show);});
  onBeforeUnmount(()=>{hide();window.removeEventListener('online',online);window.removeEventListener('pagehide',hide);window.removeEventListener('pageshow',show);});

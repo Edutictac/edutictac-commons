@@ -5,7 +5,7 @@
   "scripts": {
     "test": "playwright test",
     "test:i18n": "playwright test tests/browser/language.spec.js",
-    "test:play": "playwright test --config=playwright.play.config.js",
+    "test:play": "node --test tests/unit/play-service-worker.test.cjs && playwright test --config=playwright.play.config.js",
     "test:moodle": "playwright test --config=playwright.moodle.config.js",
     "build:rebost": "vite build --config vite.rebost.config.mjs",
     "build:teacher": "vite build --config vite.teacher.config.mjs",

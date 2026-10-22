@@ -235,5 +235,6 @@
     "returned": "Devuelta para corregir",
     "withdrawn": "Retirada"
   },
-  "anonymousNotice": "Las actividades guardadas sin cuenta son públicas y caducan a las 24 horas. Accede desde Commons para trabajar con tu aula."
+  "anonymousNotice": "Las actividades guardadas sin cuenta son públicas y caducan a las 24 horas. Accede desde Commons para trabajar con tu aula.",
+  "loginToSave": "Para guardar en Commons, entra con tu sesión docente o accede desde tu aula como alumno. Puedes previsualizar sin iniciar sesión."
 }

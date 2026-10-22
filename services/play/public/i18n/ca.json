@@ -235,5 +235,6 @@
     "returned": "Tornada per a corregir",
     "withdrawn": "Retirada"
   },
-  "anonymousNotice": "Les activitats guardades sense compte són públiques i caduquen a les 24 hores. Accedix des de Commons per a treballar amb la teua aula."
+  "anonymousNotice": "Les activitats guardades sense compte són públiques i caduquen a les 24 hores. Accedix des de Commons per a treballar amb la teua aula.",
+  "loginToSave": "Per a guardar en Commons, entra amb la teua sessió docent o accedix des de la teua aula com a alumne. Pots previsualitzar sense iniciar sessió."
 }
