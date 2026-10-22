@@ -100,3 +100,38 @@ test('unitats guardades no vàlides es descarten i el fallback del bundle és ll
  await admin(page);await expect(page.locator('#backupCreateBtn')).toBeEnabled();expect(await page.evaluate(()=>sessionStorage.getItem('commons-images-job'))).toBe(null);
  await page.route('**/assets/admin-ui.js',route=>route.abort());await page.reload();await expect(page.locator('#adminApp')).toContainText('Recarga la página');
 });
+
+test('eixir durant una alta pendent neteja immediatament i ignora la resposta',async({page})=>{
+ await admin(page);let release,started;const waiting=new Promise(resolve=>started=resolve);
+ await page.route('**/admin/api/teachers',async route=>{started();await new Promise(resolve=>release=resolve);await route.fulfill({json:{teacher:{username:'late',temporary_password:'SYNTHETIC-LATE'}}});});
+ await teacherForm(page);await page.locator('#teacherForm button[type=submit]').click();await waiting;
+ await page.locator('#logoutBtn').click();await expect(page.locator('#teacherUsername')).toHaveValue('');release();
+ await expect(page.locator('#teacherOutput')).not.toContainText('SYNTHETIC-LATE');await expect(page.locator('#modulesApply')).toBeDisabled();
+});
+
+test('seguiment amb temps esgotat manté bloqueig i reprén sense repetir POST',async({page})=>{
+ await page.clock.install();await page.clock.pauseAt(new Date());const model=await admin(page);let done=false;
+ await page.route('**/admin/api/job-status?*',route=>route.fulfill({json:{running:!done,result:done?'success':'',log:'synthetic log'}}));
+ page.once('dialog',dialog=>dialog.accept('ACTUALIZAR'));await page.locator('#imagesUpdateBtn').click();
+ await expect(page.locator('#jobTracking')).toHaveAttribute('data-state','waiting');await page.clock.fastForward(11*60*1000);
+ await expect(page.locator('#jobResume')).toBeVisible();await expect(page.locator('#backupCreateBtn')).toBeDisabled();expect(model.calls).toHaveLength(1);
+ done=true;await page.locator('#jobResume').click();await advanceJob(page);await expect(page.locator('#backupCreateBtn')).toBeEnabled();expect(model.calls).toHaveLength(1);
+});
+
+test('una resposta de sessió antiga no revoca una consulta més recent',async({page})=>{
+ await admin(page);let release,started;const waiting=new Promise(resolve=>started=resolve);
+ await page.route('**/admin/api/status',async route=>{started();await new Promise(resolve=>release=resolve);await route.fulfill({status:401,json:{error:'old unauthorized'}});});
+ await page.locator('#refreshBtn').click();await waiting;
+ // BFCache navigation creates a new session context while the old read is pending.
+ await page.evaluate(()=>window.dispatchEvent(new PageTransitionEvent('pagehide')));await page.unroute('**/admin/api/status');
+ await page.evaluate(()=>window.dispatchEvent(new PageTransitionEvent('pageshow',{persisted:true})));
+ await expect(page.locator('#modulesApply')).toBeEnabled();release();await expect(page.locator('#modulesApply')).toBeEnabled();
+});
+
+test('un logout antic amb error no altera la sessió validada després de navegar',async({page})=>{
+ await admin(page);let release,started;const waiting=new Promise(resolve=>started=resolve);
+ await page.route('**/api/auth/oidc/logout',async route=>{started();await new Promise(resolve=>release=resolve);await route.abort();});
+ await page.locator('#logoutBtn').click();await waiting;await page.evaluate(()=>window.dispatchEvent(new PageTransitionEvent('pagehide')));
+ await page.evaluate(()=>window.dispatchEvent(new PageTransitionEvent('pageshow',{persisted:true})));
+ await expect(page.locator('#apiStatus')).toHaveText('Conectado');const failed=page.waitForEvent('requestfailed',request=>request.url().endsWith('/api/auth/oidc/logout'));release();await failed;await expect(page.locator('#apiStatus')).toHaveText('Conectado');
+});

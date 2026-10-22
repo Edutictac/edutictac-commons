@@ -74,3 +74,21 @@ Les proves d’operacions usen API simulada; no creen docents ni executen
 còpies, restauracions, actualitzacions o sincronitzacions en la instal·lació.
 La validació local amb el servei complet es documentarà després de la
 regressió de permisos i recuperació.
+
+## Recuperació i regressió final
+
+Es pot eixir de sessió fins i tot amb una alta pendent: neteja immediata i cap
+resposta tardana torna a mostrar la contrasenya. Una resposta antiga de logout,
+estat o seguiment no revoca una sessió posterior validada. Els missatges del
+seguiment i de consulta d’actualitzacions es traduïxen sense perdre el registre.
+El temps esgotat significa resultat desconegut, no fallada ni èxit del servidor:
+es conserva el bloqueig i el botó reprén només la consulta.
+
+Verificació: **42 proves administratives** de regressió i **dos proves noves**
+de logout tardà aprovades en escriptori/mòbil; **248 proves del portal complet**
+aprovades abans d’afegir estes dos últimes. Les **64 proves Python** de permisos,
+mòduls, importació de catàlegs i còpies/segona còpia també passen. Les dades i
+execucions d’operacions de les proves són sintètiques i en directoris temporals.
+La compilació conjunta conserva els bundles de Rebost i alumnat; el bundle
+docent només normalitza dos comentaris amb rutes de dependències per a fer-lo
+reproduïble en CI. No hi ha canvis funcionals en eixe panell.

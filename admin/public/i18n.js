@@ -157,7 +157,7 @@
       "job.running": "⏳ En marcha... espera, puede tardar varios minutos.",
       "job.success": "✅ Completado con éxito.",
       "job.failed": "❌ Ha fallado. Revisa el registro de arriba.",
-      "job.timeout": "⚠️ Sigue en marcha pero ha dejado de comprobarse aquí. Revisa el registro más tarde.",
+      "job.timeout": "No se ha podido confirmar el resultado. La operación puede seguir ejecutándose; reanuda el seguimiento antes de iniciar otra.",
       "job.reconnecting": "⏳ Reconectando... el propio panel puede estar reiniciándose durante la operación.",
     },
     ca: {
@@ -309,7 +309,7 @@
       "job.running": "⏳ En marxa... espera, pot trigar uns minuts.",
       "job.success": "✅ Completat amb èxit.",
       "job.failed": "❌ Ha fallat. Revisa el registre de dalt.",
-      "job.timeout": "⚠️ Encara va en marxa pero s'ha deixat de comprovar ací. Revisa el registre mes tard.",
+      "job.timeout": "No s’ha pogut confirmar el resultat. L’operació pot continuar executant-se; reprén el seguiment abans d’iniciar-ne una altra.",
       "job.reconnecting": "⏳ Reconnectant... el mateix panell pot estar reiniciant-se durant l'operació.",
     },
     va: {
@@ -500,7 +500,7 @@
       "job.running": "⏳ Running... please wait, this can take a few minutes.",
       "job.success": "✅ Completed successfully.",
       "job.failed": "❌ Failed. Check the log above.",
-      "job.timeout": "⚠️ Still running but no longer being checked here. Check the log later.",
+      "job.timeout": "Could not confirm the result. The operation may still be running; resume tracking before starting another.",
       "job.reconnecting": "⏳ Reconnecting... the panel itself may be restarting during the operation.",
     },
   };

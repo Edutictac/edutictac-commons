@@ -2,7 +2,7 @@
 import {watch,nextTick} from 'vue';
 import {useAdmin} from './useAdmin.js';
 const model=useAdmin();
-const {t,language,authorized,checking,pending,canWrite,statusText,output,actionText,apiMessage,modules,selected,moduleManageable,modulesNotice,wizard,wizardOpen,closeWizard,teacher,teacherMessage,credential,clearTeacher,mount,mountDirty,restore,rollback,backups,rollbacks,secondary,secondaryText,job,pollState,trackingPaused,loadStatus,applyModules,createTeacher,checkUpdates,confirmed,backupCreate,typedAction,secondaryAction,operation,logout,login,resumeTracking}=model;
+const {t,language,authorized,checking,pending,loggingOut,canWrite,statusText,output,actionText,apiMessage,modules,selected,moduleManageable,modulesNotice,wizard,wizardOpen,closeWizard,teacher,teacherMessage,credential,clearTeacher,mount,mountDirty,restore,rollback,backups,rollbacks,secondary,secondaryText,job,pollState,trackingPaused,loadStatus,applyModules,createTeacher,checkUpdates,confirmed,backupCreate,typedAction,secondaryAction,operation,logout,login,resumeTracking}=model;
 watch(wizardOpen,async value=>{await nextTick();if(value&&!wizard.value?.open)wizard.value?.showModal();else if(!value&&wizard.value?.open)wizard.value.close();});
 </script>
 <template>
@@ -30,7 +30,7 @@ watch(wizardOpen,async value=>{await nextTick();if(value&&!wizard.value?.open)wi
         </div>
         <div class="actions">
           <button id="loginBtn" @click="login" :disabled="pending" type="button">{{ t("login.enter") }}</button>
-          <button id="logoutBtn" @click="logout" :disabled="pending" type="button" class="secondary">{{ t("login.logout") }}</button>
+          <button id="logoutBtn" @click="logout" :disabled="loggingOut" type="button" class="secondary">{{ t("login.logout") }}</button>
           <button id="refreshBtn" @click="loadStatus" :disabled="checking||pending" type="button" class="secondary">{{ t("login.refresh") }}</button>
         </div>
       </section>

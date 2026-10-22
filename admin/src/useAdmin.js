@@ -11,7 +11,7 @@ export function useAdmin(){
   const language=ref(window.i18nAdmin.getLang());
   const t=(key,vars)=>{language.value;return window.i18nAdmin.t(key,vars);};
   const {renderStatus,renderUpdateStatus}=formatters(t);
-  const authorized=ref(false), checking=ref(false), pending=ref(false), active=ref(true);
+  const authorized=ref(false), checking=ref(false), pending=ref(false), loggingOut=ref(false), active=ref(true);
   const status=ref(null), modules=ref(null), selected=ref([]), moduleError=ref('');
   const wizard=ref(),wizardOpen=ref(false),dismissed=ref(false);
   const apiMessage=ref('status.checking'),statusError=ref('');
@@ -28,8 +28,8 @@ export function useAdmin(){
   const backups=computed(()=>(status.value?.backups||[]).filter(b=>!b.error));
   const rollbacks=computed(()=>backups.value.filter(b=>b.update));
   const secondary=computed(()=>status.value?.backup_secondary||{enabled:false,mount:'',last:{}});
-  const statusText=computed(()=>statusError.value|| (status.value?renderStatus(status.value):t('status.signInToView')));
-  const actionText=computed(()=>output.value.key?t(output.value.key,output.value.vars):output.value.text||'');
+  const statusText=computed(()=>statusError.value?t(statusError.value):(status.value?renderStatus(status.value):t('status.signInToView')));
+  const actionText=computed(()=>output.value.log!==undefined?output.value.log+'\n\n'+t(output.value.key):output.value.updates?renderUpdateStatus(output.value.updates):output.value.key?t(output.value.key,output.value.vars):output.value.text||'');
   const modulesNotice=computed(()=>t(moduleError.value||(!authorized.value?'modules.signIn':!modules.value?'modules.unavailable':!moduleManageable.value?'modules.updateInstaller':busy.value?'modules.applying':modules.value.error?'modules.failed':modules.value.configured?'modules.ready':'modules.firstHint')));
   const secondaryText=computed(()=>{
     if(!authorized.value)return '';
@@ -56,10 +56,10 @@ export function useAdmin(){
     authorized.value=false;pending.value=false;output.value={key:'common.actionPlaceholder'};status.value=null;modules.value=null;selected.value=[];clearTeacher();
     restore.value='';rollback.value='';mount.value='';mountDirty.value=false;statusError.value='';moduleError.value='';closeWizard();
   }
-  async function request(path,options={}){
+  async function request(path,options={},current=()=>true){
     const requestEpoch=epoch,requestLife=life;
     const response=await fetch(prefix+path,{credentials:'same-origin',cache:'no-store',...options});
-    if(response.status===401||response.status===403){if(requestEpoch===epoch&&requestLife===life&&active.value){invalidate();apiMessage.value='status.authRequired';}const e=new Error('unauthorized');e.status=response.status;throw e;}
+    if(response.status===401||response.status===403){if(requestEpoch===epoch&&requestLife===life&&active.value&&current()){invalidate();apiMessage.value='status.authRequired';}const e=new Error('unauthorized');e.status=response.status;throw e;}
     const data=await response.json();
     if(!response.ok){const e=new Error(data.output||data.error||'operation_failed');e.status=response.status;throw e;}
     return data;
@@ -69,7 +69,7 @@ export function useAdmin(){
     if(!authorized.value||!active.value)return;
     const e=epoch,seq=++moduleSequence;
     try{
-      const data=await request('/api/modules');if(e!==epoch||seq!==moduleSequence||!active.value)return;
+      const data=await request('/api/modules',{},()=>seq===moduleSequence);if(e!==epoch||seq!==moduleSequence||!active.value)return;
       if(!modules.value||data.revision!==modules.value.revision||data.phase==='failed')selected.value=MODULES.filter(name=>data.enabled?.includes(name));
       modules.value=data;moduleError.value='';
       if(data.manageable&&!data.configured&&!busy.value&&!dismissed.value){wizardOpen.value=true;}
@@ -79,13 +79,14 @@ export function useAdmin(){
     if(!active.value)return;
     const e=epoch,seq=++statusSequence;checking.value=true;
     try{
-      const data=await request('/api/status');if(e!==epoch||seq!==statusSequence||!active.value)return;
+      const data=await request('/api/status',{},()=>seq===statusSequence);if(e!==epoch||seq!==statusSequence||!active.value)return;
       authorized.value=true;status.value=data;statusError.value='';apiMessage.value='status.connected';
       if(!backups.value.some(b=>b.name===restore.value))restore.value=backups.value[0]?.name||'';
       if(!rollbacks.value.some(b=>b.name===rollback.value))rollback.value=rollbacks.value[0]?.name||'';
       if(!mountDirty.value)mount.value=secondary.value.mount||'';
       await loadModules();
-    }catch{if(e===epoch&&seq===statusSequence){invalidate();apiMessage.value='status.disconnected';statusError.value=t('admin.loadError');}}
+      if(job.value&&!polling.value&&timer.value===null)schedule();
+    }catch{if(e===epoch&&seq===statusSequence){invalidate();apiMessage.value='status.disconnected';statusError.value='admin.loadError';}}
     finally{if(seq===statusSequence||!authorized.value)checking.value=false;}
   }
   function stopPoll(){if(timer.value!==null)clearTimeout(timer.value);timer.value=null;}
@@ -93,18 +94,18 @@ export function useAdmin(){
   async function pollJob(){
     if(polling.value||!job.value||!active.value)return;
     polling.value=true;timer.value=null;
-    const current=job.value,l=life;
+    const current=job.value,l=life,statusVersion=statusSequence;
     const stillCurrent=()=>l===life&&active.value&&job.value===current;
     try{
-      const data=await request('/api/job-status?unit='+encodeURIComponent(current.unit));
+      const data=await request('/api/job-status?unit='+encodeURIComponent(current.unit),{},()=>stillCurrent()&&statusVersion===statusSequence);
       if(!stillCurrent())return;
       failures=0;
       if(data.running){
-        output.value={text:(data.log||'')+'\n\n'+t('job.running')};
+        output.value={log:data.log||'',key:'job.running'};
         if(Date.now()-current.startedAt>timeout(current))pauseTracking();else schedule();
       }else{
         storage(current.key,null);job.value=storedJob();
-        output.value={text:(data.log||'')+'\n\n'+t(data.result==='success'?'job.success':'job.failed'),error:data.result!=='success'};
+        output.value={log:data.log||'',key:data.result==='success'?'job.success':'job.failed',error:data.result!=='success'};
         await loadStatus();if(stillCurrent())schedule();else if(l===life&&active.value&&job.value)schedule();
       }
     }catch{
@@ -156,7 +157,7 @@ export function useAdmin(){
   }
   async function checkUpdates(){
     if(!canWrite.value)return;pending.value=true;message('images.checking');const e=epoch,seq=++actionSequence;
-    try{const data=await request('/api/updates');if(e===epoch&&seq===actionSequence&&active.value)output.value={text:data.output||renderUpdateStatus(data),error:data.ok===false};}
+    try{const data=await request('/api/updates');if(e===epoch&&seq===actionSequence&&active.value)output.value=data.output?{text:data.output,error:data.ok===false}:{updates:data,error:data.ok===false};}
     catch{if(e===epoch&&seq===actionSequence)message('admin.operationError',true);}
     finally{if(seq===actionSequence)pending.value=false;}
   }
@@ -177,16 +178,17 @@ export function useAdmin(){
     return operation('/api/backup/secondary',action==='configure'?{action,mount:mount.value.trim()}:{action},'commons-backup-job');
   }
   async function logout(){
+    if(loggingOut.value)return;loggingOut.value=true;
     ++life;stopPoll();polling.value=false;invalidate();pending.value=true;checking.value=false;output.value={key:'common.actionPlaceholder'};apiMessage.value='status.disconnected';
     const seq=actionSequence;
-    try{await fetch('/api/auth/oidc/logout',{method:'POST',credentials:'same-origin',cache:'no-store'});}catch{apiMessage.value='status.authRequired';}
-    finally{if(seq===actionSequence)pending.value=false;}
+    try{await fetch('/api/auth/oidc/logout',{method:'POST',credentials:'same-origin',cache:'no-store'});}catch{if(seq===actionSequence&&active.value)apiMessage.value='status.authRequired';}
+    finally{if(seq===actionSequence){pending.value=false;loggingOut.value=false;}}
   }
   function login(){if(!pending.value)location.href='/api/auth/oidc/login?next=%2Fadmin%2F';}
   function langChange(){language.value=window.i18nAdmin.getLang();}
-  function hide(){active.value=false;++life;stopPoll();polling.value=false;invalidate();pending.value=false;output.value={key:'common.actionPlaceholder'};checking.value=false;document.getElementById('adminApp')?.setAttribute('hidden','');}
+  function hide(){active.value=false;++life;stopPoll();polling.value=false;invalidate();pending.value=false;loggingOut.value=false;output.value={key:'common.actionPlaceholder'};checking.value=false;document.getElementById('adminApp')?.setAttribute('hidden','');}
   async function show(event){if(!event.persisted)return;active.value=true;document.getElementById('adminApp')?.removeAttribute('hidden');job.value=storedJob();trackingPaused.value=false;await loadStatus();schedule();}
   onMounted(()=>{job.value=storedJob();if(job.value)message('modules.applying');void loadStatus();schedule();window.addEventListener('edutictac:langchange',langChange);window.addEventListener('pagehide',hide);window.addEventListener('pageshow',show);});
   onBeforeUnmount(()=>{hide();window.removeEventListener('edutictac:langchange',langChange);window.removeEventListener('pagehide',hide);window.removeEventListener('pageshow',show);});
-  return {t,language,authorized,checking,pending,busy,canWrite,status,statusText,output,actionText,apiMessage,modules,selected,moduleManageable,moduleError,modulesNotice,wizard,wizardOpen,dismissed,closeWizard,teacher,teacherMessage,credential,clearTeacher,mount,mountDirty,restore,rollback,backups,rollbacks,secondary,secondaryText,job,pollState,trackingPaused,loadStatus,applyModules,createTeacher,checkUpdates,confirmed,backupCreate,typedAction,secondaryAction,operation,logout,login,resumeTracking};
+  return {t,language,authorized,checking,pending,loggingOut,busy,canWrite,status,statusText,output,actionText,apiMessage,modules,selected,moduleManageable,moduleError,modulesNotice,wizard,wizardOpen,dismissed,closeWizard,teacher,teacherMessage,credential,clearTeacher,mount,mountDirty,restore,rollback,backups,rollbacks,secondary,secondaryText,job,pollState,trackingPaused,loadStatus,applyModules,createTeacher,checkUpdates,confirmed,backupCreate,typedAction,secondaryAction,operation,logout,login,resumeTracking};
 }
