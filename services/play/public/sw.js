@@ -1,10 +1,11 @@
-const CACHE = 'edutictac-play-shell-v14';
+const CACHE = 'edutictac-play-shell-v15';
 const SCOPE = self.registration.scope;
 const SCOPE_PATH = new URL(SCOPE).pathname;
 const SHELL = [
   '',
   'index.html',
   'app.js',
+  'assets/ui/play-ui.js',
   'styles.css',
   'manifest.json',
   'i18n/es.json',
