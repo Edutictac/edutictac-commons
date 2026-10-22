@@ -104,11 +104,20 @@ Els tests de revisió executen el servidor Play real amb identitat i banc de
 proves aïllats. Les regles d’aula es proven contra ID API i SQLite temporal.
 No es creen treballs ni comptes personals en la instal·lació real.
 
-El pas de la demo de `edutictac.es/play/` a producció requerix decidir on viuen
-les aules i les sessions: el VPS de la demo no tenia ID API/Commons. No n’hi ha
-prou amb retirar l’avís. Queda pendent la resposta de l’usuari sobre Commons
-central o revisió en el Commons de cada centre; no es desplega al VPS mentre
-esta decisió d’identitat no estiga resolta.
+Decisió confirmada per l’usuari el 22-10-2026: `edutictac.es` és la
+instal·lació central i cada tutor revisa les activitats de les seues aules.
+La ubicació central no dona a un docent accés a les aules d’altres docents;
+s’apliquen les comprovacions de propietari/col·laborador descrites abans.
+L’alumnat continua entrant amb codi/PIN i el professorat amb Authentik.
+
+Comprovació de producció en només lectura: el VPS ja té ID API en
+`127.0.0.1:8005` i Recursos API actives, però Play continua en demo i no hi ha
+virtual host de `commons.edutictac.es`. Cal coordinar la connexió de Play amb
+les fases d’actualització d’identitat i portal del
+[pla de desplegament federat](DESPLEGAMENT-PRODUCCIO-FEDERADA.md), reutilitzant
+estos serveis. Després cal desplegar els permisos de Play, connectar les
+sessions i la ingesta del banc, i validar el circuit alumne → tutor → banc
+abans de desactivar la demo. No s’ha modificat el VPS.
 
 ## Reforç de sessió i validació local
 
@@ -151,8 +160,8 @@ No aplicar eixe compose a tot el stack ni usar `--remove-orphans`. El smoke
 anònim confirma bundle exacte, 13 tipus, editor de reptes responsive, absència
 de permisos de publicació i conservació dels catàlegs de Rebost i llibres.
 No crea activitats o comptes personals. L’acceptació OIDC/alumnat amb comptes
-reals continua pendent abans de producció, junt amb la decisió d’allotjament
-públic. No s’ha fet push ni s’ha modificat el VPS.
+reals continua pendent abans de producció. L’allotjament central ja està
+confirmat. No s’ha fet push ni s’ha modificat el VPS.
 
 També es comprova que la clau de creador del navegador no permeta borrar el
 projecte privat d’un alumne després d’eixir de sessió: els treballs amb

@@ -65,8 +65,9 @@ Prioritat actualitzada el 22-10-2026: Banc de recursos abans de Play.
 - [x] Play en Vue: 13 editors, biblioteca, catàleg i reptes; H5P i xAPI
   conservats. Activitats d’alumnat privades amb revisió del docent de l’aula
   abans de publicar en el banc. [Arquitectura i proves](play-vue.md).
-- [ ] Activar Play públic fora de demo: decidir identitat/aules centrals o
-  revisió des del Commons de cada centre, i acceptació amb comptes reals.
+- [ ] Activar Play públic fora de demo: instal·lació central confirmada,
+  cada tutor revisa les seues aules. Coordinar amb el desplegament federat
+  d’identitat/portal, connectar Play i validar amb comptes reals.
   Implementació i integració provades en local; el VPS continua sense canvis.
 - [x] Administració operativa en Vue: mòduls, docents, estat, còpies,
   actualitzacions i continguts; permisos, credencials temporals i recuperació
