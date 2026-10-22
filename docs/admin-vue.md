@@ -72,8 +72,9 @@ controlador que s’ha retirat.
 
 Les proves d’operacions usen API simulada; no creen docents ni executen
 còpies, restauracions, actualitzacions o sincronitzacions en la instal·lació.
-La validació local amb el servei complet es documentarà després de la
-regressió de permisos i recuperació.
+La validació local anònima amb el servei complet queda documentada a
+continuació. L’acceptació amb una sessió personal real no forma part d’estes
+proves sintètiques.
 
 ## Recuperació i regressió final
 
@@ -92,3 +93,41 @@ execucions d’operacions de les proves són sintètiques i en directoris tempor
 La compilació conjunta conserva els bundles de Rebost i alumnat; el bundle
 docent només normalitza dos comentaris amb rutes de dependències per a fer-lo
 reproduïble en CI. No hi ha canvis funcionals en eixe panell.
+
+## Activació local — 22-10-2026
+
+URL: **http://100.74.151.108:8082/admin/**. Abans, el servei admin no estava
+arrancat i el proxy retornava 502. Ara el servei existent es desplega amb
+`registry.edutictac.es/edutictac/commons-admin:admin-vue-candidate`, reutilitzant
+el compose instal·lat i els seus volums. L’override local sense secrets és
+`/opt/edutictac-commons/compose.admin-vue-local.yml`; fixa la imatge i
+`REPO_DIR=/opt/edutictac-commons` perquè les operacions apunten a la instal·lació
+correcta. Els scripts del host i els punts de muntatge ja existien; no es copien
+ni es modifiquen scripts, bases de dades o configuracions de credencials.
+
+```sh
+docker compose --project-directory /opt/edutictac-commons \
+  -f /opt/edutictac-commons/compose.yml \
+  -f /opt/edutictac-commons/compose.admin-vue-local.yml \
+  up -d --no-build --pull never --no-deps admin
+```
+
+No executar este compose per a tot el stack: les API i els altres frontends
+conserven els seus overrides i imatges locals. No usar `--remove-orphans`;
+Blocs és un servei vàlid absent del compose instal·lat antic. La primera
+imatge Vue queda preservada com a `before-admin-vue-hardening-20261022`,
+abans de l’últim reforç de seguiment. Abans de la migració no hi havia un
+contenidor admin actiu; detindre només admin retorna a aquell estat.
+
+Smoke anònim de lectura aprovat: HTML i bundle 200, bundle idèntic al compilat,
+`/admin/api/status` i `/admin/api/modules` responen 401, tots els controls
+d’escriptura estan bloquejats. Sense errors JavaScript ni desbordament en
+393 i 1024 píxels; captura valenciana revisada. Els altres serveis actius
+conserven identificador i hora d’arrancada; no s’han recreat API, Authentik,
+portal, banc, Blocs o Llibres.
+
+No s’han creat docents, iniciat còpies, restauracions, actualitzacions,
+canvis de mòduls o sincronitzacions reals en esta comprovació. L’accés
+administratiu personal i les operacions de camp requerixen acceptació
+manual abans de producció. No s’ha fet push, publicació d’imatges al registre
+ni desplegament al VPS. Quiosc i Play continuen pendents.

@@ -401,3 +401,22 @@ Només s’ha recreat el frontend del banc. Les API, Authentik, portal, Blocs,
 Llibres i volums continuen sense canvis. Procediment, proves i límits en
 `recursos/docs/VUE_MIGRATION.md`. Punt de parada indicat per l’usuari: no
 continuar amb Play/Administració/Quiosc; sense push ni desplegament al VPS.
+
+
+## Administració operativa — 22-10-2026
+
+El servei `admin/` també adopta Vue amb bundle propi i la compilació comuna.
+Mòduls, alta docent, estat, còpies/segona còpia, restauració, actualització,
+rollback i sincronització conserven les API i els permisos existents. El nou
+seguiment recupera els treballs en recarregar, bloqueja escriptures concurrents
+i permet reprendre una consulta esgotada sense repetir l’operació. Credencials
+temporals només en memòria i respostes antigues descartades.
+
+Validació: 248 proves del portal i 64 de permisos/còpies aprovades; el darrer
+cas afegix dos proves de logout tardà aprovades. Disponible en local a
+`http://100.74.151.108:8082/admin/`; la API privada respon 401 anònimament i
+les accions estan desactivades. No es fan operacions destructives reals ni
+login personal en les proves. [Detalls, desplegament i límits](admin-vue.md).
+
+La parada després del banc queda superada per la petició expressa de l’usuari
+de continuar amb administració. Play i Quiosc no es modifiquen en esta fase.

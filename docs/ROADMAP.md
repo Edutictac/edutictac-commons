@@ -64,8 +64,10 @@ Prioritat actualitzada el 22-10-2026: Banc de recursos abans de Play.
   abans de producció. Punt de parada acordat: no començar Play ni altres mòduls.
 - [ ] Migrar els formularis propis de Play per tipus d'activitat, conservant
   H5P, publicació i exportadors existents.
-- [ ] Administració i Quiosc, amb proves específiques de les operacions
-  i recuperació que executen.
+- [x] Administració operativa en Vue: mòduls, docents, estat, còpies,
+  actualitzacions i continguts; permisos, credencials temporals i recuperació
+  de treballs comprovats. [Arquitectura i proves](admin-vue.md). Activada en local.
+- [ ] Quiosc, amb proves específiques de les operacions i recuperació que executa.
 
 Scratch/Blocs conserva React; Llibres conserva el motor eXeLearning. EduHoot
 queda fora d'esta migració. Vue no modifica l'autenticació: alumnat amb codi/PIN
