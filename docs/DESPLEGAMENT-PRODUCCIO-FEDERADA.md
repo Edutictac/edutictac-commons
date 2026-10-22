@@ -1,9 +1,9 @@
 # Despliegue federado de Commons en producción (edutictac.es)
 
-Estado: **copias automáticas y monitorización activadas, copia externa verificada,
-configuración preparada y ensayo aislado
-de la fase 1 completados el 22-10-2026;
-servicios y datos de producción sin modificar.** EduTicTac está en uso: avanzar paso a paso. Cada fase se
+Estado: **fase 1 desplegada y validada el 22-10-2026: identidad funciona en
+Docker, con copias automáticas, recuperación NAS y avisos activos.** Banco,
+Play y EduHoot no se han reiniciado. La fase 2 no ha empezado.
+EduTicTac está en uso: avanzar paso a paso. Cada fase se
 ejecuta solo tras confirmación explícita.
 
 ## Objetivo
@@ -25,11 +25,11 @@ Identidad única: docentes con Authentik `id.edutictac.es`; alumnado con código
 del id-api. Fuera de producción compartida: panel `admin` (gestiona Docker y
 backups del host) y Quiosc (solo aula local).
 
-## Situación verificada (solo lectura, 22-10-2026)
+## Situación inicial verificada (solo lectura, antes del cambio del 22-10-2026)
 
 - VPS `vmi3333727`, acceso `samgua@100.69.168.122 -p 2222` (tailnet). 6 CPU,
   11 GiB RAM (7,1 disponibles), disco 62 % (36 GB libres).
-- id-api actual: `/opt/edutictac-id-api`, systemd `edutictac-id-api.service`,
+- id-api anterior: `/opt/edutictac-id-api`, systemd `edutictac-id-api.service`,
   venv, `uvicorn main:app` en `127.0.0.1:8005`, usuario samgua (uid 1000), sin git.
   Código de septiembre (1014 líneas). Env `/etc/edutictac-id-api.env` con
   `EDUTICTAC_ID_DB`, `EDUTICTAC_ID_SECRET`, `EDUTICTAC_ID_TEACHER_TOKEN`,
@@ -71,6 +71,9 @@ centros) en lugar de copiar código al venv:
 ## Fases
 
 ### Fase 1 — Actualizar id-api sin cambios visibles (riesgo mayor)
+
+**Desplegada.** Ejecución y validaciones en el apartado final. Los pasos
+siguientes conservan el procedimiento previsto y sus precauciones.
 
 Preparación (sin tocar producción):
 1. Construir y publicar `commons-id-api` desde `main` con tag propio
@@ -343,4 +346,76 @@ una caída de producción ni se envían alarmas falsas para probarlo.
 
 Los avisos dependen del monitor en debiandesktop y de su conectividad, igual
 que las comprobaciones y el traslado al NAS. El despliegue de identidad sigue
-pendiente y los servicios públicos no se han reiniciado.
+sin ejecutarse en este punto de la preparación; se ejecuta después como se
+describe a continuación.
+
+## Fase 1 ejecutada en producción (22-10-2026)
+
+Autorización explícita para continuar después de comprobar que EduHoot no
+mostraba partidas activas. Se actualiza únicamente identidad; no se empieza
+el portal ni se cambia Authentik, Blocs, Llibres o Play.
+
+- Contenedor: `edutictac-id-production-id-api-1`, imagen exacta ensayada
+  `sha256:a719fc1aacfeea1c74052a1d5f31cdfb1c3d7d7a53e7de04b3c37f71f73cb510`.
+- Configuración `/opt/edutictac-id-api/docker/compose.yml`, entorno privado,
+  volumen existente `/opt/edutictac-id-api/data`, puerto solo loopback 8005.
+  Entorno efectivo comparado con lo preparado y healthcheck Docker sano.
+- Servicio anterior `edutictac-id-api.service` detenido y deshabilitado al
+  completar la validación; código, entorno y unidad conservados para restaurar.
+- Imagen transferida desde debiandesktop al VPS, todavía sin publicación en
+  registro. No confundir este despliegue con una publicación de imágenes o Git.
+
+Operación del 22-10, **12:48:57–12:49:41 UTC** (44 segundos):
+
+1. Copia actual cifrada y recuperada desde NAS antes de comenzar. Candidato
+   creado sin arrancar y configuración nginx preparada y validada sin activarla.
+2. Cierre temporal de las únicas rutas públicas del banco que llaman a
+   identidad: login de alumnado y gestión docente de credenciales/asignaciones.
+   HTTP 503 con mensaje de mantenimiento y `Retry-After`. Catálogo HTTP 200.
+   nginx solo se recarga; no se reinician banco, Play o EduHoot.
+3. Pausa breve de timers de monitor/traslado para evitar avisos de mantenimiento
+   y de generación para no solapar snapshots. Parada controlada de la ID API
+   anterior y snapshot consistente nuevo con sus escritores detenidos.
+4. Migración con la imagen exacta, sin red ni puertos publicados, sobre el
+   volumen real. Comparación de todos los campos preexistentes de todas las
+   filas de las cinco tablas originales con el snapshot anterior: idénticos.
+5. Arranque del servicio Docker definitivo. Creación de una credencial
+   **ficticia y temporal** con el token de servicio del banco. Login real a
+   través de Recursos API: PIN incorrecto 401 y credencial correcta 200.
+   Eliminación por la API del grupo temporal, credencial y sesión asociadas.
+   Nueva comparación completa con el snapshot e integridad correctas.
+6. Docker healthy, reapertura de las rutas del banco, retirada de la
+   configuración temporal y deshabilitación del arranque del servicio antiguo.
+   nginx termina idéntico al fichero previo; no quedan snippets de mantenimiento.
+7. Reactivación de timers. Copia posterior al cambio trasladada al NAS,
+   recuperada, descifrada y verificada. Monitor correcto y estado Telegram sano.
+
+Al finalizar la migración se conservaron exactamente el grupo y las 50
+credenciales previas; cero sesiones, resultados o asignaciones guardados.
+No quedaba ninguna cuenta temporal de la comprobación. PID y fecha de arranque
+de Recursos API y Play, e ID/fecha de arranque del contenedor EduHoot, idénticos
+antes/después. Health de identidad y portadas de banco, Play y EduHoot HTTP 200.
+
+Copias y evidencia privadas:
+
+- Snapshot exacto anterior al corte:
+  `/opt/edutictac-id-api/backups/cutover-20261022T124818Z/before-cutover.db`.
+- En ese directorio: código/configuración anteriores, manifiesto y `result.json`
+  de la operación (`success: true`, sin rollback). No contiene logs públicos.
+- Copia manual cifrada del directorio, recuperada y verificada desde NAS:
+  `05_Backups/edutictac/commons-id-api/commons-id-cutover-20261022T125158Z.tar.gz.gpg`.
+  No está sometida a la retención de archivos automáticos.
+- Copia automática posterior: `id-api-20261022T125015Z.tar.gz.gpg`, también
+  recuperada desde NAS con integridad correcta.
+- Script puntual `/home/samgua/commons-id-cutover.py` y estado privado
+  `/opt/edutictac-id-api/backups/cutover-state.json`: **no volver a ejecutarlos**
+  sobre este despliegue. Una operación futura necesita preparación nueva.
+
+Una vuelta atrás futura requiere una ventana nueva y comprobar las escrituras
+posteriores: no restaurar automáticamente el snapshot del corte si ya hay datos
+nuevos. El contenedor debe detenerse antes de restaurar, preservar la base
+actual y sus WAL/SHM aparte, y usar la base previa junto con el código antiguo.
+Los archivos conservados no autorizan una reversión que descarte actividad nueva.
+
+Siguiente fase, todavía pendiente: preparar `commons.edutictac.es` y el acceso
+OIDC docente, conservando las URL de las aplicaciones.
