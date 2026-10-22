@@ -16,13 +16,14 @@ test('portal federat manté URL pròpies, identitat i llengües sense administra
   await setup(page);await page.goto('/');
   await expect(page.locator('h1')).toHaveText('EduTicTac Commons');
   for(const [id,url] of Object.entries({playHomeLink:deployment.applications.play,resourcesHomeLink:deployment.applications.recursos,eduhootHomeLink:deployment.applications.eduhoot,blocsHomeLink:deployment.applications.blocs,authentikHomeLink:deployment.authentikUrl})){
-    await expect(page.locator('#'+id)).toHaveAttribute('href',id==='playHomeLink'?url+'?lang='+await page.evaluate(()=>window.i18nPortal.getLang()):url);await expect(page.locator('#'+id)).toBeVisible();
+    await expect(page.locator('#'+id)).toHaveAttribute('href',['playHomeLink','resourcesHomeLink'].includes(id)?url+(id==='resourcesHomeLink'?'?ui_lang=':'?lang=')+await page.evaluate(()=>window.i18nPortal.getLang()):url);await expect(page.locator('#'+id)).toBeVisible();
   }
   await expect(page.locator('#adminHomeLink')).toBeHidden();
   await expect(page.locator('#firstRunSetupDialog')).toHaveCount(0);
   for(const language of ['es','va','ca','en']){
     await page.locator('[data-lang='+language+']').click();await expect(page.locator('h1')).toHaveText('EduTicTac Commons');
     await expect(page.locator('#playHomeLink')).toHaveAttribute('href',deployment.applications.play+'?lang='+language);
+    await expect(page.locator('#resourcesHomeLink')).toHaveAttribute('href',deployment.applications.recursos+'?ui_lang='+language);
   }
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });

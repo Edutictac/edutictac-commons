@@ -185,7 +185,7 @@ function setApplicationLinks() {
     const link = $(id);
     if (link) {
       const destination = new URL(url, window.location.origin);
-      if (id === 'playHomeLink') destination.searchParams.set('lang', window.i18nPortal.getLang());
+      if (['playHomeLink', 'resourcesHomeLink'].includes(id)) destination.searchParams.set(id === 'resourcesHomeLink' ? 'ui_lang' : 'lang', window.i18nPortal.getLang());
       link.href = destination.href;
     }
   });

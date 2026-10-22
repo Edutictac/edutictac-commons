@@ -77,3 +77,20 @@ test('la preferència d’idioma es conserva entre subdominis, sense sessió',as
   await page.reload();await page.addScriptTag({content:helper});
   expect(await page.evaluate(()=>window.commonsLanguage.read())).toBe('en');
 });
+
+test('la cookie compartida recorre Commons, Banc i Llibres conservant el filtre del Banc',async({page})=>{
+  const helper=require('fs').readFileSync(require('path').join(__dirname,'../../services/portal/public/assets/language-preference.js'),'utf8');
+  await page.route(/^https:\/\/(?:commons|recursos|llibres)\.edutictac\.es\//,r=>r.fulfill({contentType:'text/html',body:'<!doctype html><title>Language test</title>'}));
+  const load=async url=>{await page.goto(url);await page.addScriptTag({content:helper});};
+  await load('https://commons.edutictac.es/');
+  await page.evaluate(()=>window.commonsLanguage.remember('va'));
+  await load('https://recursos.edutictac.es/?lang=Castellano');
+  expect(await page.evaluate(()=>window.commonsLanguage.read({parameter:'ui_lang'}))).toBe('va');
+  await page.evaluate(()=>window.commonsLanguage.remember('en',{parameter:'ui_lang'}));
+  expect(new URL(page.url()).searchParams.get('lang')).toBe('Castellano');
+  await load('https://llibres.edutictac.es/');
+  expect(await page.evaluate(()=>window.commonsLanguage.read())).toBe('en');
+  await page.evaluate(()=>window.commonsLanguage.remember('ca'));
+  await load('https://commons.edutictac.es/');
+  expect(await page.evaluate(()=>window.commonsLanguage.read())).toBe('ca');
+});

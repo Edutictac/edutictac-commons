@@ -792,3 +792,54 @@ Play en VA, cambio a ES → vuelta a Commons y Rebost en ES. Sin crear actividad
 iniciar sesiones personales ni escribir resultados. La primera sonda intentó
 leer la inicialización de Play antes de terminar la navegación; se corrigió la
 espera, y el recorrido completo quedó verificado. Sin push de Git ni del registro.
+
+### Preferencia de idioma: Banc y Llibres (22-10-2026)
+
+El helper `services/portal/public/assets/language-preference.js` comparte la cookie
+funcional `edutictac_language` entre subdominios de edutictac.es. No es una sesión.
+Se distribuye una copia idéntica en `recursos/scripts/language-preference.js` y
+`edutictac-llibres/public/language-preference.js`, para permitir despliegues
+independientes sin peticiones a Commons ni dependencias entre servidores.
+Actualizar y verificar las tres copias juntas si cambia este protocolo.
+
+El Banc conserva `lang` para el filtro de idioma del contenido. Su interfaz usa
+`ui_lang`; `read` y `remember` aceptan la opción `{parameter: 'ui_lang'}`. Los enlaces
+del portal al Banc añaden ese parámetro. No convertir enlaces existentes con
+`lang=Castellano` en selecciones de idioma de interfaz.
+
+Llibres ofrece ES/CA/VA/EN; CA comparte la base VA con ajustes propios y EN tiene
+un diccionario completo. Los textos de las nuevas plantillas, metadatos eXe,
+fechas y créditos se adaptan al idioma. Volver desde otra aplicación actualiza la
+estantería; durante la edición conserva el idioma del libro abierto hasta volver
+a la estantería. Los libros existentes no se traducen ni se modifican por cambiar
+la preferencia. No se modifica el núcleo eXe ni las sesiones del alumnado.
+
+Validación local: navegador sobre Llibres con eXe real y libros sintéticos;
+pruebas del Banc con filtros/recarga y UI de escritorio/móvil; cookie entre
+subdominios HTTPS simulados. Estos cambios no implican despliegue en producción.
+
+Dependencia de publicación detectada en las pruebas: `recursos-api/app/books.py`
+solo admitía ES/VA. Se amplía su lista explícita a ES/CA/VA/EN conservando
+`ca-valencia`, los validadores de seguridad y la normalización antigua de VA.
+El HTML publicado y el índice conservan CA/EN y el lector EN traduce sus controles.
+Esta actualización de API también es necesaria al desplegar la interfaz Llibres;
+no basta con publicar los archivos estáticos. No requiere cambios de esquema.
+
+Interfaces locales actualizadas en los contenedores existentes con archivos de
+código (`docker cp`); Llibres ya monta `public` en lectura. Solo se reinicia la
+API local del banco para cargar su compilador; sin cambios de configuración,
+credenciales ni escrituras de prueba en sus datos. Las imágenes Docker existentes
+conservan el código anterior: al recrear deben reconstruirse desde estos repositorios.
+Prueba de navegador real local: Commons 8082 → Banc 8086 → Llibres 8098 → Commons,
+correcta en VA/EN/CA/ES; solo GET/HEAD. Producción permanece sin cambios.
+
+Verificación final de esta fase: 34 pruebas de portal/preferencia, 54 de Banc
+(escritorio/móvil), 3 de caché de API, 22 de taller Llibres, 4 de portabilidad
+Rebost en los cuatro idiomas, 33 de publicación/revisión API y 2 de integración
+completa CA/EN (crear → publicar → actualizar → descargar editable → reabrir →
+leer desde Banc → retirar conservando borrador), todas correctas.
+La prueba de publicación usa SQLite temporal e identidades sintéticas; no publica
+libros de prueba en el catálogo local ni en producción.
+
+Commits de los módulos: Banc `b30d903`, API `813e261`. Los commits de esta fase
+son locales, pendientes de push y despliegue de producción.
