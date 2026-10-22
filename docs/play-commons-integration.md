@@ -206,3 +206,25 @@ móvil y verifica la petición xAPI a Commons.
 - Una caída temporal de red conserva y reintenta el resultado autenticado;
   las actividades públicas no crean cola de resultados.
 - La integración con `recursos` no duplica identidades ni calificaciones.
+
+
+## Revisió docent d’activitats de l’alumnat — 22-10-2026
+
+Play usa ara una interfície Vue amb el mateix reproductor i exportació H5P.
+En una instal·lació Commons, cada activitat guardada per alumnat amb codi/PIN
+és privada, encara que el client demane visibilitat pública. La identitat
+i l’aula es resolen en ID API amb `/api/play/access`; no es prenen del JSON
+del navegador. Els docents de l’aula poden reproduir la còpia enviada, tornar-la
+amb comentaris, aprovar-la i publicar-la en el Banc de Recursos, o retirar-la.
+
+La revisió s’emmagatzema atòmicament en el JSON existent de Play. Una activitat
+guardada és una còpia immutable amb ID estable; editar-la continua creant
+una còpia nova, com abans. La revisió esperada evita decisions concurrents.
+No s’afig cap base de dades d’identitats ni es dupliquen grups. La publicació
+directa docent queda limitada a activitats pròpies; no pot saltar-se l’aprovació
+d’una activitat de l’alumnat. El banc accepta tots els tipus actuals, inclòs
+Mode Repte.
+
+[Implementació, proves i desplegament local](play-vue.md). La producció pública
+requerix acordar on resideixen les aules: no es pot convertir la demo independent
+en un servei amb aprovació només retirant-ne l’avís.

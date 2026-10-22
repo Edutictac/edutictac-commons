@@ -62,8 +62,12 @@ Prioritat actualitzada el 22-10-2026: Banc de recursos abans de Play.
   activat en local i lectura del llibre existent verificada. Detalls en
   `recursos/docs/VUE_MIGRATION.md`. Acceptació manual amb comptes autoritzats
   abans de producció. Punt de parada acordat: no començar Play ni altres mòduls.
-- [ ] Migrar els formularis propis de Play per tipus d'activitat, conservant
-  H5P, publicació i exportadors existents.
+- [x] Play en Vue: 13 editors, biblioteca, catàleg i reptes; H5P i xAPI
+  conservats. Activitats d’alumnat privades amb revisió del docent de l’aula
+  abans de publicar en el banc. [Arquitectura i proves](play-vue.md).
+- [ ] Activar Play públic fora de demo: decidir identitat/aules centrals o
+  revisió des del Commons de cada centre, i acceptació amb comptes reals.
+  Implementació i integració provades en local; el VPS continua sense canvis.
 - [x] Administració operativa en Vue: mòduls, docents, estat, còpies,
   actualitzacions i continguts; permisos, credencials temporals i recuperació
   de treballs comprovats. [Arquitectura i proves](admin-vue.md). Activada en local.
