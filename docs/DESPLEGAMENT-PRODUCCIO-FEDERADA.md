@@ -736,3 +736,11 @@ y carga la biblioteca bloqueando la ruta raíz `/styles.css`, como en un proxy
 limitado. Los 20 casos finales de navegador de Rebost pasan, incluidos estos
 casos en escritorio y móvil. El contraste del botón principal en ambos modos
 oscuros, automático y explícito, es 5,11:1.
+
+Actualización publicada con imagen
+`sha256:0d109173399c7bf9543ab878bf0b575da159c96c4196eeef7bfe01cfc6781ea9`.
+El enlace a la hoja común se verifica también dentro de la imagen Docker.
+Copia de configuración previa e informe en
+`/opt/edutictac-commons-portal/rebost-unified-20261022/` (privado).
+Solo se recrea el portal: identidad, banco, Play y EduHoot conservan sus
+procesos; configuración pública y beta idénticas. No push de Git ni del registro.
