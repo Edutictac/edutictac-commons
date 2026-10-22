@@ -2,8 +2,8 @@
 
 Estado: **fase 1 desplegada y validada el 22-10-2026: identidad funciona en
 Docker, con copias automáticas, recuperación NAS y avisos activos.** Banco,
-Play y EduHoot no se han reiniciado. Fase 2: portal candidato preparado en
-loopback; OIDC y publicación del dominio todavía pendientes.
+Play y EduHoot no se han reiniciado. **Fase 2 publicada con HTTPS y OIDC
+el 22-10-2026; pendiente la aceptación humana del acceso docente y aula.**
 EduTicTac está en uso: avanzar paso a paso. Cada fase se
 ejecuta solo tras confirmación explícita.
 
@@ -107,11 +107,12 @@ Además en esta fase: copia diaria cifrada o al NAS de `id.db` (patrón
 
 ### Fase 2 — commons.edutictac.es
 
-Preparación del portal completada en el apartado final. El dominio no se ha
-publicado todavía ni se ha creado el proveedor OIDC central.
+Portal publicado y proveedor OIDC propio configurado. Detalles y pruebas en
+el apartado final. La aceptación con una cuenta docente real sigue pendiente.
 
 - Contenedor `commons-portal` (puerto libre 8180-8189), nginx + certbot
-  (**listar `server_name` antes de `--expand`**, ver memoria certbot).
+  (certificado independiente `commons.edutictac.es`, sin ampliar ni reemplazar
+  certificados compartidos; ver memoria certbot).
 - Proveedor OIDC nuevo en Authentik `id.edutictac.es` (`commons`), grupo de
   profesorado; `EDUTICTAC_ID_OIDC_*` en el env del id-api.
 - `EDUTICTAC_ID_COOKIE_DOMAIN=.edutictac.es` y `COOKIE_SECURE=1`; probar sesión
@@ -515,3 +516,102 @@ correcto. Sin push de Git/registro y sin reiniciar las aplicaciones existentes.
 4. Validar el acceso humano docente, creación de aula y acceso de alumnado
    con código/PIN. No crear cuentas personales o datos de alumnado para
    suplir la aceptación real. No retirar la demo de Play en esta fase.
+
+
+## Fase 2: portal publicado y OIDC activado (22-10-2026)
+
+El usuario autoriza continuar con este paso. URL pública:
+**https://commons.edutictac.es/**; panel docente `/teacher.html`, alumnado
+`/student.html`, aviso técnico sobre datos `/privacy.html`.
+
+### Identidad docente
+
+Se crean solamente una aplicación y un proveedor **EduTicTac Commons**, slug
+`edutictac-commons`. Los ocho proveedores anteriores conservan su configuración
+completa, comparada mediante hashes sin mostrar sus secretos. Cliente
+confidencial, autorización por código, callback estricto
+`https://commons.edutictac.es/api/auth/oidc/callback`, identificador de sujeto
+opaco y clave de firma existente. No se modifica ningún grupo.
+
+Las vinculaciones de acceso admiten `professorat` o administradores de
+Authentik. Un mapping propio del scope `commons_roles` devuelve `profesor`
+para el grupo docente y `administrador` para superusuarios; no se reutiliza
+el blueprint local. Scopes solicitados: `openid profile commons_roles`, sin
+solicitar email. Las credenciales nuevas están en almacenamiento seguro,
+no en Git ni en archivos públicos.
+
+La API conserva su imagen y puerto 8005. Se añaden variables OIDC, cookies
+seguras con dominio `.edutictac.es` y perfiles `play,recursos,eduhoot`. Antes de
+activar: copia cifrada nueva, recuperación verificada desde NAS y ensayo sobre
+una copia de SQLite en un contenedor temporal 18005. Se verifica descubrimiento,
+cliente, callback, scopes y cookie de estado segura; después se retira el ensayo.
+
+Durante la activación se recrea únicamente el contenedor de identidad. Todas
+las tablas de SQLite se comparan antes y después y permanecen idénticas;
+banco, Play y EduHoot mantienen PID/contenedor y fecha de arranque. La
+monitorización se pausa brevemente y se reactiva para evitar avisos de
+mantenimiento. No se crean alumnos, grupos ni cuentas de prueba adicionales.
+
+Ensayo y reversión de configuración:
+`/opt/edutictac-id-api/oidc-20261022/`, privado. Para revertir este paso, restaurar
+el `service.env` anterior y recrear **la misma imagen Docker**, conservando
+la base actual y cualquier escritura nueva. No usar el rollback a venv/base
+antigua de la fase 1 para deshacer solo OIDC.
+
+### Publicación
+
+Imagen del portal probada:
+`sha256:0f0b4ae0c5ef24f3a6edf874f736ebcfbc6328e96e4c8ee8e1fe6c54e01102b7`.
+El contenedor continúa escuchando solo en 127.0.0.1:8180. nginx del host añade
+un vhost propio; plantilla en `services/portal/nginx/production-vhost.conf`.
+
+Certificado independiente `commons.edutictac.es`, validado con webroot
+`/var/www/commons-acme`; renovación por el temporizador existente de certbot
+y hook de recarga de nginx. Hashes de los certificados anteriores idénticos.
+No se cambia DNS ni se amplía el certificado compartido. Informes privados en
+`/opt/edutictac-commons-portal/publication-20261022/`.
+
+La primera sonda HTTP se adelantó a la activación de los nuevos workers de
+nginx y recibió una conexión cerrada por el catchall existente. El vhost nuevo
+se retiró automáticamente; se comprobó después el challenge desde localhost
+y desde fuera, se emitió el certificado y se publicó. Las sondas posteriores
+esperan a la disponibilidad efectiva: `nginx -t` y `systemctl reload` no
+sustituyen una petición real al vhost. No hubo reinicios de aplicaciones.
+
+### Interfaz y comprobaciones
+
+- Guía docente federada: asignación individual desde el catálogo, sin prometer
+  cesta ni documentos privados aún no desplegados en el banco central; enlace
+  al dominio real del banco. Comportamiento local preservado.
+- Aviso técnico de datos en cuatro idiomas: identificador docente, nombre de
+  usuario posible en cookie, alumnado código/PIN, resultados, copias y sesiones.
+  Describe los plazos implementados: cookie Commons hasta 180 días y sesión
+  adicional de Rebost de ocho horas. No copia el aviso de una instalación de
+  centro ni afirma que todas las aplicaciones compartan sesión.
+- 50 pruebas de navegador aprobadas, incluyendo escritorio/móvil, guía,
+  privacidad, idiomas y regresiones del catálogo y favoritos locales.
+- Navegador real contra el dominio público a 393 y 1024 píxeles: sin errores
+  JavaScript ni desbordamiento; acceso docente habilitado y redirección a
+  Authentik. Sin introducir credenciales ni impersonar a usuarios reales.
+- HTTPS validado y catálogo público 200; administración, setup y Quiosc 404.
+  Portadas de Recursos, Blocs, Play y EduHoot 200.
+- El endpoint de token acepta las credenciales del cliente y rechaza con
+  `invalid_grant` un código inexistente: valida el secreto sin crear una sesión.
+- Copia cifrada posterior con configuración nueva, recuperación NAS y monitor
+  comprobados. No push de Git ni del registro.
+
+### Aceptación pendiente y límites de esta fase
+
+Probar con una cuenta real del grupo docente: iniciar sesión, crear un aula,
+entregar un código/PIN y entrar como alumnado. Comprobar la separación entre
+las aulas de dos docentes. Esta aceptación no se sustituye por una redirección
+correcta ni se da por completada sin una sesión humana.
+
+La cookie de dominio común no demuestra interoperabilidad con las sesiones
+independientes de Recursos o Blocs. Favoritos del banco siguen desactivados.
+La apertura de actividades Play/EduHoot y el intercambio de resultados todavía
+requieren adaptar los contratos y URL del alumnado a sus dominios públicos;
+el lanzador actual conserva las rutas/puertos locales. No dar ese recorrido
+por validado ni activar Play fuera de demo por haber publicado el portal.
+Integración de Rebost en Blocs, Llibres y salida de demo de Play conservan sus
+fases posteriores. No continuar con ellas sin acordar el siguiente paso.
