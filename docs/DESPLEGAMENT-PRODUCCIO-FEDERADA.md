@@ -2,7 +2,8 @@
 
 Estado: **fase 1 desplegada y validada el 22-10-2026: identidad funciona en
 Docker, con copias automáticas, recuperación NAS y avisos activos.** Banco,
-Play y EduHoot no se han reiniciado. La fase 2 no ha empezado.
+Play y EduHoot no se han reiniciado. Fase 2: portal candidato preparado en
+loopback; OIDC y publicación del dominio todavía pendientes.
 EduTicTac está en uso: avanzar paso a paso. Cada fase se
 ejecuta solo tras confirmación explícita.
 
@@ -105,6 +106,9 @@ Además en esta fase: copia diaria cifrada o al NAS de `id.db` (patrón
 `backup pass→NAS`) y alerta en n8n si `/api/health` falla.
 
 ### Fase 2 — commons.edutictac.es
+
+Preparación del portal completada en el apartado final. El dominio no se ha
+publicado todavía ni se ha creado el proveedor OIDC central.
 
 - Contenedor `commons-portal` (puerto libre 8180-8189), nginx + certbot
   (**listar `server_name` antes de `--expand`**, ver memoria certbot).
@@ -438,3 +442,76 @@ resultados, asignaciones y pertenencias. SQLite íntegra; copia posterior y
 monitorización verificadas. La identidad está preparada para dar de alta aulas
 reales en la fase del portal. No se han reiniciado aplicaciones para esta baja.
 Informe privado: `/opt/edutictac-id-api/backups/test-identity-cleanup-20261022.json`.
+
+## Fase 2: portal candidato aislado preparado (22-10-2026)
+
+La preparación no modifica identidad ni las aplicaciones públicas. DNS de
+`commons.edutictac.es` ya apunta al VPS por IPv4/IPv6; no se ha cambiado DNS.
+No existían vhost ni certificado propio del dominio; el puerto 8180 estaba libre.
+
+### Perfil reutilizable del portal
+
+- `public/deployment.js` contiene únicamente configuración pública. Por defecto
+  mantiene el comportamiento local. El perfil federado configura los enlaces
+  públicos de Play, Recursos, EduHoot y Blocs y el origen de Authentik.
+- La portada federada se titula EduTicTac Commons en los cuatro idiomas, oculta
+  administración y Quiosc y no intenta activar una instalación local. El login
+  docente no depende del asistente del instalador. Mientras OIDC no esté activo,
+  el botón queda deshabilitado sin presentar instrucciones de administración.
+- El perfil nginx `services/portal/nginx/federated.conf` bloquea administración,
+  Quiosc, setup y login docente por token. Proxy de identidad a loopback 8005 y
+  lectura del catálogo a 8004. No monta sockets de Docker ni servicios del host.
+- Las URL configuradas rechazan protocolos ejecutables y credenciales en el URL.
+  Las instalaciones locales conservan enlaces, asistentes y favoritos anteriores.
+
+El banco **de producción** devuelve 404 en `/api/teacher/favorites`: no tiene
+todavía la ruta existente en desarrollo. Además, su sesión es independiente.
+Los favoritos se ocultan por defecto en modo federado; `bankFavorites: true`
+solo debe activarse después de desplegar y validar ruta y sesión compatibles.
+La búsqueda pública del catálogo funciona. La guía docente aún describe la
+cesta local: adaptar esa explicación y su enlace a Recursos antes de publicar.
+
+### Candidato en el VPS
+
+- Directorio `/opt/edutictac-commons-portal/`: Compose, nginx y configuración
+  pública. Configuración propia, sin secretos, separada de ID API.
+- Imagen `commons-portal:federated-candidate-20261022`, ID probado
+  `sha256:46c7d7126cb8d1c64d14cd86e7ed56b02d05cf3477b98af62abe13e46b1c81a8`.
+- Contenedor `edutictac-commons-portal-portal-1` sano, red host para alcanzar las
+  API ligadas a loopback, **escucha exclusivamente en 127.0.0.1:8180**.
+  Límite 128 MiB/0,5 CPU; sin socket Docker, sin montajes de administración.
+- No hay proxy público hacia ese puerto, certificado emitido ni proveedor
+  Commons creado en Authentik. Se ha verificado con un túnel SSH temporal,
+  cerrado al terminar. No anunciar todavía una URL pública utilizable.
+
+Validación: 46 pruebas de navegador aprobadas (perfil federado, idiomas y
+recursos/favoritos locales, escritorio y móvil), build docente correcto.
+En el candidato real: archivos servidos idénticos a los compilados, enlaces
+correctos, bloqueo HTTP de rutas técnicas, salud de API y catálogo público;
+interfaz a 393/1024 píxeles sin errores JavaScript ni desbordamiento.
+Captura móvil revisada. Comprobaciones asíncronas esperan la inicialización
+del panel antes de comprobar el botón de acceso.
+
+Todas las filas de la base de identidad y PID/fecha de arranque de banco y
+Play, así como ID/fecha de arranque de los contenedores de identidad y EduHoot,
+permanecen iguales. Informes privados `preparation-baseline.json` y
+`preparation-result.json` en el directorio del candidato. Monitor de identidad
+correcto. Sin push de Git/registro y sin reiniciar las aplicaciones existentes.
+
+### Siguiente paso antes de publicar
+
+1. Crear proveedor y aplicación Commons propios en Authentik, sin cambiar los
+   existentes. La organización usa el grupo **professorat**; ID API reconoce
+   el rol **profesor**. Resolverlo mediante un mapping específico del nuevo
+   proveedor, con autorización para el profesorado real; no importar sin
+   adaptar el blueprint del Authentik local ni crear administradores locales.
+2. Preparar y probar las variables OIDC de identidad, callback público exacto,
+   cookies seguras y permisos de aulas. Conservar la integración actual del
+   banco. La cookie común por sí sola no integra las sesiones independientes
+   del banco o Blocs: verificar cada contrato antes de darlo por terminado.
+3. Adaptar la ayuda al modo federado y el aviso de privacidad al servicio
+   central. Publicar el vhost con un **certificado propio** del dominio, sin
+   reemplazar el certificado compartido de las aplicaciones existentes.
+4. Validar el acceso humano docente, creación de aula y acceso de alumnado
+   con código/PIN. No crear cuentas personales o datos de alumnado para
+   suplir la aceptación real. No retirar la demo de Play en esta fase.
