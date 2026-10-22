@@ -31,6 +31,7 @@ Cada canvi funcional ha de deixar:
 Ordre acordat el 21-10-2026: començar pel **Rebost central**, reutilitzar la
 mateixa base de compilació i continuar amb el portal. Esta línia de treball no
 canvia l'estat de la versió publicada ni dona per completades les proves de camp.
+Prioritat actualitzada el 22-10-2026: Banc de recursos abans de Play.
 
 - [x] Rebost central i selector compartit de Blocs/Llibres en Vue. Catàlegs
   públics, imatges privades, crèdits i famílies Scratch conservats.
@@ -53,10 +54,14 @@ canvia l'estat de la versió publicada ni dona per completades les proves de cam
   grup de destinació fix, aturada en canviar d’aula i errors parcials explícits.
 - [x] Tauler de l’alumnat en Vue: codi/PIN, avatar, itinerari, historial/progrés
   i llançaments existents. Respostes tardanes descartades i PIN només temporal.
+- [x] Primera fase del Banc de recursos en el seu repositori: catàleg, cerca,
+  filtres, targetes, favorits, valoracions i paginació en Vue; motors conservats.
+- [ ] Continuar el Banc de recursos amb accés, propostes i panell de fonts.
+  Pla detallat en `recursos/docs/VUE_MIGRATION.md`; API en treball paral·lel.
 - [ ] Migrar els formularis propis de Play per tipus d'activitat, conservant
   H5P, publicació i exportadors existents.
-- [ ] Revisar Recursos com a projecte separat; Administració i Quiosc després,
-  amb proves específiques de les operacions i recuperació que executen.
+- [ ] Administració i Quiosc, amb proves específiques de les operacions
+  i recuperació que executen.
 
 Scratch/Blocs conserva React; Llibres conserva el motor eXeLearning. EduHoot
 queda fora d'esta migració. Vue no modifica l'autenticació: alumnat amb codi/PIN
