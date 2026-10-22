@@ -10,11 +10,14 @@
     <link rel="stylesheet" href="/beta-notice.css">
     <script src="/beta-notice.js" defer></script>
   </head>
-  <body>
+  <body class="commons-home">
     <header class="topbar">
-      <div>
-        <p class="eyebrow">EduTicTac Commons</p>
-        <h1 data-i18n="home.title">Demo local</h1>
+      <div class="brand-lockup">
+        <img src="/commons-mark.svg" alt="" width="46" height="46">
+        <div>
+          <p class="eyebrow">EduTicTac Commons</p>
+          <h1 data-i18n="home.title">Demo local</h1>
+        </div>
       </div>
       <div class="topbar-actions">
         <details id="sessionMenu" class="session-menu">
@@ -34,51 +37,63 @@
     </header>
 
     <main class="home-layout">
+      <section class="welcome" aria-labelledby="welcomeTitle">
+        <div class="welcome-copy">
+          <p class="eyebrow" data-i18n="home.welcomeEyebrow">Aprén · Crea · Compartix</p>
+          <h2 id="welcomeTitle" data-i18n="home.welcomeTitle">La teua aula, plena de possibilitats.</h2>
+          <p data-i18n="home.welcomeText">Un mateix espai per als teus grups, les teues creacions i les eines d’EduTicTac.</p>
+        </div>
+        <img class="welcome-art" src="/commons-learning.svg" alt="" width="440" height="290">
+      </section>
       <a class="role-card teacher-card" href="/teacher.html">
+        <span class="role-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/></svg></span>
         <span class="eyebrow" data-i18n="common.teachers">Professorat</span>
         <strong data-i18n="teacher.title">Tauler docent</strong>
         <span data-i18n="home.teacherCard.description">Generar grups, credencials, assignacions i resultats.</span>
+        <span class="card-arrow" aria-hidden="true">↗</span>
       </a>
 
       <a class="role-card student-card" href="/student.html">
+        <span class="role-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m2 8 10-5 10 5-10 5Zm4 3v6c4 3 8 3 12 0v-6m4-3v8"/></svg></span>
         <span class="eyebrow" data-i18n="common.students">Alumnat</span>
         <strong data-i18n="student.title">Tauler d'alumnat</strong>
         <span data-i18n="home.studentCard.description">Entrar amb codi + PIN, veure recorregut i completar activitats.</span>
+        <span class="card-arrow" aria-hidden="true">↗</span>
       </a>
 
       <section class="app-entry" aria-labelledby="appsTitle">
         <p class="eyebrow" data-i18n="home.appsEyebrow">Aplicaciones</p>
         <h2 id="appsTitle" data-i18n="home.appsTitle">Acceso directo</h2>
         <div class="app-entry-grid">
-          <a class="app-link" id="blocsHomeLink" href="/blocs-access.html" hidden>
-            <span aria-hidden="true">🧩</span>
+          <a class="app-link blocs-link" id="blocsHomeLink" href="/blocs-access.html" hidden>
+            <span class="app-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="7" height="7" rx="2"/><rect x="13" y="13" width="7" height="7" rx="2"/><path d="M15 4h5v5M4 15v5h5m4-13H9m-2 4v4m4 2h4"/></svg></span>
             <strong>EduTicTac Blocs</strong>
             <small data-i18n="home.blocsDescription">Crea i programa amb les teues imatges.</small>
           </a>
-          <a class="app-link" id="rebostHomeLink" href="/assets/">
-            <span aria-hidden="true">🖼️</span>
+          <a class="app-link rebost-link" id="rebostHomeLink" href="/assets/">
+            <span class="app-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="8" cy="9" r="1.5"/><path d="m4 17 5-5 4 4 3-3 5 5"/></svg></span>
             <strong>EduTicTac Rebost</strong>
             <small data-i18n="home.rebostDescription">Les teues imatges reutilitzables.</small>
           </a>
           <a class="app-link play-link" id="playHomeLink" data-module="play" href="/play/">
-            <span aria-hidden="true">🎮</span>
+            <span class="app-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 7h8a4 4 0 0 1 4 3l2 7a2 2 0 0 1-3 2l-4-3H9l-4 3a2 2 0 0 1-3-2l2-7a4 4 0 0 1 4-3Z"/><path d="M8 10v5m-2.5-2.5h5M16 11h.01M18 14h.01"/></svg></span>
             <strong data-i18n="home.playLink">EduTicTac Play</strong>
             <small data-i18n="home.playDescription">Crear y jugar actividades educativas.</small>
           </a>
           <a class="app-link resources-link" id="resourcesHomeLink" data-module="recursos" href="/recursos/">
-            <span aria-hidden="true">📚</span>
+            <span class="app-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5C9 3 5 3 2 4v15c3-1 7-1 10 1 3-2 7-2 10-1V4c-3-1-7-1-10 1Zm0 0v15"/></svg></span>
             <strong data-i18n="home.resourcesLink">Recursos</strong>
             <small data-i18n="home.resourcesDescription">Explorar el banco de recursos.</small>
           </a>
           <a class="app-link eduhoot-link" id="eduhootHomeLink" data-module="eduhoot" href="/eduhoot/">
-            <span aria-hidden="true">⚡</span>
+            <span class="app-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m14 2-10 12h7l-1 8 10-12h-7Z"/></svg></span>
             <strong data-i18n="home.eduhootLink">EduHoot</strong>
             <small data-i18n="home.eduhootDescription">Crear y jugar cuestionarios.</small>
           </a>
         </div>
       </section>
 
-      <a class="role-card" id="authentikHomeLink" href="http://localhost:9000/">
+      <a class="role-card account-card" id="authentikHomeLink" href="http://localhost:9000/">
         <span class="eyebrow" data-i18n="common.identity">Identitat</span>
         <strong data-i18n="home.authentikCard.title">Acceso del centro</strong>
         <span data-i18n="home.authentikCard.description">Gestionar l'accés comú del centre.</span>

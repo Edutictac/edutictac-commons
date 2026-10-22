@@ -3218,7 +3218,12 @@ Ja({
 		}), (e, t) => (X(), Z(J, null, [Q("header", null, [Q("a", {
 			href: "/",
 			hidden: U(i)
-		}, "← Commons", 8, so), Q("nav", co, [Q("button", {
+		}, [...t[12] ||= [Q("img", {
+			src: "/commons-mark.svg",
+			alt: "",
+			width: "32",
+			height: "32"
+		}, null, -1), hi(" Commons", -1)]], 8, so), Q("nav", co, [Q("button", {
 			type: "button",
 			"data-lang": "va",
 			class: fe({ active: l.value === "ca" })
@@ -3227,7 +3232,7 @@ Ja({
 			"data-lang": "es",
 			class: fe({ active: l.value === "es" })
 		}, "Castellano", 2)])]), Q("main", null, [
-			t[12] ||= Q("h1", null, "EduTicTac Rebost", -1),
+			t[13] ||= Q("h1", null, "EduTicTac Rebost", -1),
 			Q("p", lo, P(u.value.intro), 1),
 			Q("p", {
 				id: "sessionStatus",

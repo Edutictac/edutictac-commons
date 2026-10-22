@@ -660,3 +660,26 @@ Portal publicado con imagen
 Configuración previa y resultado en
 `/opt/edutictac-commons-portal/beta-rebost-20261022/`. No se reinician banco,
 Play ni EduHoot. No push de Git ni del registro.
+
+
+## Renovación visual del portal (22-10-2026)
+
+La portada incorpora una presentación breve, ilustración vectorial propia,
+accesos diferenciados para docentes y alumnado e iconos coherentes para las
+aplicaciones. Colores verdes y cálidos, tarjetas con más espacio y una jerarquía
+común en portada, paneles y Rebost. Se mantiene el aviso beta y el vocabulario
+«cuenta de EduTicTac». Las ilustraciones son SVG estáticos del propio proyecto;
+no hay fuentes remotas, servicios nuevos ni dependencias adicionales.
+
+Se conservan identificadores, enlaces y contratos de los componentes existentes.
+El diseño adapta sus columnas al ancho, mantiene los estilos oscuros del portal,
+resalta el foco de teclado y respeta la preferencia de reducir movimiento.
+La ilustración decorativa se oculta en pantallas estrechas para priorizar el
+acceso a los paneles.
+
+Validación previa: build de Rebost correcto y 134 pruebas de navegador de
+portal federado, idiomas, Rebost, alumnado, credenciales y recursos docentes.
+Además se revisan portada, panel docente, alumnado y Rebost a 393, 768 y 1440
+píxeles y con preferencia oscura: sin desbordamiento ni errores JavaScript.
+Capturas de portada móvil/escritorio, modo oscuro y panel docente inspeccionadas.
+Despliegue limitado a la imagen del portal; sin cambios de API ni de datos.

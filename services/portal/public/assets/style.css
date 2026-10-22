@@ -47,3 +47,20 @@ article .credit {font-size:.85rem;color:#43596d} article h2 {font-size:1.15rem;m
 #status:not(:empty) {padding:.75rem 1rem; border-radius:.5rem; position:sticky; top:0; z-index:5; background:#e1edf6}
 #status.success {background:#e8f6ef; color:#145234; border:2px solid #21805a}
 #status.error {background:#fff3cd; color:#553600; border:2px solid #b7791f}
+
+/* Keep the shared library in the same visual family as the Commons portal. */
+:root {color:#203b34; background:#f6f7f2}
+header {padding-block:1.25rem; border-bottom:1px solid #dde5df}
+header > a {display:flex; align-items:center; gap:.6rem; text-decoration:none; font-weight:700}
+header > a img {border-radius:10px}
+main {padding-top:1.5rem}
+h1 {letter-spacing:-.045em; font-size:clamp(1.8rem,4vw,2.35rem); margin-bottom:.5rem}
+button,input,select {border-radius:11px; border-color:#ccd9cf}
+button:hover {background:#e8f3ed}
+.collections button[aria-pressed="true"], .lang-switcher .active {background:#174f43; border-color:#174f43}
+article {border-color:#dde5df; border-radius:20px; box-shadow:0 4px 16px #203b3406}
+article .image {border-radius:12px; overflow:hidden}
+.session-status, #access {border-radius:16px}
+#access a {font-weight:600; color:#1b6653}
+#drop {border-radius:20px; border-color:#7da38d; background:#edf5ef}
+#intro, #collectionHint {color:#5f7168}

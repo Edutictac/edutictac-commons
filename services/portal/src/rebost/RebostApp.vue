@@ -151,7 +151,7 @@ onBeforeUnmount(() => {
 
 <template>
   <header>
-    <a href="/" :hidden="picking">← Commons</a>
+    <a href="/" :hidden="picking"><img :src="'/commons-mark.svg'" alt="" width="32" height="32"> Commons</a>
     <nav class="lang-switcher" aria-label="Idioma">
       <button type="button" data-lang="va" :class="{active: locale === 'ca'}">Valencià</button>
       <button type="button" data-lang="es" :class="{active: locale === 'es'}">Castellano</button>
