@@ -152,7 +152,7 @@ onBeforeUnmount(() => {
 
 <template>
   <header class="topbar">
-    <div class="brand-lockup" :hidden="picking">
+    <div v-if="!picking" class="brand-lockup">
       <img :src="'/commons-mark.svg'" alt="" width="46" height="46">
       <div><p class="eyebrow">EduTicTac Commons</p><h1>EduTicTac Rebost</h1></div>
     </div>

@@ -169,3 +169,15 @@ test('selector incrustat respecta anglés i conserva el contracte del projecte',
   await expect.poll(()=>page.evaluate(()=>window.selections.length)).toBe(1);
   expect(await page.evaluate(()=>window.selections[0])).toEqual({format:'rebost-selection',version:1,request:'english-check',id,name:'Personaje'});
 });
+
+
+test('la biblioteca pot carregar els estils comuns darrere de proxies limitats a assets',async({page,request})=>{
+  const canonical=await request.get('/styles.css'), alias=await request.get('/assets/commons.css');
+  expect(alias.status()).toBe(200);
+  expect(await alias.text()).toBe(await canonical.text());
+  await mockAPI(page);
+  await page.route('**/styles.css',route=>route.fulfill({status:404,body:''}));
+  await page.goto('/assets/');
+  await expect(page.locator('#oidcLogin')).toBeVisible();
+  expect(await page.evaluate(()=>getComputedStyle(document.documentElement).getPropertyValue('--accent').trim())).not.toBe('');
+});

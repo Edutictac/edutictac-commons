@@ -696,7 +696,10 @@ siguen pendientes como se describe en sus apartados; el cambio es visual.
 
 ## Rebost: estilos y traducciones compartidos (22-10-2026)
 
-Rebost carga ahora `/styles.css`, la misma base visual del portal. Su hoja
+Rebost carga ahora la misma base visual `/styles.css` del portal mediante
+`/assets/commons.css`, un enlace al archivo original. Así siguen funcionando
+los selectores servidos por proxies que solo reenvían `/assets/`, sin copiar
+la hoja ni exigir nuevas rutas en los editores. Su hoja
 `assets/style.css` contiene solo la disposición específica de la biblioteca,
 con selectores acotados a `.rebost-page` y variables comunes para colores,
 tipografía, controles, foco, tarjetas y modo oscuro. Se unifican cabecera,
@@ -727,3 +730,9 @@ y tema oscuro. El ensayo usa cuentas sintéticas locales; no modifica biblioteca
 personales de producción. Un test antiguo todavía esperaba ocultar el acceso
 al navegar como invitado: se actualiza a la conducta ya publicada de ofrecer
 entrada desde cualquier catálogo, preservando la navegación pública.
+
+La comprobación adicional de portabilidad compara la hoja común con su alias
+y carga la biblioteca bloqueando la ruta raíz `/styles.css`, como en un proxy
+limitado. Los 20 casos finales de navegador de Rebost pasan, incluidos estos
+casos en escritorio y móvil. El contraste del botón principal en ambos modos
+oscuros, automático y explícito, es 5,11:1.

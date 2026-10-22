@@ -2912,7 +2912,10 @@ function oo() {
 	return window.addEventListener("edutictac:langchange", t), Yn(() => window.removeEventListener("edutictac:langchange", t)), (t, n) => (e.value, window.i18nPortal.t(t, n));
 }
 // services/portal/src/rebost/RebostApp.vue
-var so = { class: "topbar" }, co = ["hidden"], lo = ["aria-label", "hidden"], uo = { href: "/" }, fo = { class: "topbar-actions" }, po = ["aria-label"], mo = ["aria-pressed"], ho = ["aria-pressed"], go = ["aria-pressed"], _o = ["aria-pressed"], vo = { class: "single-layout rebost-layout" }, yo = { class: "role-heading" }, bo = {
+var so = { class: "topbar" }, co = {
+	key: 0,
+	class: "brand-lockup"
+}, lo = ["aria-label", "hidden"], uo = { href: "/" }, fo = { class: "topbar-actions" }, po = ["aria-label"], mo = ["aria-pressed"], ho = ["aria-pressed"], go = ["aria-pressed"], _o = ["aria-pressed"], vo = { class: "single-layout rebost-layout" }, yo = { class: "role-heading" }, bo = {
 	id: "intro",
 	class: "teacher-intro"
 }, xo = ["hidden"], So = { id: "accessHint" }, Co = { class: "actions" }, wo = ["target"], To = ["target"], Eo = ["disabled", "hidden"], Do = { id: "mine" }, Oo = { class: "library-toolbar panel" }, ko = ["aria-label"], Ao = ["aria-pressed"], jo = ["hidden", "aria-pressed"], Mo = ["hidden", "aria-pressed"], No = { id: "collectionHint" }, Po = ["hidden"], Fo = ["aria-label", "onKeydown"], Io = { id: "uploadText" }, Lo = { id: "formats" }, Ro = { id: "uploadTypeLabel" }, zo = ["value"], Bo = ["hidden"], Vo = { id: "searchLabel" }, Ho = ["placeholder"], Uo = { id: "filterLabel" }, Wo = ["value"], Go = ["hidden"], Ko = ["aria-label", "hidden"], qo = ["hidden"], Jo = ["aria-label"], Yo = ["src", "alt"], Xo = {
@@ -3108,15 +3111,12 @@ Ja({
 			O = !1, k++, clearTimeout(ne), N(), window.removeEventListener("edutictac:langchange", A), window.removeEventListener("focus", F), window.removeEventListener("pagehide", _e), document.removeEventListener("keydown", me), document.body.classList.remove("picking");
 		}), (e, t) => (X(), Z(J, null, [
 			Q("header", so, [
-				Q("div", {
-					class: "brand-lockup",
-					hidden: W(a)
-				}, [...t[12] ||= [Q("img", {
+				W(a) ? gi("", !0) : (X(), Z("div", co, [...t[12] ||= [Q("img", {
 					src: "/commons-mark.svg",
 					alt: "",
 					width: "46",
 					height: "46"
-				}, null, -1), Q("div", null, [Q("p", { class: "eyebrow" }, "EduTicTac Commons"), Q("h1", null, "EduTicTac Rebost")], -1)]], 8, co),
+				}, null, -1), Q("div", null, [Q("p", { class: "eyebrow" }, "EduTicTac Commons"), Q("h1", null, "EduTicTac Rebost")], -1)]])),
 				Q("nav", {
 					class: "topnav",
 					"aria-label": W(d)("common.nav.label"),
