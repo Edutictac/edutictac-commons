@@ -51,3 +51,14 @@ test('configuració no admet URL executables ni credencials en els enllaços',as
   await expect(page.locator('#playHomeLink')).not.toHaveAttribute('href',/javascript:/);
   await expect(page.locator('#resourcesHomeLink')).not.toHaveAttribute('href',/password/);
 });
+
+
+test('guia federada explica assignació individual i obri el banc públic',async({page})=>{
+  await setup(page); await page.goto('/teacher-help.html');
+  await expect(page.locator('#helpResourcesLink')).toHaveAttribute('href',deployment.applications.recursos);
+  for(const language of ['es','va','ca','en']) {
+    await page.locator('[data-lang='+language+']').click();
+    await expect(page.locator('[data-i18n="help.federated.step4Title"]')).not.toHaveText(/help\./);
+    await expect(page.locator('[data-i18n="help.step4Text"]')).toHaveCount(0);
+  }
+});

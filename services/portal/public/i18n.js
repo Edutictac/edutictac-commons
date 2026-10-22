@@ -10,6 +10,11 @@
 
   var translations = {
     es: {
+      "help.federated.step3Text": "Busca actividades en el catálogo público de Recursos desde el panel docente.",
+      "help.federated.step4Title": "Asigna una actividad",
+      "help.federated.step4Text": "Selecciona tu grupo y pulsa Asignar en la actividad elegida. La cesta del banco aún no está conectada a este portal.",
+      "help.federated.securityTitle": "Acceso y privacidad",
+      "help.federated.securityText": "Utiliza códigos y PIN para el alumnado. No introduzcas nombres reales en los grupos ni publiques información personal en los recursos.",
       "student.refresh": "Actualizar actividades",
       "student.loading": "Cargando actividades…",
       "student.sessionExpired": "La sesión ha caducado. Entra de nuevo con tu código y PIN.",
@@ -381,6 +386,11 @@
       "setup.oidcStep3": "Si la instalación es antigua, reinicia Commons después de completar la configuración.",
     },
     ca: {
+      "help.federated.step3Text": "Busca activitats en el catàleg públic de Recursos des del tauler docent.",
+      "help.federated.step4Title": "Assigna una activitat",
+      "help.federated.step4Text": "Selecciona el teu grup i prem Assignar en l’activitat triada. La cistella del banc encara no està connectada a este portal.",
+      "help.federated.securityTitle": "Accés i privacitat",
+      "help.federated.securityText": "Utilitza codis i PIN per a l’alumnat. No introduïsques noms reals en els grups ni publiques informació personal en els recursos.",
       "student.refresh": "Actualitzar activitats",
       "student.loading": "Carregant activitats…",
       "student.sessionExpired": "La sessió ha caducat. Entra de nou amb el teu codi i PIN.",
@@ -945,6 +955,11 @@
       "setup.oidcStep3": "Si la instal·lació és antiga, reinicia Commons després de completar la configuració.",
     },
     en: {
+      "help.federated.step3Text": "Find activities in the public Resources catalogue from the teacher dashboard.",
+      "help.federated.step4Title": "Assign an activity",
+      "help.federated.step4Text": "Select your group and press Assign on an activity. The bank basket is not connected to this portal yet.",
+      "help.federated.securityTitle": "Access and privacy",
+      "help.federated.securityText": "Use codes and PINs for pupils. Avoid real names in group titles and personal information in published resources.",
       "student.refresh": "Refresh activities",
       "student.loading": "Loading activities…",
       "student.sessionExpired": "Your session has expired. Log in again with your code and PIN.",
