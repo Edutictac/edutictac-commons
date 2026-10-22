@@ -1,4 +1,4 @@
-// ../../../../../../home/daizan/github/Edutictac/edutictac-commons/node_modules/@vue/shared/dist/shared.esm-bundler.js
+// node_modules/@vue/shared/dist/shared.esm-bundler.js
 // @__NO_SIDE_EFFECTS__
 function e(e) {
 	let t = /* @__PURE__ */ Object.create(null);
@@ -824,7 +824,7 @@ function Qt(e, t = Infinity, n) {
 	}
 	return e;
 }
-// ../../../../../../home/daizan/github/Edutictac/edutictac-commons/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js
+// node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js
 function $t(e, t, n, r) {
 	try {
 		return r ? e(...r) : e();
