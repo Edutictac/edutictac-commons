@@ -1,0 +1,8 @@
+{
+  "version": "0.1.1~beta2~candidate5",
+  "architecture": "amd64",
+  "filename": "edutictac-commons_0.1.1~beta2~candidate5_amd64.deb",
+  "sha256": "3a294fb0ef262264fdb275888184181e63338da9e7d418a4ae5191766727cc20",
+  "source_revision": "6734fa640c04dc260b866edcdb846d1e97ae05ed",
+  "published_to_apt": false
+}

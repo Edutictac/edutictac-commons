@@ -58,9 +58,9 @@ configuración desde el repo. Para la instalación local hace falta:
   nginx-unprivileged con `public/`, el motor eXeLearning 4.0.5 verificado por
   SHA-256 (`scripts/bootstrap.py`, `upstream.json`) y las configuraciones de
   Rebost y publicación ya incluidas; `read_only` + `tmpfs` como ahora;
-- servicio `llibres` con `profiles: ["llibres"]` en `compose.yml`, servido bajo
-  `/llibres/` por el portal (mismo patrón que Blocs) para que comparta origen y
-  sesión con el Rebost;
+- servicio `llibres` con `profiles: ["llibres"]` en `compose.yml`, en el puerto
+  8098 configurable. El proxy de Rebost y las cookies por nombre de servidor
+  mantienen la integración con Commons (véase el ajuste al final);
 - la publicación al Banc solo se activa si el módulo `recursos` también lo
   está; si no, el botón Publicar no aparece;
 - revisar licencias en el paquete: wrapper AGPL-3.0, slide CC BY-SA 4.0, Fabric
@@ -91,7 +91,7 @@ configuración desde el repo. Para la instalación local hace falta:
 ## Paso 5 — Imágenes y manifiesto
 
 1. `VERSION` → `0.1.1-beta2`; `packaging/debian/control` → `0.1.1~beta2`.
-2. Construir las siete imágenes propias para `linux/amd64` con tag
+2. Construir las ocho imágenes propias para `linux/amd64` con tag
    `0.1.1-beta2`.
 3. `releases/0.1.1-beta2/`: `images.json` (digests y commits de origen de
    Commons, Recursos, Blocs y Llibres), `compose.images.json`,
@@ -123,9 +123,8 @@ configuración desde el repo. Para la instalación local hace falta:
 - Tamaño: Llibres lleva el motor eXe completo (miles de ficheros); medir la
   imagen y el tiempo de descarga en aula.
 - El portal no debe dejar de arrancar si Blocs/Llibres están desactivados.
-- Origen único: Blocs y Llibres bajo `/blocs/` y `/llibres/` del portal para que
-  el selector del Rebost (comprobación de `origin`/`source`/`nonce`) funcione
-  igual que en producción.
+- Selector de Rebost: Blocs bajo `/blocs/` y Llibres en su puerto, con sus
+  proxies y la comprobación de `origin`/`source`/`nonce` activos.
 - No cambiar el comportamiento de los centros con beta1: módulos nuevos
   desactivados por defecto al actualizar.
 
