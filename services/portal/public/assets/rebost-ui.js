@@ -2915,13 +2915,16 @@ function oo() {
 var so = { class: "topbar" }, co = {
 	key: 0,
 	class: "brand-lockup"
-}, lo = ["aria-label", "hidden"], uo = { href: "/" }, fo = { class: "topbar-actions" }, po = ["aria-label"], mo = ["aria-pressed"], ho = ["aria-pressed"], go = ["aria-pressed"], _o = ["aria-pressed"], vo = { class: "single-layout rebost-layout" }, yo = { class: "role-heading" }, bo = {
+}, lo = { class: "topbar-actions" }, uo = {
+	key: 0,
+	id: "accountWidget"
+}, fo = ["aria-label"], po = ["aria-pressed"], mo = ["aria-pressed"], ho = ["aria-pressed"], go = ["aria-pressed"], _o = { class: "single-layout rebost-layout" }, vo = { class: "role-heading" }, yo = {
 	id: "intro",
 	class: "teacher-intro"
-}, xo = ["hidden"], So = { id: "accessHint" }, Co = { class: "actions" }, wo = ["target"], To = ["target"], Eo = ["disabled", "hidden"], Do = { id: "mine" }, Oo = { class: "library-toolbar panel" }, ko = ["aria-label"], Ao = ["aria-pressed"], jo = ["hidden", "aria-pressed"], Mo = ["hidden", "aria-pressed"], No = { id: "collectionHint" }, Po = ["hidden"], Fo = ["aria-label", "onKeydown"], Io = { id: "uploadText" }, Lo = { id: "formats" }, Ro = { id: "uploadTypeLabel" }, zo = ["value"], Bo = ["hidden"], Vo = { id: "searchLabel" }, Ho = ["placeholder"], Uo = { id: "filterLabel" }, Wo = ["value"], Go = ["hidden"], Ko = ["aria-label", "hidden"], qo = ["hidden"], Jo = ["aria-label"], Yo = ["src", "alt"], Xo = {
+}, bo = ["hidden"], xo = { id: "accessHint" }, So = { class: "actions" }, Co = ["target"], wo = ["target"], To = ["disabled", "hidden"], Eo = { id: "mine" }, Do = { class: "library-toolbar panel" }, Oo = ["aria-label"], ko = ["aria-pressed"], Ao = ["hidden", "aria-pressed"], jo = ["hidden", "aria-pressed"], Mo = { id: "collectionHint" }, No = ["hidden"], Po = ["aria-label", "onKeydown"], Fo = { id: "uploadText" }, Io = { id: "formats" }, Lo = { id: "uploadTypeLabel" }, Ro = ["value"], zo = ["hidden"], Bo = { id: "searchLabel" }, Vo = ["placeholder"], Ho = { id: "filterLabel" }, Uo = ["value"], Wo = ["hidden"], Go = ["aria-label", "hidden"], Ko = ["hidden"], qo = ["aria-label"], Jo = ["src", "alt"], Yo = {
 	key: 0,
 	class: "admin-entry"
-}, Zo = { href: "/privacy.html" };
+}, Xo = { href: "/privacy.html" };
 // services/portal/src/rebost/main.js
 Ja({
 	__name: "RebostApp",
@@ -3097,7 +3100,7 @@ Ja({
 			download: he,
 			report: ie
 		}), Jn(async () => {
-			document.body.classList.toggle("picking", a), window.addEventListener("edutictac:langchange", A), window.addEventListener("focus", F), window.addEventListener("pagehide", _e), document.addEventListener("keydown", me), await j(async () => {
+			document.body.classList.toggle("picking", a), window.addEventListener("edutictac:langchange", A), window.addEventListener("focus", F), window.addEventListener("edutictac:sessionchange", F), window.addEventListener("pagehide", _e), document.addEventListener("keydown", me), await j(async () => {
 				let e;
 				try {
 					e = await n.me(), p.value = !0;
@@ -3108,64 +3111,57 @@ Ja({
 				h.value = e.capabilities, g.value ||= p.value ? "mine" : "catalog", (g.value === "catalog" && !h.value.includes("catalog") || g.value === "scratch" && !h.value.includes("scratch_catalog")) && (g.value = "mine"), f.value = !0, await M();
 			});
 		}), Yn(() => {
-			O = !1, k++, clearTimeout(ne), N(), window.removeEventListener("edutictac:langchange", A), window.removeEventListener("focus", F), window.removeEventListener("pagehide", _e), document.removeEventListener("keydown", me), document.body.classList.remove("picking");
+			O = !1, k++, clearTimeout(ne), N(), window.removeEventListener("edutictac:langchange", A), window.removeEventListener("focus", F), window.removeEventListener("edutictac:sessionchange", F), window.removeEventListener("pagehide", _e), document.removeEventListener("keydown", me), document.body.classList.remove("picking");
 		}), (e, t) => (X(), Z(J, null, [
-			Q("header", so, [
-				W(a) ? gi("", !0) : (X(), Z("div", co, [...t[12] ||= [Q("img", {
-					src: "/commons-mark.svg",
-					alt: "",
-					width: "46",
-					height: "46"
-				}, null, -1), Q("div", null, [Q("p", { class: "eyebrow" }, "EduTicTac Commons"), Q("h1", null, "EduTicTac Rebost")], -1)]])),
-				Q("nav", {
-					class: "topnav",
-					"aria-label": W(d)("common.nav.label"),
-					hidden: W(a)
-				}, [Q("a", uo, I(W(d)("common.home")), 1)], 8, lo),
-				Q("div", fo, [Q("p", {
-					id: "sessionStatus",
-					class: P(["status session-status", { signed: p.value }]),
-					role: "status"
-				}, I(f.value ? p.value ? W(d)("rebost.signedIn") : W(d)("rebost.signedOut") : W(d)("rebost.checkingSession")), 3), Q("div", {
-					class: "lang-switcher",
-					role: "group",
-					"aria-label": W(d)("common.lang.label")
-				}, [
-					Q("button", {
-						type: "button",
-						"data-lang": "ca",
-						title: "Català",
-						class: P({ active: u.value === "ca" }),
-						"aria-pressed": u.value === "ca"
-					}, "CA", 10, mo),
-					Q("button", {
-						type: "button",
-						"data-lang": "va",
-						title: "Valencià",
-						class: P({ active: u.value === "va" }),
-						"aria-pressed": u.value === "va"
-					}, "VA", 10, ho),
-					Q("button", {
-						type: "button",
-						"data-lang": "es",
-						title: "Español",
-						class: P({ active: u.value === "es" }),
-						"aria-pressed": u.value === "es"
-					}, "ES", 10, go),
-					Q("button", {
-						type: "button",
-						"data-lang": "en",
-						title: "English",
-						class: P({ active: u.value === "en" }),
-						"aria-pressed": u.value === "en"
-					}, "EN", 10, _o)
-				], 8, po)])
-			]),
-			Q("main", vo, [
-				Q("div", yo, [
+			Q("header", so, [W(a) ? gi("", !0) : (X(), Z("div", co, [...t[12] ||= [Q("img", {
+				src: "/commons-mark.svg",
+				alt: "",
+				width: "46",
+				height: "46"
+			}, null, -1), Q("div", null, [Q("p", { class: "eyebrow" }, "EduTicTac Commons"), Q("h1", null, "EduTicTac Rebost")], -1)]])), Q("div", lo, [W(a) ? (X(), Z("p", {
+				key: 1,
+				id: "sessionStatus",
+				class: P(["status session-status", { signed: p.value }]),
+				role: "status"
+			}, I(f.value ? p.value ? W(d)("rebost.signedIn") : W(d)("rebost.signedOut") : W(d)("rebost.checkingSession")), 3)) : (X(), Z("edutictac-account", uo)), Q("div", {
+				class: "lang-switcher",
+				role: "group",
+				"aria-label": W(d)("common.lang.label")
+			}, [
+				Q("button", {
+					type: "button",
+					"data-lang": "ca",
+					title: "Català",
+					class: P({ active: u.value === "ca" }),
+					"aria-pressed": u.value === "ca"
+				}, "CA", 10, po),
+				Q("button", {
+					type: "button",
+					"data-lang": "va",
+					title: "Valencià",
+					class: P({ active: u.value === "va" }),
+					"aria-pressed": u.value === "va"
+				}, "VA", 10, mo),
+				Q("button", {
+					type: "button",
+					"data-lang": "es",
+					title: "Español",
+					class: P({ active: u.value === "es" }),
+					"aria-pressed": u.value === "es"
+				}, "ES", 10, ho),
+				Q("button", {
+					type: "button",
+					"data-lang": "en",
+					title: "English",
+					class: P({ active: u.value === "en" }),
+					"aria-pressed": u.value === "en"
+				}, "EN", 10, go)
+			], 8, fo)])]),
+			Q("main", _o, [
+				Q("div", vo, [
 					t[13] ||= Q("p", { class: "eyebrow" }, "EduTicTac Rebost", -1),
 					Q("h2", null, I(W(d)("rebost.heading")), 1),
-					Q("p", bo, I(W(d)("rebost.intro")), 1)
+					Q("p", yo, I(W(d)("rebost.intro")), 1)
 				]),
 				Q("p", {
 					id: "status",
@@ -3184,26 +3180,26 @@ Ja({
 					id: "access",
 					class: "panel",
 					hidden: !f.value || p.value
-				}, [Q("p", So, I(W(d)("rebost.access")), 1), Q("div", Co, [Q("a", {
+				}, [Q("p", xo, I(W(d)("rebost.access")), 1), Q("div", So, [Q("a", {
 					class: "button-link secondary",
 					id: "studentLogin",
 					href: "/student.html?next=%2Fassets%2F",
 					target: W(a) ? "_blank" : void 0,
 					rel: "noopener noreferrer"
-				}, I(W(d)("rebost.student")), 9, wo), Q("a", {
+				}, I(W(d)("rebost.student")), 9, Co), Q("a", {
 					class: "button-link",
 					id: "oidcLogin",
 					href: "/api/auth/oidc/login?next=%2Fassets%2F",
 					target: W(a) ? "_blank" : void 0,
 					rel: "noopener noreferrer"
-				}, I(W(d)("rebost.oidc")), 9, To)])], 8, xo),
+				}, I(W(d)("rebost.oidc")), 9, wo)])], 8, bo),
 				Q("fieldset", {
 					id: "controls",
 					disabled: m.value || !f.value,
 					hidden: !f.value
 				}, [
-					Q("legend", Do, I(D.value), 1),
-					Q("div", Oo, [
+					Q("legend", Eo, I(D.value), 1),
+					Q("div", Do, [
 						Q("div", {
 							id: "collections",
 							class: "collections",
@@ -3216,7 +3212,7 @@ Ja({
 								type: "button",
 								"aria-pressed": g.value === "mine",
 								onClick: t[0] ||= (e) => j(() => ae("mine"))
-							}, I(W(d)("rebost.mine")) + I(p.value ? "" : " · " + W(d)("common.login")), 9, Ao),
+							}, I(W(d)("rebost.mine")) + I(p.value ? "" : " · " + W(d)("common.login")), 9, ko),
 							Q("button", {
 								id: "catalogTab",
 								class: "secondary",
@@ -3224,7 +3220,7 @@ Ja({
 								hidden: !h.value.includes("catalog"),
 								"aria-pressed": g.value === "catalog",
 								onClick: t[1] ||= (e) => j(() => ae("catalog"))
-							}, I(W(d)("rebost.catalog")), 9, jo),
+							}, I(W(d)("rebost.catalog")), 9, Ao),
 							Q("button", {
 								id: "scratchTab",
 								class: "secondary",
@@ -3232,9 +3228,9 @@ Ja({
 								hidden: !h.value.includes("scratch_catalog"),
 								"aria-pressed": g.value === "scratch",
 								onClick: t[2] ||= (e) => j(() => ae("scratch"))
-							}, I(W(d)("rebost.scratch")), 9, Mo)
-						], 8, ko),
-						Q("p", No, I(W(a) ? W(d)("rebost.pickHint") : g.value === "mine" ? W(d)("rebost.privateHint") : g.value === "scratch" ? W(d)("rebost.scratchHint") : W(d)("rebost.catalogHint")), 1),
+							}, I(W(d)("rebost.scratch")), 9, jo)
+						], 8, Oo),
+						Q("p", Mo, I(W(a) ? W(d)("rebost.pickHint") : g.value === "mine" ? W(d)("rebost.privateHint") : g.value === "scratch" ? W(d)("rebost.scratchHint") : W(d)("rebost.catalogHint")), 1),
 						Q("div", {
 							id: "uploadArea",
 							hidden: W(a) || g.value !== "mine" || !p.value
@@ -3251,8 +3247,8 @@ Ja({
 							onDragleave: t[6] ||= (e) => C.value = !1,
 							onDrop: Ha(ue, ["prevent"])
 						}, [
-							Q("strong", Io, I(W(d)("rebost.upload")), 1),
-							Q("p", Lo, I(W(d)("rebost.formats")), 1),
+							Q("strong", Fo, I(W(d)("rebost.upload")), 1),
+							Q("p", Io, I(W(d)("rebost.formats")), 1),
 							Q("input", {
 								id: "files",
 								ref_key: "filesInput",
@@ -3264,36 +3260,36 @@ Ja({
 								onClick: t[3] ||= Ha(() => {}, ["stop"]),
 								onChange: le
 							}, null, 544)
-						], 42, Fo), Q("label", null, [Q("span", Ro, I(W(d)("rebost.uploadType")), 1), wn(Q("select", {
+						], 42, Po), Q("label", null, [Q("span", Lo, I(W(d)("rebost.uploadType")), 1), wn(Q("select", {
 							id: "uploadType",
 							"onUpdate:modelValue": t[7] ||= (e) => y.value = e
 						}, [(X(), Z(J, null, nr(c, (e) => Q("option", {
 							key: e,
 							value: e
-						}, I(W(d)("rebost." + e)), 9, zo)), 64))], 512), [[Ia, y.value]])])], 8, Po),
+						}, I(W(d)("rebost." + e)), 9, Ro)), 64))], 512), [[Ia, y.value]])])], 8, No),
 						Q("div", {
 							class: "filters",
 							hidden: E.value
-						}, [Q("label", null, [Q("span", Vo, I(W(d)("rebost.search")), 1), wn(Q("input", {
+						}, [Q("label", null, [Q("span", Bo, I(W(d)("rebost.search")), 1), wn(Q("input", {
 							id: "search",
 							"onUpdate:modelValue": t[8] ||= (e) => _.value = e,
 							type: "search",
 							placeholder: W(d)("rebost.searchPlaceholder"),
 							maxlength: "200",
 							onInput: oe
-						}, null, 40, Ho), [[Fa, _.value]])]), Q("label", null, [Q("span", Uo, I(W(d)("rebost.filter")), 1), wn(Q("select", {
+						}, null, 40, Vo), [[Fa, _.value]])]), Q("label", null, [Q("span", Ho, I(W(d)("rebost.filter")), 1), wn(Q("select", {
 							id: "filter",
 							"onUpdate:modelValue": t[9] ||= (e) => v.value = e,
 							onChange: t[10] ||= (e) => j(() => M())
 						}, [(X(!0), Z(J, null, nr(W(l), (e) => (X(), Z("option", {
 							key: e,
 							value: e
-						}, I(e ? W(d)("rebost." + e) : W(d)("rebost.all")), 9, Wo))), 128))], 544), [[Ia, v.value]])])], 8, Bo)
+						}, I(e ? W(d)("rebost." + e) : W(d)("rebost.all")), 9, Uo))), 128))], 544), [[Ia, v.value]])])], 8, zo)
 					]),
 					Q("p", {
 						id: "empty",
 						hidden: E.value || b.value.length > 0 || m.value
-					}, I(W(d)("rebost.empty")), 9, Go),
+					}, I(W(d)("rebost.empty")), 9, Wo),
 					Q("section", {
 						id: "grid",
 						"aria-label": D.value,
@@ -3301,14 +3297,14 @@ Ja({
 					}, [(X(!0), Z(J, null, nr(b.value, (e) => (X(), oi(ao, {
 						key: e.id,
 						item: e
-					}, null, 8, ["item"]))), 128))], 8, Ko),
+					}, null, 8, ["item"]))), 128))], 8, Go),
 					Q("button", {
 						id: "more",
 						type: "button",
 						hidden: E.value || !x.value,
 						onClick: t[11] ||= (e) => j(() => M(!0))
-					}, I(W(d)("rebost.more")), 9, qo)
-				], 8, Eo),
+					}, I(W(d)("rebost.more")), 9, Ko)
+				], 8, To),
 				Q("dialog", {
 					id: "preview",
 					ref_key: "dialog",
@@ -3323,9 +3319,9 @@ Ja({
 					id: "previewImage",
 					src: ee.value || void 0,
 					alt: te.value
-				}, null, 8, Yo)], 40, Jo)
+				}, null, 8, Jo)], 40, qo)
 			]),
-			r && !W(a) ? (X(), Z("footer", Xo, [Q("a", Zo, I(W(d)("privacy.title")), 1)])) : gi("", !0)
+			r && !W(a) ? (X(), Z("footer", Yo, [Q("a", Xo, I(W(d)("privacy.title")), 1)])) : gi("", !0)
 		], 64));
 	}
 }).mount("#rebost");

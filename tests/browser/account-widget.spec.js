@@ -90,3 +90,22 @@ test('el xip canvia d’idioma amb el selector de la pàgina', async ({ page }) 
   await page.locator('[data-lang="en"]').click();
   await expect(home).toHaveAttribute('aria-label', 'EduTicTac home');
 });
+
+for (const [path, homeLabel] of [
+  ['/privacy.html?lang=va', 'Inici d’EduTicTac'],
+  ['/teacher-help.html?lang=es', 'Inicio de EduTicTac'],
+  ['/quiosc.html?lang=en', 'EduTicTac home'],
+  ['/blocs-access.html?lang=va', 'Inici d’EduTicTac'],
+  ['/llibres-login.html?lang=va', 'Inici d’EduTicTac'],
+  ['/assets/?lang=ca', 'Inici d’EduTicTac'],
+]) {
+  test(`${path}: enllaç d’inici i xip de compte visibles`, async ({ page }) => {
+    await mockSession(page, { session: anonymous, logouts: 0 });
+    await page.goto(path);
+    const home = page.locator('edutictac-account .eta-home').first();
+    await expect(home).toBeVisible();
+    await expect(home).toHaveAttribute('href', '/');
+    await expect(home).toHaveAttribute('aria-label', homeLabel);
+    await expect(page.locator('edutictac-account summary')).toBeVisible();
+  });
+}

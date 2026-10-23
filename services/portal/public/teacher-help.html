@@ -8,6 +8,7 @@
     <script src="/assets/language-preference.js"></script>
     <script src="/i18n.js"></script>
     <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/assets/account-widget.css"><script src="/assets/account-widget.js" defer></script>
     <link rel="stylesheet" href="/beta-notice.css">
     <script src="/beta-notice.js" defer></script>
   </head>
@@ -22,9 +23,9 @@
       </div>
       <nav class="topnav" aria-label="Navegación principal" data-i18n-title="common.nav.label">
         <a href="/teacher.html" data-i18n="common.teachers">Panel docente</a>
-        <a href="/" data-i18n="common.home">Inicio</a>
       </nav>
       <div class="topbar-actions">
+        <edutictac-account id="accountWidget"></edutictac-account>
         <div class="lang-switcher" role="group" aria-label="Idioma" data-i18n-title="common.lang.label">
           <button type="button" data-lang="ca" title="Català">CA</button>
           <button type="button" data-lang="va" title="Valencià">VA</button>

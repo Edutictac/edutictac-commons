@@ -5,9 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>EduTicTac Llibres · Acceso</title>
     <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/assets/account-widget.css">
     <script src="/llibres-login.js" defer></script>
+    <!-- Després de llibres-login.js, que fixa l'idioma de la pestanya. -->
+    <script src="/assets/account-widget.js" defer></script>
   </head>
   <body>
+    <header class="topbar">
+      <div class="topbar-actions"><edutictac-account id="accountWidget"></edutictac-account></div>
+    </header>
     <main class="single-layout">
       <section class="panel" aria-live="polite">
         <p class="eyebrow">EduTicTac Llibres</p>

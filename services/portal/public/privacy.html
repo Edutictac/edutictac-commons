@@ -2,12 +2,12 @@
 <html lang="ca"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title data-i18n="privacy.title">Privacitat i dades</title>
 <script src="/deployment.js"></script><script src="/assets/language-preference.js"></script>
-    <script src="/i18n.js"></script><link rel="stylesheet" href="/styles.css">  <link rel="stylesheet" href="/beta-notice.css">
+    <script src="/i18n.js"></script><link rel="stylesheet" href="/styles.css"><link rel="stylesheet" href="/assets/account-widget.css"><script src="/assets/account-widget.js" defer></script>  <link rel="stylesheet" href="/beta-notice.css">
     <script src="/beta-notice.js" defer></script>
   </head>
 <body><header class="topbar"><div><p class="eyebrow">EduTicTac Commons</p><h1 data-i18n="privacy.title">Privacitat i dades</h1></div>
-<nav class="topnav"><a href="/" data-i18n="common.home">Inici</a></nav>
-<div class="lang-switcher" role="group" aria-label="Idioma"><button data-lang="va">VA</button><button data-lang="ca">CA</button><button data-lang="es">ES</button><button data-lang="en">EN</button></div></header>
+<div class="topbar-actions"><edutictac-account id="accountWidget"></edutictac-account>
+<div class="lang-switcher" role="group" aria-label="Idioma"><button data-lang="va">VA</button><button data-lang="ca">CA</button><button data-lang="es">ES</button><button data-lang="en">EN</button></div></div></header>
 <main class="single-layout"><article>
 <section class="panel"><h2 data-i18n="privacy.teacherTitle"></h2><p data-i18n="privacy.teacherText"></p></section>
 <section class="panel"><h2 data-i18n="privacy.studentTitle"></h2><p data-i18n="privacy.studentText"></p></section>

@@ -21,6 +21,11 @@ async function mockAPI(page, authenticated = false) {
     if (path.endsWith('/thumbnail') || path.endsWith('/content')) return route.fulfill({contentType: 'image/png', body: png});
     return route.fulfill({status: 404, json: {detail: 'not_found'}});
   });
+  await page.route(/\/api\/auth\/session(\?|$)/, route => route.fulfill({json: {
+    authenticated: signedIn, kind: signedIn ? 'oidc' : 'anonymous', role: signedIn ? 'profesor' : null,
+    display_name: signedIn ? 'Docent Prova' : null, username: null, public_code: null, login_available: true,
+    links: {login: '/api/auth/oidc/login?next=%2Fassets%2F', teacher: '/teacher.html', student: '/student.html', account: null, logout: '/api/auth/session/logout'},
+  }}));
   return {requests, signIn(value) { signedIn = value; }};
 }
 
@@ -99,7 +104,8 @@ test('visitant veu la sessió i ha d’entrar abans de guardar, sense còpies fa
   await mockAPI(page);let copies=0;
   await page.route('**/copies',route=>{copies++;return route.fulfill({json:{}});});
   await page.goto('/assets/?collection=catalog');await page.locator('[data-lang=es]').click();
-  await expect(page.locator('#sessionStatus')).toContainText('Sin identificar');
+  await expect(page.locator('edutictac-account summary')).toHaveAttribute('aria-label', 'Entrar');
+  await expect(page.locator('edutictac-account .eta-home')).toHaveAttribute('href', '/');
   await expect(page.locator('#oidcLogin')).toBeVisible();
   await page.getByRole('button',{name:'Entrar para guardar una copia',exact:true}).click();
   await expect(page.locator('#status')).toContainText('Para guardar esta imagen, entra');
@@ -115,7 +121,7 @@ for(const refreshFails of [false,true]) {
       return route.fallback();
     });
     await page.goto('/assets/?collection=catalog');await page.locator('[data-lang=es]').click();
-    await expect(page.locator('#sessionStatus')).toContainText('Sesión iniciada');
+    await expect(page.locator('edutictac-account summary')).toHaveAttribute('aria-label', 'Docent Prova · Profesorado');
     await expect(page.locator('#oidcLogin')).toBeHidden();
     await page.getByRole('button',{name:/^Guardar (esta imagen|en mis imágenes)$/}).click();
     await expect(page.locator('#status')).toContainText(refreshFails?'La imagen se ha guardado, pero':'Imagen guardada en Mis imágenes');
@@ -130,13 +136,13 @@ test('quatre idiomes compartits: selector únic, noms amb alternativa i errors r
   await page.route('**/family',route=>route.fulfill({json:{id,revision:'changed',items:[item]}}));
   await page.goto('/assets/?collection=scratch');
   for(const [lang,heading,guest,name] of [
-    ['es','Tu biblioteca de imágenes','Sin identificar','Personaje'],
-    ['va','La teua biblioteca d’imatges','Sense identificar','Personatge'],
-    ['ca','La teva biblioteca d’imatges','Sense identificar','Personatge'],
-    ['en','Your image library','Not signed in','Personaje']]) {
+    ['es','Tu biblioteca de imágenes','Inicio de EduTicTac','Personaje'],
+    ['va','La teua biblioteca d’imatges','Inici d’EduTicTac','Personatge'],
+    ['ca','La teva biblioteca d’imatges','Inici d’EduTicTac','Personatge'],
+    ['en','Your image library','EduTicTac home','Personaje']]) {
     await page.locator('[data-lang='+lang+']').click();
     await expect(page.locator('.role-heading h2')).toHaveText(heading);
-    await expect(page.locator('#sessionStatus')).toHaveText(guest);
+    await expect(page.locator('edutictac-account .eta-home')).toHaveAttribute('aria-label', guest);
     await expect(page.locator('.lang-switcher .active')).toHaveCount(1);
     await expect(page.locator('.lang-switcher .active')).toHaveAttribute('data-lang',lang);
     await expect(page.locator('#grid > article > h2')).toHaveText(name);

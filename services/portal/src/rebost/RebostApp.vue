@@ -128,6 +128,7 @@ onMounted(async () => {
   document.body.classList.toggle('picking', picking);
   window.addEventListener('edutictac:langchange', language);
   window.addEventListener('focus', recheckSession);
+  window.addEventListener('edutictac:sessionchange', recheckSession);
   window.addEventListener('pagehide', pagehide);
   document.addEventListener('keydown', keydown);
   await run(async () => {
@@ -144,6 +145,7 @@ onBeforeUnmount(() => {
   alive = false; listGeneration++; clearTimeout(searchTimer); clearPreview();
   window.removeEventListener('edutictac:langchange', language);
   window.removeEventListener('focus', recheckSession);
+  window.removeEventListener('edutictac:sessionchange', recheckSession);
   window.removeEventListener('pagehide', pagehide);
   document.removeEventListener('keydown', keydown);
   document.body.classList.remove('picking');
@@ -156,11 +158,10 @@ onBeforeUnmount(() => {
       <img :src="'/commons-mark.svg'" alt="" width="46" height="46">
       <div><p class="eyebrow">EduTicTac Commons</p><h1>EduTicTac Rebost</h1></div>
     </div>
-    <nav class="topnav" :aria-label="t('common.nav.label')" :hidden="picking">
-      <a href="/">{{ t('common.home') }}</a>
-    </nav>
     <div class="topbar-actions">
-      <p id="sessionStatus" class="status session-status" :class="{signed: authenticated}" role="status">{{ !active ? t('rebost.checkingSession') : authenticated ? t('rebost.signedIn') : t('rebost.signedOut') }}</p>
+      <!-- Fora del selector incrustat, el xip comú mostra la sessió i l'eixida. -->
+      <edutictac-account v-if="!picking" id="accountWidget"></edutictac-account>
+      <p v-else id="sessionStatus" class="status session-status" :class="{signed: authenticated}" role="status">{{ !active ? t('rebost.checkingSession') : authenticated ? t('rebost.signedIn') : t('rebost.signedOut') }}</p>
       <div class="lang-switcher" role="group" :aria-label="t('common.lang.label')">
         <button type="button" data-lang="ca" title="Català" :class="{active: locale === 'ca'}" :aria-pressed="locale === 'ca'">CA</button>
         <button type="button" data-lang="va" title="Valencià" :class="{active: locale === 'va'}" :aria-pressed="locale === 'va'">VA</button>
