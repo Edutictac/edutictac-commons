@@ -186,3 +186,24 @@ Els projectes i llibres es guarden al navegador o es descarreguen. El backup del
 servidor no substituïx la descàrrega d’eixos treballs. El Rebost i les publicacions
 del Banc continuen en les seues còpies existents. La caché del catàleg Blocs és
 regenerable i no necessita una còpia pròpia.
+
+
+## Fitxers de l’aula
+
+Els documents compartits i les entregues privades es guarden en
+`data/id-api/files`. La SQLite conserva les metadades i els permisos. El backup
+v2 de beta2 ja arreplega `id-api` com a arrel addicional en
+`local-data/files.tar.gz`, de manera que una actualització només d’imatges no
+necessita canviar els scripts de còpia instal·lats. Cal conservar l’arxiu i
+`id-api/id.db` de la mateixa còpia; no restaurar-los de dies diferents.
+
+La prova `tests/test_classroom_files_backups.py` executa el helper exacte de
+beta2 (commit `80f909c`) i comprova la recuperació de compartits i entregues.
+Els fitxers substituïts no tenen historial: només una còpia anterior pot
+recuperar-ne la versió antiga. No es recomana un `EDUTICTAC_ID_FILES_DIR` fora
+del volum `data`; exigiria una política de còpies diferent.
+
+El script de còpia federada també inclou els blobs referenciats per la SQLite,
+amb bloqueig d’escriptures durant la captura, xifrat directe i hashes del
+contingut. Esta preparació no desplega el script al servidor de producció:
+cal actualitzar-lo i verificar-ne la recuperació abans d’activar allí la funció.

@@ -10,6 +10,11 @@
 
   var translations = {
     es: {
+      "privacy.filesTitle": "Archivos del aula",
+      "privacy.filesText": "Los archivos se guardan en el servidor de Commons y sus copias de seguridad. Los compartidos los ve toda el aula; cada entrega solo la ven su autor y el profesorado con acceso actual al aula. El alumnado puede borrar sus entregas y el profesorado puede borrar cualquier archivo del aula. Al dar de baja un código se conservan las entregas para el profesorado; al borrar el aula se eliminan sus archivos.",
+      "help.filesTitle": "Compartir archivos y recibir entregas",
+      "help.filesText": "Selecciona un aula y abre Archivos del aula. En Compartidos puedes subir archivos o carpetas para todo el grupo. En Entregas del alumnado ves los trabajos privados. El alumnado entra con código y PIN y sube sus trabajos en Mis entregas. Las subidas copian los archivos, sin sincronizar las carpetas del dispositivo.",
+
       "files.title": "Archivos del aula",
       "files.studentHint": "Aquí tienes los archivos que comparte tu profesorado.",
       "files.teacherHint": "Comparte archivos y carpetas con toda el aula, o consulta las entregas privadas del alumnado.",
@@ -508,6 +513,11 @@
       "setup.oidcStep3": "Si la instalación es antigua, reinicia Commons después de completar la configuración.",
     },
     ca: {
+      "privacy.filesTitle": "Fitxers de l’aula",
+      "privacy.filesText": "Els fitxers es guarden al servidor de Commons i a les còpies de seguretat. Els compartits els veu tota l’aula; cada entrega només la veuen el seu autor i el professorat amb accés actual a l’aula. L’alumnat pot esborrar les seues entregues i el professorat pot esborrar qualsevol fitxer de l’aula. En donar de baixa un codi es conserven les entregues per al professorat; en esborrar l’aula s’eliminen els fitxers.",
+      "help.filesTitle": "Compartir fitxers i rebre entregues",
+      "help.filesText": "Selecciona una aula i obri Fitxers de l’aula. En Compartits pots pujar fitxers o carpetes per a tot el grup. En Entregues de l’alumnat veus els treballs privats. L’alumnat entra amb codi i PIN i puja els treballs en Les meues entregues. Les pujades copien els fitxers, sense sincronitzar les carpetes del dispositiu.",
+
       "files.title": "Fitxers de l’aula",
       "files.studentHint": "Ací tens els fitxers que comparteix el professorat.",
       "files.teacherHint": "Comparteix fitxers i carpetes amb tota l’aula, o consulta les entregues privades de l’alumnat.",
@@ -1006,6 +1016,11 @@
       "setup.oidcStep3": "Si la instal·lació és antiga, reinicia Commons després de completar la configuració.",
     },
     va: {
+      "privacy.filesTitle": "Fitxers de l’aula",
+      "privacy.filesText": "Els fitxers es guarden al servidor de Commons i a les còpies de seguretat. Els compartits els veu tota l’aula; cada entrega només la veuen el seu autor i el professorat amb accés actual a l’aula. L’alumnat pot esborrar les seues entregues i el professorat pot esborrar qualsevol fitxer de l’aula. En donar de baixa un codi es conserven les entregues per al professorat; en esborrar l’aula s’eliminen els fitxers.",
+      "help.filesTitle": "Compartir fitxers i rebre entregues",
+      "help.filesText": "Selecciona una aula i obri Fitxers de l’aula. En Compartits pots pujar fitxers o carpetes per a tot el grup. En Entregues de l’alumnat veus els treballs privats. L’alumnat entra amb codi i PIN i puja els treballs en Les meues entregues. Les pujades copien els fitxers, sense sincronitzar les carpetes del dispositiu.",
+
       "files.title": "Fitxers de l’aula",
       "files.studentHint": "Ací tens els fitxers que compartix el professorat.",
       "files.teacherHint": "Compartix fitxers i carpetes amb tota l’aula, o consulta les entregues privades de l’alumnat.",
@@ -1310,6 +1325,11 @@
       "setup.oidcStep3": "Si la instal·lació és antiga, reinicia Commons després de completar la configuració.",
     },
     en: {
+      "privacy.filesTitle": "Classroom files",
+      "privacy.filesText": "Files are stored on the Commons server and in its backups. Shared files are visible to the whole classroom; each submission is visible only to its author and teachers who currently have classroom access. Pupils can delete their submissions and teachers can delete any classroom file. Revoking a code retains submissions for teachers; deleting the classroom removes its files.",
+      "help.filesTitle": "Share files and receive submissions",
+      "help.filesText": "Select a classroom and open Classroom files. Upload files or folders for the whole group under Shared files. Review private work under Pupil submissions. Pupils sign in with code and PIN and upload under My submissions. Uploading copies files without syncing the device’s folders.",
+
       "files.title": "Classroom files",
       "files.studentHint": "Here are the files shared by your teachers.",
       "files.teacherHint": "Share files and folders with your classroom, or review private pupil submissions.",
