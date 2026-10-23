@@ -232,3 +232,17 @@ Catàlegs del Rebost: [51 recursos propis de Blocs](docs/rebost-catalog.md) i
 
 Accés compartit amb el login habitual de Commons, complement Compose opcional i proves
 locals sense comptes reals: [Commons, Rebost i Blocs](docs/rebost-commons-access.md).
+
+## Editors opcionals de la beta2 (en validació)
+
+Els perfils `blocs` i `llibres` s’integren en el selector d’Administració.
+Blocs s’obri des de `/blocs-access.html`; Llibres utilitza el mateix nom de
+servidor i el port 8098 (`LLIBRES_PORT` configurable). No substituïxen el portal
+ni requerixen que estiguen actius per a arrancar Commons. En actualitzar beta1
+queden desactivats fins que l’administrador els tria. Llibres permet crear i
+conservar llibres sense Banc; publicar requerix el mòdul Recursos i els permisos
+existents de docent o aprovació del seu docent per a l’alumnat.
+
+Els treballs es guarden en el navegador o es descarreguen. Consulta
+[les llicències dels editors](docs/LICENCIES-EDITORS.md) i el
+[pla i validació de beta2](docs/PLA-BETA2.md).
