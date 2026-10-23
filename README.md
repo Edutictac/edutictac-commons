@@ -17,7 +17,8 @@ d’aula. Administració permet triar Play, EduHoot, Banc, Blocs, Llibres i Quio
 
 ## Instal·lació en un centre
 
-La guia és [INSTALL-CENTRES.md](INSTALL-CENTRES.md). El paquet configura els
+Comença per la [guia bàsica d’instal·lació](docs/INSTALACION-RAPIDA.md).
+La documentació tècnica és [INSTALL-CENTRES.md](INSTALL-CENTRES.md). El paquet configura els
 serveis i genera els secrets de la instància. Reinicia l’equip després de la
 primera instal·lació, activa Commons amb el codi d’un sol ús i tria les eines
 des d’Administració. La descàrrega d’imatges necessita connexió a Internet.
