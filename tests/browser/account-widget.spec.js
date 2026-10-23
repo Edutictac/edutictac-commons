@@ -109,3 +109,54 @@ for (const [path, homeLabel] of [
     await expect(page.locator('edutictac-account summary')).toBeVisible();
   });
 }
+
+test('tema: Auto segueix el sistema, Fosc i Clar es guarden i sobreviuen a la recàrrega', async ({ page, context }) => {
+  await mockSession(page, { session: anonymous, logouts: 0 });
+  await page.emulateMedia({ colorScheme: 'dark' });
+  await page.goto('/index.html?lang=va');
+  const html = page.locator('html');
+  await expect(html).toHaveAttribute('data-theme', 'dark');
+  await expect(html).toHaveAttribute('data-theme-preference', 'auto');
+  await page.emulateMedia({ colorScheme: 'light' });
+  await expect(html).toHaveAttribute('data-theme', 'light');
+
+  const widget = page.locator('edutictac-account');
+  await widget.locator('summary').click();
+  const group = widget.getByRole('radiogroup', { name: 'Tema' });
+  await expect(group.getByRole('radio', { name: /Auto/ })).toHaveAttribute('aria-checked', 'true');
+  await group.getByRole('radio', { name: /Fosc/ }).click();
+  await expect(html).toHaveAttribute('data-theme', 'dark');
+  await expect(group.getByRole('radio', { name: /Fosc/ })).toHaveAttribute('aria-checked', 'true');
+  const cookies = await context.cookies();
+  expect(cookies.find(cookie => cookie.name === 'edutictac_theme')?.value).toBe('dark');
+  expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).toBe('rgb(17, 26, 24)');
+
+  // Sense parpelleig: el tema guardat ja hi és abans que carregue el widget.
+  await page.route('**/assets/account-widget.js', route => route.abort());
+  await page.reload();
+  await expect(html).toHaveAttribute('data-theme', 'dark');
+  await page.unroute('**/assets/account-widget.js');
+  await page.reload();
+
+  await widget.locator('summary').click();
+  await group.getByRole('radio', { name: /Fosc/ }).focus();
+  await page.keyboard.press('ArrowRight');
+  await expect(group.getByRole('radio', { name: /Auto/ })).toHaveAttribute('aria-checked', 'true');
+  await expect(group.getByRole('radio', { name: /Auto/ })).toBeFocused();
+  await page.keyboard.press('ArrowLeft');
+  await page.keyboard.press('ArrowLeft');
+  await expect(group.getByRole('radio', { name: /Clar/ })).toHaveAttribute('aria-checked', 'true');
+  await page.emulateMedia({ colorScheme: 'dark' });
+  await expect(html).toHaveAttribute('data-theme', 'light');
+});
+
+test('el tema es comparteix entre pàgines i amb Rebost', async ({ page }) => {
+  await mockSession(page, { session: anonymous, logouts: 0 });
+  await page.goto('/teacher.html?lang=es');
+  await page.locator('edutictac-account summary').click();
+  await page.getByRole('radio', { name: /Oscuro/ }).click();
+  await page.goto('/assets/?lang=es');
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  await page.locator('edutictac-account summary').click();
+  await expect(page.getByRole('radio', { name: /Oscuro/ })).toHaveAttribute('aria-checked', 'true');
+});

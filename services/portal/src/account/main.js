@@ -1,0 +1,29 @@
+/* Xip de compte, enllaç d'inici i selector de tema comuns a EduTicTac.
+ *
+ * Ús (també en llocs sense Vue: el paquet porta Vue dins):
+ *   <script src="https://commons.edutictac.es/assets/theme-preference.js"></script>
+ *   <link rel="stylesheet" href="https://commons.edutictac.es/assets/account-widget.css">
+ *   <script src="https://commons.edutictac.es/assets/account-widget.js" defer></script>
+ *   <edutictac-account data-base="https://commons.edutictac.es"></edutictac-account>
+ *
+ * Atributs:
+ *   data-base         URL de Commons (buit = mateix origen).
+ *   data-home         destí de «Inici» (per defecte "/" en Commons i
+ *                     https://edutictac.es/ fora).
+ *   data-public-home  enllaç secundari opcional a la web pública.
+ *   data-account-url  pàgina del compte si el servidor no en dona cap.
+ *   data-lang         ca | va | es | en; si falta, segueix la pàgina.
+ *   data-no-reload    no recarregar la pàgina després d'eixir.
+ *
+ * Només mostra la sessió: no protegix cap contingut. Emet
+ * `edutictac:sessionchange` (detail = estat) quan canvia i escolta
+ * `edutictac:sessionrefresh` per a tornar-la a consultar.
+ */
+import {defineCustomElement} from 'vue';
+import AccountWidget from './AccountWidget.ce.vue';
+
+if (!customElements.get('edutictac-account')) {
+  // Sense shadow DOM: els estils viuen en account-widget.css i hereten les
+  // variables de color de cada pàgina.
+  customElements.define('edutictac-account', defineCustomElement(AccountWidget, {shadowRoot: false}));
+}
