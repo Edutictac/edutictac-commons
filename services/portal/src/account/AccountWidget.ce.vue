@@ -65,9 +65,10 @@ function announce() {
 
 async function refresh() {
   const current = ++sequence;
-  // En el mateix origen n'hi ha prou amb la ruta; fora, l'URL completa ha
-  // d'estar entre els orígens de confiança de Commons o es torna a "/".
-  const back = sameOrigin.value ? location.pathname + location.search + location.hash : location.href;
+  // Sempre l'URL completa: una app servida pel mateix origen a través d'un
+  // proxy (Llibres) ha de tornar a ella i no al portal. Commons només l'accepta
+  // si és del mateix host o d'un origen de confiança; si no, torna a "/".
+  const back = location.href;
   try {
     const response = await fetch(resolve('/api/auth/session?next=' + encodeURIComponent(back)), {
       credentials: 'include', cache: 'no-store', headers: {Accept: 'application/json'},
