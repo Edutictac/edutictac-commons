@@ -1,9 +1,12 @@
-# Commons 0.1.1-beta3 — entrega en preparació
+# Commons 0.1.1-beta3 — entrega preparada
 
 Instal·lador amd64 per a LliureX 23, Ubuntu i Debian:
 `edutictac-commons_0.1.1~beta3_amd64.deb`. Esta carpeta registra les imatges
-immobilitzades; encara no acredita una publicació APT ni una instal·lació neta
-del paquet final. No s’han substituït els serveis federats de producció.
+immobilitzades i la [validació del paquet final](../../docs/VALIDACIO-BETA3-LLIUREX.md).
+La publicació APT encara està pendent. No s’han substituït els serveis federats de producció.
+
+El xip nou de compte, tema i idioma es reserva per a beta4: continua en
+desenvolupament independent i no forma part d’esta entrega.
 
 ## Contingut
 
@@ -51,10 +54,11 @@ compartit actual. No s’han canviat les versions dels serveis de tercers.
   privats previs conservats, i comprovació del proxy amb pujades de 2 MiB.
 - Imatge final de Play: el fitxer servit coincidix amb el client versionat.
 
-Queda pendent la comprovació del paquet final exacte, l’assaig d’instal·lació
-neta i la publicació signada. Les comprovacions anteriors del servidor, dels
-editors i de les còpies es detallen en [beta2](../../docs/VALIDACIO-BETA2-LLIUREX.md)
-i [fitxers d’aula](../../docs/FITXERS-AULA.md); no substituïxen eixa validació final.
+La instal·lació neta del paquet exacte, l’activació, els sis mòduls, els
+recorreguts docent/alumnat, les còpies, la restauració i el reinici estan
+validats. Quiosc ha completat una sessió real i ha netejat el perfil temporal.
+Consulta [l’informe complet](../../docs/VALIDACIO-BETA3-LLIUREX.md).
+Queden pendents la publicació APT signada i l’actualització de la web pública.
 
 Quiosc continua sent un navegador supervisat. La prova virtual no substituïx
 un pilot en equips físics del centre. Els llibres i projectes guardats només

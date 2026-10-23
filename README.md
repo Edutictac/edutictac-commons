@@ -2,8 +2,9 @@
 
 Entrega en preparació: [0.1.1-beta3](releases/0.1.1-beta3/README.md).
 Instal·lador amd64 per a LliureX 23, Ubuntu i Debian: `0.1.1~beta3`.
-La publicació APT i el canvi de la pàgina de descàrrega es tanquen després de
-validar el paquet final; la versió pública anterior és beta1.
+El paquet final està [validat en l’aula LliureX](docs/VALIDACIO-BETA3-LLIUREX.md).
+La publicació APT i el canvi de la pàgina de descàrrega continuen pendents;
+la versió APT pública anterior és beta1.
 Proves d'idiomes: `npm ci`, `npx playwright install --with-deps chromium` i
 `make test-i18n`. Instal·lació i restauració aïllades: `make test-installation`.
 
