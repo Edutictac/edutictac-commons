@@ -49,7 +49,8 @@ export const TEXT = {
 export const LANGUAGE_NAMES = {ca: 'Català', va: 'Valencià', es: 'Español', en: 'English'};
 
 // Com canviar l'idioma de la pàgina amfitriona. Una app pot registrar-se amb
-// window.edutictacLanguage = {languages: ['ca', 'es'], get: () => 'ca', set: lang => {...}}.
+// window.edutictacLanguage = {languages: ['ca', 'es'], get: () => 'ca', set: lang => {...}},
+// i opcionalment disabled: () => true quan ara no es pot canviar.
 export function languageHost() {
   if (window.edutictacLanguage?.set) return window.edutictacLanguage;
   if (window.i18nPortal?.setLang) {

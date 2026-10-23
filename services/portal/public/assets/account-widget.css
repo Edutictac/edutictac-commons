@@ -294,3 +294,8 @@ edutictac-account .eta-language .eta-theme__option {
   font-size: 13px;
   font-weight: 600;
 }
+
+edutictac-account .eta-theme__option:disabled {
+  cursor: not-allowed;
+  opacity: .5;
+}

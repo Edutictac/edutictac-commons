@@ -22,6 +22,8 @@ const themeAvailable = !!window.edutictacTheme;
 // El selector d'idioma només apareix si la pàgina sap canviar d'idioma.
 // Es resol en muntar: els scripts d'i18n de les pàgines ja s'han carregat.
 const languages = ref([]);
+// Una app pot impedir el canvi en un moment donat (p. ex. Llibres amb un llibre obert).
+const languageLocked = ref(false);
 let pageLanguage = null;
 const details = ref(null);
 const menu = ref(null);
@@ -117,7 +119,7 @@ function chooseTheme(value) {
 }
 
 function chooseLanguage(value) {
-  if (!pageLanguage || !languages.value.includes(value)) return;
+  if (!pageLanguage || languageLocked.value || !languages.value.includes(value)) return;
   pageLanguage.set(value);
   lang.value = pageLang(host);
 }
@@ -142,6 +144,7 @@ function themeKeys(event) {
 async function toggled() {
   open.value = details.value.open;
   if (!open.value) return;
+  languageLocked.value = !!pageLanguage?.disabled?.();
   // El menú s'obri cap a la dreta o l'esquerra segons on cap.
   alignStart.value = false;
   await nextTick();
@@ -223,7 +226,7 @@ onBeforeUnmount(() => {
                   class="eta-theme__option" :data-lang-option="code" :lang="code === 'va' ? 'ca-ES-valencia' : code"
                   :aria-label="LANGUAGE_NAMES[code]" :title="LANGUAGE_NAMES[code]"
                   :aria-checked="lang === code ? 'true' : 'false'" :tabindex="lang === code ? 0 : -1"
-                  @click="chooseLanguage(code)">
+                  :disabled="languageLocked" @click="chooseLanguage(code)">
             <span>{{ code.toUpperCase() }}</span>
           </button>
         </div>
