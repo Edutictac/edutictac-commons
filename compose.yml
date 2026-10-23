@@ -268,7 +268,7 @@ services:
         condition: service_healthy
 
   eduhoot-mongo:
-    image: mongo:7
+    image: mongo@sha256:c53852c00c23ca9f23fc39690350ffa9a80e3642fe8f96879726d8da0abe80a7
     profiles: ["eduhoot"]
     volumes:
       - ./data/eduhoot-mongo:/data/db
@@ -315,7 +315,7 @@ services:
       - "${EDUHOOT_PORT:-8090}:3000"
 
   authentik-postgresql:
-    image: postgres:16-alpine
+    image: postgres@sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea
     profiles: ["authentik"]
     environment:
       POSTGRES_DB: ${AUTHENTIK_PG_DB:-authentik}

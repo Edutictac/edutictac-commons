@@ -76,3 +76,12 @@ def test_installer_gives_service_user_docker_and_linger_only_if_admin():
     assert 'loginctl enable-linger "$service_user"' in postinst
     assert '[ "$service_user" = "${SUDO_USER:-}" ]' in postinst
     assert "grep -qx -E 'sudo|admin'" in postinst
+
+
+def test_database_images_are_pinned_to_tested_release_digests():
+    import json
+    root = Path(__file__).parents[1]
+    release = json.loads((root / 'releases/0.1.1-beta1/images.json').read_text())
+    compose = (root / 'compose.yml').read_text()
+    assert 'image: ' + release['images']['authentik-postgresql'] in compose
+    assert 'image: ' + release['images']['eduhoot-mongo'] in compose
