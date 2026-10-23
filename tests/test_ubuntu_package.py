@@ -19,8 +19,8 @@ def test_fresh_install_uses_selector_release_images(tmp_path):
     path = tmp_path / "test.env"
     path.touch(mode=0o600)
     values = configure(path)
-    assert values["IMAGE_TAG"] == "0.1.1-beta1"
-    assert values["ADMIN_TAG"] == "0.1.1-beta1"
+    assert values["IMAGE_TAG"] == (Path(__file__).parents[1] / "VERSION").read_text().strip()
+    assert values["ADMIN_TAG"] == (Path(__file__).parents[1] / "VERSION").read_text().strip()
     assert values["COMPOSE_PROFILES"] == "authentik"
     assert values["MODULES_CONFIGURED"] == "0"
     assert values.get("QUIOSC_MODE", "disabled") == "disabled"
@@ -55,8 +55,8 @@ def test_fresh_install_from_example_starts_only_core(tmp_path):
     values = configure(path)
     assert values["COMPOSE_PROFILES"] == "authentik"
     assert values["MODULES_CONFIGURED"] == "0"
-    assert values["IMAGE_TAG"] == "0.1.1-beta1"
-    assert values["ADMIN_TAG"] == "0.1.1-beta1"
+    assert values["IMAGE_TAG"] == (Path(__file__).parents[1] / "VERSION").read_text().strip()
+    assert values["ADMIN_TAG"] == (Path(__file__).parents[1] / "VERSION").read_text().strip()
 
 
 def test_installer_announces_real_portal_port():
