@@ -4,11 +4,15 @@
 Only member names are inspected. File contents and credentials are never logged.
 """
 import argparse
+import os
+import shlex
 from pathlib import PurePosixPath
 import subprocess
 import tarfile
 import zipfile
 
+
+DOCKER = shlex.split(os.environ.get("DOCKER", "docker"))
 
 def forbidden(name):
     parts = PurePosixPath(name).parts
@@ -33,11 +37,11 @@ def check_tar(command):
 
 
 def check_image(image):
-    cid = subprocess.check_output(['docker', 'create', image], text=True).strip()
+    cid = subprocess.check_output([*DOCKER, 'create', image], text=True).strip()
     try:
-        return check_tar(['docker', 'export', cid])
+        return check_tar([*DOCKER, 'export', cid])
     finally:
-        subprocess.run(['docker', 'rm', cid], stdout=subprocess.DEVNULL,
+        subprocess.run([*DOCKER, 'rm', cid], stdout=subprocess.DEVNULL,
                        stderr=subprocess.DEVNULL, check=True)
 
 

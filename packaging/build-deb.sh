@@ -149,6 +149,7 @@ fi
 deb_basename="${package_name}${suffix}_${package_version}_amd64.deb"
 mkdir -p "$output_dir"
 dpkg-deb --build --root-owner-group "$root_dir" "$output_dir/${deb_basename}"
+python3 "$repo_dir/scripts/check-release-artifacts.py" --deb "$output_dir/${deb_basename}"
 echo "Paquet creat en $output_dir/${deb_basename}"
 
 if [ -n "$manifest_lines" ]; then

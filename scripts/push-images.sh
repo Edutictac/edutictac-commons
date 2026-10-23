@@ -38,6 +38,12 @@ fi
 if [ "${SKIP_BUILD:-0}" != "1" ]; then
   ${DOCKER:-docker} compose --env-file "$env_file" -f compose.yml build id-api portal admin play blocs llibres
 fi
+set -- --image "$id_image" --image "$portal_image" --image "$admin_image" --image "$play_image" \
+  --image "${registry}/commons-blocs:${tag}" --image "${registry}/commons-llibres:${tag}"
+if printf '%s' ",${profiles}," | grep -q ',recursos,'; then
+  set -- "$@" --image "$recursos_api_image" --image "$recursos_image"
+fi
+python3 scripts/check-release-artifacts.py "$@"
 ${DOCKER:-docker} push "$id_image"
 ${DOCKER:-docker} push "$portal_image"
 ${DOCKER:-docker} push "$admin_image"
