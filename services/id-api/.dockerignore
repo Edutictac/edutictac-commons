@@ -8,3 +8,11 @@ vendor/**/__pycache__/
 
 **/__pycache__/
 **/*.pyc
+
+**/.recall
+
+**/.git
+
+**/.env
+
+**/.env.*

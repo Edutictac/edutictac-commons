@@ -9,3 +9,11 @@ test-results
 playwright-report
 **/__pycache__
 **/*.pyc
+
+**/.recall
+
+**/.git
+
+**/.env
+
+**/.env.*

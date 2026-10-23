@@ -1,2 +1,10 @@
 data/
 __pycache__/
+
+**/.recall
+
+**/.git
+
+**/.env
+
+**/.env.*

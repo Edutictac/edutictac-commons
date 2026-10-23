@@ -66,18 +66,12 @@ root_dir="$stage_dir/$package_name"
 mkdir -p "$root_dir/DEBIAN" "$root_dir/opt/edutictac-commons" "$root_dir/lib/systemd/system" \
   "$root_dir/usr/share/applications" "$root_dir/usr/share/icons/hicolor/scalable/apps"
 
-tar -C "$repo_dir" \
-  --exclude='./.git' \
-  --exclude='./.env' \
-  --exclude='./data/*' \
-  --exclude='./backups/*' \
-  --exclude='./dist/*' \
-  --exclude='./node_modules' \
-  --exclude='./.pytest_cache' \
-  --exclude='./test-results' \
-  --exclude='./playwright-report' \
-  --exclude='./packaging' \
-  -cf - . | tar -C "$root_dir/opt/edutictac-commons" -xf -
+# Package tracked source files only. Local memory, credentials and generated
+# artifacts must never enter a distributable installer.
+git -C "$repo_dir" ls-files -z | tar -C "$repo_dir" \
+  --exclude='.env' --exclude='data/*' --exclude='backups/*' \
+  --exclude='dist/*' --exclude='node_modules/*' --exclude='packaging/*' \
+  --null -T - -cf - | tar -C "$root_dir/opt/edutictac-commons" -xf -
 
 install -m 0644 "$repo_dir/packaging/debian/control" "$root_dir/DEBIAN/control"
 install -m 0755 "$repo_dir/packaging/debian/postinst" "$root_dir/DEBIAN/postinst"
