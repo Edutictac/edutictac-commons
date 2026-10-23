@@ -1,6 +1,6 @@
 const {test,expect}=require('@playwright/test');
 const activity={id:'Ab12Cd34',type:'multiple-choice',title:'Pupil quiz',question:'Which?',answers:[{text:'A',correct:true},{text:'B',correct:false}],owned:true,visibility:'private'};
-async function mock(page,{role='student',saved=false}={}){
+async function mock(page,{role='student',saved=false,config={demo:false,integrated:true},onMe=()=>{}}={}){
  const model={calls:[],revision:0,status:'draft',feedback:''};
  await page.addInitScript(()=>{
   localStorage.setItem('edutictac-play-lang','es');
@@ -10,9 +10,10 @@ async function mock(page,{role='student',saved=false}={}){
   const req=route.request(),path=new URL(req.url()).pathname.replace('/play/api','');
   const body=req.postData()?req.postDataJSON():null;
   if(req.method()==='POST')model.calls.push({path,body,headers:req.headers()});
+  if(path==='/publication/me'){onMe();}
   if(path==='/publication/me')return route.fulfill({json:{actor:role==='teacher'?'teacher':'pupil',can_publish:role==='teacher',can_submit:role==='student',can_review:role==='teacher',role,class_name:'Class A'}});
   if(path==='/catalog')return route.fulfill({json:{subjects:['matematicas'],educational_stages:['primaria'],levels:['basico'],tags:['repaso']}});
-  if(path==='/config')return route.fulfill({json:{demo:false,integrated:true}});
+  if(path==='/config')return route.fulfill({json:config});
   if(path==='/activities'&&req.method()==='POST')return route.fulfill({status:201,json:{...body,id:activity.id,owned:true,visibility:'private'}});
   if(path==='/previews')return route.fulfill({status:201,json:{...body,id:'preview-1234abcd'}});
   if(path==='/activities/'+activity.id)return route.fulfill({json:activity});
@@ -111,4 +112,38 @@ test('Play respecta idioma explícit i variant valenciana sense perdre el formul
  await page.locator('#language').selectOption('va');
  await expect(page.locator('#title')).toHaveValue('La meua activitat');
  await expect.poll(()=>new URL(page.url()).searchParams.get('lang')).toBe('va');
+});
+
+test('xip de compte de Commons: inici al portal local, idioma de Play i permisos revisats en canviar la sessió',async({page})=>{
+ const fs=require('fs'),path=require('path'),assets=path.join(__dirname,'../../services/portal/public/assets');
+ const session={authenticated:false,kind:'anonymous',role:null,display_name:null,public_code:null,login_available:true,
+  links:{login:'/api/auth/oidc/login?next=%2F',teacher:'/teacher.html',student:'/student.html',account:null,logout:'/api/auth/session/logout'}};
+ let me=0;
+ await page.route('http://commons.test/**',route=>{
+  const url=new URL(route.request().url());
+  if(url.pathname==='/assets/account-widget.js')return route.fulfill({body:fs.readFileSync(path.join(assets,'account-widget.js')),contentType:'text/javascript'});
+  if(url.pathname==='/assets/account-widget.css')return route.fulfill({body:fs.readFileSync(path.join(assets,'account-widget.css')),contentType:'text/css'});
+  if(url.pathname==='/api/auth/session')return route.fulfill({json:session,headers:{'Access-Control-Allow-Origin':'http://127.0.0.1:18183','Access-Control-Allow-Credentials':'true'}});
+  return route.fulfill({status:404,body:''});
+ });
+ await mock(page,{config:{demo:false,integrated:true,commonsBase:'http://commons.test'},onMe:()=>me++});
+ const widget=page.locator('edutictac-account');
+ await expect(widget.locator('.eta-home')).toHaveAttribute('href','http://commons.test/');
+ await expect(widget.locator('.eta-home')).toHaveAttribute('aria-label','Inicio de EduTicTac');
+ await expect(widget.locator('summary')).toHaveAttribute('aria-label','Entrar');
+ await page.locator('#language').selectOption('va');
+ await expect(widget.locator('.eta-home')).toHaveAttribute('aria-label','Inici d’EduTicTac');
+ const before=me;
+ Object.assign(session,{authenticated:true,kind:'oidc',role:'profesor',display_name:'Laia Ferrer'});
+ await page.evaluate(()=>window.dispatchEvent(new CustomEvent('edutictac:sessionrefresh')));
+ await expect(widget.locator('summary')).toHaveAttribute('aria-label','Laia Ferrer · Professorat');
+ await expect.poll(()=>me).toBeGreaterThan(before);
+});
+
+test('tema compartit en el shell de Play',async({page})=>{
+ await page.emulateMedia({colorScheme:'light'});
+ await page.addInitScript(()=>{document.cookie='edutictac_theme=dark; Path=/';});
+ await mock(page);
+ await expect(page.locator('html')).toHaveAttribute('data-theme','dark');
+ expect(await page.evaluate(()=>getComputedStyle(document.body).backgroundColor)).toBe('rgb(17, 26, 24)');
 });

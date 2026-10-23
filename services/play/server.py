@@ -15,7 +15,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from recursos import RecursosContractError, build_publish_payload
 from urllib.error import HTTPError, URLError
-from urllib.parse import parse_qs, unquote, urlparse
+from urllib.parse import parse_qs, unquote, urlparse, urlsplit
 from urllib.request import Request as UpstreamRequest, urlopen
 
 from playcore import reviews
@@ -34,6 +34,7 @@ from playcore.config import (
     PLAY_DEFAULT_VISIBILITY,
     PLAY_DEMO_COMMONS_URL,
     PLAY_PUBLIC_URL,
+    PLAY_COMMONS_URL,
     PLAY_TEACHER_LOGIN_URL,
     PLAY_TRUSTED_IDENTITY_HEADER,
     PUBLIC_DIR,
@@ -131,14 +132,29 @@ class Handler(BaseHTTPRequestHandler):
         })
         return ""
 
+    def portal_host(self) -> str:
+        """Host del portal quan Play i Commons comparteixen servidor (port 8082)."""
+        host = self.headers.get("Host", "")
+        if ":" in host:
+            hostname = host.rsplit(":", 1)[0]
+            host = f"{hostname}:8082"
+        return host
+
+    def commons_base(self) -> str | None:
+        if PLAY_COMMONS_URL:
+            return PLAY_COMMONS_URL
+        # La demo pública només el mostra si es configura PLAY_COMMONS_URL.
+        if not COMMONS_AUTH_ME_URL:
+            return None
+        host = self.portal_host()
+        # Sense port, Play viu darrere del mateix nginx que el portal.
+        return f"//{host}" if host and host != self.headers.get("Host", "") else ""
+
     def redirect_teacher_login(self) -> None:
         if PLAY_TEACHER_LOGIN_URL:
             location = PLAY_TEACHER_LOGIN_URL
         else:
-            host = self.headers.get("Host", "")
-            if ":" in host:
-                hostname = host.rsplit(":", 1)[0]
-                host = f"{hostname}:8082"
+            host = self.portal_host()
             location = f"//{host}/api/auth/oidc/login" if host else "/api/auth/oidc/login"
         self.send_response(HTTPStatus.SEE_OTHER)
         self.send_header("Location", location)
@@ -193,6 +209,7 @@ class Handler(BaseHTTPRequestHandler):
                 "demo": bool(PLAY_DEMO_COMMONS_URL),
                 "commonsUrl": PLAY_DEMO_COMMONS_URL or None,
                 "integrated": bool(COMMONS_AUTH_ME_URL),
+                "commonsBase": self.commons_base(),
             })
             return
         if path == "/api/catalog":
@@ -631,8 +648,25 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    def commons_source(self) -> str:
+        """Origen de Commons per a la CSP: d'allí ve el xip de compte i la sessió."""
+        base = self.commons_base()
+        if not base:
+            return ""
+        parsed = urlsplit(base if "://" in base else "http:" + base)
+        if not parsed.hostname or parsed.username or parsed.password:
+            return ""
+        # Sense esquema, la CSP l'hereta de la pàgina (http en local, https fora).
+        return f" {parsed.scheme}://{parsed.netloc}" if "://" in base else f" {parsed.netloc}"
+
     def end_headers(self) -> None:
-        self.send_header("Content-Security-Policy", "default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; frame-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'self'")
+        commons = self.commons_source()
+        self.send_header(
+            "Content-Security-Policy",
+            f"default-src 'self'; style-src 'self' 'unsafe-inline'{commons}; script-src 'self' 'unsafe-inline'{commons}; "
+            f"img-src 'self' data:; font-src 'self' data:; frame-src 'self'; connect-src 'self'{commons}; "
+            "object-src 'none'; base-uri 'none'; frame-ancestors 'self'",
+        )
         self.send_header("X-Content-Type-Options", "nosniff")
         self.send_header("Referrer-Policy", "no-referrer")
         super().end_headers()

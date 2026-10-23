@@ -691,20 +691,72 @@ def test_expired_anonymous_activities_are_purged_from_disk():
         process.wait(timeout=3)
 
 
-@pytest.mark.parametrize("commons_url, demo", [("", False), ("https://edutictac.es/commons.html", True)])
-def test_config_exposes_demo_mode(commons_url, demo):
+@pytest.mark.parametrize("commons_url, demo, commons_base", [
+    ("", False, ""),
+    ("https://edutictac.es/commons.html", True, ""),
+    ("https://edutictac.es/commons.html", True, "https://commons.edutictac.es"),
+])
+def test_config_exposes_demo_mode(commons_url, demo, commons_base):
     process = subprocess.Popen(
         ["python3", "server.py"],
         cwd=Path(__file__).parents[1] / "services" / "play",
         env={**os.environ, "PORT": "18113", "PLAY_DATA_DIR": tempfile.mkdtemp(prefix="edutictac-play-test-"),
-             "PLAY_DEMO_COMMONS_URL": commons_url},
+             "PLAY_DEMO_COMMONS_URL": commons_url, "PLAY_COMMONS_URL": commons_base},
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
     )
     try:
         time.sleep(0.25)
         config = json.loads(urllib.request.urlopen("http://127.0.0.1:18113/api/config").read())
-        assert config == {"demo": demo, "commonsUrl": commons_url or None, "integrated": False}
+        assert config == {"demo": demo, "commonsUrl": commons_url or None, "integrated": False,
+                          "commonsBase": commons_base or None}
+    finally:
+        process.terminate()
+        process.wait(timeout=3)
+
+
+@pytest.mark.parametrize("host, expected", [
+    ("centre.local:8084", "//centre.local:8082"),
+    ("commons.centre", ""),
+])
+def test_config_points_the_account_chip_to_the_local_portal(host, expected):
+    process = subprocess.Popen(
+        ["python3", "server.py"],
+        cwd=Path(__file__).parents[1] / "services" / "play",
+        env={**os.environ, "PORT": "18114", "PLAY_DATA_DIR": tempfile.mkdtemp(prefix="edutictac-play-test-"),
+             "EDUTICTAC_ID_API_URL": "http://id-api.invalid:8005", "PLAY_COMMONS_URL": ""},
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    try:
+        time.sleep(0.25)
+        request = urllib.request.Request("http://127.0.0.1:18114/api/config", headers={"Host": host})
+        assert json.loads(urllib.request.urlopen(request).read())["commonsBase"] == expected
+    finally:
+        process.terminate()
+        process.wait(timeout=3)
+
+
+@pytest.mark.parametrize("commons_base, host, expected", [
+    ("https://commons.edutictac.es", "play.edutictac.es", " https://commons.edutictac.es;"),
+    ("", "centre.local:8084", " centre.local:8082;"),
+])
+def test_csp_lets_only_commons_serve_the_account_chip(commons_base, host, expected):
+    process = subprocess.Popen(
+        ["python3", "server.py"],
+        cwd=Path(__file__).parents[1] / "services" / "play",
+        env={**os.environ, "PORT": "18115", "PLAY_DATA_DIR": tempfile.mkdtemp(prefix="edutictac-play-test-"),
+             "EDUTICTAC_ID_API_URL": "http://id-api.invalid:8005", "PLAY_COMMONS_URL": commons_base},
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    try:
+        time.sleep(0.25)
+        request = urllib.request.Request("http://127.0.0.1:18115/api/health", headers={"Host": host})
+        csp = urllib.request.urlopen(request).headers["Content-Security-Policy"]
+        for directive in ("script-src", "style-src", "connect-src"):
+            assert expected in csp.split(directive, 1)[1].split(";", 1)[0] + ";"
+        assert "img-src 'self' data:;" in csp and "frame-src 'self';" in csp
     finally:
         process.terminate()
         process.wait(timeout=3)

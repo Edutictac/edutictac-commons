@@ -21,6 +21,9 @@ COMMONS_AUTH_ME_URL = os.environ.get(
     f"{COMMONS_API_URL}/api/auth/me" if COMMONS_API_URL else "",
 ).rstrip("/")
 PLAY_TEACHER_LOGIN_URL = os.environ.get("PLAY_TEACHER_LOGIN_URL", "").strip()
+# URL pública del portal de Commons per al xip de compte. Si falta, en un centre
+# es deduïx del mateix host amb el port del portal (8082).
+PLAY_COMMONS_URL = os.environ.get("PLAY_COMMONS_URL", "").strip().rstrip("/")
 ANONYMOUS_ACTIVITY_TTL_SECONDS = int(os.environ.get("PLAY_ANONYMOUS_TTL_SECONDS", str(24 * 60 * 60)))
 # Cada quant s'esborren del disc les activitats caducades; 0 ho desactiva.
 PURGE_INTERVAL_SECONDS = int(os.environ.get("PLAY_PURGE_INTERVAL_SECONDS", "3600"))

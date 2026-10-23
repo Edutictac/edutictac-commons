@@ -9,7 +9,7 @@ from fastapi.responses import Response
 from starlette.middleware.sessions import SessionMiddleware
 
 from .context import Commons
-from .origins import origin_allowed
+from .origins import origin_allowed, same_host
 from .routes import ROUTERS
 from .settings import Settings
 
@@ -88,7 +88,10 @@ def install_session_cors(app: FastAPI, c: Commons) -> None:
         allowed = (
             request.url.path in SESSION_CORS_PATHS
             and bool(origin)
-            and origin_allowed(origin, c.settings.allowed_origins)
+            and (
+                origin_allowed(origin, c.settings.allowed_origins)
+                or same_host(origin, request.headers.get("host", ""))
+            )
         )
         if request.method == "OPTIONS" and request.url.path in SESSION_CORS_PATHS:
             response = Response(status_code=204 if allowed else 403)

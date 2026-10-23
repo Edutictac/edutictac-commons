@@ -52,3 +52,17 @@ def origin_allowed(origin: str, patterns: tuple[str, ...]) -> bool:
 def url_origin(url: str) -> str:
     parsed = urlsplit(url)
     return f"{parsed.scheme}://{parsed.netloc}"
+
+
+def same_host(origin: str, host_header: str) -> bool:
+    """Mateix nom de host que Commons, amb qualsevol port.
+
+    En un centre, Play (:8084) i el portal (:8082) són el mateix servidor; les
+    galetes no distingixen ports, així que no cal configurar-ho.
+    """
+    parsed = _split(origin)
+    try:
+        own = urlsplit("//" + host_header).hostname
+    except ValueError:
+        return False
+    return bool(parsed and own) and parsed[1] == own.lower()

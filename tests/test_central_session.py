@@ -172,3 +172,23 @@ def test_login_link_returns_to_the_calling_site(module):
     assert unquote(data['links']['login']) == '/api/auth/oidc/login?next=https://edutictac.es/'
     data = TestClient(module.app).get('/api/auth/session?next=https://evil.test/').json()
     assert unquote(data['links']['login']) == '/api/auth/oidc/login?next=/'
+
+
+def test_same_host_other_port_is_trusted_without_configuration(module, monkeypatch):
+    """Play (:8084) i el portal (:8082) d'un centre comparteixen host i galetes."""
+    client = TestClient(module.app, base_url='http://commons.centre:8082')
+    response = client.get('/api/auth/session', headers={'Origin': 'http://commons.centre:8084'})
+    assert response.headers['access-control-allow-origin'] == 'http://commons.centre:8084'
+    assert unquote(response.json()['links']['login']) == '/api/auth/oidc/login?next=http://commons.centre:8084/'
+    other = client.get('/api/auth/session', headers={'Origin': 'http://altre.centre:8084'})
+    assert 'access-control-allow-origin' not in other.headers
+
+    from idapi.routes.sessions import safe_next
+    assert safe_next('http://commons.centre:8084/play/', (), 'commons.centre:8082') == 'http://commons.centre:8084/play/'
+    assert safe_next('http://commons.centre.evil:8084/', (), 'commons.centre:8082') == '/'
+    assert safe_next('http://commons.centre:8084/', (), '') == '/'
+
+    teacher = oidc_client(module, {'name': 'Laia'})
+    teacher.base_url = 'http://commons.centre:8082'
+    teacher.headers['Origin'] = 'http://commons.centre:8084'
+    assert teacher.post('/api/auth/session/logout').status_code == 200

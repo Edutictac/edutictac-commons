@@ -13,7 +13,7 @@ from ..auth import oidc_identity
 from ..context import Commons, client_ip, commons
 from ..db import iso_now
 from ..models import StudentAuthIn, TeacherLoginIn, public_identity
-from ..origins import origin_allowed, url_origin
+from ..origins import origin_allowed, same_host, url_origin
 from ..security import (
     OIDC_COOKIE,
     SESSION_COOKIE,
@@ -27,7 +27,7 @@ from ..security import (
 router = APIRouter()
 
 
-def safe_next(value: Any, allowed: tuple[str, ...] = ()) -> str:
+def safe_next(value: Any, allowed: tuple[str, ...] = (), host: str = "") -> str:
     """Ruta relativa pròpia o URL absoluta d'un origen de confiança.
 
     Rebutja `//host`, barres invertides, credencials incrustades, esquemes que
@@ -42,7 +42,9 @@ def safe_next(value: Any, allowed: tuple[str, ...] = ()) -> str:
         parsed = urlsplit(value)
     except ValueError:
         return "/"
-    if parsed.scheme in {"http", "https"} and parsed.netloc and origin_allowed(url_origin(value), allowed):
+    if parsed.scheme in {"http", "https"} and parsed.netloc and (
+        origin_allowed(url_origin(value), allowed) or (host and same_host(url_origin(value), host))
+    ):
         return value
     return "/"
 
@@ -63,7 +65,9 @@ async def oidc_login(request: Request, c: Commons = Depends(commons)):
     if not c.settings.oidc_enabled:
         raise HTTPException(status_code=503, detail="OIDC is not configured")
     c.cookies.require_secret()
-    request.session["oidc_next"] = safe_next(request.query_params.get("next", "/"), c.settings.allowed_origins)
+    request.session["oidc_next"] = safe_next(
+        request.query_params.get("next", "/"), c.settings.allowed_origins, request.headers.get("host", "")
+    )
     return await c.oauth.authentik.authorize_redirect(request, c.settings.oidc_redirect_url)
 
 
@@ -92,7 +96,7 @@ async def oidc_callback(request: Request, c: Commons = Depends(commons)):
     )
     if str(token_issuer).rstrip("/") not in {issuer.rstrip("/") for issuer in accepted}:
         raise HTTPException(status_code=401, detail="OIDC issuer mismatch")
-    response = RedirectResponse(url=safe_next(request.session.pop("oidc_next", "/"), c.settings.allowed_origins), status_code=303)
+    response = RedirectResponse(url=safe_next(request.session.pop("oidc_next", "/"), c.settings.allowed_origins, request.headers.get("host", "")), status_code=303)
     c.set_oidc_cookie(response, claims, c.auth.oidc_role(claims))
     return response
 
@@ -210,9 +214,10 @@ def session_links(request: Request, c: Commons) -> dict[str, str | None]:
     """
     supplied = request.headers.get("origin", "")
     back = request.query_params.get("next", "")
-    if not back and supplied and origin_allowed(supplied, c.settings.allowed_origins):
+    host = request.headers.get("host", "")
+    if not back and supplied and (origin_allowed(supplied, c.settings.allowed_origins) or same_host(supplied, host)):
         back = supplied + "/"
-    next_url = safe_next(back or "/", c.settings.allowed_origins)
+    next_url = safe_next(back or "/", c.settings.allowed_origins, host)
     return {
         "login": f"/api/auth/oidc/login?next={quote(next_url, safe='')}" if c.settings.oidc_enabled else None,
         "teacher": "/teacher.html",
@@ -262,11 +267,7 @@ def session_origin_ok(request: Request, c: Commons) -> bool:
     if supplied and supplied != "null":
         # Les galetes no distingixen ports i nginx pot reenviar `Host` sense port:
         # n'hi ha prou que coincidisca el nom del host.
-        try:
-            same_host = urlsplit(supplied).hostname == urlsplit("//" + request.headers.get("host", "")).hostname
-        except ValueError:
-            return False
-        return same_host or origin_allowed(supplied, c.settings.allowed_origins)
+        return same_host(supplied, request.headers.get("host", "")) or origin_allowed(supplied, c.settings.allowed_origins)
     return request.headers.get("sec-fetch-site", "") == "same-origin"
 
 
