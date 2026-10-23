@@ -3,8 +3,8 @@
 Guía para la persona que prepara el ordenador del centro. El alumnado no
 necesita instalar Commons: accede desde su navegador.
 
-**Beta 3 en preparación:** el instalador definitivo todavía no está publicado.
-Esta guía corresponde a `0.1.1~beta3`; la página pública de descarga se
+**Beta 4 en preparación:** el instalador definitivo todavía no está publicado.
+Esta guía corresponde a `0.1.1~beta4`; la página pública de descarga se
 actualizará cuando termine su validación.
 
 ## Antes de empezar
@@ -25,7 +25,7 @@ actualizará cuando termine su validación.
    descargado y ejecuta:
 
    ```bash
-   sudo apt install ./edutictac-commons_0.1.1~beta3_amd64.deb
+   sudo apt install ./edutictac-commons_0.1.1~beta4_amd64.deb
    ```
 
    Introduce la contraseña de administración del ordenador y espera a que
