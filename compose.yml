@@ -73,6 +73,42 @@ services:
     ports:
       - "${PORTAL_PORT:-8082}:80"
 
+  blocs:
+    image: ${IMAGE_REGISTRY:-edutictac}/commons-blocs:${IMAGE_TAG:-0.1.1-alpha}
+    build:
+      context: ${BLOCS_SOURCE_DIR:-../edutictac-blocs}
+    profiles: ["blocs"]
+    environment:
+      EDUTICTAC_API_ENABLED: "false"
+      BLOCS_IDENTITY_MODE: anonymous
+      BLOCS_IDENTITY_ENDPOINT: ""
+    expose: ["8080"]
+    volumes:
+      - blocs_catalog_cache:/var/cache/nginx/blocs-assets
+    restart: unless-stopped
+
+  llibres:
+    image: ${IMAGE_REGISTRY:-edutictac}/commons-llibres:${IMAGE_TAG:-0.1.1-alpha}
+    build:
+      context: ${LLIBRES_SOURCE_DIR:-../edutictac-llibres}
+      dockerfile: Dockerfile.local
+    profiles: ["llibres"]
+    environment:
+      COMMONS_PORTAL_PORT: ${PORTAL_PORT:-8082}
+    ports:
+      - "${LLIBRES_PORT:-8098}:8080"
+    read_only: true
+    tmpfs:
+      - /tmp:size=32m,mode=1777
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
   play:
     image: ${IMAGE_REGISTRY:-edutictac}/commons-play:${IMAGE_TAG:-0.1.1-alpha}
     build:
@@ -363,5 +399,6 @@ services:
     restart: unless-stopped
 
 volumes:
+  blocs_catalog_cache:
   authentik_database:
     driver: local

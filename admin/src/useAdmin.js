@@ -1,6 +1,6 @@
 import {ref,reactive,computed,onMounted,onBeforeUnmount} from 'vue';
 import {formatters} from './format.js';
-const MODULES=['play','eduhoot','recursos','quiosc'];
+const MODULES=['play','eduhoot','recursos','blocs','llibres','quiosc'];
 const JOBS={
   'commons-modules-job':/^edutictac-commons-modules-\d{14}-[a-f0-9]{8}$/,
   'commons-backup-job':/^edutictac-commons-(?:backup-\d{14}-[a-f0-9]{8}|restore-\d{14})$/,

@@ -2875,6 +2875,8 @@ var ro = [
 	"play",
 	"eduhoot",
 	"recursos",
+	"blocs",
+	"llibres",
 	"quiosc"
 ], io = {
 	"commons-modules-job": /^edutictac-commons-modules-\d{14}-[a-f0-9]{8}$/,
@@ -3262,18 +3264,18 @@ var oo = { class: "topbar" }, so = { class: "topbar-actions" }, co = {
 	class: "lang-switcher",
 	role: "group",
 	"aria-label": "Idioma"
-}, Ts = ["aria-current"], Es = ["aria-current"], Ds = ["aria-current"], Os = ["aria-current"], ks = { id: "modulesWizardTitle" }, As = ["disabled"], js = { class: "module-choice" }, Ms = { class: "module-choice" }, Ns = { class: "module-choice" }, Ps = { class: "module-choice" }, Fs = ["disabled"], Is = ["hidden"], Ls = { class: "hint" }, Rs = {
+}, Ts = ["aria-current"], Es = ["aria-current"], Ds = ["aria-current"], Os = ["aria-current"], ks = { id: "modulesWizardTitle" }, As = ["disabled"], js = { class: "module-choice" }, Ms = { class: "module-choice" }, Ns = { class: "module-choice" }, Ps = { class: "module-choice" }, Fs = { class: "module-choice" }, Is = { class: "module-choice" }, Ls = ["disabled"], Rs = ["hidden"], zs = { class: "hint" }, Bs = {
 	id: "modulesNotice",
 	role: "status",
 	"aria-live": "polite"
-}, zs = { class: "actions" }, Bs = ["disabled"], Vs = ["hidden"], Hs = {
+}, Vs = { class: "actions" }, Hs = ["disabled"], Us = ["hidden"], Ws = {
 	__name: "AdminApp",
 	setup(e) {
 		let { t, language: n, authorized: r, checking: i, pending: a, loggingOut: o, canWrite: s, statusText: c, output: l, actionText: u, apiMessage: d, modules: f, selected: p, moduleManageable: m, modulesNotice: h, wizard: g, wizardOpen: _, closeWizard: v, teacher: y, teacherMessage: b, credential: x, clearTeacher: S, mount: C, mountDirty: w, restore: T, rollback: E, backups: D, rollbacks: O, secondary: k, secondaryText: A, job: ee, pollState: j, trackingPaused: M, loadStatus: N, applyModules: P, createTeacher: F, checkUpdates: te, confirmed: ne, backupCreate: I, typedAction: re, secondaryAction: ie, operation: ae, logout: oe, login: se, resumeTracking: ce } = ao();
 		return Tn(_, async (e) => {
 			await an(), e && !g.value?.open ? g.value?.showModal() : !e && g.value?.open && g.value.close();
 		}), (e, R) => (ii(), li(Z, null, [
-			$("header", oo, [$("div", null, [R[32] ||= $("p", { class: "eyebrow" }, "EduTicTac Commons", -1), $("h1", null, B(J(t)("admin.title")), 1)]), $("div", so, [$("span", co, B(J(t)(J(d))), 1), $("div", {
+			$("header", oo, [$("div", null, [R[34] ||= $("p", { class: "eyebrow" }, "EduTicTac Commons", -1), $("h1", null, B(J(t)("admin.title")), 1)]), $("div", so, [$("span", co, B(J(t)(J(d))), 1), $("div", {
 				class: "lang-switcher",
 				role: "group",
 				"aria-label": "Idioma",
@@ -3331,7 +3333,7 @@ var oo = { class: "topbar" }, so = { class: "topbar-actions" }, co = {
 						class: "secondary"
 					}, B(J(t)("login.refresh")), 9, Co)
 				])]),
-				$("section", wo, [$("div", To, [$("p", Eo, B(J(t)("modules.label")), 1), $("h2", Do, B(J(t)("modules.title")), 1)]), R[33] ||= $("div", { id: "modulesFormHome" }, null, -1)]),
+				$("section", wo, [$("div", To, [$("p", Eo, B(J(t)("modules.label")), 1), $("h2", Do, B(J(t)("modules.title")), 1)]), R[35] ||= $("div", { id: "modulesFormHome" }, null, -1)]),
 				$("section", Oo, [
 					$("div", ko, [$("p", Ao, B(J(t)("teachers.label")), 1), $("h2", jo, B(J(t)("teachers.title")), 1)]),
 					$("form", {
@@ -3560,11 +3562,11 @@ var oo = { class: "topbar" }, so = { class: "topbar-actions" }, co = {
 					}, "EN", 10, Os)
 				]),
 				$("h2", ks, B(J(t)("modules.firstTitle")), 1),
-				R[34] ||= $("div", { id: "modulesWizardContent" }, null, -1)
+				R[36] ||= $("div", { id: "modulesWizardContent" }, null, -1)
 			], 544),
 			(ii(), ui(Rn, { to: J(_) ? "#modulesWizardContent" : "#modulesFormHome" }, [$("form", {
 				id: "modulesForm",
-				onSubmit: R[31] ||= Ya((...e) => J(P) && J(P)(...e), ["prevent"])
+				onSubmit: R[33] ||= Ya((...e) => J(P) && J(P)(...e), ["prevent"])
 			}, [
 				$("p", null, B(J(t)("modules.core")), 1),
 				$("fieldset", {
@@ -3577,13 +3579,13 @@ var oo = { class: "topbar" }, so = { class: "topbar-actions" }, co = {
 						name: "module",
 						"onUpdate:modelValue": R[26] ||= (e) => /* @__PURE__ */ K(p) ? p.value = e : null,
 						value: "play"
-					}, null, 512), [[Ba, J(p)]]), $("span", null, [R[35] ||= $("strong", null, "EduTicTac Play", -1), $("small", null, B(J(t)("modules.play")), 1)])]),
+					}, null, 512), [[Ba, J(p)]]), $("span", null, [R[37] ||= $("strong", null, "EduTicTac Play", -1), $("small", null, B(J(t)("modules.play")), 1)])]),
 					$("label", Ms, [bn($("input", {
 						type: "checkbox",
 						name: "module",
 						"onUpdate:modelValue": R[27] ||= (e) => /* @__PURE__ */ K(p) ? p.value = e : null,
 						value: "eduhoot"
-					}, null, 512), [[Ba, J(p)]]), $("span", null, [R[36] ||= $("strong", null, "EduHoot", -1), $("small", null, B(J(t)("modules.eduhoot")), 1)])]),
+					}, null, 512), [[Ba, J(p)]]), $("span", null, [R[38] ||= $("strong", null, "EduHoot", -1), $("small", null, B(J(t)("modules.eduhoot")), 1)])]),
 					$("label", Ns, [bn($("input", {
 						type: "checkbox",
 						name: "module",
@@ -3594,34 +3596,46 @@ var oo = { class: "topbar" }, so = { class: "topbar-actions" }, co = {
 						type: "checkbox",
 						name: "module",
 						"onUpdate:modelValue": R[29] ||= (e) => /* @__PURE__ */ K(p) ? p.value = e : null,
+						value: "blocs"
+					}, null, 512), [[Ba, J(p)]]), $("span", null, [R[39] ||= $("strong", null, "EduTicTac Blocs", -1), $("small", null, B(J(t)("modules.blocs")), 1)])]),
+					$("label", Fs, [bn($("input", {
+						type: "checkbox",
+						name: "module",
+						"onUpdate:modelValue": R[30] ||= (e) => /* @__PURE__ */ K(p) ? p.value = e : null,
+						value: "llibres"
+					}, null, 512), [[Ba, J(p)]]), $("span", null, [R[40] ||= $("strong", null, "EduTicTac Llibres", -1), $("small", null, B(J(t)("modules.llibres")), 1)])]),
+					$("label", Is, [bn($("input", {
+						type: "checkbox",
+						name: "module",
+						"onUpdate:modelValue": R[31] ||= (e) => /* @__PURE__ */ K(p) ? p.value = e : null,
 						value: "quiosc",
 						disabled: !J(f)?.available?.quiosc && !J(p).includes("quiosc")
-					}, null, 8, Fs), [[Ba, J(p)]]), $("span", null, [R[37] ||= $("strong", null, "EduTicTac Quiosc", -1), $("small", null, B(J(t)("modules.quiosc")), 1)])])
+					}, null, 8, Ls), [[Ba, J(p)]]), $("span", null, [R[41] ||= $("strong", null, "EduTicTac Quiosc", -1), $("small", null, B(J(t)("modules.quiosc")), 1)])])
 				], 8, As),
 				$("p", {
 					id: "modulesQuioscHint",
 					hidden: !!J(f)?.available?.quiosc,
 					class: "hint"
-				}, B(J(t)("modules.quioscPreparation")), 9, Is),
-				$("p", Ls, B(J(t)("modules.retention")), 1),
-				$("p", Rs, B(J(h)), 1),
-				$("div", zs, [$("button", {
+				}, B(J(t)("modules.quioscPreparation")), 9, Rs),
+				$("p", zs, B(J(t)("modules.retention")), 1),
+				$("p", Bs, B(J(h)), 1),
+				$("div", Vs, [$("button", {
 					id: "modulesApply",
 					type: "submit",
 					disabled: !J(s) || !J(m)
-				}, B(J(t)("modules.apply")), 9, Bs), $("button", {
+				}, B(J(t)("modules.apply")), 9, Hs), $("button", {
 					id: "modulesLater",
 					type: "button",
 					class: "secondary",
 					hidden: !J(_),
-					onClick: R[30] ||= (...e) => J(v) && J(v)(...e)
-				}, B(J(t)("modules.later")), 9, Vs)])
+					onClick: R[32] ||= (...e) => J(v) && J(v)(...e)
+				}, B(J(t)("modules.later")), 9, Us)])
 			], 32)], 8, ["to"]))
 		], 64));
 	}
 };
 // admin/src/main.js
-function Us(e) {
-	return $a(Hs).mount(e);
+function Gs(e) {
+	return $a(Ws).mount(e);
 }
-export { Us as mountAdmin };
+export { Gs as mountAdmin };

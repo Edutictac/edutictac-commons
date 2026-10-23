@@ -2,7 +2,7 @@ const { test, expect } = require('@playwright/test');
 
 async function mockModules(page, { configured = true, conflict = false } = {}) {
   const state = { schema: 1, configured, enabled: configured ? ['play'] : [], revision: '1'.repeat(64),
-    phase: 'idle', error: null, available: { play: true, eduhoot: true, recursos: true, quiosc: false }, manageable: true };
+    phase: 'idle', error: null, available: { play: true, eduhoot: true, recursos: true, blocs: true, llibres: true, quiosc: false }, manageable: true };
   let submitted;
   await page.addInitScript(() => localStorage.setItem('edutictac-admin-lang', 'es'));
   await page.clock.install();
@@ -183,4 +183,17 @@ test('segunda copia opcional: configurar, verificar, reintentar y desactivar', a
   await expect(page.locator('#secondaryStatus')).toContainText('desactivada');
   await expect(page.locator('#secondaryCopy')).toBeDisabled();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBeTruthy();
+});
+
+
+test('editors opcionals es poden seleccionar i es conserven després de completar el canvi', async ({page}) => {
+  const model=await mockModules(page);
+  await expect(page.locator('#modulesChoices')).toBeEnabled();
+  await page.locator('[value="blocs"]').check();
+  await page.locator('[value="llibres"]').check();
+  await page.locator('#modulesApply').click();
+  expect(model.submitted().enabled).toEqual(['play','blocs','llibres']);
+  await advanceJob(page);
+  await expect(page.locator('[value="blocs"]')).toBeChecked();
+  await expect(page.locator('[value="llibres"]')).toBeChecked();
 });

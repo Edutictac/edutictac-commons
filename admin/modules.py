@@ -3,10 +3,11 @@ import hashlib
 import json
 from pathlib import Path
 
-MODULES = ("play", "eduhoot", "recursos", "quiosc")
-PROFILES = frozenset(MODULES[:3])
+MODULES = ("play", "eduhoot", "recursos", "blocs", "llibres", "quiosc")
+PROFILES = frozenset(MODULES[:-1])
 SERVICES = {"play": ("play",), "eduhoot": ("eduhoot", "eduhoot-mongo"),
-            "recursos": ("recursos", "recursos-api"), "quiosc": ()}
+            "recursos": ("recursos", "recursos-api"), "blocs": ("blocs",),
+            "llibres": ("llibres",), "quiosc": ()}
 
 
 def selection(payload):

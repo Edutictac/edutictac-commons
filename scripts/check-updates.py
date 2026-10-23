@@ -18,7 +18,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 ENV_FILE = ROOT / ".env"
 ENV_EXAMPLE = ROOT / ".env.example"
-COMMON_IMAGES = ["commons-id-api", "commons-portal", "commons-admin"]
+COMMON_IMAGES = ["commons-id-api", "commons-portal", "commons-admin", "commons-play", "commons-blocs", "commons-llibres"]
 RECURSOS_IMAGES = ["recursos", "recursos-api"]
 
 

@@ -9,7 +9,7 @@ from fastapi import HTTPException
 
 
 def public_modules():
-    allowed = {"play", "eduhoot", "recursos", "quiosc"}
+    allowed = {"play", "eduhoot", "recursos", "blocs", "llibres", "quiosc"}
     profiles = set(os.environ.get("COMMONS_MODULE_PROFILES", "play").split(",")) & allowed
     if os.environ.get("QUIOSC_MODE", "disabled") != "disabled":
         profiles.add("quiosc")

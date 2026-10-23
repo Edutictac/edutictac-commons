@@ -1,40 +1,16 @@
-# Opt-in integration. Use together with compose.yml; no extra identity API.
+# Development alias: enables the optional Blocs profile in compose.yml.
+# Run with --profile blocs; the portal never depends on this editor.
 services:
+  blocs:
+    profiles: []
+    image: ${IMAGE_REGISTRY:-edutictac}/commons-blocs:${BLOCS_TAG:-local}
   id-api:
+    environment:
+      COMMONS_MODULE_PROFILES: ${COMPOSE_PROFILES:-play},blocs
     restart: unless-stopped
-
   recursos-api:
     restart: unless-stopped
-
   recursos:
     restart: unless-stopped
-
-  blocs:
-    image: ${IMAGE_REGISTRY:-edutictac}/commons-blocs:${BLOCS_TAG:-local}
-    build:
-      context: ${BLOCS_SOURCE_DIR:-../edutictac-blocs}
-    environment:
-      EDUTICTAC_API_ENABLED: "false"
-      BLOCS_IDENTITY_MODE: anonymous
-      BLOCS_IDENTITY_ENDPOINT: ""
-    expose:
-      - "8080"
-    volumes:
-      - blocs_catalog_cache:/var/cache/nginx/blocs-assets
-    restart: unless-stopped
-
   portal:
     restart: unless-stopped
-    depends_on:
-      blocs:
-        condition: service_healthy
-    volumes:
-      - type: bind
-        source: ./services/portal/nginx/blocs.locations.conf
-        target: /etc/nginx/commons-editors/blocs.conf
-        read_only: true
-        bind:
-          create_host_path: false
-
-volumes:
-  blocs_catalog_cache:

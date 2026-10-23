@@ -31,7 +31,9 @@ accessLanguage();
   try {
     const options = {credentials: 'same-origin', cache: 'no-store'};
     const available = await fetch('/blocs/status', options);
-    if (!available.ok || (await available.json()).enabled !== true) throw new Error('unavailable');
+    if (!available.ok) throw new Error('unavailable');
+    const modules = (await available.json()).enabled;
+    if (modules !== true && !(Array.isArray(modules) && modules.includes('blocs'))) throw new Error('unavailable');
     const profile = await fetch('/api/assets/v1/me', options);
     if (profile.ok) {
       const data = await profile.json();

@@ -46,6 +46,13 @@ ${registry}/recursos-api:${recursos_tag}
 ${registry}/recursos:${recursos_tag}" ;;
 esac
 
+for editor in blocs llibres; do
+  case ",${profiles}," in
+    *,$editor,*) images="${images}
+${registry}/commons-${editor}:${image_tag}" ;;
+  esac
+done
+
 echo "Registre: ${registry}"
 echo "Tag Commons: ${image_tag}"
 if [ "$admin_tag" != "$image_tag" ]; then

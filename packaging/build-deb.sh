@@ -3,7 +3,7 @@ set -euo pipefail
 
 repo_dir="$(cd "$(dirname "$0")/.." && pwd)"
 output_dir="${OUTPUT_DIR:-$repo_dir/dist}"
-package_version="${DEB_VERSION:-0.1.1~beta1}"
+package_version="${DEB_VERSION:-0.1.1~beta2}"
 package_name="edutictac-commons"
 docker_cmd="${DOCKER:-docker}"
 
@@ -46,7 +46,7 @@ recursos_tag="$(env_value RECURSOS_TAG local)"
 authentik_tag="$(env_value AUTHENTIK_TAG 2026.8.3)"
 profiles="$(env_value COMPOSE_PROFILES "")"
 
-own_images="${registry}/commons-id-api:${image_tag} ${registry}/commons-portal:${image_tag} ${registry}/commons-admin:${image_tag} ${registry}/commons-play:${image_tag}"
+own_images="${registry}/commons-id-api:${image_tag} ${registry}/commons-portal:${image_tag} ${registry}/commons-admin:${image_tag} ${registry}/commons-play:${image_tag} ${registry}/commons-blocs:${image_tag} ${registry}/commons-llibres:${image_tag}"
 
 full_extra_images=""
 case ",${profiles}," in

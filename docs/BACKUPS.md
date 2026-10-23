@@ -179,3 +179,10 @@ noms exclusius i rebutja qualsevol volum, xarxa o bind mount que isca del seu
 entorn temporal. Fa una còpia, canvia dades i comprova que restaurar recupera
 PostgreSQL, Mongo, SQLite i fitxers. Requerix les imatges de prova indicades al
 script. No executar una variant que reutilitze noms normalitzats del stack actiu.
+
+## Blocs i Llibres
+
+Els projectes i llibres es guarden al navegador o es descarreguen. El backup del
+servidor no substituïx la descàrrega d’eixos treballs. El Rebost i les publicacions
+del Banc continuen en les seues còpies existents. La caché del catàleg Blocs és
+regenerable i no necessita una còpia pròpia.

@@ -26,7 +26,13 @@ archive="dist/edutictac-commons-images-${tag}.tar"
 
 mkdir -p dist
 compose_args="--env-file $env_file -f compose.yml"
+for editor in blocs llibres; do
+  case ",$profiles," in *,$editor,*) compose_args="$compose_args --profile $editor";; esac
+done
 images="$portal_image $id_image $admin_image $play_image"
+for editor in blocs llibres; do
+  case ",$profiles," in *,$editor,*) images="$images ${registry}/commons-${editor}:${tag}";; esac
+done
 if printf '%s' ",$profiles," | grep -q ',recursos,'; then
   compose_args="$compose_args --profile recursos"
   images="$images $recursos_api_image $recursos_image"

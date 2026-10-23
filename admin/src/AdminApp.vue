@@ -162,6 +162,8 @@ watch(wizardOpen,async value=>{await nextTick();if(value&&!wizard.value?.open)wi
               <label class="module-choice"><input type="checkbox" name="module" v-model="selected" value="play"><span><strong>EduTicTac Play</strong><small>{{ t("modules.play") }}</small></span></label>
               <label class="module-choice"><input type="checkbox" name="module" v-model="selected" value="eduhoot"><span><strong>EduHoot</strong><small>{{ t("modules.eduhoot") }}</small></span></label>
               <label class="module-choice"><input type="checkbox" name="module" v-model="selected" value="recursos"><span><strong>{{ t("modules.resourcesName") }}</strong><small>{{ t("modules.recursos") }}</small></span></label>
+              <label class="module-choice"><input type="checkbox" name="module" v-model="selected" value="blocs"><span><strong>EduTicTac Blocs</strong><small>{{ t("modules.blocs") }}</small></span></label>
+              <label class="module-choice"><input type="checkbox" name="module" v-model="selected" value="llibres"><span><strong>EduTicTac Llibres</strong><small>{{ t("modules.llibres") }}</small></span></label>
               <label class="module-choice"><input type="checkbox" name="module" v-model="selected" value="quiosc" :disabled="!modules?.available?.quiosc&&!selected.includes('quiosc')"><span><strong>EduTicTac Quiosc</strong><small>{{ t("modules.quiosc") }}</small></span></label>
             </fieldset>
             <p id="modulesQuioscHint" :hidden="Boolean(modules?.available?.quiosc)" class="hint">{{ t("modules.quioscPreparation") }}</p>

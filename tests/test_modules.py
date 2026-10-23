@@ -160,3 +160,26 @@ def test_rollback_failure_is_reported(controller):
     with pytest.raises(manager.ModuleError, match="rollback_failed"):
         apply(controller, ["recursos"])
     assert json.loads(controller.state_path.read_text())["error"] == "rollback_failed"
+
+
+@pytest.mark.parametrize('editor', ['blocs', 'llibres'])
+def test_optional_editor_can_be_enabled_and_disabled_without_losing_files(controller, editor):
+    retained = controller.data / (editor + '-project.bin')
+    retained.write_bytes(b'synthetic retained project')
+    assert editor not in snapshot(manager.read_env(controller.env_path))['enabled']
+    apply(controller, [editor])
+    assert editor in snapshot(manager.read_env(controller.env_path))['enabled']
+    apply(controller, [])
+    assert editor not in snapshot(manager.read_env(controller.env_path))['enabled']
+    assert retained.read_bytes() == b'synthetic retained project'
+    assert any('stop' in arguments and editor in arguments for arguments, _ in controller.calls)
+
+
+@pytest.mark.parametrize('editor', ['blocs', 'llibres'])
+def test_failed_editor_start_restores_previous_selection(controller, editor):
+    previous = controller.env_path.read_bytes()
+    controller.fail = ['services_start_failed']
+    with pytest.raises(manager.ModuleError, match='services_start_failed'):
+        apply(controller, [editor])
+    assert controller.env_path.read_bytes() == previous
+    assert editor not in json.loads(controller.state_path.read_text())['enabled']

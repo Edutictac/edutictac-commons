@@ -191,8 +191,8 @@ function setApplicationLinks() {
   });
   const llibresLink = $("llibresHomeLink");
   if (llibresLink) {
-    const url = configuredUrl(deployment.applications?.llibres);
-    llibresLink.hidden = !url;
+    const url = configuredUrl(deployment.applications?.llibres) || (!federated ? `${window.location.protocol}//${window.location.hostname}:${ports?.llibres || '8098'}/` : null);
+    llibresLink.hidden = !url || (!federated && !state.enabledModules?.has("llibres"));
     if (url) {
       const destination = new URL(url);
       destination.searchParams.set('lang', window.i18nPortal.getLang());
@@ -209,6 +209,7 @@ async function loadEnabledModules() {
     if (!Array.isArray(data.enabled)) return;
     state.enabledModules = new Set(data.enabled);
     syncTeacherPanels();
+    setApplicationLinks();
     document.querySelectorAll("[data-module]").forEach((node) => {
       const publicApp = federated && configuredUrl(deployment.applications?.[node.dataset.module]);
       node.hidden = (federated && node.dataset.module === 'quiosc') || (!state.enabledModules.has(node.dataset.module) && !publicApp);
@@ -228,7 +229,7 @@ async function loadBlocsLink() {
   }
   try {
     const data = await api("/blocs/status", { method: "GET" });
-    $("blocsHomeLink").hidden = data.enabled !== true;
+    $("blocsHomeLink").hidden = data.enabled !== true && !(Array.isArray(data.enabled) && data.enabled.includes("blocs"));
   } catch { /* Blocs is an optional editor. */ }
 }
 

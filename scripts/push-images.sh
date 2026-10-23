@@ -18,6 +18,7 @@ recursos_tag="${RECURSOS_TAG:-$(grep '^RECURSOS_TAG=' "$env_file" | tail -n 1 | 
 recursos_tag="${recursos_tag:-local}"
 profiles="${COMPOSE_PROFILES:-$(grep '^COMPOSE_PROFILES=' "$env_file" | tail -n 1 | cut -d= -f2)}"
 export IMAGE_REGISTRY="$registry" IMAGE_TAG="$tag" EDUHOOT_TAG="$eduhoot_tag"
+export COMPOSE_PROFILES="${profiles},blocs,llibres"
 
 portal_image="${registry}/commons-portal:${tag}"
 id_image="${registry}/commons-id-api:${tag}"
@@ -35,12 +36,14 @@ if printf '%s' ",${profiles}," | grep -q ',recursos,'; then
   ${DOCKER:-docker} image inspect "$recursos_image" >/dev/null
 fi
 if [ "${SKIP_BUILD:-0}" != "1" ]; then
-  ${DOCKER:-docker} compose --env-file "$env_file" -f compose.yml build
+  ${DOCKER:-docker} compose --env-file "$env_file" -f compose.yml build id-api portal admin play blocs llibres
 fi
 ${DOCKER:-docker} push "$id_image"
 ${DOCKER:-docker} push "$portal_image"
 ${DOCKER:-docker} push "$admin_image"
 ${DOCKER:-docker} push "$play_image"
+${DOCKER:-docker} push "${registry}/commons-blocs:${tag}"
+${DOCKER:-docker} push "${registry}/commons-llibres:${tag}"
 if [ "${INCLUDE_EDUHOOT:-0}" = "1" ]; then
   ${DOCKER:-docker} push "$eduhoot_image"
 fi

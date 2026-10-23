@@ -141,9 +141,12 @@ class Controller:
         profiles = set(values.get("COMPOSE_PROFILES", "").split(","))
         for module, port, path in [("play", "8084", "/api/health"),
                                    ("eduhoot", "8090", "/"),
-                                   ("recursos", "8086", "/api/health")]:
+                                   ("recursos", "8086", "/api/health"),
+                                   ("llibres", "8098", "/health")]:
             if module in profiles:
                 checks.append((values.get(module.upper() + "_PORT", port), path))
+        if "blocs" in profiles:
+            checks.append((values.get("PORTAL_PORT", "8082"), "/blocs/editor.html"))
         for port, path in checks:
             ready = False
             for _ in range(30):
@@ -201,7 +204,7 @@ class Controller:
                 disabled = [name for module in sorted(PROFILES - set(enabled)) for name in SERVICES[module]]
                 if disabled:
                     self.command(["docker", "compose", "--profile", "play", "--profile", "eduhoot",
-                                  "--profile", "recursos", "--env-file", str(self.env_path), "-f", "compose.yml",
+                                  "--profile", "recursos", "--profile", "blocs", "--profile", "llibres", "--env-file", str(self.env_path), "-f", "compose.yml",
                                   "stop", *disabled], updated, "services_stop_failed")
                 self.publish(updated)
                 print("modules: success", flush=True)
@@ -216,7 +219,7 @@ class Controller:
                         self.compose(["up", "-d", "--no-build", "--wait", "--wait-timeout", "180"], old, "rollback_failed")
                         added = (set(enabled) & PROFILES) - set(old.get("COMPOSE_PROFILES", "").split(","))
                         if added:
-                            self.compose(["--profile", "play", "--profile", "eduhoot", "--profile", "recursos",
+                            self.compose(["--profile", "play", "--profile", "eduhoot", "--profile", "recursos", "--profile", "blocs", "--profile", "llibres",
                                           "stop", *[s for module in sorted(added) for s in SERVICES[module]]], old, "rollback_failed")
                         self.health(old)
                     except Exception:

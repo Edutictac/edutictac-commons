@@ -1,6 +1,6 @@
 # Plan de la 0.1.1-beta2 (instalación local)
 
-Estado: **plan redactado 22-10-2026, nada construido ni publicado.** Sigue el
+Estado: **implementación autorizada y en curso 23-10-2026; aún sin release publicada.** Sigue el
 procedimiento de la beta1 (`releases/0.1.1-beta1/`).
 
 ## Alcance
@@ -128,3 +128,12 @@ configuración desde el repo. Para la instalación local hace falta:
   igual que en producción.
 - No cambiar el comportamiento de los centros con beta1: módulos nuevos
   desactivados por defecto al actualizar.
+
+## Ajuste tras inspeccionar el editor actual — 23-10-2026
+
+Llibres usa un puerto propio (8098 configurable), como Play y Recursos. El
+motor eXe y el frontend utilizan rutas absolutas de raíz; publicarlo debajo de
+`/llibres/` exigiría reescrituras amplias. Se reutiliza el proxy existente de
+Rebost, misma imagen de editor y cookies por nombre de servidor. No se modifica
+el núcleo eXe. La publicación consulta los módulos activos y solo se ofrece con
+Recursos. Los módulos nuevos siguen desactivados al actualizar beta1.
