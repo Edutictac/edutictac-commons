@@ -1,3 +1,4 @@
+const {chooseLanguage}=require('./helpers/language');
 const {test,expect}=require('@playwright/test');
 const fs=require('fs'),os=require('os'),path=require('path');
 const settings={max_file_bytes:50*1048576,group_quota_bytes:500*1048576,student_quota_bytes:50*1048576,students_can_upload:true};
@@ -59,8 +60,8 @@ test('fitxers: carpeta, descàrrega, reemplaçament confirmat i eliminació',asy
  await expect(page.locator('[data-files-feedback]')).toContainText('guardat 1');expect(model.posts.at(-1).body).toBe('Nou');
  const downloaded=page.waitForEvent('download');await page.locator('[data-classroom-file]').filter({hasText:'activity.txt'}).locator('[data-file-download]').click();expect((await downloaded).suggestedFilename()).toBe('activity.txt');
  page.once('dialog',dialog=>dialog.accept());await page.locator('[data-classroom-file]').filter({hasText:'activity.txt'}).locator('[data-file-delete]').click();await expect(page.locator('[data-classroom-file]')).toHaveCount(1);
- await page.locator('[data-lang=es]').click();await expect(page.locator('[data-classroom-files] > summary')).toHaveText('Archivos del aula');
- await page.locator('[data-lang=en]').click();await expect(page.locator('[data-classroom-files] > summary')).toHaveText('Classroom files');
+ await chooseLanguage(page,'es');await expect(page.locator('[data-classroom-files] > summary')).toHaveText('Archivos del aula');
+ await chooseLanguage(page,'en');await expect(page.locator('[data-classroom-files] > summary')).toHaveText('Classroom files');
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });
 
