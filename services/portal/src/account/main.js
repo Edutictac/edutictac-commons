@@ -14,6 +14,8 @@
  *   data-account-url  pàgina del compte si el servidor no en dona cap.
  *   data-lang         ca | va | es | en; si falta, segueix la pàgina.
  *   data-no-reload    no recarregar la pàgina després d'eixir.
+ *   data-home-only    només l'enllaç «Inici»: no consulta ni mostra cap sessió.
+ *   data-density      "compact" per a barres baixes.
  *
  * Només mostra la sessió: no protegix cap contingut. Emet
  * `edutictac:sessionchange` (detail = estat) quan canvia i escolta

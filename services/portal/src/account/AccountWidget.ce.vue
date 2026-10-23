@@ -33,6 +33,8 @@ const t = computed(() => TEXT[lang.value]);
 const base = computed(() => (data.value.base || '').replace(/\/+$/, ''));
 const sameOrigin = computed(() => !base.value || new URL(base.value + '/').origin === location.origin);
 const homeUrl = computed(() => data.value.home || (sameOrigin.value ? '/' : PUBLIC_HOME));
+// data-home-only: només l'enllaç d'inici, sense consultar cap sessió (jocs infantils).
+const homeOnly = computed(() => 'homeOnly' in data.value);
 const authed = computed(() => status.value === 'ready' && !!state.value?.authenticated);
 const links = computed(() => state.value?.links || {});
 const staff = computed(() => ['profesor', 'administrador'].includes(state.value?.role));
@@ -70,6 +72,7 @@ function announce() {
 }
 
 async function refresh() {
+  if (homeOnly.value) return;
   const current = ++sequence;
   // Sempre l'URL completa: una app servida pel mateix origen a través d'un
   // proxy (Llibres) ha de tornar a ella i no al portal. Commons només l'accepta
@@ -196,7 +199,7 @@ onBeforeUnmount(() => {
     </a>
     <a v-if="data.publicHome" class="eta-home eta-home--public" :href="data.publicHome">{{ t.publicHome }}</a>
 
-    <details ref="details" class="eta-account" :data-state="status" :data-authenticated="authed ? 'true' : 'false'" @toggle="toggled">
+    <details v-if="!homeOnly" ref="details" class="eta-account" :data-state="status" :data-authenticated="authed ? 'true' : 'false'" @toggle="toggled">
       <summary class="eta-chip" aria-haspopup="menu" :aria-label="chipLabel" :title="chipLabel">
         <span v-if="authed && state.kind === 'oidc'" class="eta-avatar">{{ initials }}</span>
         <span v-else class="eta-avatar"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M4 21v-1a8 8 0 0 1 16 0v1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>
