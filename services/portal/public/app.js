@@ -73,9 +73,11 @@ function setAuthentikLinks() {
     const link = $(id);
     if (link) link.href = url;
   });
-  const changePasswordLink = $("changePasswordLink");
-  if (changePasswordLink) {
-    changePasswordLink.href = `${url}if/flow/default-password-change/?next=%2Fif%2Fuser%2F%23%2Fsettings%3B%7B%22page%22%3A%22page-details%22%7D`;
+  const account = $("accountWidget");
+  if (account) {
+    account.dataset.accountUrl = `${url}if/flow/default-password-change/?next=%2Fif%2Fuser%2F%23%2Fsettings%3B%7B%22page%22%3A%22page-details%22%7D`;
+    const publicHome = configuredUrl(deployment.publicHomeUrl) || (federated ? "https://edutictac.es/" : "");
+    if (publicHome) account.dataset.publicHome = publicHome;
   }
 }
 
@@ -305,44 +307,10 @@ async function api(path, options = {}) {
   return body;
 }
 
-async function checkIdentityStatus() {
-  const sequence = ++identityStatusSequence;
-  const statusNode = $("apiStatus");
-  if (!statusNode) return;
-  const sessionMenu = $("sessionMenu");
-  statusNode.textContent = t("common.session.checking");
-  if (sessionMenu) sessionMenu.dataset.authenticated = "false";
-  statusNode.classList.remove("error");
-  try {
-    const data = await api("/api/auth/me", { method: "GET" });
-    if (sequence !== identityStatusSequence) return;
-    const identity = data.identity || {};
-    const name = identity.username || identity.public_code || identity.id || "—";
-    statusNode.textContent = t("common.session.user", { name });
-    if (sessionMenu) sessionMenu.dataset.authenticated = "true";
-    statusNode.title = t("common.session.logoutHint");
-  } catch (error) {
-    if (sequence !== identityStatusSequence) return;
-    statusNode.textContent = error.status === 401
-      ? t("common.session.signedOut")
-      : t("common.session.unavailable");
-    statusNode.classList.toggle("error", error.status !== 401);
-    statusNode.title = "";
-  }
-}
-
-async function logoutSession() {
-  const statusNode = $("apiStatus");
-  const sessionMenu = $("sessionMenu");
-  if (!statusNode || !sessionMenu || sessionMenu.dataset.authenticated !== "true") return;
-  if (!window.confirm(t("common.session.logoutConfirm"))) return;
-  if (studentPanel) { await studentPanel.logout(); return; }
-  await Promise.allSettled([
-    api("/api/auth/oidc/logout", { method: "POST" }),
-    api("/api/teacher/logout", { method: "POST" }),
-    api("/api/auth/logout", { method: "POST" }),
-  ]);
-  window.location.reload();
+// El xip compartit (`<edutictac-account>`) mostra la sessió i la tanca; el
+// portal només li demana que torne a consultar-la després d'entrar o eixir.
+function checkIdentityStatus() {
+  window.dispatchEvent(new CustomEvent("edutictac:sessionrefresh"));
 }
 
 async function checkOidc() {
@@ -484,7 +452,6 @@ function bind(id, fn, outputId = "resultsOutput") {
 }
 
 bind("teacherOidcLogin", teacherOidcLogin);
-bind("logoutSessionButton", logoutSession);
 bind("teacherLogout", teacherLogout, "teacherOutput");
 bind("teacherSummary", teacherSummary, "teacherOutput");
 bind("refreshDashboard", refreshDashboard, "teacherOutput");

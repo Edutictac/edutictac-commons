@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hmac
 from typing import Any
+from urllib.parse import quote, urlsplit
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from fastapi.responses import RedirectResponse
@@ -12,6 +13,7 @@ from ..auth import oidc_identity
 from ..context import Commons, client_ip, commons
 from ..db import iso_now
 from ..models import StudentAuthIn, TeacherLoginIn, public_identity
+from ..origins import origin_allowed, url_origin
 from ..security import (
     OIDC_COOKIE,
     SESSION_COOKIE,
@@ -25,10 +27,24 @@ from ..security import (
 router = APIRouter()
 
 
-def safe_next(value: Any) -> str:
-    if not isinstance(value, str) or not value.startswith("/") or value.startswith("//"):
+def safe_next(value: Any, allowed: tuple[str, ...] = ()) -> str:
+    """Ruta relativa pròpia o URL absoluta d'un origen de confiança.
+
+    Rebutja `//host`, barres invertides, credencials incrustades, esquemes que
+    no siguen http(s) i qualsevol host fora de la llista: sense açò el retorn
+    després d'entrar seria una redirecció oberta.
+    """
+    if not isinstance(value, str) or not value or "\\" in value or any(ord(ch) < 32 for ch in value):
         return "/"
-    return value
+    if value.startswith("/") and not value.startswith("//"):
+        return value
+    try:
+        parsed = urlsplit(value)
+    except ValueError:
+        return "/"
+    if parsed.scheme in {"http", "https"} and parsed.netloc and origin_allowed(url_origin(value), allowed):
+        return value
+    return "/"
 
 
 @router.get("/api/auth/oidc/status")
@@ -47,7 +63,7 @@ async def oidc_login(request: Request, c: Commons = Depends(commons)):
     if not c.settings.oidc_enabled:
         raise HTTPException(status_code=503, detail="OIDC is not configured")
     c.cookies.require_secret()
-    request.session["oidc_next"] = safe_next(request.query_params.get("next", "/"))
+    request.session["oidc_next"] = safe_next(request.query_params.get("next", "/"), c.settings.allowed_origins)
     return await c.oauth.authentik.authorize_redirect(request, c.settings.oidc_redirect_url)
 
 
@@ -76,7 +92,7 @@ async def oidc_callback(request: Request, c: Commons = Depends(commons)):
     )
     if str(token_issuer).rstrip("/") not in {issuer.rstrip("/") for issuer in accepted}:
         raise HTTPException(status_code=401, detail="OIDC issuer mismatch")
-    response = RedirectResponse(url=safe_next(request.session.pop("oidc_next", "/")), status_code=303)
+    response = RedirectResponse(url=safe_next(request.session.pop("oidc_next", "/"), c.settings.allowed_origins), status_code=303)
     c.set_oidc_cookie(response, claims, c.auth.oidc_role(claims))
     return response
 
@@ -153,9 +169,7 @@ def me(request: Request, c: Commons = Depends(commons)) -> dict[str, Any]:
     return {"identity": c.auth.require_student(request)}
 
 
-@router.post("/api/auth/logout")
-def logout(request: Request, response: Response, c: Commons = Depends(commons)) -> dict[str, bool]:
-    c.rebost.revoke_oidc(request)
+def revoke_student_session(request: Request, c: Commons) -> None:
     cookie = c.cookies.decode(request.cookies.get(SESSION_COOKIE))
     if cookie and cookie.get("sid"):
         with c.connect() as conn:
@@ -163,6 +177,118 @@ def logout(request: Request, response: Response, c: Commons = Depends(commons)) 
                 "UPDATE student_sessions SET revoked_at = ? WHERE token_hash = ?",
                 (iso_now(), hash_token(str(cookie["sid"]))),
             )
+
+
+@router.post("/api/auth/logout")
+def logout(request: Request, response: Response, c: Commons = Depends(commons)) -> dict[str, bool]:
+    c.rebost.revoke_oidc(request)
+    revoke_student_session(request, c)
     response.delete_cookie(SESSION_COOKIE, **c.cookies.delete_options())
     response.delete_cookie(OIDC_COOKIE, **c.cookies.delete_options())
+    return {"ok": True}
+
+
+# --- Sessió central ------------------------------------------------------
+#
+# El xip de compte de les pàgines i apps pròpies només necessita saber si hi ha
+# sessió i com mostrar-la. Mai torna correu, identificadors interns ni secrets.
+
+def display_name(oidc: dict[str, Any]) -> str:
+    name = str(oidc.get("name") or "").strip()
+    if name:
+        return name
+    username = str(oidc.get("username") or "").strip()
+    # Si Authentik no envia nom d'usuari, la galeta pot portar el correu.
+    return username.split("@", 1)[0] if "@" in username else username
+
+
+def session_links(request: Request, c: Commons) -> dict[str, str | None]:
+    """Rutes relatives a Commons; el widget les resol amb la seua `data-base`.
+
+    Darrere de dos proxies `request.base_url` no sap si és HTTPS, per això no
+    es construïxen URL absolutes ací.
+    """
+    supplied = request.headers.get("origin", "")
+    back = request.query_params.get("next", "")
+    if not back and supplied and origin_allowed(supplied, c.settings.allowed_origins):
+        back = supplied + "/"
+    next_url = safe_next(back or "/", c.settings.allowed_origins)
+    return {
+        "login": f"/api/auth/oidc/login?next={quote(next_url, safe='')}" if c.settings.oidc_enabled else None,
+        "teacher": "/teacher.html",
+        "student": "/student.html",
+        "account": c.settings.account_url or None,
+        "logout": "/api/auth/session/logout",
+    }
+
+
+def session_state(request: Request, c: Commons) -> dict[str, Any]:
+    anonymous = {
+        "authenticated": False,
+        "kind": "anonymous",
+        "role": None,
+        "display_name": None,
+        "username": None,
+        "public_code": None,
+    }
+    oidc = c.auth.oidc_cookie(request)
+    if oidc:
+        username = str(oidc.get("username") or "")
+        state = {
+            **anonymous,
+            "authenticated": True,
+            "kind": "oidc",
+            "role": str(oidc.get("role") or "alumno"),
+            "display_name": display_name(oidc),
+            "username": username.split("@", 1)[0] if "@" in username else username,
+        }
+    elif (teacher := c.cookies.decode(request.cookies.get(TEACHER_COOKIE))) and teacher.get("teacher"):
+        state = {**anonymous, "authenticated": True, "kind": "teacher", "role": "profesor"}
+    elif student := c.auth.current_identity(request):
+        state = {
+            **anonymous,
+            "authenticated": True,
+            "kind": "student",
+            "role": "alumno",
+            "public_code": student["public_code"],
+        }
+    else:
+        state = anonymous
+    return {**state, "login_available": c.settings.oidc_enabled, "links": session_links(request, c)}
+
+
+def session_origin_ok(request: Request, c: Commons) -> bool:
+    supplied = request.headers.get("origin", "")
+    if supplied and supplied != "null":
+        # Les galetes no distingixen ports i nginx pot reenviar `Host` sense port:
+        # n'hi ha prou que coincidisca el nom del host.
+        try:
+            same_host = urlsplit(supplied).hostname == urlsplit("//" + request.headers.get("host", "")).hostname
+        except ValueError:
+            return False
+        return same_host or origin_allowed(supplied, c.settings.allowed_origins)
+    return request.headers.get("sec-fetch-site", "") == "same-origin"
+
+
+def no_store(response: Response) -> None:
+    response.headers["Cache-Control"] = "no-store"
+    response.headers["Vary"] = "Cookie, Origin"
+
+
+@router.get("/api/auth/session")
+def central_session(request: Request, response: Response, c: Commons = Depends(commons)) -> dict[str, Any]:
+    no_store(response)
+    return session_state(request, c)
+
+
+@router.post("/api/auth/session/logout")
+def central_logout(request: Request, response: Response, c: Commons = Depends(commons)) -> dict[str, bool]:
+    """Tanca qualsevol sessió de Commons; repetir-ho no és cap error."""
+    no_store(response)
+    if not session_origin_ok(request, c):
+        raise HTTPException(status_code=403, detail="origin not allowed")
+    c.rebost.revoke_oidc(request)
+    revoke_student_session(request, c)
+    for name in (SESSION_COOKIE, OIDC_COOKIE, TEACHER_COOKIE):
+        response.delete_cookie(name, **c.cookies.delete_options())
     return {"ok": True}

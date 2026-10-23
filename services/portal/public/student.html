@@ -9,6 +9,8 @@
     <script src="/assets/language-preference.js"></script>
     <script src="/i18n.js"></script>
     <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/assets/account-widget.css">
+    <script src="/assets/account-widget.js" defer></script>
     <link rel="stylesheet" href="/beta-notice.css">
     <script src="/beta-notice.js" defer></script>
   </head>
@@ -21,17 +23,8 @@
           <h1 data-i18n="student.title">Tauler d'alumnat</h1>
         </div>
       </div>
-      <nav class="topnav" aria-label="Navegació principal" data-i18n-title="common.nav.label">
-        <a href="/" data-i18n="common.home">Inici</a>
-      </nav>
       <div class="topbar-actions">
-        <details id="sessionMenu" class="session-menu">
-          <summary id="apiStatus" class="status">Comprovant sessió...</summary>
-          <div class="session-menu__items">
-            <a id="changePasswordLink" href="#" target="_blank" rel="noopener" data-i18n="common.session.changePassword">Cambiar contraseña</a>
-            <button id="logoutSessionButton" type="button" data-i18n="common.session.logout">Salir de la sesión</button>
-          </div>
-        </details>
+        <edutictac-account id="accountWidget"></edutictac-account>
         <div class="lang-switcher" role="group" aria-label="Idioma" data-i18n-title="common.lang.label">
           <button type="button" data-lang="ca" title="Català">CA</button>
           <button type="button" data-lang="va" title="Valencià">VA</button>

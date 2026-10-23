@@ -52,6 +52,7 @@ def oidc_identity(cookie: dict[str, Any]) -> dict[str, Any]:
         "role": str(cookie.get("role", "alumno")),
         "pseudonym": str(cookie.get("pseudonym", "")),
         "username": str(cookie.get("username", "")),
+        "name": str(cookie.get("name", "")),
         "provider": "authentik",
     }
 

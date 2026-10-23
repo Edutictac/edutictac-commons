@@ -228,7 +228,8 @@ test('si falta el bundle hi ha un avís de recàrrega i la navegació continua',
   await page.route('**/assets/student-ui.js',route=>route.abort());
   await page.goto('/student.html');
   await expect(page.locator('#studentPanel')).toContainText('Torna a carregar');
-  await expect(page.locator('.topnav a').first()).toBeVisible();
+  await expect(page.locator('edutictac-account .eta-home')).toHaveAttribute('href','/');
+  await expect(page.locator('edutictac-account .eta-home')).toBeVisible();
 });
 
 for (const status of [200,401]) {

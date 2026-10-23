@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import os
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+
+from .origins import parse_origins
 
 
 @dataclass
@@ -27,6 +29,10 @@ class Settings:
     setup_token: str = ""
     authentik_bootstrap_password: str = ""
     resources_api_url: str = "http://recursos-api:8004"
+    # Llocs propis que poden mostrar la sessió central i rebre el retorn `next`.
+    allowed_origins: tuple[str, ...] = field(default_factory=tuple)
+    # Pàgina del compte en Authentik («canviar contrasenya», perfil).
+    account_url: str = ""
 
     @classmethod
     def from_env(cls, env: Mapping[str, str] | None = None) -> Settings:
@@ -50,6 +56,8 @@ class Settings:
             setup_token=env.get("EDUTICTAC_SETUP_TOKEN", "").strip(),
             authentik_bootstrap_password=env.get("EDUTICTAC_AUTHENTIK_BOOTSTRAP_PASSWORD", ""),
             resources_api_url=env.get("EDUTICTAC_RESOURCES_API_URL", cls.resources_api_url).rstrip("/"),
+            allowed_origins=parse_origins(env.get("EDUTICTAC_ID_ALLOWED_ORIGINS", "")),
+            account_url=env.get("EDUTICTAC_ID_ACCOUNT_URL", "").strip(),
         )
 
     @property

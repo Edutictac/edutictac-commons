@@ -5,9 +5,11 @@ from __future__ import annotations
 import os
 
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import Response
 from starlette.middleware.sessions import SessionMiddleware
 
 from .context import Commons
+from .origins import origin_allowed
 from .routes import ROUTERS
 from .settings import Settings
 
@@ -74,6 +76,36 @@ def install_library(app: FastAPI, c: Commons) -> None:
         return response
 
 
+# Només la sessió central s'obri a altres orígens propis: la resta de l'API
+# continua sent del mateix origen i no rep capçaleres CORS.
+SESSION_CORS_PATHS = frozenset({"/api/auth/session", "/api/auth/session/logout"})
+
+
+def install_session_cors(app: FastAPI, c: Commons) -> None:
+    @app.middleware("http")
+    async def session_cors(request: Request, call_next):
+        origin = request.headers.get("origin", "")
+        allowed = (
+            request.url.path in SESSION_CORS_PATHS
+            and bool(origin)
+            and origin_allowed(origin, c.settings.allowed_origins)
+        )
+        if request.method == "OPTIONS" and request.url.path in SESSION_CORS_PATHS:
+            response = Response(status_code=204 if allowed else 403)
+            if allowed:
+                response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+                response.headers["Access-Control-Allow-Headers"] = "Content-Type"
+                response.headers["Access-Control-Max-Age"] = "600"
+        else:
+            response = await call_next(request)
+        if allowed:
+            response.headers["Access-Control-Allow-Origin"] = origin
+            response.headers["Access-Control-Allow-Credentials"] = "true"
+        if request.url.path in SESSION_CORS_PATHS:
+            response.headers["Vary"] = "Cookie, Origin"
+        return response
+
+
 def create_app(settings: Settings | None = None) -> FastAPI:
     settings = settings or Settings.from_env()
     c = Commons(settings)
@@ -94,4 +126,5 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         app.include_router(router)
     install_quiosc(app, c)
     install_library(app, c)
+    install_session_cors(app, c)
     return app

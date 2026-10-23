@@ -69,6 +69,8 @@ class Commons:
                     or claims.get("email")
                     or ""
                 ),
+                # Nom visible del compte; només es torna a la mateixa persona.
+                "name": str(claims.get("name") or "")[:120],
                 "role": role,
             }),
             **self.cookies.options(max_age=SESSION_TTL_DAYS * 24 * 60 * 60),
