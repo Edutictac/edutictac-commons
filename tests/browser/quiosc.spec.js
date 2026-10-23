@@ -1,3 +1,4 @@
+const {chooseLanguage} = require('./helpers/language');
 const { test, expect } = require('@playwright/test');
 
 test.beforeEach(async ({ page }) => {
@@ -61,11 +62,11 @@ for (const [lang, heading, disabled] of [
   test(`Quiosc conserva l’idioma ${lang} del portal`, async ({ page }) => {
     await page.route('**/api/quiosc/**', route => route.fulfill({json: {mode: 'disabled', rooms: []}}));
     await page.goto('/teacher.html');
-    await page.locator(`[data-lang="${lang}"]`).click();
+    await chooseLanguage(page,lang);
     await page.getByRole('link', {name: 'EduTicTac Quiosc'}).click();
     await expect(page.getByRole('heading', {name: heading, exact: true})).toBeVisible();
     await expect(page.locator('#mode')).toContainText(disabled);
-    await expect(page.locator(`[data-lang="${lang}"]`)).toHaveAttribute('aria-current', 'true');
+    await expect(page.locator(`edutictac-account [data-lang-option=\"${lang}\"]`)).toHaveAttribute('aria-checked', 'true');
     await page.reload();
     await expect(page.getByRole('heading', {name: heading, exact: true})).toBeVisible();
   });
@@ -89,7 +90,7 @@ test('Quiosc traduïx estats, avisos i errors al valencià sense perdre la selec
   await expect(page.locator('#results')).toContainText('Proceso de Firefox observado');
   await page.locator('input[value=pc1]').check();
   await page.locator('#url').fill('https://example.org/quiz');
-  await page.locator('[data-lang=va]').click();
+  await chooseLanguage(page,'va');
   await expect(page.locator('#mode')).toContainText('SIMULACIÓ');
   await expect(page.locator('#devices')).toContainText('no es consulta Epoptes');
   await expect(page.locator('#results')).toContainText('Procés de Firefox observat');
@@ -99,7 +100,7 @@ test('Quiosc traduïx estats, avisos i errors al valencià sense perdre la selec
   await expect(page.getByRole('button', {name: 'Restaurar este equip'})).toBeVisible();
   await page.locator('#refresh').click();
   await expect(page.locator('#message')).toContainText('Epoptes o la seua configuració');
-  await page.locator('[data-lang=en]').click();
+  await chooseLanguage(page,'en');
   await expect(page.locator('#message')).toContainText('Epoptes or its configuration');
   await expect(page.locator('#results')).toContainText('Firefox process observed');
 });
@@ -111,7 +112,7 @@ test('Quiosc detecta el valencià del navegador sense preferència guardada', as
     const page = await context.newPage();
     await page.route('**/api/quiosc/**', route => route.fulfill({json: {mode: 'disabled', rooms: []}}));
     await page.goto('http://127.0.0.1:18082/quiosc.html');
-    await expect(page.locator('[data-lang=va]')).toHaveAttribute('aria-current', 'true');
+    await expect(page.locator('edutictac-account [data-lang-option=va]')).toHaveAttribute('aria-checked', 'true');
     await expect(page.locator('#mode')).toContainText('Mòdul desactivat.');
     await expect(page.locator('#start')).toHaveText('Iniciar l’activitat supervisada');
   } finally { await context.close(); }

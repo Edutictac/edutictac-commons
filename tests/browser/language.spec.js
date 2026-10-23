@@ -1,3 +1,4 @@
+const {chooseLanguage} = require('./helpers/language');
 const { test, expect } = require('@playwright/test');
 
 const languages = {
@@ -24,8 +25,8 @@ for (const [lang, text] of Object.entries(languages)) {
   test(`${lang}: taulers, text inicial i persistencia`, async ({ page }) => {
     await mockApi(page);
     await page.goto('/student.html');
-    await expect(page.locator('.lang-switcher button')).toHaveText(['CA', 'VA', 'ES', 'EN']);
-    await page.locator(`[data-lang="${lang}"]`).click();
+    await expect(page.locator('edutictac-account [data-lang-option]')).toHaveText(['CA', 'VA', 'ES', 'EN']);
+    await chooseLanguage(page,lang);
     await expect(page.locator('#studentOutput')).toHaveText(text.prompt);
     await expect(page.locator('#studentLogout')).toHaveText(text.logout);
     await page.reload();
@@ -35,7 +36,7 @@ for (const [lang, text] of Object.entries(languages)) {
     await expect(page.locator('edutictac-account .eta-home').first()).toHaveAttribute('aria-label', homeLabel[lang]);
     await expect(page.locator('#eduhootActivityId')).toHaveCount(0);
     await expect(page.locator('#assignFavoriteResources')).toBeDisabled();
-    await expect(page.locator(`[data-lang="${lang}"]`)).toHaveAttribute('aria-current', 'true');
+    await expect(page.locator(`edutictac-account [data-lang-option=\"${lang}\"]`)).toHaveAttribute('aria-checked', 'true');
   });
 }
 
@@ -43,7 +44,7 @@ test('canviar idioma conserva el perfil i els botons de les icones', async ({ pa
   await mockApi(page, true);
   await page.goto('/student.html');
   for (const lang of ['va', 'en', 'es', 'ca', 'va']) {
-    await page.locator(`[data-lang="${lang}"]`).click();
+    await chooseLanguage(page,lang);
     await expect(page.locator('.student-profile')).toBeVisible();
     await expect(page.locator('[data-student-icon]')).toHaveCount(28);
     await expect(page.locator('#studentOutput')).toContainText('TEST01');
@@ -56,7 +57,7 @@ for (const [locale, expected] of [['ca-ES', 'ca'], ['ca-ES-valencia', 'va']]) {
     const page = await context.newPage();
     await mockApi(page);
     await page.goto('http://127.0.0.1:18082/student.html');
-    await expect(page.locator(`[data-lang="${expected}"]`)).toHaveAttribute('aria-current', 'true');
+    await expect(page.locator(`edutictac-account [data-lang-option=\"${expected}\"]`)).toHaveAttribute('aria-checked', 'true');
     await context.close();
   });
 }

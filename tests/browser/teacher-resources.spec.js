@@ -1,3 +1,4 @@
+const {chooseLanguage} = require('./helpers/language');
 const {test, expect} = require('@playwright/test');
 
 const resources = [
@@ -41,7 +42,7 @@ test('cerca amb Enter, proveïdors, idioma i una única assignació', async ({pa
   await page.locator('#resourceSearch').press('Enter');
   expect(new URL((await request).url()).searchParams.get('q')).toBe('my search');
   await expect(page.locator('[data-assign-resource]')).toHaveCount(3);
-  await page.locator('[data-lang=es]').click();
+  await chooseLanguage(page,'es');
   await expect(page.locator('#resourceSearch')).toHaveValue('  my search  ');
   await page.locator('[data-assign-resource="edutictac-play:game"]').click();
   await expect(page.locator('#resourcesOutput')).toContainText('Se han asignado 1');

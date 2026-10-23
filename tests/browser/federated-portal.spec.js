@@ -1,3 +1,4 @@
+const {chooseLanguage} = require('./helpers/language');
 const {test,expect}=require('@playwright/test');
 const deployment={mode:'federated',authentikUrl:'https://id.example.test/',applications:{
   play:'https://example.test/play/',recursos:'https://resources.example.test/',eduhoot:'https://quiz.example.test/',blocs:'https://blocks.example.test/',llibres:'https://books.example.test/'}};
@@ -21,7 +22,7 @@ test('portal federat manté URL pròpies, identitat i llengües sense administra
   await expect(page.locator('#adminHomeLink')).toBeHidden();
   await expect(page.locator('#firstRunSetupDialog')).toHaveCount(0);
   for(const language of ['es','va','ca','en']){
-    await page.locator('[data-lang='+language+']').click();await expect(page.locator('h1')).toHaveText('EduTicTac Commons');
+    await chooseLanguage(page,language);await expect(page.locator('h1')).toHaveText('EduTicTac Commons');
     await expect(page.locator('#llibresHomeLink')).toHaveAttribute('href',deployment.applications.llibres+'?lang='+language);
     await expect(page.locator('#playHomeLink')).toHaveAttribute('href',deployment.applications.play+'?lang='+language);
     await expect(page.locator('#resourcesHomeLink')).toHaveAttribute('href',deployment.applications.recursos+'?ui_lang='+language);
@@ -61,7 +62,7 @@ test('guia federada explica assignació individual i obri el banc públic',async
   await setup(page); await page.goto('/teacher-help.html');
   await expect(page.locator('#helpResourcesLink')).toHaveAttribute('href',deployment.applications.recursos);
   for(const language of ['es','va','ca','en']) {
-    await page.locator('[data-lang='+language+']').click();
+    await chooseLanguage(page,language);
     await expect(page.locator('[data-i18n="help.federated.step4Title"]')).not.toHaveText(/help\./);
     await expect(page.locator('[data-i18n="help.step4Text"]')).toHaveCount(0);
   }
@@ -73,7 +74,7 @@ test('avís central accessible i traduït sense prometre sessions comunes',async
   await expect(page.locator('a[href="/privacy.html"]')).toBeVisible();
   await page.locator('a[href="/privacy.html"]').click();
   for(const language of ['es','va','ca','en']) {
-    await page.locator('[data-lang='+language+']').click();
+    await chooseLanguage(page,language);
     await expect(page.locator('[data-i18n="privacy.teacherText"]')).toContainText('EduTicTac');
     await expect(page.locator('[data-i18n="privacy.sessionText"]')).toContainText('180');
     await expect(page.locator('h1')).not.toHaveText(/privacy\./);
@@ -92,7 +93,7 @@ test('avís beta visible en portada i taulers, traduït i sense desbordament',as
   }
   await page.goto('/');
   for(const language of ['es','va','ca','en']) {
-    await page.locator('[data-lang='+language+']').click();
+    await chooseLanguage(page,language);
     await expect(page.locator('.beta-notice span')).toContainText(/beta/i);
   }
 });

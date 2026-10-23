@@ -1,3 +1,4 @@
+const {chooseLanguage} = require('./helpers/language');
 const {test, expect} = require('@playwright/test');
 const fs = require('node:fs/promises');
 
@@ -62,7 +63,7 @@ test('crear aula, CSV explícit amb PIN i recàrrega sense credencials recuperab
   const download = await downloadEvent;
   expect(download.suggestedFilename()).toMatch(/\.csv$/);
   expect((await fs.readFile(await download.path(), 'utf8')).includes(SAMPLE_PIN)).toBe(true);
-  await page.locator('[data-lang=es]').click();
+  await chooseLanguage(page,'es');
   await expect(page.locator('#freshCredentials')).toContainText('desaparecen al recargar');
   await expect(page.locator('#freshCredentials .credential')).toHaveCount(1);
   await page.reload();

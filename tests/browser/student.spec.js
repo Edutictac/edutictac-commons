@@ -1,3 +1,4 @@
+const {chooseLanguage} = require('./helpers/language');
 const {test, expect} = require('@playwright/test');
 const initialIdentity = {id:'pupil',group_id:'class',public_code:'ABC',avatar_icon:'🚀'};
 const activities = [
@@ -70,7 +71,7 @@ test('itinerari, zero, historial i canvi d’idioma sense recarregar dades', asy
   const row=page.locator('tr').filter({has:page.getByText('Done activity',{exact:true})});
   await expect(row.locator('td').nth(2)).toHaveText('0');
   let reads=0; page.on('request', request=>{if(request.url().includes('/api/student/dashboard'))reads++;});
-  await page.locator('[data-lang=es]').click();
+  await chooseLanguage(page,'es');
   await expect(page.locator('[data-student-itinerary]')).toHaveText('Itinerario: Science');
   await expect(page.getByText('Done activity',{exact:true})).toBeVisible();
   expect(reads).toBe(0);
@@ -109,7 +110,7 @@ for (const status of [200,401,503]) {
     await login(page);
     await expect(page.locator('.student-profile')).toContainText('XYZ');
     release();
-    await page.locator('[data-lang=es]').click();
+    await chooseLanguage(page,'es');
     await expect(page.locator('.student-profile')).toContainText('XYZ');
     await expect(page.locator('#studentOutput')).not.toContainText('ABC');
   });

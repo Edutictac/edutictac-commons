@@ -1,3 +1,4 @@
+const {chooseLanguage} = require('./helpers/language');
 const { test, expect } = require('@playwright/test');
 
 const anonymous = {
@@ -87,7 +88,7 @@ test('el xip canvia d’idioma amb el selector de la pàgina', async ({ page }) 
   await page.goto('/student.html?lang=ca');
   const home = page.locator('edutictac-account .eta-home').first();
   await expect(home).toHaveAttribute('aria-label', 'Inici d’EduTicTac');
-  await page.locator('[data-lang="en"]').click();
+  await chooseLanguage(page,'en');
   await expect(home).toHaveAttribute('aria-label', 'EduTicTac home');
 });
 
@@ -167,5 +168,28 @@ test('sense theme-preference.js no hi ha selector de tema', async ({ page }) => 
   await page.goto('/index.html?lang=ca');
   await page.locator('edutictac-account summary').click();
   await expect(page.locator('edutictac-account').getByRole('menuitem', { name: /Professorat/ })).toBeVisible();
-  await expect(page.locator('edutictac-account .eta-theme')).toHaveCount(0);
+  await expect(page.locator('edutictac-account [data-theme-option]')).toHaveCount(0);
+  await expect(page.locator('edutictac-account [data-lang-option]')).toHaveCount(4);
+});
+
+test('l’idioma es tria dins del xip i canvia tota la pàgina', async ({ page }) => {
+  await mockSession(page, { session: anonymous, logouts: 0 });
+  await page.goto('/teacher.html?lang=ca');
+  await expect(page.locator('.lang-switcher')).toHaveCount(0);
+  const widget = page.locator('edutictac-account');
+  await widget.locator('summary').click();
+  const group = widget.getByRole('radiogroup', { name: 'Idioma' });
+  await expect(group.getByRole('radio')).toHaveText(['CA', 'VA', 'ES', 'EN']);
+  await expect(group.getByRole('radio', { name: 'Català' })).toHaveAttribute('aria-checked', 'true');
+  await group.getByRole('radio', { name: 'Español' }).click();
+  await expect(page.locator('h1')).toHaveText('Panel docente');
+  await expect(widget.locator('.eta-home')).toHaveAttribute('aria-label', 'Inicio de EduTicTac');
+  await group.getByRole('radio', { name: 'Español' }).focus();
+  await page.keyboard.press('ArrowRight');
+  // L'etiqueta del grup també canvia d'idioma.
+  const english = widget.getByRole('radiogroup', { name: 'Language' }).getByRole('radio', { name: 'English' });
+  await expect(english).toHaveAttribute('aria-checked', 'true');
+  await expect(english).toBeFocused();
+  await page.reload();
+  await expect(page.locator('h1')).toHaveText('Teacher dashboard');
 });

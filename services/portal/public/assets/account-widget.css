@@ -287,3 +287,10 @@ edutictac-account[data-density="compact"] .eta-avatar {
 edutictac-account[data-density="compact"] .eta-role {
   font-size: 11px;
 }
+
+/* Idioma: opcions curtes en una sola fila, com el tema (columnes segons la pàgina). */
+edutictac-account .eta-language .eta-theme__option {
+  min-height: 40px;
+  font-size: 13px;
+  font-weight: 600;
+}

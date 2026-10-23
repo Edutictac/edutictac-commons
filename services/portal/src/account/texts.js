@@ -14,6 +14,7 @@ const ca = {
   logout: 'Eixir de la sessió', logoutConfirm: 'Vols tancar la sessió en totes les aplicacions d’EduTicTac?',
   logoutError: 'No s’ha pogut tancar la sessió.', student: 'Alumne {code}', localTeacher: 'Accés docent local',
   theme: 'Tema', themeAuto: 'Auto', themeLight: 'Clar', themeDark: 'Fosc', themeAutoHint: 'Segueix el sistema',
+  language: 'Idioma',
   roles: roles.ca,
 };
 
@@ -28,6 +29,7 @@ export const TEXT = {
     logout: 'Salir de la sesión', logoutConfirm: '¿Quieres cerrar la sesión en todas las aplicaciones de EduTicTac?',
     logoutError: 'No se ha podido cerrar la sesión.', student: 'Alumno {code}', localTeacher: 'Acceso docente local',
     theme: 'Tema', themeAuto: 'Auto', themeLight: 'Claro', themeDark: 'Oscuro', themeAutoHint: 'Sigue el sistema',
+    language: 'Idioma',
     roles: roles.es,
   },
   en: {
@@ -38,9 +40,26 @@ export const TEXT = {
     logout: 'Sign out', logoutConfirm: 'Sign out of every EduTicTac application?',
     logoutError: 'Could not sign out.', student: 'Student {code}', localTeacher: 'Local teacher access',
     theme: 'Theme', themeAuto: 'Auto', themeLight: 'Light', themeDark: 'Dark', themeAutoHint: 'Follows the system',
+    language: 'Language',
     roles: roles.en,
   },
 };
+
+// Noms de cada llengua en la mateixa llengua: així es reconeixen sempre.
+export const LANGUAGE_NAMES = {ca: 'Català', va: 'Valencià', es: 'Español', en: 'English'};
+
+// Com canviar l'idioma de la pàgina amfitriona. Una app pot registrar-se amb
+// window.edutictacLanguage = {languages: ['ca', 'es'], get: () => 'ca', set: lang => {...}}.
+export function languageHost() {
+  if (window.edutictacLanguage?.set) return window.edutictacLanguage;
+  if (window.i18nPortal?.setLang) {
+    return {languages: ['ca', 'va', 'es', 'en'], get: () => window.i18nPortal.getLang(), set: lang => window.i18nPortal.setLang(lang)};
+  }
+  if (window.EduTicTacI18n?.setLang) {
+    return {languages: ['ca', 'va', 'es'], get: () => window.EduTicTacI18n.getLang(), set: lang => window.EduTicTacI18n.setLang(lang)};
+  }
+  return null;
+}
 
 export function pageLang(host) {
   const own = host.dataset.lang;

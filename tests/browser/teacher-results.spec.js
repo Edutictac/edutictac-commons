@@ -1,3 +1,4 @@
+const {chooseLanguage} = require('./helpers/language');
 const {test, expect} = require('@playwright/test');
 
 async function dashboard(page) {
@@ -49,7 +50,7 @@ test('selecció, resultats, marques manuals, classificació i idioma', async ({p
   await page.locator('#loadRanking').click();
   await expect(page.locator('#resultsOutput')).toContainText('Ranked pupil');
   expect(new URLSearchParams(calls.find(call => call.query).query).get('activity_id')).toBe('a');
-  await page.locator('[data-lang=es]').click();
+  await chooseLanguage(page,'es');
   await expect(page.locator('#resultsOutput')).toContainText('Clasificación de la actividad');
   await page.locator('[data-select-assignment=b]').click();
   await expect(page.locator('#resultsOutput tbody tr')).toHaveCount(0);

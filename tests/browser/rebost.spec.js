@@ -1,3 +1,4 @@
+const {chooseLanguage} = require('./helpers/language');
 const {test, expect} = require('@playwright/test');
 
 const id = 'img-' + 'a'.repeat(64);
@@ -92,7 +93,7 @@ test('family revision mismatch is explained without displaying stale costumes', 
   await mockAPI(page);
   await page.route('**/family', route => route.fulfill({json: {id, revision: 'changed', items: [item]}}));
   await page.goto('/assets/?collection=scratch');
-  await page.locator('[data-lang=es]').click();
+  await chooseLanguage(page,'es');
   await page.getByRole('button', {name: 'Ver disfraces', exact: true}).click();
   await expect(page.locator('#status')).toContainText('Esta imagen ha cambiado');
   await expect(page.locator('.family-costume')).toHaveCount(0);
@@ -103,7 +104,7 @@ test('family revision mismatch is explained without displaying stale costumes', 
 test('visitant veu la sessió i ha d’entrar abans de guardar, sense còpies falses',async({page})=>{
   await mockAPI(page);let copies=0;
   await page.route('**/copies',route=>{copies++;return route.fulfill({json:{}});});
-  await page.goto('/assets/?collection=catalog');await page.locator('[data-lang=es]').click();
+  await page.goto('/assets/?collection=catalog');await chooseLanguage(page,'es');
   await expect(page.locator('edutictac-account summary')).toHaveAttribute('aria-label', 'Entrar');
   await expect(page.locator('edutictac-account .eta-home')).toHaveAttribute('href', '/');
   await expect(page.locator('#oidcLogin')).toBeVisible();
@@ -120,7 +121,7 @@ for(const refreshFails of [false,true]) {
       if(new URL(route.request().url()).searchParams.get('collection')==='mine')return route.fulfill({status:500,json:{detail:'operation_failed'}});
       return route.fallback();
     });
-    await page.goto('/assets/?collection=catalog');await page.locator('[data-lang=es]').click();
+    await page.goto('/assets/?collection=catalog');await chooseLanguage(page,'es');
     await expect(page.locator('edutictac-account summary')).toHaveAttribute('aria-label', 'Docent Prova · Profesorado');
     await expect(page.locator('#oidcLogin')).toBeHidden();
     await page.getByRole('button',{name:/^Guardar (esta imagen|en mis imágenes)$/}).click();
@@ -140,19 +141,19 @@ test('quatre idiomes compartits: selector únic, noms amb alternativa i errors r
     ['va','La teua biblioteca d’imatges','Inici d’EduTicTac','Personatge'],
     ['ca','La teva biblioteca d’imatges','Inici d’EduTicTac','Personatge'],
     ['en','Your image library','EduTicTac home','Personaje']]) {
-    await page.locator('[data-lang='+lang+']').click();
+    await chooseLanguage(page,lang);
     await expect(page.locator('.role-heading h2')).toHaveText(heading);
     await expect(page.locator('edutictac-account .eta-home')).toHaveAttribute('aria-label', guest);
-    await expect(page.locator('.lang-switcher .active')).toHaveCount(1);
-    await expect(page.locator('.lang-switcher .active')).toHaveAttribute('data-lang',lang);
+    await expect(page.locator('edutictac-account [data-lang-option][aria-checked=true]')).toHaveCount(1);
+    await expect(page.locator('edutictac-account [data-lang-option][aria-checked=true]')).toHaveAttribute('data-lang-option',lang);
     await expect(page.locator('#grid > article > h2')).toHaveText(name);
     await expect(page.locator('body')).not.toContainText('rebost.');
   }
   await page.getByRole('button',{name:'View costumes',exact:true}).click();
   await expect(page.locator('#status')).toContainText('This image changed');
-  await page.locator('[data-lang=es]').click();
+  await chooseLanguage(page,'es');
   await expect(page.locator('#status')).toContainText('Esta imagen ha cambiado');
-  await page.locator('[data-lang=en]').click();
+  await chooseLanguage(page,'en');
   await page.reload();
   await expect(page.locator('.role-heading h2')).toHaveText('Your image library');
   await page.goto('/');

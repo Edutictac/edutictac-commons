@@ -1,3 +1,4 @@
+const {chooseLanguage} = require('./helpers/language');
 const {test, expect} = require('@playwright/test');
 
 async function dashboard(page) {
@@ -46,7 +47,7 @@ test('selecció d’aula i gestió de membres sense duplicar taules', async ({pa
   await expect(page.locator('#membersOutput tbody tr')).toHaveCount(3);
   expect(calls.find(call => call.method === 'POST').body).toEqual({teacher_id: 'oidc:new-teacher', role: 'teacher'});
   await page.locator('#memberTeacherId').fill('oidc:draft');
-  await page.locator('[data-lang=es]').click();
+  await chooseLanguage(page,'es');
   await expect(page.locator('#addGroupMember')).toHaveText('Añadir docente');
   await expect(page.locator('#memberTeacherId')).toHaveValue('oidc:draft');
   page.on('dialog', dialog => dialog.accept());

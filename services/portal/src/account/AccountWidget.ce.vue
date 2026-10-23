@@ -3,7 +3,7 @@
 // Es publica com a <edutictac-account> (vegeu main.js) i llig la configuració
 // dels atributs `data-*` de l'element; mira la capçalera de main.js.
 import {computed, nextTick, onBeforeUnmount, onMounted, ref, useHost} from 'vue';
-import {TEXT, pageLang} from './texts.js';
+import {LANGUAGE_NAMES, TEXT, languageHost, pageLang} from './texts.js';
 
 const PUBLIC_HOME = 'https://edutictac.es/';
 const THEMES = ['auto', 'light', 'dark'];
@@ -19,6 +19,10 @@ const theme = ref(window.edutictacTheme?.read?.() || 'auto');
 // Les apps amb tema propi (Blocs, Llibres) no carreguen theme-preference.js:
 // allà el xip no oferix un selector que no tindria cap efecte.
 const themeAvailable = !!window.edutictacTheme;
+// El selector d'idioma només apareix si la pàgina sap canviar d'idioma.
+// Es resol en muntar: els scripts d'i18n de les pàgines ja s'han carregat.
+const languages = ref([]);
+let pageLanguage = null;
 const details = ref(null);
 const menu = ref(null);
 let sequence = 0;
@@ -112,13 +116,27 @@ function chooseTheme(value) {
   window.edutictacTheme?.remember?.(value);
 }
 
-function themeKeys(event) {
+function chooseLanguage(value) {
+  if (!pageLanguage || !languages.value.includes(value)) return;
+  pageLanguage.set(value);
+  lang.value = pageLang(host);
+}
+
+function radioKeys(event, options, current, choose, attribute) {
   const step = {ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1}[event.key];
   if (!step) return;
   event.preventDefault();
-  const next = THEMES[(THEMES.indexOf(theme.value) + step + THEMES.length) % THEMES.length];
-  chooseTheme(next);
-  nextTick(() => menu.value?.querySelector(`[data-theme-option="${next}"]`)?.focus());
+  const next = options[(options.indexOf(current) + step + options.length) % options.length];
+  choose(next);
+  nextTick(() => menu.value?.querySelector(`[${attribute}="${next}"]`)?.focus());
+}
+
+function languageKeys(event) {
+  radioKeys(event, languages.value, lang.value, chooseLanguage, 'data-lang-option');
+}
+
+function themeKeys(event) {
+  radioKeys(event, THEMES, theme.value, chooseTheme, 'data-theme-option');
 }
 
 async function toggled() {
@@ -145,6 +163,8 @@ const onTheme = event => { theme.value = event.detail?.preference || theme.value
 const observer = new MutationObserver(() => { data.value = {...host.dataset}; lang.value = pageLang(host); });
 
 onMounted(() => {
+  pageLanguage = languageHost();
+  languages.value = pageLanguage ? pageLanguage.languages.filter(code => TEXT[code]) : [];
   document.addEventListener('click', onOutside);
   document.addEventListener('visibilitychange', onVisible);
   host.addEventListener('keydown', onKey);
@@ -195,6 +215,18 @@ onBeforeUnmount(() => {
           <a class="eta-item" role="menuitem" :href="resolve(links.login || links.teacher)"><span>{{ t.teacherLogin }}</span><small>{{ t.teacherLoginHint }}</small></a>
           <a class="eta-item" role="menuitem" :href="resolve(links.student)"><span>{{ t.studentLogin }}</span><small>{{ t.studentLoginHint }}</small></a>
         </template>
+
+        <div v-if="languages.length > 1" class="eta-theme eta-language" role="radiogroup" :aria-label="t.language"
+             :style="{gridTemplateColumns: `repeat(${languages.length}, 1fr)`}" @keydown="languageKeys">
+          <span class="eta-theme__label" aria-hidden="true">{{ t.language }}</span>
+          <button v-for="code in languages" :key="code" type="button" role="radio"
+                  class="eta-theme__option" :data-lang-option="code" :lang="code === 'va' ? 'ca-ES-valencia' : code"
+                  :aria-label="LANGUAGE_NAMES[code]" :title="LANGUAGE_NAMES[code]"
+                  :aria-checked="lang === code ? 'true' : 'false'" :tabindex="lang === code ? 0 : -1"
+                  @click="chooseLanguage(code)">
+            <span>{{ code.toUpperCase() }}</span>
+          </button>
+        </div>
 
         <div v-if="themeAvailable" class="eta-theme" role="radiogroup" :aria-label="t.theme" @keydown="themeKeys">
           <span class="eta-theme__label" aria-hidden="true">{{ t.theme }}</span>

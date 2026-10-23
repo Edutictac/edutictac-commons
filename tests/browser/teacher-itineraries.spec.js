@@ -1,3 +1,4 @@
+const {chooseLanguage} = require('./helpers/language');
 const { test, expect } = require('@playwright/test');
 
 async function editor(page, { conflict = false, selection = false, selectionConflict = false, twoGroups = false } = {}) {
@@ -66,7 +67,7 @@ test('el docent reordena i lleva passos, també en mòbil', async ({ page }) => 
   await output.getByRole('button', { name: 'Llevar de l’itinerari: Activity c', exact: true }).click();
   await expect(output.locator('li > span')).toHaveText(['Activity b', 'Activity a']);
   await expect(output).toContainText('conserva l’activitat assignada');
-  await page.locator('[data-lang="en"]').click();
+  await chooseLanguage(page,'en');
   await expect(output.getByRole('button', { name: 'Move down: Activity b', exact: true })).toBeVisible();
 });
 
@@ -95,7 +96,7 @@ test('selecció i retirada del recorregut actiu del grup', async ({ page }) => {
   await expect(output.getByRole('status')).toHaveCount(0);
   await expect(output).toContainText('No hi ha cap itinerari actiu');
   expect(updates[1]).toEqual({ itinerary_id: null, expected_itinerary_id: 'reading' });
-  await page.locator('[data-lang="en"]').click();
+  await chooseLanguage(page,'en');
   await output.getByRole('button', { name: 'Use with students: Science', exact: true }).click();
   await expect(science.getByRole('status')).toHaveText('Active for students');
 });
@@ -122,7 +123,7 @@ test('l’alumnat veu el títol traduït sense interpretar HTML i conserva l’h
   });
   await page.goto('/student.html');
   for (const [lang, prefix] of [['ca', 'Itinerari'], ['va', 'Itinerari'], ['es', 'Itinerario'], ['en', 'Itinerary']]) {
-    await page.locator(`[data-lang="${lang}"]`).click();
+    await chooseLanguage(page,lang);
     await expect(page.locator('[data-student-itinerary]')).toHaveText(`${prefix}: <img src=x> Science`);
     await expect(page.locator('[data-student-itinerary] img')).toHaveCount(0);
   }
@@ -207,7 +208,7 @@ test('crear amb Enter conserva el títol com a text i canviar idioma conserva l�
   await expect(page.locator('#itineraryTitle')).toHaveValue('');
   expect(await page.locator('#itinerariesOutput img').count()).toBe(0);
   await page.locator('#itineraryTitle').fill('Següent recorregut');
-  await page.locator('[data-lang=en]').click();
+  await chooseLanguage(page,'en');
   await expect(page.locator('#createItinerary')).toHaveText('Create itinerary');
   await expect(page.locator('#itineraryTitle')).toHaveValue('Següent recorregut');
 });
@@ -269,7 +270,7 @@ test('si no arriba el mòdul d’itineraris, la resta del tauler continua dispon
   });
   await page.goto('/teacher.html');
   await page.locator('summary').filter({has: page.locator('[data-i18n="teacher.itineraries"]')}).click();
-  await page.locator('[data-lang=es]').click();
+  await chooseLanguage(page,'es');
   await expect(page.locator('#itinerariesPanel')).toContainText('Recarga la página');
   await expect(page.locator('#refreshDashboard')).toBeEnabled();
   await expect(page.locator('#teacherOidcLogin')).not.toBeVisible();

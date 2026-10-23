@@ -162,12 +162,6 @@ onBeforeUnmount(() => {
       <!-- Fora del selector incrustat, el xip comú mostra la sessió i l'eixida. -->
       <edutictac-account v-if="!picking" id="accountWidget"></edutictac-account>
       <p v-else id="sessionStatus" class="status session-status" :class="{signed: authenticated}" role="status">{{ !active ? t('rebost.checkingSession') : authenticated ? t('rebost.signedIn') : t('rebost.signedOut') }}</p>
-      <div class="lang-switcher" role="group" :aria-label="t('common.lang.label')">
-        <button type="button" data-lang="ca" title="Català" :class="{active: locale === 'ca'}" :aria-pressed="locale === 'ca'">CA</button>
-        <button type="button" data-lang="va" title="Valencià" :class="{active: locale === 'va'}" :aria-pressed="locale === 'va'">VA</button>
-        <button type="button" data-lang="es" title="Español" :class="{active: locale === 'es'}" :aria-pressed="locale === 'es'">ES</button>
-        <button type="button" data-lang="en" title="English" :class="{active: locale === 'en'}" :aria-pressed="locale === 'en'">EN</button>
-      </div>
     </div>
   </header>
   <main class="single-layout rebost-layout">
