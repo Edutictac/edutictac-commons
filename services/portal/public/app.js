@@ -10,6 +10,7 @@ const state = {
   summary: null,
   dataReady: false,
   enabledModules: null,
+  llibresPort: 8098,
 };
 
 const $ = (id) => document.getElementById(id);
@@ -191,7 +192,7 @@ function setApplicationLinks() {
   });
   const llibresLink = $("llibresHomeLink");
   if (llibresLink) {
-    const url = configuredUrl(deployment.applications?.llibres) || (!federated ? `${window.location.protocol}//${window.location.hostname}:${ports?.llibres || '8098'}/` : null);
+    const url = configuredUrl(deployment.applications?.llibres) || (!federated ? `${window.location.protocol}//${window.location.hostname}:${state.llibresPort}/` : null);
     llibresLink.hidden = !url || (!federated && !state.enabledModules?.has("llibres"));
     if (url) {
       const destination = new URL(url);
@@ -208,6 +209,7 @@ async function loadEnabledModules() {
     const data = await api("/api/modules/status", { method: "GET" });
     if (!Array.isArray(data.enabled)) return;
     state.enabledModules = new Set(data.enabled);
+    if (Number.isInteger(data.ports?.llibres) && data.ports.llibres >= 1 && data.ports.llibres <= 65535) state.llibresPort = data.ports.llibres;
     syncTeacherPanels();
     setApplicationLinks();
     document.querySelectorAll("[data-module]").forEach((node) => {

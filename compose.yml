@@ -11,6 +11,7 @@ services:
       # Local Epoptes integration remains off until the server installer enables it.
       QUIOSC_MODE: ${QUIOSC_MODE:-disabled}
       COMMONS_MODULE_PROFILES: ${COMPOSE_PROFILES:-play}
+      LLIBRES_PORT: ${LLIBRES_PORT:-8098}
       QUIOSC_DISCOVERY: ${QUIOSC_DISCOVERY:-manual}
       QUIOSC_LOCAL_AUTH: ${QUIOSC_LOCAL_AUTH:-0}
       QUIOSC_SERVER_MACS: ${QUIOSC_SERVER_MACS:-}

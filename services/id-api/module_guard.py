@@ -20,7 +20,9 @@ def public_modules():
             profiles = set(state["enabled"])
     except (OSError, ValueError, TypeError, AttributeError):
         pass
-    return {"enabled": sorted(profiles)}
+    port = os.environ.get("LLIBRES_PORT", "8098")
+    port = int(port) if port.isascii() and port.isdigit() and 1 <= int(port) <= 65535 else 8098
+    return {"enabled": sorted(profiles), "ports": {"llibres": port}}
 
 
 @contextmanager

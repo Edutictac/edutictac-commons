@@ -183,3 +183,14 @@ def test_failed_editor_start_restores_previous_selection(controller, editor):
         apply(controller, [editor])
     assert controller.env_path.read_bytes() == previous
     assert editor not in json.loads(controller.state_path.read_text())['enabled']
+
+
+def test_public_editor_port_is_validated_and_reports_the_selected_module(controller, monkeypatch):
+    monkeypatch.syspath_prepend(str(ROOT / 'services/id-api'))
+    monkeypatch.setenv('EDUTICTAC_ID_DB', str(controller.data / 'id.db'))
+    monkeypatch.setenv('COMMONS_MODULE_PROFILES', 'authentik,blocs,llibres')
+    monkeypatch.setenv('LLIBRES_PORT', '18298')
+    from module_guard import public_modules
+    assert public_modules() == {'enabled': ['blocs', 'llibres'], 'ports': {'llibres': 18298}}
+    monkeypatch.setenv('LLIBRES_PORT', 'invalid:8098')
+    assert public_modules()['ports']['llibres'] == 8098

@@ -81,6 +81,20 @@ tar -C "$repo_dir" \
 
 install -m 0644 "$repo_dir/packaging/debian/control" "$root_dir/DEBIAN/control"
 install -m 0755 "$repo_dir/packaging/debian/postinst" "$root_dir/DEBIAN/postinst"
+# Candidate installers can point at candidate images without changing upgrades'
+# preserved tags or publishing an unvalidated final release.
+python3 - "$root_dir/DEBIAN/postinst" "${PACKAGE_IMAGE_TAG:-$(cat "$repo_dir/VERSION")}" "${PACKAGE_RECURSOS_TAG:-${PACKAGE_IMAGE_TAG:-$(cat "$repo_dir/VERSION")}}" <<'PYTAG'
+from pathlib import Path
+import re,sys
+path=Path(sys.argv[1]);image,resources=sys.argv[2:]
+if not all(re.fullmatch(r"[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}", tag) for tag in (image,resources)):
+    raise SystemExit("Invalid package image tag")
+s=path.read_text()
+for key,tag in (("IMAGE_TAG",image),("ADMIN_TAG",image),("RECURSOS_TAG",resources)):
+    s,count=re.subn(r'("'+key+r'": ")[^"\n]+(")',lambda m:m[1]+tag+m[2],s)
+    if count != 1:raise SystemExit("Installer default missing")
+path.write_text(s)
+PYTAG
 install -m 0755 "$repo_dir/packaging/debian/prerm" "$root_dir/DEBIAN/prerm"
 install -m 0755 "$repo_dir/packaging/debian/postrm" "$root_dir/DEBIAN/postrm"
 install -m 0644 "$repo_dir/packaging/edutictac-commons.service" \
