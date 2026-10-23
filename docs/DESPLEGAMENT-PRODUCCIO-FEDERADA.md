@@ -942,3 +942,21 @@ aprobación y lectura pública en el Banc. Las redirecciones al proveedor y las
 pruebas con identidades sintéticas no sustituyen esa aceptación.
 Procedimiento y retirada en `edutictac-llibres/docs/PRODUCTION.md`; línea base y
 resultados privados en `/opt/edutictac-llibres/https-activation/`.
+
+### Accesos públicos a Llibres — 23-10-2026
+
+Portada de Commons y paneles docente/alumnado incorporan un acceso a Llibres.
+Se activa mediante `applications.llibres` en la configuración pública del
+portal; acepta URL HTTPS sin credenciales y conserva el idioma en `?lang=`.
+Sin dirección configurada, el acceso permanece oculto para las instalaciones
+que todavía no tienen Llibres. No se añade un módulo obligatorio ni otra API.
+
+La portada de `edutictac.es` incorpora acceso rápido y tarjeta de Llibres en
+servicios, con traducciones CA/VA/ES. Commons conserva sus cuatro idiomas.
+Verificación local: 34 pruebas de portal federado e idiomas aprobadas y revisión
+en navegador de los cuatro accesos, escritorio/móvil y todos sus idiomas.
+
+Despliegue limitado a cinco archivos del portal sobre su imagen vigente y a
+`index.html`/`scripts/i18n.js` del sitio público. La configuración del portal
+solo añade la URL de Llibres. Cuentas, aulas, bases de datos y permisos se
+conservan. La aceptación con docente y alumnado reales sigue pendiente.

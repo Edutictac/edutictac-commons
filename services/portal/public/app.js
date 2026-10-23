@@ -189,6 +189,16 @@ function setApplicationLinks() {
       link.href = destination.href;
     }
   });
+  const llibresLink = $("llibresHomeLink");
+  if (llibresLink) {
+    const url = configuredUrl(deployment.applications?.llibres);
+    llibresLink.hidden = !url;
+    if (url) {
+      const destination = new URL(url);
+      destination.searchParams.set('lang', window.i18nPortal.getLang());
+      llibresLink.href = destination.href;
+    } else llibresLink.removeAttribute('href');
+  }
   const teacherResourcesLink = $("teacherResourcesLink");
   if (teacherResourcesLink) teacherResourcesLink.href = links.resourcesHomeLink;
 }

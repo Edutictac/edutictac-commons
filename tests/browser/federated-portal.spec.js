@@ -1,6 +1,6 @@
 const {test,expect}=require('@playwright/test');
 const deployment={mode:'federated',authentikUrl:'https://id.example.test/',applications:{
-  play:'https://example.test/play/',recursos:'https://resources.example.test/',eduhoot:'https://quiz.example.test/',blocs:'https://blocks.example.test/'}};
+  play:'https://example.test/play/',recursos:'https://resources.example.test/',eduhoot:'https://quiz.example.test/',blocs:'https://blocks.example.test/',llibres:'https://books.example.test/'}};
 async function setup(page,config=deployment,oidc=true){
   await page.route('**/deployment.js',route=>route.fulfill({contentType:'text/javascript',body:'window.commonsDeployment='+JSON.stringify(config)+';'}));
   await page.route('**/api/**',route=>{
@@ -15,13 +15,14 @@ async function setup(page,config=deployment,oidc=true){
 test('portal federat manté URL pròpies, identitat i llengües sense administració local',async({page})=>{
   await setup(page);await page.goto('/');
   await expect(page.locator('h1')).toHaveText('EduTicTac Commons');
-  for(const [id,url] of Object.entries({playHomeLink:deployment.applications.play,resourcesHomeLink:deployment.applications.recursos,eduhootHomeLink:deployment.applications.eduhoot,blocsHomeLink:deployment.applications.blocs,authentikHomeLink:deployment.authentikUrl})){
-    await expect(page.locator('#'+id)).toHaveAttribute('href',['playHomeLink','resourcesHomeLink'].includes(id)?url+(id==='resourcesHomeLink'?'?ui_lang=':'?lang=')+await page.evaluate(()=>window.i18nPortal.getLang()):url);await expect(page.locator('#'+id)).toBeVisible();
+  for(const [id,url] of Object.entries({playHomeLink:deployment.applications.play,resourcesHomeLink:deployment.applications.recursos,eduhootHomeLink:deployment.applications.eduhoot,blocsHomeLink:deployment.applications.blocs,llibresHomeLink:deployment.applications.llibres,authentikHomeLink:deployment.authentikUrl})){
+    await expect(page.locator('#'+id)).toHaveAttribute('href',['playHomeLink','resourcesHomeLink','llibresHomeLink'].includes(id)?url+(id==='resourcesHomeLink'?'?ui_lang=':'?lang=')+await page.evaluate(()=>window.i18nPortal.getLang()):url);await expect(page.locator('#'+id)).toBeVisible();
   }
   await expect(page.locator('#adminHomeLink')).toBeHidden();
   await expect(page.locator('#firstRunSetupDialog')).toHaveCount(0);
   for(const language of ['es','va','ca','en']){
     await page.locator('[data-lang='+language+']').click();await expect(page.locator('h1')).toHaveText('EduTicTac Commons');
+    await expect(page.locator('#llibresHomeLink')).toHaveAttribute('href',deployment.applications.llibres+'?lang='+language);
     await expect(page.locator('#playHomeLink')).toHaveAttribute('href',deployment.applications.play+'?lang='+language);
     await expect(page.locator('#resourcesHomeLink')).toHaveAttribute('href',deployment.applications.recursos+'?ui_lang='+language);
   }
@@ -34,6 +35,7 @@ test('accés docent federat no consulta instal·lador ni oferix Quiosc',async({p
   await page.goto('/teacher.html');await expect(page.locator('#teacherOidcLogin')).toBeEnabled();
   await expect(page.locator('a[href="/quiosc.html"]')).toBeHidden();
   await expect(page.locator('#authentikNavLink')).toHaveAttribute('href',deployment.authentikUrl);
+  await expect(page.locator('#llibresHomeLink')).toHaveAttribute('href',deployment.applications.llibres+'?lang='+await page.evaluate(()=>window.i18nPortal.getLang()));
   await expect(page.locator('#teacherResourcesLink')).toHaveAttribute('href',deployment.applications.recursos);
   await expect(page.locator('#loadFavoriteResources')).toHaveCount(0);
   await expect(page.locator('#assignFavoriteResources')).toHaveCount(0);
