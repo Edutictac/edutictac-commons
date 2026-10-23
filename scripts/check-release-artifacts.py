@@ -22,7 +22,9 @@ def check_tar(command):
     process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
     try:
         with tarfile.open(fileobj=process.stdout, mode='r|') as archive:
-            bad = sum(forbidden(entry.name) for entry in archive)
+            # Base OS images may contain empty .ssh directories. Reject files
+            # and links within them, without mistaking an empty directory for data.
+            bad = sum(forbidden(entry.name) and not entry.isdir() for entry in archive)
     finally:
         process.stdout.close()
     if process.wait() != 0:
@@ -52,7 +54,7 @@ def main():
         counts.append(check_tar(['dpkg-deb', '--fsys-tarfile', package]))
     for source in args.source:
         with zipfile.ZipFile(source) as archive:
-            counts.append(sum(forbidden(name) for name in archive.namelist()))
+            counts.append(sum(forbidden(entry.filename) and not entry.is_dir() for entry in archive.infolist()))
     if not counts:
         parser.error('Specify an image, installer or source archive')
     if any(counts):
