@@ -85,6 +85,8 @@ services:
       EDUTICTAC_API_ENABLED: "false"
       BLOCS_IDENTITY_MODE: anonymous
       BLOCS_IDENTITY_ENDPOINT: ""
+      # Commons servix Blocs en /blocs/: el xip es carrega del mateix origen.
+      BLOCS_ACCOUNT_URL: "/"
     expose: ["8080"]
     volumes:
       - blocs_catalog_cache:/var/cache/nginx/blocs-assets

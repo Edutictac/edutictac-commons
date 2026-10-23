@@ -250,3 +250,40 @@ edutictac-account .eta-theme__option:focus-visible {
   outline: 3px solid var(--eta-accent);
   outline-offset: 2px;
 }
+
+/* Les apps amfitriones (Blocs, Llibres) porten CSS global propi: el xip fixa els
+ * valors que necessita perquè no hereten mides ni línies d'aquelles fulles. */
+edutictac-account .eta-who > span,
+edutictac-account .eta-item > span,
+edutictac-account .eta-item > small {
+  display: block;
+  height: auto;
+  margin: 0;
+  padding: 0;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+edutictac-account .eta-item {
+  box-sizing: border-box;
+  height: auto;
+  line-height: 1.3;
+}
+
+/* Barres baixes (Blocs): píndoles més menudes. */
+edutictac-account[data-density="compact"] .eta-home,
+edutictac-account[data-density="compact"] .eta-chip {
+  min-height: 34px;
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+
+edutictac-account[data-density="compact"] .eta-avatar {
+  width: 26px;
+  height: 26px;
+  font-size: 11px;
+}
+
+edutictac-account[data-density="compact"] .eta-role {
+  font-size: 11px;
+}
