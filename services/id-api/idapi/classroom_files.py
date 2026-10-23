@@ -1,7 +1,9 @@
 """Private classroom downloads, stored in the existing Commons data volume."""
 from __future__ import annotations
 
-from contextlib import contextmanager
+from contextlib import contextmanager, asynccontextmanager
+import asyncio
+import time
 import fcntl
 import hashlib
 import os
@@ -127,6 +129,25 @@ class ClassroomFiles:
         finally:
             os.close(fd)
 
+    @asynccontextmanager
+    async def upload_lock(self):
+        # Simultaneous pupil submissions queue without blocking the ASGI loop.
+        # Other mutations and the encrypted snapshot use the same OS lock.
+        deadline = time.monotonic() + 60
+        while True:
+            lock = self.lock()
+            try:
+                lock.__enter__()
+                break
+            except HTTPException as error:
+                if error.status_code != 409 or time.monotonic() >= deadline:
+                    raise
+                await asyncio.sleep(0.05)
+        try:
+            yield
+        finally:
+            lock.__exit__(None, None, None)
+
     def group_dir(self, group):
         return self.root / hashlib.sha256(group.encode()).hexdigest()
 
@@ -170,12 +191,13 @@ class ClassroomFiles:
         length = request.headers.get('content-length')
         if length is not None and not length.isdigit(): fail(400, 'invalid_content_length')
         if self.rate(actor): fail(429, 'upload_rate_limit')
-        with self.lock():
+        async with self.upload_lock():
             with self.c.connect() as conn:
                 settings = self.settings(conn)
             if identity and not settings['students_can_upload']: fail(403, 'student_upload_disabled')
             if length is not None and int(length)>settings['max_file_bytes']: fail(413, 'file_too_large')
             group_dir = self.group_dir(group)
+            if group_dir.is_symlink():fail(507, "files_disk_full")
             group_dir.mkdir(mode=0o700, exist_ok=True)
             token = uuid.uuid4().hex
             temporary = group_dir / ('.upload-'+token)

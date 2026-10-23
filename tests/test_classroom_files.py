@@ -177,3 +177,15 @@ def test_environment_defaults_are_validated_and_can_disable_pupil_uploads(api,tm
     with context.connect() as db:assert context.files.settings(db)==dict(max_file_bytes=100,group_quota_bytes=500,student_quota_bytes=200,students_can_upload=False)
     with pytest.raises(ValueError,match='Invalid classroom file limits'):
         Commons(Settings.from_env({**values,'EDUTICTAC_ID_FILES_MAX_BYTES':'-1'}))
+
+
+def test_simultaneous_submissions_wait_for_the_active_upload(api):
+    import fcntl
+    import threading
+    module,t,p=api
+    root=module.commons.files.directory()
+    with (root/'.write.lock').open('a') as stream:
+        fcntl.flock(stream.fileno(),fcntl.LOCK_EX)
+        release=threading.Timer(0.15,lambda:fcntl.flock(stream.fileno(),fcntl.LOCK_UN));release.start()
+        try:assert upload(p['i1'],'queued.txt',student=True).status_code==201
+        finally:release.join()

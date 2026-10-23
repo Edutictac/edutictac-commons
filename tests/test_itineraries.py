@@ -166,8 +166,10 @@ def test_selection_requires_current_group_access(api, monkeypatch):
 
 
 def rerun_baseline(module):
-    """Simula una base anterior a les migracions versionades i torna a migrar."""
+    """Simula l’esquema anterior: no tenia tampoc les taules de fitxers v2."""
     with module.get_conn() as conn:
+        conn.execute("DROP TABLE classroom_files")
+        conn.execute("DROP TABLE classroom_file_settings")
         conn.execute("DELETE FROM _edutictac_migrations WHERE namespace = 'id-api'")
     module.init_db()
 
