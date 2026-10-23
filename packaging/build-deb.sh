@@ -3,14 +3,14 @@ set -euo pipefail
 
 repo_dir="$(cd "$(dirname "$0")/.." && pwd)"
 output_dir="${OUTPUT_DIR:-$repo_dir/dist}"
-package_version="${DEB_VERSION:-0.1.1~beta2}"
+package_version="${DEB_VERSION:-0.1.1~beta3}"
 package_name="edutictac-commons"
 docker_cmd="${DOCKER:-docker}"
 
 # BUNDLE_IMAGES controla si el .deb inclou les imatges Docker ja empaquetades
 # perque la instal·lacio no haja de descarregar-les per xarxa:
 #   none (per defecte) -> .deb tal com sempre, cap imatge inclosa.
-#   own                -> nomes les 4 imatges propies d'EduTicTac (~450MB).
+#   own                -> nomes les 6 imatges de Commons d'EduTicTac (~450MB).
 #   full                -> own + les imatges de tercers dels perfils actius
 #                          a COMPOSE_PROFILES (poden ser diversos GB).
 bundle_images="${BUNDLE_IMAGES:-none}"
