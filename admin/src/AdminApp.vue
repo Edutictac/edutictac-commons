@@ -1,5 +1,6 @@
 <script setup>
 import {watch,nextTick} from 'vue';
+import ClassroomFileSettings from './ClassroomFileSettings.vue';
 import {useAdmin} from './useAdmin.js';
 const model=useAdmin();
 const {t,language,authorized,checking,pending,loggingOut,canWrite,statusText,output,actionText,apiMessage,modules,selected,moduleManageable,modulesNotice,wizard,wizardOpen,closeWizard,teacher,teacherMessage,credential,clearTeacher,mount,mountDirty,restore,rollback,backups,rollbacks,secondary,secondaryText,job,pollState,trackingPaused,loadStatus,applyModules,createTeacher,checkUpdates,confirmed,backupCreate,typedAction,secondaryAction,operation,logout,login,resumeTracking}=model;
@@ -44,6 +45,8 @@ watch(wizardOpen,async value=>{await nextTick();if(value&&!wizard.value?.open)wi
 
         </div>
       </section>
+
+      <ClassroomFileSettings :t="t" :authorized="authorized" :can-write="canWrite" />
 
       <section class="panel" aria-labelledby="teacherTitle">
         <div class="panel-heading">

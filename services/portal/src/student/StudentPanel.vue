@@ -1,5 +1,6 @@
 <script setup>
 import {usePortalTranslations} from '../shared/usePortalTranslations.js';
+import StudentFiles from './StudentFiles.vue';
 import {icons, useStudent} from './useStudent.js';
 const props = defineProps({api:Function, onSessionChanged:Function});
 const t = usePortalTranslations();
@@ -29,6 +30,7 @@ defineExpose({logout});
       </section>
       <div class="actions"><button id="refreshStudent" type="button" class="secondary compact" :disabled="authPending || writing || loading" @click="load()">{{ t('student.refresh') }}</button></div>
       <p v-if="loading" role="status">{{ t('student.loading') }}</p>
+      <StudentFiles :key="identity.id" :api="api" :identity="identity" :on-session-expired="()=>load(true)" />
       <template v-if="ready">
         <h3 v-if="itinerary" data-student-itinerary>{{ t('student.itineraryTitle', {title:itinerary.title}) }}</h3>
         <p>{{ t('student.progressLabel') }} <strong>{{ completed }}/{{ assignments.length }}</strong> {{ t('student.progressCompleted') }}</p>

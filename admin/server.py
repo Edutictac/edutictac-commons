@@ -620,7 +620,43 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    def _files_settings(self, method="GET"):
+        if not self._is_authorized():
+            self._send_json(401, {"error": "unauthorized"})
+            return
+        headers = {"Cookie": self.headers.get("Cookie", ""), "Host": self.headers.get("Host", "")}
+        data = None
+        if method == "PUT":
+            origin = self.headers.get("Origin", "")
+            if (not origin or urllib.parse.urlsplit(origin).netloc.lower() != self.headers.get("Host", "").lower()
+                    or self.headers.get("Sec-Fetch-Site") == "cross-site" or self.headers.get("X-Commons-Files") != "1"):
+                self._send_json(403, {"error": "request_not_allowed"})
+                return
+            try: data = json.dumps(self._read_json_body()).encode()
+            except ValueError:
+                self._send_json(400, {"error": "invalid_request"})
+                return
+            headers.update({"Origin": origin, "Content-Type": "application/json", "X-Forwarded-Proto": urllib.parse.urlsplit(origin).scheme})
+        url = ID_API_ME_URL.rsplit("/api/", 1)[0] + "/api/admin/files/settings"
+        try:
+            with urllib.request.urlopen(urllib.request.Request(url, data=data, headers=headers, method=method), timeout=10) as response:
+                payload = json.loads(response.read())
+            self._send_json(200, payload)
+        except urllib.error.HTTPError as error:
+            self._send_json(error.code, {"error": "files_settings_failed"})
+        except (OSError, ValueError):
+            self._send_json(502, {"error": "files_settings_unavailable"})
+
+    def do_PUT(self):
+        if self.path == "/api/admin/files/settings":
+            self._files_settings("PUT")
+        else:
+            self._send_json(404, {"error": "not_found"})
+
     def do_GET(self):
+        if self.path == "/api/admin/files/settings":
+            self._files_settings()
+            return
         if self.path.startswith("/api/"):
             if not self._is_authorized():
                 self._send_json(401, {"error": "no autoritzat"})

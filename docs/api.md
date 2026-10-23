@@ -194,3 +194,10 @@ documentado en [`play-commons-integration.md`](play-commons-integration.md).
 Play utilizará el contrato existente de Commons para `assignment_id` y
 `POST /api/scores`; no creará una tabla paralela de identidades, grupos ni
 calificaciones.
+
+
+## Fitxers de l’aula
+
+L’ID API incorpora compartits del professorat, entregues privades de l’alumnat i
+ajustos de quota per a administració OIDC. Les rutes i el protocol de pujada
+estan documentats en [FITXERS-AULA.md](FITXERS-AULA.md). No depén del Banc.

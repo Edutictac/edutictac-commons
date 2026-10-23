@@ -1,0 +1,43 @@
+{
+  "services": {
+    "authentik-postgresql": {
+      "image": "postgres@sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea"
+    },
+    "authentik-server": {
+      "image": "ghcr.io/goauthentik/server@sha256:ab9b4e8cc4ab3f8d1198d2db6aeea66bafea1963b3f2843589e0d163f97d9849"
+    },
+    "authentik-worker": {
+      "image": "ghcr.io/goauthentik/server@sha256:ab9b4e8cc4ab3f8d1198d2db6aeea66bafea1963b3f2843589e0d163f97d9849"
+    },
+    "eduhoot": {
+      "image": "registry.edutictac.es/edutictac/eduhoot@sha256:473d3e0bdaf10846bf78ab5285e759f16ee2820b1f2bd8f9d4f0b16dce346bd7"
+    },
+    "eduhoot-mongo": {
+      "image": "mongo@sha256:c53852c00c23ca9f23fc39690350ffa9a80e3642fe8f96879726d8da0abe80a7"
+    },
+    "id-api": {
+      "image": "registry.edutictac.es/edutictac/commons-id-api@sha256:f30d18d40485e50eac84e31ba37b93a860a2e510df3bcdfaa9e7c37c6af6fd1d"
+    },
+    "portal": {
+      "image": "registry.edutictac.es/edutictac/commons-portal@sha256:0bd2a143309b6f5838ffd8382f4d58d21af3ce03ce148991aff43b9f3c874879"
+    },
+    "admin": {
+      "image": "registry.edutictac.es/edutictac/commons-admin@sha256:5931e17fbb092473723b2e5f1c2e14e63fd9c3eb69c10d1acaac4d0f9148eb28"
+    },
+    "play": {
+      "image": "registry.edutictac.es/edutictac/commons-play@sha256:00bf7b809e3b98dee55aa989c74f2c03a5e773d6a184c21260d4c10caf59aec7"
+    },
+    "blocs": {
+      "image": "registry.edutictac.es/edutictac/commons-blocs@sha256:51b6b6527d632528e2d8d645cb8bbd68bf143e74bfc89c435924433db0ea393d"
+    },
+    "llibres": {
+      "image": "registry.edutictac.es/edutictac/commons-llibres@sha256:dc6af7e2520782752116d9ba1ec5928b02594dec12cc70447c2a0a9d05b4df4a"
+    },
+    "recursos": {
+      "image": "registry.edutictac.es/edutictac/recursos@sha256:346932a03a1a3eeebc311791a69b3e584a431e7ecfd5660d083d0731776b7868"
+    },
+    "recursos-api": {
+      "image": "registry.edutictac.es/edutictac/recursos-api@sha256:a5cc3d3e369a18a4efd79f23ae531b6417b82979906d247a27044d2a0ed0a8b6"
+    }
+  }
+}

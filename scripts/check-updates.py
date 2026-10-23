@@ -111,14 +111,25 @@ def fetch_tags(registry: str, image: str, username: str = "", password: str = ""
 SEMVER_RE = re.compile(r"^v?(\d+)\.(\d+)\.(\d+)(?:[-.]([0-9A-Za-z.-]+))?$")
 
 
-def semver_key(tag: str) -> tuple[int, int, int, int, str]:
+def semver_key(tag: str) -> tuple:
+    """Project release order: alpha9 < alpha10 < beta1; beta3-candidate1 < beta3.
+
+    The candidate suffix identifies a rehearsal of that numbered delivery. It
+    must not hide the completed delivery when both tags remain in the registry.
+    """
     match = SEMVER_RE.match(tag)
     if not match:
-        return (-1, -1, -1, -1, tag)
+        return (-1, -1, -1, -1, (0, 0, 0, 0, tag))
     major, minor, patch = (int(match.group(i)) for i in range(1, 4))
     prerelease = match.group(4) or ""
-    stable_rank = 1 if not prerelease else 0
-    return (major, minor, patch, stable_rank, prerelease)
+    project = re.fullmatch(r"(alpha|beta|rc)(\d*)(?:[-.]candidate(\d+))?", prerelease)
+    if project:
+        phase, number, candidate = project.groups()
+        detail = ({"alpha": 1, "beta": 2, "rc": 3}[phase], int(number or 0),
+                  int(candidate is None), int(candidate or 0), "")
+    else:
+        detail = (0, 0, 0, 0, prerelease)
+    return (major, minor, patch, int(not prerelease), detail)
 
 
 def channel_match(tag: str, channel: str) -> bool:
