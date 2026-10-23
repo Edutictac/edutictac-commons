@@ -27,6 +27,7 @@ def main():
     parser.add_argument("--commons-tag", default="0.1.1-alpha")
     parser.add_argument("--eduhoot-tag", default="1.0.2")
     parser.add_argument("--pull", action="store_true")
+    parser.add_argument("--editors", action="store_true", help="Include optional Blocs and Llibres with isolated ports")
     parser.add_argument("--lock", type=Path, help="Manifest JSON amb imatges fixades per digest")
     args = parser.parse_args()
     root = Path(__file__).resolve().parent.parent
@@ -37,12 +38,15 @@ def main():
         for name in ("compose.yml", "VERSION"):
             shutil.copy2(root / name, work / name)
         shutil.copytree(root / "scripts", work / "scripts", ignore=shutil.ignore_patterns("__pycache__"))
+        (work / "admin").mkdir()
+        shutil.copy2(root / "admin/modules.py", work / "admin/modules.py")
         (work / "data").mkdir()
         (work / "backups").mkdir()
         portal_port, eduhoot_port, admin_port = free_port(), free_port(), free_port()
         config = {
             "COMPOSE_PROJECT_NAME": "commons-check-" + secrets.token_hex(5),
-            "COMPOSE_PROFILES": "eduhoot",
+            "COMPOSE_PROFILES": "eduhoot,blocs,llibres" if args.editors else "eduhoot",
+            "LLIBRES_PORT": str(free_port()),
             "IMAGE_REGISTRY": args.registry,
             "IMAGE_TAG": args.commons_tag,
             "EDUHOOT_TAG": args.eduhoot_tag,
@@ -95,6 +99,12 @@ def main():
             for port, path in ((portal_port, "/api/health"), (eduhoot_port, "/"), (admin_port, "/")):
                 with urllib.request.urlopen(f"http://127.0.0.1:{port}{path}", timeout=10) as response:
                     assert response.status == 200
+            if args.editors:
+                for port, path in ((portal_port, "/blocs/editor.html"), (int(config["LLIBRES_PORT"]), "/engine/index.html")):
+                    with urllib.request.urlopen(f"http://127.0.0.1:{port}{path}", timeout=15) as response:
+                        assert response.status == 200
+                with urllib.request.urlopen(f"http://127.0.0.1:{config['LLIBRES_PORT']}/publication-status", timeout=10) as response:
+                    assert "recursos" not in json.load(response)["enabled"]
             run(["sh", "scripts/test-flow.sh"])
             run(["sh", "scripts/test-eduhoot-flow.sh"])
 
@@ -109,7 +119,7 @@ def main():
             backup = next((work / "backups").glob("commons-*"))
             manifest = json.loads((backup / "manifest.json").read_text())
             assert not manifest["warnings"], "El backup ha de cobrir tots els serveis"
-            assert {s["name"] for s in manifest["services"]} == {"id-api", "eduhoot"}
+            assert {s["name"] for s in manifest["services"]} == {"id-api", "eduhoot", "configuration"}
 
             with closing(sqlite3.connect(work / "data/id.db")) as database, database:
                 database.execute("UPDATE release_restore_probe SET value='despres'")
