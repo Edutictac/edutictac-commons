@@ -16,6 +16,9 @@ const status = ref('checking');
 const open = ref(false);
 const alignStart = ref(false);
 const theme = ref(window.edutictacTheme?.read?.() || 'auto');
+// Les apps amb tema propi (Blocs, Llibres) no carreguen theme-preference.js:
+// allà el xip no oferix un selector que no tindria cap efecte.
+const themeAvailable = !!window.edutictacTheme;
 const details = ref(null);
 const menu = ref(null);
 let sequence = 0;
@@ -192,7 +195,7 @@ onBeforeUnmount(() => {
           <a class="eta-item" role="menuitem" :href="resolve(links.student)"><span>{{ t.studentLogin }}</span><small>{{ t.studentLoginHint }}</small></a>
         </template>
 
-        <div class="eta-theme" role="radiogroup" :aria-label="t.theme" @keydown="themeKeys">
+        <div v-if="themeAvailable" class="eta-theme" role="radiogroup" :aria-label="t.theme" @keydown="themeKeys">
           <span class="eta-theme__label" aria-hidden="true">{{ t.theme }}</span>
           <button v-for="option in ['auto', 'light', 'dark']" :key="option" type="button" role="radio"
                   class="eta-theme__option" :data-theme-option="option"

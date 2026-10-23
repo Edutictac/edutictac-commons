@@ -160,3 +160,12 @@ test('el tema es comparteix entre pàgines i amb Rebost', async ({ page }) => {
   await page.locator('edutictac-account summary').click();
   await expect(page.getByRole('radio', { name: /Oscuro/ })).toHaveAttribute('aria-checked', 'true');
 });
+
+test('sense theme-preference.js no hi ha selector de tema', async ({ page }) => {
+  await mockSession(page, { session: anonymous, logouts: 0 });
+  await page.route('**/assets/theme-preference.js', route => route.fulfill({ body: '', contentType: 'text/javascript' }));
+  await page.goto('/index.html?lang=ca');
+  await page.locator('edutictac-account summary').click();
+  await expect(page.locator('edutictac-account').getByRole('menuitem', { name: /Professorat/ })).toBeVisible();
+  await expect(page.locator('edutictac-account .eta-theme')).toHaveCount(0);
+});
