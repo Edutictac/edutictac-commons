@@ -960,3 +960,11 @@ Despliegue limitado a cinco archivos del portal sobre su imagen vigente y a
 `index.html`/`scripts/i18n.js` del sitio público. La configuración del portal
 solo añade la URL de Llibres. Cuentas, aulas, bases de datos y permisos se
 conservan. La aceptación con docente y alumnado reales sigue pendiente.
+
+Activado en producción: imagen de portal
+`sha256:230c2aa187c72eef3269c5b5b5daf91e1f8d5fef3e781f39af14dd8b820c5a6b`.
+Copias de Compose, configuración pública y los dos archivos del sitio en
+`/opt/edutictac-commons-portal/llibres-links-20261023/` (acceso root). Reversión:
+restaurar esos archivos y recrear solo el servicio `portal`; no restaurar bases
+de datos. Identificadores/arranques/imágenes del resto de contenedores y
+PID/arranque de Play conservados. Candidato privado retirado; staging eliminado.
