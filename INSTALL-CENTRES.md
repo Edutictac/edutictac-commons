@@ -1,6 +1,8 @@
 # Instal·lació en centres educatius
 
-Entrega actual: [Commons 0.1.1-alpha + EduHoot 1.0.2](RELEASE-0.1.1-alpha.md).
+Entrega en preparació: [Commons 0.1.1-beta3](releases/0.1.1-beta3/README.md).
+Paquet amd64 amb descàrrega d’imatges; publicació APT pendent de la validació final.
+Per a actualitzar: primer el paquet, després les imatges des d’Administració.
 Inclou un manifest de digests i una prova d'instal·lació/restauració aïllada.
 
 Aquest document descriu la prova tècnica mínima del stack Docker d'EduTicTac Commons en un centre educatiu o en un ordinador local.

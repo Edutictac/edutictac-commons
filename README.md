@@ -1,7 +1,9 @@
 # EduTicTac Commons Stack Local
 
-Versió d'imatges actual: [0.1.1-beta1](releases/0.1.1-beta1/README.md).
-Instal·lador Ubuntu amd64: `0.1.1~beta1`, candidat per a pilots controlats.
+Entrega en preparació: [0.1.1-beta3](releases/0.1.1-beta3/README.md).
+Instal·lador amd64 per a LliureX 23, Ubuntu i Debian: `0.1.1~beta3`.
+La publicació APT i el canvi de la pàgina de descàrrega es tanquen després de
+validar el paquet final; la versió pública anterior és beta1.
 Proves d'idiomes: `npm ci`, `npx playwright install --with-deps chromium` i
 `make test-i18n`. Instal·lació i restauració aïllades: `make test-installation`.
 
@@ -9,9 +11,22 @@ Proves completes del portal (inclou itineraris i Quiosc): `npm test`.
 Play i Moodle usen configuracions separades. Resultats, dependències Python i
 límits de la validació actual: [estabilització v2](docs/ESTABILITZACIO-V2.md).
 
-Primer stack Docker per desenvolupar i ensenyar el producte EduTicTac Commons en `debiandesktop`, sense tocar producció.
+Stack Docker per a instal·lar les ferramentes d’EduTicTac al servidor del centre.
+El nucli incorpora aules, accés de l’alumnat amb codi i PIN, Rebost i fitxers
+d’aula. Administració permet triar Play, EduHoot, Banc, Blocs, Llibres i Quiosc.
 
-## Ús ràpid
+## Instal·lació en un centre
+
+La guia és [INSTALL-CENTRES.md](INSTALL-CENTRES.md). El paquet configura els
+serveis i genera els secrets de la instància. Reinicia l’equip després de la
+primera instal·lació, activa Commons amb el codi d’un sol ús i tria les eines
+des d’Administració. La descàrrega d’imatges necessita connexió a Internet.
+
+En equips existents, actualitza primer el paquet i després les imatges des del
+panell. El paquet conserva els tags i la selecció ja configurats; actualitzar
+només el paquet no substituïx les imatges dels serveis.
+
+## Desenvolupament local amb Docker
 
 ```bash
 cp .env.example .env
@@ -37,19 +52,19 @@ El token docent de demo és el valor de `EDUTICTAC_ID_TEACHER_TOKEN` en `.env` (
 
 | Servei | Port intern | Funció |
 |---|---:|---|
-| `portal` | 80 | Portal demo i proxy `/api/` |
-| `id-api` | 8005 | Credencial pseudònima d'alumnat |
+| `portal` | 80 | Portal del centre i proxy `/api/` |
+| `id-api` | 8005 | Aules, identitat, Rebost i fitxers privats |
 | `eduhoot` | 3000 | Activitat quiz amb SSO Authentik (opcional, `COMPOSE_PROFILES=eduhoot`) |
 | `eduhoot-mongo` | 27017 | Base de dades d'EduHoot (opcional) |
 | `recursos-api` | 8004 | API del banc de recursos (opcional, `COMPOSE_PROFILES=recursos`) |
 | `recursos` | 80 | Interfície del banc de recursos (opcional) |
 | `admin` | 8091 | Panell `/admin`: estat operatiu i backups (sempre actiu) |
-| `play` | 8084 | Editor simplificat d'activitats H5P (Fase 1) |
+| `play` | 8084 | Editor d’activitats H5P (opcional) |
+| `blocs` | 8080 | Programació visual amb Scratch i Rebost (opcional) |
+| `llibres` | 8080 | Contes i còmics; accés pel port 8098 (opcional) |
 
-EduTicTac Play està disponible en `http://localhost:8084`. El prototip permet
-crear un Quiz simplificat, previsualitzar-lo amb el reproductor H5P, guardar-lo
-localment i descarregar-lo com a `.h5p`. La viabilitat, les llicències i les
-limitacions de Moodle/AULES estan documentades en
+EduTicTac Play permet crear, previsualitzar i exportar activitats H5P. Les
+llicències i la compatibilitat amb Moodle/AULES estan documentades en
 [`docs/h5p-feasibility.md`](docs/h5p-feasibility.md).
 
 Documentación complementaria de Play: [arquitectura](docs/architecture.md),
@@ -66,8 +81,10 @@ el panell tècnic en [docs/GUIA-ADMIN.md](docs/GUIA-ADMIN.md).
 
 ## Panell d'administració
 
-`http://127.0.0.1:8091/` — només accessible en local per defecte. L'accés es
-fa amb Authentik i està reservat a l'usuari `akadmin`.
+El panell està en `/admin/` dins de la mateixa adreça del portal. S’accedix amb
+el compte d’administració del centre (`akadmin`). El port intern 8091 es
+publica només en loopback; el proxy del portal permet usar el panell des
+d’altres dispositius autoritzats.
 
 Mostra la versió instal·lada, l'estat dels serveis, l'últim backup i la
 llista de còpies disponibles, els avisos de cobertura i l'estat del timer de
@@ -181,11 +198,11 @@ Si no pots entrar com a alumne, usa una targeta acabada de generar en el portal:
 
 ## Notes
 
-- Aquest stack és per desenvolupament i demostració.
+- Les entregues beta estan pensades per a pilots amb còpies i seguiment.
 - El laboratorio ya incluye Authentik/OIDC para el acceso docente; el token
   local se conserva solo como compatibilidad técnica para pruebas y servicios
   internos.
-- No inclou dades reals ni s'ha de connectar a producció.
+- El repositori no inclou dades del centre ni credencials; l’instal·lador genera les de cada instància.
 - El paquet `edutictac-community` està vendorizat dins de `services/id-api/vendor/` per evitar dependències Git durant el build.
 - `make bootstrap-demo` accepta variables com `DEMO_COUNT=12`, `DEMO_TENANT_ID=centre-prova` o `DEMO_TITLE="Repte inicial"`.
 
@@ -218,22 +235,17 @@ Implementat en proves; pendent de validar en una aula real.
 
 ## EduTicTac Rebost i Blocs
 
-La biblioteca multimèdia compartida s’implementa inicialment en el repositori Blocs, amb
-recursos privats, JSON v3 amb imatges pendents i paquets portables. Arquitectura, interfícies
-per a Books i cobertura de persistència: [EduTicTac Rebost](docs/edutictac-assets.md).
+Rebost és la biblioteca central d’imatges, accessible des de `/assets/` i des
+dels selectors de Blocs i Llibres. El catàleg es pot consultar sense sessió;
+guardar recursos privats requerix identificar-se amb compte docent o codi i PIN.
 
-Planificació del backend compartit, identitat i migració: [biblioteca central Rebost](docs/assets-central-plan.md).
-
-Primera implementació central local: [Rebost privat, API, permisos i verificació](docs/rebost.md).
-Inclou gestor `/assets/` i client compartit; encara no desplegada ni connectada als editors.
-
-Catàlegs del Rebost: [51 recursos propis de Blocs](docs/rebost-catalog.md) i
-[61 imatges de Scratch amb procedència i llicència](docs/rebost-scratch.md).
+Arquitectura i permisos: [Rebost central](docs/rebost.md). Catàlegs amb origen i
+llicència: [recursos propis](docs/rebost-catalog.md) i [Scratch](docs/rebost-scratch.md).
 
 Accés compartit amb el login habitual de Commons, complement Compose opcional i proves
 locals sense comptes reals: [Commons, Rebost i Blocs](docs/rebost-commons-access.md).
 
-## Editors opcionals de la beta2 (en validació)
+## Editors opcionals: Blocs i Llibres
 
 Els perfils `blocs` i `llibres` s’integren en el selector d’Administració.
 Blocs s’obri des de `/blocs-access.html`; Llibres utilitza el mateix nom de
@@ -246,3 +258,11 @@ existents de docent o aprovació del seu docent per a l’alumnat.
 Els treballs es guarden en el navegador o es descarreguen. Consulta
 [les llicències dels editors](docs/LICENCIES-EDITORS.md) i el
 [pla i validació de beta2](docs/PLA-BETA2.md).
+
+
+## Fitxers de l’aula
+
+El professorat compartix carpetes i fitxers amb el grup. L’alumnat entrega
+els treballs en privat; només els veu l’autor i el professorat actual de l’aula.
+Límits configurables sense reiniciar, quotes i confirmació abans de substituir.
+[Guia, permisos i API](docs/FITXERS-AULA.md).
