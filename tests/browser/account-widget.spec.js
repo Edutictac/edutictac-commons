@@ -193,3 +193,16 @@ test('l’idioma es tria dins del xip i canvia tota la pàgina', async ({ page }
   await page.reload();
   await expect(page.locator('h1')).toHaveText('Teacher dashboard');
 });
+
+test('el script carrega el seu CSS si la pàgina no l’enllaça, i només una vegada', async ({ page }) => {
+  await mockSession(page, { session: anonymous, logouts: 0 });
+  await page.route('**/blank-widget.html', route => route.fulfill({ contentType: 'text/html', body:
+    '<!doctype html><html><head><script src="/assets/account-widget.js" defer></script></head><body><edutictac-account></edutictac-account></body></html>' }));
+  await page.goto('/blank-widget.html');
+  await expect(page.locator('edutictac-account .eta-home')).toBeVisible();
+  await expect(page.locator('link[href$="account-widget.css"]')).toHaveCount(1);
+  await page.goto('/index.html');
+  await expect(page.locator('edutictac-account .eta-home')).toBeVisible();
+  await expect(page.locator('link[href*="account-widget.css"]')).toHaveCount(1);
+  expect(await page.locator('edutictac-account .eta-home').getAttribute('target')).toBe(null);
+});

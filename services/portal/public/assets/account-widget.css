@@ -332,3 +332,7 @@ edutictac-account .eta-theme__option:disabled {
   right: auto;
   left: 0;
 }
+
+.eta-embed[hidden] {
+  display: none;
+}

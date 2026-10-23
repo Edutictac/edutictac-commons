@@ -2,7 +2,6 @@
  *
  * Ús (també en llocs sense Vue: el paquet porta Vue dins):
  *   <script src="https://commons.edutictac.es/assets/theme-preference.js"></script>
- *   <link rel="stylesheet" href="https://commons.edutictac.es/assets/account-widget.css">
  *   <script src="https://commons.edutictac.es/assets/account-widget.js" defer></script>
  *   <edutictac-account data-base="https://commons.edutictac.es"></edutictac-account>
  *
@@ -23,6 +22,18 @@
  */
 import {defineCustomElement} from 'vue';
 import AccountWidget from './AccountWidget.ce.vue';
+
+// El mateix script carrega el seu CSS: les pàgines no necessiten un <link> en el
+// <head>, que bloquejaria el primer pintat si Commons tarda o no respon.
+const source = document.currentScript?.src;
+const linked = [...document.querySelectorAll('link[rel=stylesheet]')].some(link => /\/account-widget\.css(\?|$)/.test(link.href));
+if (source && !linked) {
+  const css = document.createElement('link');
+  css.rel = 'stylesheet';
+  css.href = new URL('account-widget.css', source).href;
+  css.dataset.edutictacAccount = '';
+  document.head.appendChild(css);
+}
 
 if (!customElements.get('edutictac-account')) {
   // Sense shadow DOM: els estils viuen en account-widget.css i hereten les

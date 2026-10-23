@@ -72,3 +72,23 @@ test('si l’app reescriu el <body> en arrancar, el xip hi torna', async ({page}
   await expect(page.locator('#edutictac-account-embed .eta-home')).toBeVisible();
   await expect(page.locator('#edutictac-account-embed')).toHaveCount(1);
 });
+
+test('s’amaga en el mode que l’app indica i torna en eixir', async ({page}) => {
+  await app(page, 'data-hide-when=".app.presentation"');
+  await page.evaluate(() => { const div = document.createElement('div'); div.className = 'app'; document.body.append(div); });
+  const slot = page.locator('#edutictac-account-embed');
+  await expect(slot).toBeVisible();
+  await page.evaluate(() => document.querySelector('.app').classList.add('presentation'));
+  await expect(slot).toBeHidden();
+  await page.evaluate(() => document.querySelector('.app').classList.remove('presentation'));
+  await expect(slot).toBeVisible();
+});
+
+test('una app instal·lada obri «Inici» en el navegador', async ({page}) => {
+  await page.addInitScript(() => {
+    const original = window.matchMedia.bind(window);
+    window.matchMedia = query => query === '(display-mode: standalone)' ? {matches: true, media: query, addEventListener() {}, removeEventListener() {}} : original(query);
+  });
+  await app(page, 'data-mode="home"');
+  await expect(page.locator('#edutictac-account-embed .eta-home')).toHaveAttribute('target', '_blank');
+});

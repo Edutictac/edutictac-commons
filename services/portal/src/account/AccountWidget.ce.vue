@@ -32,6 +32,8 @@ let sequence = 0;
 const t = computed(() => TEXT[lang.value]);
 const base = computed(() => (data.value.base || '').replace(/\/+$/, ''));
 const sameOrigin = computed(() => !base.value || new URL(base.value + '/').origin === location.origin);
+// Una app instal·lada (PWA) obri «Inici» en el navegador i no dins de la finestra de l'app.
+const installed = window.matchMedia?.('(display-mode: standalone)').matches || window.navigator.standalone === true;
 const homeUrl = computed(() => data.value.home || (sameOrigin.value ? '/' : PUBLIC_HOME));
 // data-home-only: només l'enllaç d'inici, sense consultar cap sessió (jocs infantils).
 const homeOnly = computed(() => 'homeOnly' in data.value);
@@ -193,7 +195,8 @@ onBeforeUnmount(() => {
 
 <template>
   <nav class="eta" :aria-label="t.nav">
-    <a class="eta-home" :href="homeUrl" :aria-label="t.homeLabel" :title="t.homeLabel">
+    <a class="eta-home" :href="homeUrl" :aria-label="t.homeLabel" :title="t.homeLabel"
+       :target="installed ? '_blank' : null" :rel="installed ? 'noopener' : null">
       <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path d="M3 11.5 12 4l9 7.5M5.5 9.5V20h5v-6h3v6h5V9.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
       <span class="eta-home__text">{{ t.home }}</span>
     </a>
