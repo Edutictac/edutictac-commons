@@ -42,6 +42,11 @@
     });
     slot.appendChild(widget);
     document.body.appendChild(slot);
+    // Algunes apps reescriuen tot el <body> en arrancar (Blockly Games fa
+    // body.innerHTML = …): si el xip desapareix, es torna a posar tal qual.
+    new MutationObserver(function () {
+      if (!slot.isConnected && document.body) document.body.appendChild(slot);
+    }).observe(document.documentElement, {childList: true, subtree: true});
     var loader = document.createElement('script');
     loader.src = base + '/assets/account-widget.js';
     loader.defer = true;

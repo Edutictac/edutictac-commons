@@ -63,3 +63,12 @@ test('una posició desconeguda torna a la cantonada per defecte i no es duplica'
   await expect(page.locator('#edutictac-account-embed')).toHaveCount(1);
   await expect(page.locator('#edutictac-account-embed')).toHaveClass(/eta-embed--top-right/);
 });
+
+test('si l’app reescriu el <body> en arrancar, el xip hi torna', async ({page}) => {
+  await app(page, 'data-mode="home"');
+  await expect(page.locator('#edutictac-account-embed .eta-home')).toBeVisible();
+  await page.evaluate(() => { document.body.innerHTML = '<main id="game">Joc</main>'; });
+  await expect(page.locator('#game')).toBeVisible();
+  await expect(page.locator('#edutictac-account-embed .eta-home')).toBeVisible();
+  await expect(page.locator('#edutictac-account-embed')).toHaveCount(1);
+});
