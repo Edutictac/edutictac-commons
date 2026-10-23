@@ -167,3 +167,13 @@ def test_orphan_cleanup_preserves_committed_files_and_rejects_symlinks(api,tmp_p
     with module.get_conn() as db:row=db.execute('SELECT storage_name FROM classroom_files WHERE id=?',(item,)).fetchone()
     blob=module.commons.files.root/row['storage_name'];blob.unlink();outside=tmp_path/'outside.txt';outside.write_text('private');blob.symlink_to(outside)
     assert t['owner'].get('/api/teacher/groups/G/files/'+item+'/download').status_code==404
+
+
+def test_environment_defaults_are_validated_and_can_disable_pupil_uploads(api,tmp_path):
+    from idapi.settings import Settings
+    from idapi.context import Commons
+    values={'EDUTICTAC_ID_DB':str(tmp_path/'env.db'),'EDUTICTAC_ID_FILES_MAX_BYTES':'100','EDUTICTAC_ID_FILES_GROUP_QUOTA_BYTES':'500','EDUTICTAC_ID_FILES_STUDENT_QUOTA_BYTES':'200','EDUTICTAC_ID_FILES_STUDENTS_CAN_UPLOAD':'0'}
+    context=Commons(Settings.from_env(values));context.db.migrate()
+    with context.connect() as db:assert context.files.settings(db)==dict(max_file_bytes=100,group_quota_bytes=500,student_quota_bytes=200,students_can_upload=False)
+    with pytest.raises(ValueError,match='Invalid classroom file limits'):
+        Commons(Settings.from_env({**values,'EDUTICTAC_ID_FILES_MAX_BYTES':'-1'}))

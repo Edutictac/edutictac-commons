@@ -212,7 +212,9 @@ def _baseline(conn: sqlite3.Connection) -> None:
 
 
 def _classroom_files(conn: sqlite3.Connection) -> None:
-    conn.executescript("""
+    if not conn.in_transaction:
+        conn.execute("BEGIN IMMEDIATE")
+    statements = """
         CREATE TABLE classroom_files (
             id TEXT PRIMARY KEY, group_id TEXT NOT NULL REFERENCES groups(id) ON DELETE CASCADE,
             scope TEXT NOT NULL CHECK(scope IN ('shared','submission')),
@@ -230,7 +232,10 @@ def _classroom_files(conn: sqlite3.Connection) -> None:
             group_quota_bytes INTEGER NOT NULL, student_quota_bytes INTEGER NOT NULL,
             students_can_upload INTEGER NOT NULL, updated_at TEXT NOT NULL, updated_by TEXT NOT NULL
         );
-    """)
+    """
+    for statement in statements.split(";"):
+        if statement.strip():
+            conn.execute(statement)
 
 
 MIGRATIONS = [

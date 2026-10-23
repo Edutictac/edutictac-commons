@@ -38,7 +38,7 @@ class Settings:
         return cls(
             files_dir=env.get("EDUTICTAC_ID_FILES_DIR", ""),
             files_disk_reserve_bytes=int(env.get("EDUTICTAC_ID_FILES_DISK_RESERVE_BYTES", str(cls.files_disk_reserve_bytes))),
-            file_defaults={key: int(env[name]) for key,name in [("max_file_bytes","EDUTICTAC_ID_FILES_MAX_BYTES"),("group_quota_bytes","EDUTICTAC_ID_FILES_GROUP_QUOTA_BYTES"),("student_quota_bytes","EDUTICTAC_ID_FILES_STUDENT_QUOTA_BYTES")] if name in env},
+            file_defaults={key: int(env[name]) for key,name in [("max_file_bytes","EDUTICTAC_ID_FILES_MAX_BYTES"),("group_quota_bytes","EDUTICTAC_ID_FILES_GROUP_QUOTA_BYTES"),("student_quota_bytes","EDUTICTAC_ID_FILES_STUDENT_QUOTA_BYTES")] if name in env} | ({"students_can_upload": env["EDUTICTAC_ID_FILES_STUDENTS_CAN_UPLOAD"] != "0"} if "EDUTICTAC_ID_FILES_STUDENTS_CAN_UPLOAD" in env else {}),
             db_path=env.get("EDUTICTAC_ID_DB", cls.db_path),
             session_secret=env.get("EDUTICTAC_ID_SECRET", ""),
             teacher_token=env.get("EDUTICTAC_ID_TEACHER_TOKEN", ""),

@@ -78,6 +78,12 @@ class ClassroomFiles:
     def __init__(self, commons):
         self.c = commons
         self.root = Path(commons.settings.files_dir or str(Path(commons.settings.db_path).parent / 'id-api' / 'files'))
+        defaults = {**DEFAULTS, **commons.settings.file_defaults}
+        if (not 0 < defaults['max_file_bytes'] <= 100*MB
+                or not 0 < defaults['student_quota_bytes'] <= defaults['group_quota_bytes'] <= 100000*MB
+                or defaults['max_file_bytes'] > defaults['group_quota_bytes']
+                or commons.settings.files_disk_reserve_bytes < 0):
+            raise ValueError('Invalid classroom file limits')
         self.reserve = commons.settings.files_disk_reserve_bytes
         self.rate = RateLimiter(max_calls=1200, window_seconds=60)
 
