@@ -25,7 +25,7 @@ function configuredUrl(value) {
     return url.protocol === 'https:' && !url.username && !url.password ? url.href : null;
   } catch { return null; }
 }
-let itinerariesPanel = null, groupsPanel = null, membersPanel = null, credentialsPanel = null, assignmentsPanel = null, resultsPanel = null, resourcesPanel = null, adminGroupsPanel = null;
+let itinerariesPanel = null, groupsPanel = null, membersPanel = null, credentialsPanel = null, assignmentsPanel = null, resultsPanel = null, resourcesPanel = null, classroomFilesPanel = null, adminGroupsPanel = null;
 let teacherDataSequence = 0, identityStatusSequence = 0;
 let studentPanel = null;
 
@@ -39,6 +39,7 @@ function syncTeacherPanels() {
   assignmentsPanel?.setContext(context);
   resultsPanel?.setContext(context);
   resourcesPanel?.setContext(context);
+  classroomFilesPanel?.setContext(context);
   adminGroupsPanel?.setContext(context);
 }
 
@@ -492,7 +493,7 @@ bind("refreshDashboard", refreshDashboard, "teacherOutput");
 async function initializePortal() {
   if (has("itinerariesPanel")) {
     try {
-      const {mountItineraries, mountGroups, mountMembers, mountCredentials, mountAssignments, mountResults, mountResources, mountAdminGroups} = await import('/assets/teacher-itineraries.js');
+      const {mountItineraries, mountGroups, mountMembers, mountCredentials, mountAssignments, mountResults, mountResources, mountAdminGroups, mountClassroomFiles} = await import('/assets/teacher-itineraries.js');
       const options = {api, onSessionExpired: () => setTeacherSession(false)};
       itinerariesPanel = mountItineraries($("itinerariesPanel"), options);
       groupsPanel = mountGroups($("groupsPanel"), {...options, onSelect: selectTeacherGroup, onDeleted: afterGroupDeleted});
@@ -500,10 +501,11 @@ async function initializePortal() {
       credentialsPanel = mountCredentials($("credentialsPanel"), {...options, onCreated: afterClassCreated, onRefresh: refreshDashboard});
       assignmentsPanel = mountAssignments($("assignmentsPanel"), {...options, onSelect: selectTeacherAssignment});
       resultsPanel = mountResults($("resultsPanel"), options);
+      classroomFilesPanel = mountClassroomFiles($("classroomFilesPanel"),options);
       resourcesPanel = mountResources($("resourcesPanel"), {...options, onAssigned: afterResourcesAssigned});
       if (has("adminGroupsPanel")) adminGroupsPanel = mountAdminGroups($("adminGroupsPanel"), {...options, onDeleted: afterGroupDeleted});
     } catch {
-      for (const id of ["itinerariesPanel", "groupsPanel", "membersPanel", "credentialsPanel", "credentialsDetails", "assignmentsPanel", "resultsPanel", "resourcesPanel"]) {
+      for (const id of ["itinerariesPanel", "groupsPanel", "membersPanel", "credentialsPanel", "credentialsDetails", "assignmentsPanel", "resultsPanel", "resourcesPanel", "classroomFilesPanel"]) {
         setEmpty($(id), t("teacher.panelUnavailable"));
         $(id).setAttribute("data-i18n", "teacher.panelUnavailable");
       }
