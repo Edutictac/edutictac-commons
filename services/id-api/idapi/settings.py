@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import os
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 @dataclass
@@ -28,10 +28,17 @@ class Settings:
     authentik_bootstrap_password: str = ""
     resources_api_url: str = "http://recursos-api:8004"
 
+    files_dir: str = ""
+    files_disk_reserve_bytes: int = 256 * 1024**2
+    file_defaults: dict = field(default_factory=dict)
+
     @classmethod
     def from_env(cls, env: Mapping[str, str] | None = None) -> Settings:
         env = os.environ if env is None else env
         return cls(
+            files_dir=env.get("EDUTICTAC_ID_FILES_DIR", ""),
+            files_disk_reserve_bytes=int(env.get("EDUTICTAC_ID_FILES_DISK_RESERVE_BYTES", str(cls.files_disk_reserve_bytes))),
+            file_defaults={key: int(env[name]) for key,name in [("max_file_bytes","EDUTICTAC_ID_FILES_MAX_BYTES"),("group_quota_bytes","EDUTICTAC_ID_FILES_GROUP_QUOTA_BYTES"),("student_quota_bytes","EDUTICTAC_ID_FILES_STUDENT_QUOTA_BYTES")] if name in env},
             db_path=env.get("EDUTICTAC_ID_DB", cls.db_path),
             session_secret=env.get("EDUTICTAC_ID_SECRET", ""),
             teacher_token=env.get("EDUTICTAC_ID_TEACHER_TOKEN", ""),

@@ -65,7 +65,9 @@ def install_library(app: FastAPI, c: Commons) -> None:
     @app.middleware("http")
     async def rebost_private_headers(request: Request, call_next):
         response = await call_next(request)
-        if request.url.path.startswith("/api/assets/v1/"):
+        path = request.url.path
+        if (path.startswith(("/api/assets/v1/", "/api/student/group-files", "/api/admin/files/"))
+                or path.startswith("/api/teacher/groups/") and "/files" in path):
             response.headers["Cache-Control"] = "private, no-store"
             response.headers["X-Content-Type-Options"] = "nosniff"
             response.headers["Content-Security-Policy"] = "default-src 'none'; sandbox"
@@ -78,6 +80,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     settings = settings or Settings.from_env()
     c = Commons(settings)
     c.db.migrate()
+    c.files.cleanup()
 
     app = FastAPI(title="EduTicTac ID API")
     app.state.commons = c

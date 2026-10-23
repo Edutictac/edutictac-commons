@@ -211,8 +211,31 @@ def _baseline(conn: sqlite3.Connection) -> None:
     )
 
 
+def _classroom_files(conn: sqlite3.Connection) -> None:
+    conn.executescript("""
+        CREATE TABLE classroom_files (
+            id TEXT PRIMARY KEY, group_id TEXT NOT NULL REFERENCES groups(id) ON DELETE CASCADE,
+            scope TEXT NOT NULL CHECK(scope IN ('shared','submission')),
+            identity_id TEXT REFERENCES student_identities(id) ON DELETE CASCADE,
+            uploaded_by_teacher_id TEXT NOT NULL DEFAULT '', relative_path TEXT NOT NULL,
+            storage_name TEXT NOT NULL UNIQUE, content_type TEXT NOT NULL, size INTEGER NOT NULL CHECK(size>=0),
+            sha256 TEXT NOT NULL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL,
+            active INTEGER NOT NULL DEFAULT 1,
+            CHECK ((scope='shared' AND identity_id IS NULL) OR (scope='submission' AND identity_id IS NOT NULL))
+        );
+        CREATE UNIQUE INDEX idx_classroom_files_path ON classroom_files(group_id,scope,COALESCE(identity_id,''),relative_path) WHERE active=1;
+        CREATE INDEX idx_classroom_files_group ON classroom_files(group_id,active);
+        CREATE TABLE classroom_file_settings (
+            id INTEGER PRIMARY KEY CHECK(id=1), max_file_bytes INTEGER NOT NULL,
+            group_quota_bytes INTEGER NOT NULL, student_quota_bytes INTEGER NOT NULL,
+            students_can_upload INTEGER NOT NULL, updated_at TEXT NOT NULL, updated_by TEXT NOT NULL
+        );
+    """)
+
+
 MIGRATIONS = [
     Migration(1, _baseline),
+    Migration(2, _classroom_files),
 ]
 SCHEMA_VERSION = MIGRATIONS[-1].version
 

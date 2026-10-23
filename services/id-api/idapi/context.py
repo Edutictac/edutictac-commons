@@ -34,6 +34,8 @@ class Commons:
         # El Rebost s'instal·la amb les extensions; necessita les regles
         # d'identitat ja creades.
         self.rebost: Any = None
+        from .classroom_files import ClassroomFiles
+        self.files = ClassroomFiles(self)
 
     def connect(self) -> sqlite3.Connection:
         return self.db.connect()

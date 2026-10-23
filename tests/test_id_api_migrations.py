@@ -68,3 +68,17 @@ def test_legacy_alpha_database_is_upgraded_without_losing_data(tmp_path, db_modu
         assert conn.execute("SELECT public_code FROM student_identities").fetchone()["public_code"] == "ABC"
         owner = conn.execute("SELECT teacher_id, role FROM group_memberships WHERE group_id = 'g'").fetchone()
     assert (owner["teacher_id"], owner["role"]) == ("teacher-a", "owner")
+
+
+def test_beta2_schema_upgrades_additively_to_classroom_files(tmp_path, db_module):
+    from edutictac_community.migrations import apply_migrations
+    database=db_module.Database(str(tmp_path/'beta2.db'))
+    with database.connect() as conn:
+        apply_migrations(conn,db_module.NAMESPACE,db_module.MIGRATIONS[:1])
+        conn.execute("INSERT INTO groups (id,created_at,updated_at) VALUES ('previous','x','x')")
+    assert database.version()==1
+    assert database.migrate()==2
+    with database.connect() as conn:
+        assert conn.execute("SELECT id FROM groups WHERE id='previous'").fetchone()['id']=='previous'
+        assert conn.execute('SELECT COUNT(*) FROM classroom_files').fetchone()[0]==0
+    assert database.migrate()==2
