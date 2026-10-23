@@ -1,3 +1,4 @@
+const {chooseLanguage} = require('./helpers/language');
 const {test,expect}=require('@playwright/test');
 const activity={id:'Ab12Cd34',type:'multiple-choice',title:'Pupil quiz',question:'Which?',answers:[{text:'A',correct:true},{text:'B',correct:false}],owned:true,visibility:'private'};
 async function mock(page,{role='student',saved=false,config={demo:false,integrated:true},onMe=()=>{}}={}){
@@ -131,8 +132,11 @@ test('xip de compte de Commons: inici al portal local, idioma de Play i permisos
  await expect(widget.locator('.eta-home')).toHaveAttribute('href','http://commons.test/');
  await expect(widget.locator('.eta-home')).toHaveAttribute('aria-label','Inicio de EduTicTac');
  await expect(widget.locator('summary')).toHaveAttribute('aria-label','Entrar');
- await page.locator('#language').selectOption('va');
+ // Amb el xip, l'idioma es tria dins d'ell i el selector propi de Play desapareix.
+ await expect(page.locator('#language')).toHaveCount(0);
+ await chooseLanguage(page,'va');
  await expect(widget.locator('.eta-home')).toHaveAttribute('aria-label','Inici d’EduTicTac');
+ await expect(page.locator('html')).toHaveAttribute('lang','ca');
  const before=me;
  Object.assign(session,{authenticated:true,kind:'oidc',role:'profesor',display_name:'Laia Ferrer'});
  await page.evaluate(()=>window.dispatchEvent(new CustomEvent('edutictac:sessionrefresh')));

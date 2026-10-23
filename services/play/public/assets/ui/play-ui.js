@@ -3190,6 +3190,18 @@ function ao() {
 			d.value = "languageError";
 		}
 	}
+	window.edutictacLanguage = {
+		languages: [
+			"ca",
+			"va",
+			"es",
+			"en"
+		],
+		get: () => r.value,
+		set: (e) => {
+			c.value || le(e);
+		}
+	};
 	function P(e) {
 		if (typeof e != "string") return;
 		let t = e.startsWith("//") ? location.protocol + e : e;
@@ -4341,7 +4353,10 @@ var oo = { class: "compound-step" }, so = { class: "section-heading" }, co = { c
 	"data-base",
 	"data-home",
 	"data-lang"
-], dc = { class: "language" }, fc = ["value", "disabled"], pc = { class: "shell" }, mc = {
+], dc = {
+	key: 1,
+	class: "language"
+}, fc = ["value", "disabled"], pc = { class: "shell" }, mc = {
 	key: 0,
 	class: "actions"
 }, hc = ["href"], gc = {
@@ -4464,7 +4479,7 @@ var oo = { class: "compound-step" }, so = { class: "section-heading" }, co = { c
 			"data-home": U(i) ? (U(a) || "") + "/" : null,
 			"data-lang": U(d),
 			"data-no-reload": ""
-		}, null, 8, uc)), Z("label", dc, [Z("span", null, I(U(f)("language")), 1), Z("select", {
+		}, null, 8, uc)), U(a) === null ? (Y(), X("label", dc, [Z("span", null, I(U(f)("language")), 1), Z("select", {
 			id: "language",
 			value: U(d),
 			disabled: U(h),
@@ -4474,7 +4489,7 @@ var oo = { class: "compound-step" }, so = { class: "section-heading" }, co = { c
 			Z("option", { value: "ca" }, "CA", -1),
 			Z("option", { value: "va" }, "VA", -1),
 			Z("option", { value: "en" }, "EN", -1)
-		]], 40, fc)])])]), Z("main", pc, [
+		]], 40, fc)])) : Q("", !0)])]), Z("main", pc, [
 			U(i) && !U(n).can_publish && !U(n).can_submit ? (Y(), X("p", mc, [Z("a", {
 				class: "button secondary",
 				href: U(c) + "/api/publication/login"

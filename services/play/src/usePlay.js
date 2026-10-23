@@ -29,6 +29,9 @@ export function usePlay(){
   if(!['es','ca','va','en'].includes(value))return;
   const seq=++languageSeq;try{const r=await fetch(base+'/i18n/'+(value==='va'?'ca':value)+'.json');if(!r.ok)throw Error();let data=await r.json();if(value==='va'){const variant=await fetch(base+'/i18n/va.json');if(!variant.ok)throw Error();data={...data,...await variant.json()};}if(seq!==languageSeq||!active)return;dictionary.value=data;language.value=value;document.documentElement.lang=value==='va'?'ca':value;window.commonsLanguage.remember(value);}catch{formError.value='languageError';}
  }
+ // El xip de Commons tria l'idioma de Play (igual que el tema). Mentre Play treballa
+ // no es canvia, com passava amb el selector propi.
+ window.edutictacLanguage={languages:['ca','va','es','en'],get:()=>language.value,set:value=>{if(!busy.value)void changeLanguage(value);}};
  // El xip i el seu CSS es carreguen del mateix Commons: una sola versió per a tot.
  function mountAccount(value){
   if(typeof value!=='string')return;
