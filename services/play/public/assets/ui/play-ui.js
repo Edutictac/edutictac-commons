@@ -3081,19 +3081,19 @@ function io(e, t) {
 		} catch {}
 		return null;
 	}
-	function i() {
-		let e = new URLSearchParams(location.search).get("lang");
-		return n(e) ? e : r();
+	function i({ parameter: e = "lang" } = {}) {
+		let t = new URLSearchParams(location.search).get(e);
+		return n(t) ? t : r();
 	}
-	function a(e) {
+	function a(e, { parameter: r = "lang" } = {}) {
 		if (!n(e)) return;
 		try {
 			for (let n of t) localStorage.setItem(n, e);
 		} catch {}
-		let r = location.hostname === "edutictac.es" || location.hostname.endsWith(".edutictac.es");
-		document.cookie = "edutictac_language=" + e + "; Path=/; Max-Age=31536000; SameSite=Lax" + (r ? "; Domain=edutictac.es" : "") + (location.protocol === "https:" ? "; Secure" : "");
-		let i = new URL(location.href);
-		i.searchParams.has("lang") && (i.searchParams.set("lang", e), history.replaceState(history.state, "", i.pathname + i.search + i.hash));
+		let i = location.hostname === "edutictac.es" || location.hostname.endsWith(".edutictac.es");
+		document.cookie = "edutictac_language=" + e + "; Path=/; Max-Age=31536000; SameSite=Lax" + (i ? "; Domain=edutictac.es" : "") + (location.protocol === "https:" ? "; Secure" : "");
+		let a = new URL(location.href);
+		a.searchParams.has(r) && (a.searchParams.set(r, e), history.replaceState(history.state, "", a.pathname + a.search + a.hash));
 	}
 	window.commonsLanguage = Object.freeze({
 		read: i,
