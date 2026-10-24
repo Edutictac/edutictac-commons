@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import hmac
+import ipaddress
 import logging
 import sqlite3
 from typing import Any
@@ -83,4 +84,19 @@ def commons(request: Request) -> Commons:
 
 
 def client_ip(request: Request) -> str:
-    return request.client.host if request.client else "?"
+    """IP del client real darrere del portal.
+
+    L'id-api no publica cap port: només hi arriben el portal nginx i els
+    serveis interns. nginx sobreescriu `X-Real-IP` amb `$remote_addr`, així
+    que un client no pot falsificar-lo des de fora. Si la capçalera no és una
+    IP vàlida, es conserva la dels peer directes.
+    """
+    peer = request.client.host if request.client else "?"
+    forwarded = (request.headers.get("x-real-ip") or "").strip()
+    if forwarded:
+        try:
+            ipaddress.ip_address(forwarded)
+        except ValueError:
+            return peer
+        return forwarded
+    return peer

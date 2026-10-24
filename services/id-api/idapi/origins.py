@@ -5,8 +5,11 @@ poden llegir `/api/auth/session` amb galetes (CORS), quins poden tancar la sessi
 i a quins es pot tornar després d'entrar. Patrons admesos:
 
 - origen exacte: `https://edutictac.es`
-- qualsevol subdomini: `https://*.edutictac.es` (no inclou el domini nu)
 - qualsevol port: `http://localhost:*`
+
+Els comodins de subdomini (`https://*.edutictac.es`) no s'admeten: amplien el
+perímetre de confiança a qualsevol subdomini, inclosos els que publiquen
+contingut de tercers. Cal enumerar cada origen propi.
 """
 
 from __future__ import annotations
@@ -15,7 +18,26 @@ from urllib.parse import urlsplit
 
 
 def parse_origins(raw: str) -> tuple[str, ...]:
-    return tuple(part.strip().rstrip("/") for part in raw.split(",") if part.strip())
+    result: list[str] = []
+    for part in raw.split(","):
+        pattern = part.strip().rstrip("/")
+        if not pattern:
+            continue
+        scheme, separator, rest = pattern.partition("://")
+        if not separator or scheme not in {"http", "https"} or not rest:
+            raise ValueError(f"invalid allowed origin: {pattern!r}")
+        host, _, port = rest.partition(":")
+        if not host or "/" in rest or "@" in rest:
+            raise ValueError(f"invalid allowed origin: {pattern!r}")
+        if "*" in host:
+            raise ValueError(
+                "wildcard subdomains are not allowed in EDUTICTAC_ID_ALLOWED_ORIGINS; "
+                "list every own origin explicitly"
+            )
+        if port and port != "*" and not port.isdigit():
+            raise ValueError(f"invalid allowed origin port: {pattern!r}")
+        result.append(pattern)
+    return tuple(result)
 
 
 def _split(origin: str) -> tuple[str, str, str] | None:
@@ -39,8 +61,6 @@ def _matches(origin: tuple[str, str, str], pattern: str) -> bool:
     host = host.lower()
     if port != "*" and port != origin[2]:
         return False
-    if host.startswith("*."):
-        return origin[1].endswith(host[1:]) and origin[1] != host[2:]
     return host == origin[1]
 
 
