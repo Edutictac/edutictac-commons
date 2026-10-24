@@ -3,9 +3,7 @@
 Guía para la persona que prepara el ordenador del centro. El alumnado no
 necesita instalar Commons: accede desde su navegador.
 
-**Beta 5 en preparación:** el instalador definitivo todavía no está publicado.
-Esta guía corresponde a `0.1.1~beta5`; la página pública de descarga se
-actualizará cuando termine su validación.
+**Versión de esta guía: 0.1.1-beta5.** La página oficial indica el instalador disponible y las instrucciones del repositorio APT.
 
 ## Antes de empezar
 

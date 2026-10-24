@@ -1,4 +1,4 @@
-# Commons 0.1.1-beta5 — candidata en validació
+# Commons 0.1.1-beta5 — entrega de seguretat
 
 Entrega de seguretat sobre beta4. Conserva els fitxers d’aula, els mòduls,
 el xip compartit i la configuració federada.
@@ -13,8 +13,7 @@ La clau privada ha de quedar fora del servidor; sense ella no es pot restaurar.
 La política de 2FA, la reducció de privilegis systemd i l’ingress de totes les
 apps continuen pendents; el perfil TLS cobrix el portal.
 
-Estat: preparació d’imatges i instal·lador; encara no publicat en APT ni validat
-en instal·lació neta/actualització LliureX. No sobreescriure els artefactes beta4.
+Actualització des de beta4, instal·lació neta i restauració xifrada validades en LliureX. Les imatges es fixen en els manifestos adjunts. Consulteu la web oficial per a la descàrrega i l’estat de distribució del paquet. Els artefactes beta4 es conserven.
 
 ## Dependència de xifratge en LliureX 23
 

@@ -1,6 +1,6 @@
 # EduTicTac Commons Stack Local
 
-Entrega en preparació: [0.1.1-beta5](releases/0.1.1-beta5/README.md).
+Versió d’imatges: [0.1.1-beta5](releases/0.1.1-beta5/README.md).
 Instal·lador amd64 per a LliureX 23, Ubuntu i Debian: `0.1.1~beta5`.
 La beta5 incorpora les correccions de seguretat i conserva el xip i els fitxers de l’aula.
 La [validació anterior de beta3](docs/VALIDACIO-BETA3-LLIUREX.md) és el punt de partida;
