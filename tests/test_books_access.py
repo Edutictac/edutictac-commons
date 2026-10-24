@@ -19,6 +19,8 @@ def teacher(module,role='profesor',subject='test-teacher'):
 @pytest.fixture
 def upstream(request,monkeypatch):
     monkeypatch.setenv('EDUTICTAC_ID_APP_TOKEN','synthetic-publication-app-token')
+    if getattr(request, 'param', None) == 'scoped':
+        monkeypatch.setenv('RECURSOS_ID_APP_TOKEN','synthetic-publication-resources-token')
     module,*_=request.getfixturevalue('api')
     calls=[]
     class FakeClient:
@@ -31,6 +33,14 @@ def upstream(request,monkeypatch):
     import books
     monkeypatch.setattr(books.httpx,'AsyncClient',FakeClient)
     return module,calls
+
+
+@pytest.mark.parametrize('upstream', ['scoped'], indirect=True)
+def test_bank_forwarding_uses_its_scoped_token(upstream):
+    module, calls = upstream
+    client = teacher(module)
+    assert client.get('/api/llibres/mine/' + 'a' * 32).status_code == 200
+    assert calls[-1][2]['headers']['Authorization'] == 'Bearer synthetic-publication-resources-token'
 
 
 @pytest.mark.parametrize('role',['profesor','administrador'])

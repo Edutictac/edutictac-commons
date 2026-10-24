@@ -93,6 +93,9 @@ class Settings:
         if problems:
             raise RuntimeError("unsafe production secrets: " + ", ".join(problems))
 
+    def token_for_app(self, app_id: str) -> str:
+        return self.app_tokens.get(app_id, "") or self.app_token
+
     @property
     def oidc_configured(self) -> bool:
         """Hi ha prou dades per a registrar el client OIDC."""

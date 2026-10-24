@@ -176,7 +176,7 @@ def student_document_resource(assignment_id: str, launch_token: str, request: Re
     try:
         upstream = httpx.get(
             f"{c.settings.resources_api_url}/api/documents/{document_id}/download",
-            headers={"Authorization": f"Bearer {c.settings.app_token}"},
+            headers={"Authorization": f"Bearer {c.settings.token_for_app('recursos')}"},
             timeout=30,
         )
     except httpx.HTTPError as exc:

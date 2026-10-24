@@ -62,7 +62,7 @@ def install_library(app: FastAPI, c: Commons) -> None:
         return c.auth.require_group_access(request, group_id, admin=True, **kwargs)
 
     install_books(app, c.rebost, c.auth.oidc_cookie, c.settings.resources_api_url,
-                  c.settings.app_token, moderated_group_access)
+                  c.settings.token_for_app("recursos"), moderated_group_access)
 
     @app.middleware("http")
     async def rebost_private_headers(request: Request, call_next):
