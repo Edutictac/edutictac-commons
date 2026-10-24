@@ -20,6 +20,17 @@ beta6.1.
 - Portal `v0.1.1-beta6.2` per `127.0.0.1`, `edutictac.local` i IP des de l’alumne.
 - `edutictac-commons-open`, entrada de menú i xarxes B3 activos.
 
+## Instal·lació neta en LliureX
+
+- VM del professor resetejada a la base neta (`reset-profesor --yes`).
+- Repositori APT oficial afegit; `apt-get install edutictac-commons` va triar
+  `0.1.1~beta6.2` i va instal·lar les dependències.
+- Activació inicial correcta; el codi d'un sol ús va quedar consumit.
+- Nucli net: portal, id-api, administració i Authentik amb imatges beta6.2.
+- `test-flow.sh`, etiqueta d'aula, mDNS/IP, llançador, menú i accés des de la
+  VM de l'alumne: correctes.
+- No s'activaren mòduls opcionals en esta prova neta.
+
 ## Producció
 
 - API i portal desplegats amb els digests de beta6.2; només canviaren eixos dos
@@ -30,5 +41,5 @@ beta6.1.
 
 ## Pendent
 
-- Instal·lació neta en LliureX (la validada ací és una actualització).
 - Aceptació humana amb login OIDC personal.
+- Rollout a centres reals.
