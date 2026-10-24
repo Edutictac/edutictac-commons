@@ -99,6 +99,8 @@ for unit in edutictac-quiosc-prepare.path edutictac-quiosc-prepare.service \
 done
 install -m 0644 "$repo_dir/packaging/debian/edutictac-commons.desktop" \
   "$root_dir/usr/share/applications/edutictac-commons.desktop"
+install -m 0755 "$repo_dir/packaging/edutictac-commons-open.sh" \
+  "$root_dir/usr/bin/edutictac-commons-open"
 install -m 0644 "$repo_dir/packaging/edutictac-commons.svg" \
   "$root_dir/usr/share/icons/hicolor/scalable/apps/edutictac-commons.svg"
 

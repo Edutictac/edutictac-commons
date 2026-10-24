@@ -469,13 +469,38 @@ fi
 
 # URL real del portal: en LliureX el port 80 és d'Apache i Commons usa el 8082.
 portal_port="$(sed -n 's/^PORTAL_PORT=//p' "$ENV_FILE" | tail -n 1)"
-case "${portal_port:-80}" in
-    80) portal_url="http://edutictac.local/" ;;
-    *) portal_url="http://edutictac.local:${portal_port}/" ;;
+portal_port="${portal_port:-80}"
+mdns_name="$(sed -n 's/^EDUTICTAC_MDNS_NAME=//p' "$ENV_FILE" | tail -n 1)"
+mdns_name="${mdns_name:-edutictac}"
+case "$mdns_name" in
+    *.local) ;;
+    *) mdns_name="${mdns_name}.local" ;;
 esac
+public_host="$(sed -n 's/^EDUTICTAC_PUBLIC_HOST=//p' "$ENV_FILE" | tail -n 1)"
+primary_host="${public_host:-$mdns_name}"
+url_suffix=""
+[ "$portal_port" = "80" ] || url_suffix=":${portal_port}"
+portal_url="http://${primary_host}${url_suffix}/"
+ip="$(ip -4 route show default 2>/dev/null | awk '{for (i=1;i<=NF;i++) if ($i=="src") {print $(i+1); exit}}')"
+[ -n "$ip" ] || ip="$(hostname -I 2>/dev/null | awk '{print $1}')"
+ip_url=""
+[ -n "$ip" ] && ip_url="http://${ip}${url_suffix}/"
+
 desktop_file=/usr/share/applications/edutictac-commons.desktop
 if [ -f "$desktop_file" ]; then
-    sed -i "s#^Exec=xdg-open .*#Exec=xdg-open ${portal_url}#" "$desktop_file"
+    sed -i "s#^Exec=.*#Exec=edutictac-commons-open#" "$desktop_file"
+    if [ -n "${SUDO_USER:-}" ] && [ "$SUDO_USER" != "root" ]; then
+        desktop_dir="$(su -s /bin/sh -c 'if command -v xdg-user-dir >/dev/null 2>&1; then xdg-user-dir DESKTOP; elif [ -d "$HOME/Desktop" ]; then printf "%s\n" "$HOME/Desktop"; elif [ -d "$HOME/Escritorio" ]; then printf "%s\n" "$HOME/Escritorio"; fi' "$SUDO_USER" 2>/dev/null || true)"
+        case "$desktop_dir" in
+            /*)
+                if [ -d "$desktop_dir" ]; then
+                    install -m 0755 "$desktop_file" "$desktop_dir/edutictac-commons.desktop"
+                    chown "$SUDO_USER":"$(id -gn "$SUDO_USER")" "$desktop_dir/edutictac-commons.desktop"
+                    su -s /bin/sh -c "gio set '$desktop_dir/edutictac-commons.desktop' metadata::trusted true" "$SUDO_USER" >/dev/null 2>&1 || true
+                fi
+                ;;
+        esac
+    fi
 fi
 
 if [ "$service_access_changed" -eq 1 ]; then
@@ -496,6 +521,9 @@ if [ -n "$setup_token_notice" ]; then
     echo "$border"
     echo "${bold}${green}EduTicTac Commons requereix una activació inicial.${reset}"
     echo "Obri ${bold}${portal_url}${reset} i usa aquest codi una sola vegada:"
+    if [ -n "$ip_url" ]; then
+        echo "Si edutictac.local no resol, obri ${bold}${ip_url}${reset}."
+    fi
     echo ""
     echo "   ${bold}${yellow}${setup_token_notice}${reset}"
     echo ""
@@ -505,7 +533,11 @@ if [ -n "$setup_token_notice" ]; then
     if command -v notify-send >/dev/null 2>&1 && [ -n "${SUDO_USER:-}" ]; then
         notify_uid="$(id -u "$SUDO_USER" 2>/dev/null || true)"
         if [ -n "$notify_uid" ] && [ -S "/run/user/$notify_uid/bus" ]; then
-            su -s /bin/sh -c "DBUS_SESSION_BUS_ADDRESS='unix:path=/run/user/$notify_uid/bus' notify-send 'EduTicTac Commons' 'Activació inicial pendent: obri ${portal_url}'" "$SUDO_USER" >/dev/null 2>&1 || true
+            notify_message="Activació inicial pendent: obri ${portal_url}"
+            if [ -n "$ip_url" ]; then
+                notify_message="${notify_message} o ${ip_url}"
+            fi
+            su -s /bin/sh -c "DBUS_SESSION_BUS_ADDRESS='unix:path=/run/user/$notify_uid/bus' notify-send 'EduTicTac Commons' '${notify_message}'" "$SUDO_USER" >/dev/null 2>&1 || true
         fi
     fi
 elif [ "$had_existing_env" -eq 1 ]; then
@@ -514,6 +546,14 @@ elif [ "$had_existing_env" -eq 1 ]; then
     echo "a mostrar en les actualitzacions. Si encara no s'ha activat, recupera'l amb:"
     echo "   sudo grep '^EDUTICTAC_SETUP_TOKEN=' $ENV_FILE"
     echo "Si ja es va activar, no cal fer res."
+fi
+
+if [ -z "$setup_token_notice" ]; then
+    echo ""
+    echo "Accés al portal: ${portal_url}"
+    if [ -n "$ip_url" ]; then
+        echo "Accés per IP:   ${ip_url}"
+    fi
 fi
 
 exit 0

@@ -383,6 +383,21 @@ L'ingress cobreix el portal; les apps (`recursos`, `blocs`, `eduhoot`, etc.)
 continuen publicant els seus ports directes. No els exposos a Internet sense
 un proxy propi.
 
+## Accés directe després d'instal·lar
+
+L'instal·lador mostra sempre l'adreça del portal i, si la pot detectar, també
+la IP:
+
+```text
+Accés al portal: http://edutictac.local:8082/
+Accés per IP:   http://192.168.1.50:8082/
+```
+
+Crea una entrada al menú d'aplicacions i, per a l'usuari que ha instal·lat,
+una icona a l'escriptori. La icona usa `edutictac-commons-open`, que prova
+primer el nom mDNS i després la IP, de manera que no queda trencada si
+`edutictac.local` no resol en eixe equip.
+
 ## LAN sense Internet i accés per IP
 
 El portal i les apps no depenen de CDN ni de serveis externs per funcionar. Si

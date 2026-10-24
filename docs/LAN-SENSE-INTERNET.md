@@ -79,6 +79,13 @@ d'introduir cap dependència obligatòria de DNS extern ni de certificats.
 No poseu una IP dinàmica en `EDUTICTAC_PUBLIC_HOST`; useu una IP fixa o el
 nom mDNS.
 
+## Accés directe
+
+L'instal·lador crea una entrada de menú i una icona a l'escriptori de qui
+instal·la. La icona executa `edutictac-commons-open`, que llig `.env`, prova
+`edutictac.local` i, si no respon, obri la IP. Per tant, la icona no depén
+d'una resolució mDNS concreta.
+
 ## Diagnòstic
 
 ```bash
