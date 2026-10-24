@@ -16,8 +16,9 @@ d’imatges per Internet. La publicació APT i la web pública estan pendents.
 estan traduïts a CA/VA/ES/EN. No s’ha publicat el paquet en APT ni actualitzat
 la web pública en esta preparació.
 
-La [candidata 4](../0.1.1-beta4-candidate4/README.md) incorpora el xip de Banc,
-la sessió central i la configuració del portal local. Les referències d’esta
+La [candidata 5](../0.1.1-beta4-candidate5/README.md) incorpora el xip de Banc,
+la sessió central, la configuració del portal local i la comprovació del rol
+docent. Les referències d’esta
 carpeta ja coincidixen amb eixa candidata. Els paquets generats abans d’esta
 integració continuen sent prototips; no acrediten una entrega final validada.
 

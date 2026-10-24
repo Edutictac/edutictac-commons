@@ -37,7 +37,7 @@
       "image": "registry.edutictac.es/edutictac/recursos@sha256:ab5d7b7fa70055634defe439b70f84fbfc80031761937415c1efd6cf9020502b"
     },
     "recursos-api": {
-      "image": "registry.edutictac.es/edutictac/recursos-api@sha256:c0b94cbfc155e006f77720502fabf08aafde05cc64652677cd532bd790ad176c"
+      "image": "registry.edutictac.es/edutictac/recursos-api@sha256:3a76bef06e2d2971b156d1f3b2fc0f34a628b46a6a85d6dd059f603251bade2c"
     }
   }
 }

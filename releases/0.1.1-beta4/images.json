@@ -1,9 +1,9 @@
 {
   "version": "0.1.1-beta4",
   "source_revisions": {
-    "commons": "68c96e2a8968df528c58541d607327b37e28b264",
+    "commons": "a244dbdde41dd39bd4b7be239abf57b83311b8a0",
     "recursos": "2dcc45e2d6d01966ffa6ece6d1b5167a3522473b",
-    "recursos-api": "f9b260f41a845a016d44aedb1b2edb57e6b2a1fc",
+    "recursos-api": "d511969a5390f61c009ea523d4668b1645f11dd1",
     "blocs": "fc80b6aae57daae2baafa129e8b45b0197f90d7e",
     "llibres": "d9f5ee8ba27e6fa3570950b69253abab789ea760"
   },
@@ -20,7 +20,7 @@
     "blocs": "registry.edutictac.es/edutictac/commons-blocs@sha256:774ec1ab31fd5d0904ec327062eed7bb0e3a3b327aa0298640fd89cc95ec0009",
     "llibres": "registry.edutictac.es/edutictac/commons-llibres@sha256:48dd8971591bbcc33bbc12befabbfb2083842fc3f4c65250b7cff3db5fa10bc4",
     "recursos": "registry.edutictac.es/edutictac/recursos@sha256:ab5d7b7fa70055634defe439b70f84fbfc80031761937415c1efd6cf9020502b",
-    "recursos-api": "registry.edutictac.es/edutictac/recursos-api@sha256:c0b94cbfc155e006f77720502fabf08aafde05cc64652677cd532bd790ad176c"
+    "recursos-api": "registry.edutictac.es/edutictac/recursos-api@sha256:3a76bef06e2d2971b156d1f3b2fc0f34a628b46a6a85d6dd059f603251bade2c"
   },
   "platforms": {
     "authentik-postgresql": "linux/amd64",
