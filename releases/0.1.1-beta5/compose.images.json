@@ -16,7 +16,7 @@
       "image": "mongo@sha256:c53852c00c23ca9f23fc39690350ffa9a80e3642fe8f96879726d8da0abe80a7"
     },
     "id-api": {
-      "image": "registry.edutictac.es/edutictac/commons-id-api@sha256:e6cf1d1b251768859614ba441f8675bc8b2b4a7df548167eeeda24d8b6acf24f"
+      "image": "registry.edutictac.es/edutictac/commons-id-api@sha256:b7a57947bfbae28a149f5be98bb27ce9015cb000929586427197300076db1597"
     },
     "portal": {
       "image": "registry.edutictac.es/edutictac/commons-portal@sha256:ca04764411bada0c1f50852ee51775d5a650101a46a7c9fb11214357e759d36d"

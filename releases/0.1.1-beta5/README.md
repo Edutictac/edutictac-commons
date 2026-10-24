@@ -21,3 +21,8 @@ El repositori APT EduTicTac proporcionarà també el paquet `age` actualitzat
 de Jammy, sense modificar-lo. La procedència, SHA-256 i verificació de les
 firmes originals d’Ubuntu es documenten en [age-provenance.json](age-provenance.json).
 Això cobrix els espills LliureX que no inclouen esta dependència.
+
+Les crides internes de publicació de Llibres i descàrrega de recursos usen
+també el token específic del Banc. Es conserva el token anterior quan una
+instal·lació no té tokens separats. Validat el recorregut alumnat → aprovació
+docent → lectura pública amb els tokens separats en LliureX.

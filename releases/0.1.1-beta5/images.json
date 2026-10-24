@@ -1,7 +1,7 @@
 {
   "version": "0.1.1-beta5",
   "source_revisions": {
-    "commons": "8ce9d64874a6c1e168a034a65a5ca3c8e982f062",
+    "commons": "7c51c399b4e3dcb335daa787adcc2d6f35219b93",
     "recursos": "2dcc45e2d6d01966ffa6ece6d1b5167a3522473b",
     "recursos-api": "d511969a5390f61c009ea523d4668b1645f11dd1",
     "blocs": "fc80b6aae57daae2baafa129e8b45b0197f90d7e",
@@ -13,7 +13,7 @@
     "authentik-worker": "ghcr.io/goauthentik/server@sha256:ab9b4e8cc4ab3f8d1198d2db6aeea66bafea1963b3f2843589e0d163f97d9849",
     "eduhoot": "registry.edutictac.es/edutictac/eduhoot@sha256:473d3e0bdaf10846bf78ab5285e759f16ee2820b1f2bd8f9d4f0b16dce346bd7",
     "eduhoot-mongo": "mongo@sha256:c53852c00c23ca9f23fc39690350ffa9a80e3642fe8f96879726d8da0abe80a7",
-    "id-api": "registry.edutictac.es/edutictac/commons-id-api@sha256:e6cf1d1b251768859614ba441f8675bc8b2b4a7df548167eeeda24d8b6acf24f",
+    "id-api": "registry.edutictac.es/edutictac/commons-id-api@sha256:b7a57947bfbae28a149f5be98bb27ce9015cb000929586427197300076db1597",
     "portal": "registry.edutictac.es/edutictac/commons-portal@sha256:ca04764411bada0c1f50852ee51775d5a650101a46a7c9fb11214357e759d36d",
     "admin": "registry.edutictac.es/edutictac/commons-admin@sha256:d16f6b644e8a38bc0fd151733b8fcc904f5eaeb688ade1de976656ff3aa45973",
     "play": "registry.edutictac.es/edutictac/commons-play@sha256:5ac86c85be2262382c734a30015c8b666401eda22829c7d8eef7fa6cc20a76d8",
