@@ -1,8 +1,8 @@
 # EduTicTac Commons Stack Local
 
-Entrega en preparació: [0.1.1-beta4](releases/0.1.1-beta4/README.md).
-Instal·lador amd64 per a LliureX 23, Ubuntu i Debian: `0.1.1~beta4`.
-La beta4 integra el xip de compte, tema i idioma amb els fitxers de l’aula.
+Entrega en preparació: [0.1.1-beta5](releases/0.1.1-beta5/README.md).
+Instal·lador amd64 per a LliureX 23, Ubuntu i Debian: `0.1.1~beta5`.
+La beta5 incorpora les correccions de seguretat i conserva el xip i els fitxers de l’aula.
 La [validació anterior de beta3](docs/VALIDACIO-BETA3-LLIUREX.md) és el punt de partida;
 la validació final en LliureX es farà després d’integrar el xip de Banc.
 La publicació APT i el canvi de la pàgina de descàrrega continuen pendents;
