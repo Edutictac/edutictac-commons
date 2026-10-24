@@ -133,6 +133,10 @@ PY
 
 chmod 600 "$ENV_FILE"
 
+if ! grep -Eq '^BACKUP_AGE_RECIPIENT=.+' "$ENV_FILE"; then
+    echo "Avís: no hi ha BACKUP_AGE_RECIPIENT. Els backups falliran fins que configures una clau age; vegeu INSTALL-CENTRES.md." >&2
+fi
+
 if [ "$had_existing_env" -eq 0 ] \
     && grep -q '^PORTAL_PORT=80$' "$ENV_FILE" && command -v ss >/dev/null 2>&1 \
     && ss -ltnH | grep -Eq '(^|[[:space:]])[^[:space:]]*:80[[:space:]]'; then

@@ -49,6 +49,39 @@ no conté claus ni el contingut de la configuració. Fitxers `0600`, carpetes
 El manifest i els hashes comproven integritat; no substituïxen una prova real
 de restauració. Les còpies automàtiques es guarden localment en el servidor.
 
+## Xifratge de les còpies amb age
+
+Les còpies del stack es poden xifrar amb [age](https://age-encryption.org/).
+El servidor només necessita la **clau pública**; la privada es guarda fora del
+servidor (ordinador de qui administra, `pass`, NAS o paper) i només cal en
+restaurar.
+
+```bash
+# En el teu equip, no en el servidor
+age-keygen -o ~/edutictac-backup-key.txt
+age-keygen -y ~/edutictac-backup-key.txt   # copia el resultat a .env
+```
+
+En `.env`:
+
+```env
+BACKUP_AGE_RECIPIENT=age1...
+BACKUP_AGE_IDENTITY_FILE=/ruta/a/edutictac-backup-key.txt
+BACKUP_ENCRYPTION_REQUIRED=1
+```
+
+Amb `BACKUP_AGE_RECIPIENT` configurat, cada còpia queda com un únic
+`backup.tar.gz.age` dins de `commons-<data>/`; el `manifest.json` i
+`update.json` queden com a metadades sense dades personals. La restauració
+desxifra en un directori temporal, valida els hashes i esborra el temporal.
+`BACKUP_ENCRYPTION_REQUIRED=1` fa fallar el backup si no hi ha recipient o si
+falta `age`. Sense aquesta variable, el comportament és el de sempre
+(pla), per compatibilitat amb instal·lacions existents; en producció cal
+posar-la a `1`.
+
+La clau privada no s'ha de copiar mai al servidor. Si es perd, les còpies
+xifrades no es poden recuperar.
+
 ## Segona còpia opcional en un dispositiu del centre
 
 Disponible amb les imatges alpha30 i el paquet alpha34. Cal actualitzar tant
@@ -63,7 +96,7 @@ segona còpia** conserva tant les còpies locals com les del dispositiu.
 El centre ha de muntar el dispositiu prèviament amb les ferramentes del sistema.
 El panell no munta unitats ni demana credencials de xarxa. Cal un dispositiu
 físic diferent del disc del servidor, amb permís d'escriptura per al compte que
-executa Commons i permisos privats: carpetes 0700 i fitxers 0600. El xifrat és
+executa Commons i permisos privats: carpetes 0700 i fitxers 0600. El xifrat amb age és
 especialment convenient per a dispositius extraïbles. No cal núvol ni enviar
 les dades fora del centre.
 

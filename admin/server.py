@@ -202,6 +202,7 @@ def list_backups(limit=20):
                 entry["stack_version"] = manifest.get("stack_version")
                 entry["warnings"] = list(manifest.get("warnings", []))
                 entry["complete"] = manifest.get("manifest_version") == 2 and manifest.get("complete") is True
+                entry["encrypted"] = bool(manifest.get("encrypted"))
                 if not entry["complete"]:
                     entry["warnings"].append("Còpia antiga amb cobertura parcial; consulta els serveis inclosos abans de restaurar.")
                 entry["services"] = [s.get("name") for s in manifest.get("services", [])]

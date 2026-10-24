@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 import shutil
 import sqlite3
+import subprocess
 import tarfile
 
 import pytest
@@ -244,3 +245,50 @@ def test_sqlite_wal_snapshot_is_self_contained_and_preserves_source(tmp_path):
             assert copied.execute('PRAGMA journal_mode').fetchone()[0]=='delete'
         finally: copied.close()
     finally: conn.close()
+
+
+@pytest.mark.skipif(not shutil.which('age') or not shutil.which('age-keygen'), reason='age no instal·lat')
+def test_encrypted_backup_roundtrip_and_plaintext_removed(stack, tmp_path):
+    key = tmp_path / 'age.key'
+    subprocess.run(['age-keygen', '-o', str(key)], check=True, capture_output=True)
+    recipient = subprocess.run(['age-keygen', '-y', str(key)], check=True, text=True, capture_output=True).stdout.strip()
+    with (stack.root / '.env').open('a') as stream:
+        stream.write(f'BACKUP_AGE_RECIPIENT={recipient}\nBACKUP_AGE_IDENTITY_FILE={key}\nBACKUP_ENCRYPTION_REQUIRED=1\n')
+    stack.values = b.read_env(stack.root / '.env')
+
+    backup = create(stack)
+    assert (backup / b.AGE_ARCHIVE).is_file()
+    assert not (backup / 'id-api/id.db').exists()
+    assert not (backup / 'configuration/environment.env').exists()
+    assert 'synthetic-original-signing-key' not in (backup / 'manifest.json').read_text()
+    manifest = stack.validate(backup)
+    assert manifest['complete'] is True and manifest['encrypted']['format'] == 'age'
+
+    (stack.root / 'data/play/fixture.txt').write_text('changed')
+    with stack.locks():
+        stack.restore(backup)
+    assert (stack.root / 'data/play/fixture.txt').read_text() == 'original'
+
+
+def test_encryption_required_without_recipient_fails_closed(stack):
+    with (stack.root / '.env').open('a') as stream:
+        stream.write('BACKUP_ENCRYPTION_REQUIRED=1\n')
+    stack.values = b.read_env(stack.root / '.env')
+    with pytest.raises(b.BackupError, match='backup_encryption_required'):
+        create(stack)
+    assert not list(stack.backups.glob('commons-*'))
+
+
+@pytest.mark.skipif(not shutil.which('age') or not shutil.which('age-keygen'), reason='age no instal·lat')
+def test_encrypted_backup_requires_the_private_key_to_validate(stack, tmp_path):
+    key = tmp_path / 'age.key'
+    subprocess.run(['age-keygen', '-o', str(key)], check=True, capture_output=True)
+    recipient = subprocess.run(['age-keygen', '-y', str(key)], check=True, text=True, capture_output=True).stdout.strip()
+    with (stack.root / '.env').open('a') as stream:
+        stream.write(f'BACKUP_AGE_RECIPIENT={recipient}\nBACKUP_AGE_IDENTITY_FILE={key}\n')
+    stack.values = b.read_env(stack.root / '.env')
+    backup = create(stack)
+    assert stack.metadata(backup)['encrypted']['format'] == 'age'
+    key.unlink()
+    with pytest.raises(b.BackupError, match='backup_encryption_key_missing'):
+        stack.validate(backup)

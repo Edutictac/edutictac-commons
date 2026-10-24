@@ -71,6 +71,21 @@ No uses els valors `change-this-local-secret`, `dev-teacher`,
 Abans d'usar el prototip amb professorat o alumnat real, revisa
 `docs/PRIVACITAT.md` i completa `docs/DIRECCIO-DPD.md`.
 
+## Xifratge de les còpies
+
+Abans d'usar el centre amb dades reals, configura una clau age pròpia:
+
+```bash
+# En el teu equip, no en el servidor
+age-keygen -o ~/edutictac-backup-key.txt
+age-keygen -y ~/edutictac-backup-key.txt
+```
+
+Posa la clau pública en `BACKUP_AGE_RECIPIENT` i la ruta de la privada en
+`BACKUP_AGE_IDENTITY_FILE` (només per restaurar). Amb
+`BACKUP_ENCRYPTION_REQUIRED=1`, si no hi ha recipient el backup falla en lloc
+de crear-se en clar. La clau privada no s'ha de copiar al servidor.
+
 ## Operació habitual
 
 ```bash

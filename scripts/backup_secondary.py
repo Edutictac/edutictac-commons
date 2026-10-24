@@ -14,6 +14,7 @@ import tempfile
 import uuid
 
 NAME = re.compile(r'commons-\d{8}T\d{6}Z')
+AGE_ARCHIVE = 'backup.tar.gz.age'
 
 
 class SecondaryError(Exception):
@@ -239,7 +240,12 @@ class Secondary:
                 raise SecondaryError('invalid_configuration')
             if not NAME.fullmatch(source.name) or source.is_symlink() or source.parent != self.backups:
                 raise SecondaryError('invalid_backup')
-            manifest = validate(source, age=False)
+            try:
+                manifest = validate(source, age=False)
+            except Exception as error:
+                if str(error) != 'backup_encryption_key_missing' or not (source / AGE_ARCHIVE).is_file():
+                    raise
+                manifest = json.loads((source / 'manifest.json').read_text())
             if manifest.get('manifest_version') != 2 or manifest.get('complete') is not True:
                 raise SecondaryError('complete_backup_required')
             expected = hashes(source)
