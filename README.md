@@ -4,7 +4,7 @@ Entrega en preparació: [0.1.1-beta4](releases/0.1.1-beta4/README.md).
 Instal·lador amd64 per a LliureX 23, Ubuntu i Debian: `0.1.1~beta4`.
 La beta4 integra el xip de compte, tema i idioma amb els fitxers de l’aula.
 La [validació anterior de beta3](docs/VALIDACIO-BETA3-LLIUREX.md) és el punt de partida;
-la validació del nou paquet encara està en curs.
+la validació final en LliureX es farà després d’integrar el xip de Banc.
 La publicació APT i el canvi de la pàgina de descàrrega continuen pendents;
 la versió APT pública anterior és beta1.
 Proves d'idiomes: `npm ci`, `npx playwright install --with-deps chromium` i
