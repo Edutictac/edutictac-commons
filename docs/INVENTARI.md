@@ -51,6 +51,20 @@ de Compose.
 Cap d'aquestes dades ha d'entrar al repositori. Només es versionen els
 `.gitkeep` de carpetes buides.
 
+## Estabilitat i recursos
+
+Cada servei té `logging` amb rotació (`LOG_MAX_SIZE`, `LOG_MAX_FILE`),
+`restart: unless-stopped` i límits `mem_limit`, `cpus` i `pids_limit`
+configurables amb `<SERVEI>_MEMORY`, `<SERVEI>_CPUS` i `<SERVEI>_PIDS`.
+Els valors per defecte són conservadors: portal/recursos 128 MB, id-api i
+recursos-api 384 MB, play/eduhoot 512 MB, Mongo 768 MB, Authentik server 1 GB.
+Els límits són màxims, no reserves; en un servidor de 2 GB cal vigilar l'ús
+real i apujar-los només si un servei els necessita.
+
+SQLite usa `PRAGMA busy_timeout` (5 s per defecte,
+`EDUTICTAC_SQLITE_BUSY_TIMEOUT_MS`) perquè una escriptura concurrent no falle
+de seguida. Els logs Docker es retenen a `10m` × 3 fitxers.
+
 ## Política de backup
 
 Regla del projecte: **tot servei amb dades persistents ha de tindre backup,

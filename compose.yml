@@ -1,5 +1,16 @@
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "${LOG_MAX_SIZE:-10m}"
+    max-file: "${LOG_MAX_FILE:-3}"
+
 services:
   id-api:
+    logging: *default-logging
+    restart: unless-stopped
+    mem_limit: ${ID_API_MEMORY:-384m}
+    cpus: ${ID_API_CPUS:-1.0}
+    pids_limit: ${ID_API_PIDS:-256}
     image: ${IMAGE_REGISTRY:-edutictac}/commons-id-api:${IMAGE_TAG:-0.1.1-alpha}
     build:
       context: ./services/id-api
@@ -71,6 +82,17 @@ services:
       retries: 5
 
   portal:
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/ >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 8
+      start_period: 20s
+    logging: *default-logging
+    restart: unless-stopped
+    mem_limit: ${PORTAL_MEMORY:-128m}
+    cpus: ${PORTAL_CPUS:-0.5}
+    pids_limit: ${PORTAL_PIDS:-128}
     image: ${IMAGE_REGISTRY:-edutictac}/commons-portal:${IMAGE_TAG:-0.1.1-alpha}
     build:
       context: ./services/portal
@@ -81,6 +103,10 @@ services:
       - "${PORTAL_PORT:-8082}:80"
 
   blocs:
+    logging: *default-logging
+    mem_limit: ${BLOCS_MEMORY:-256m}
+    cpus: ${BLOCS_CPUS:-0.5}
+    pids_limit: ${BLOCS_PIDS:-128}
     image: ${IMAGE_REGISTRY:-edutictac}/commons-blocs:${IMAGE_TAG:-0.1.1-alpha}
     build:
       context: ${BLOCS_SOURCE_DIR:-../edutictac-blocs}
@@ -97,6 +123,10 @@ services:
     restart: unless-stopped
 
   llibres:
+    logging: *default-logging
+    mem_limit: ${LLIBRES_MEMORY:-256m}
+    cpus: ${LLIBRES_CPUS:-0.5}
+    pids_limit: ${LLIBRES_PIDS:-128}
     image: ${IMAGE_REGISTRY:-edutictac}/commons-llibres:${IMAGE_TAG:-0.1.1-alpha}
     build:
       context: ${LLIBRES_SOURCE_DIR:-../edutictac-llibres}
@@ -119,6 +149,17 @@ services:
       retries: 5
 
   play:
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8083/api/health', timeout=3).read()"]
+      interval: 10s
+      timeout: 5s
+      retries: 8
+      start_period: 20s
+    logging: *default-logging
+    restart: unless-stopped
+    mem_limit: ${PLAY_MEMORY:-512m}
+    cpus: ${PLAY_CPUS:-1.0}
+    pids_limit: ${PLAY_PIDS:-256}
     image: ${IMAGE_REGISTRY:-edutictac}/commons-play:${IMAGE_TAG:-0.1.1-alpha}
     build:
       context: ./services/play
@@ -146,6 +187,11 @@ services:
         condition: service_healthy
 
   recursos-api:
+    logging: *default-logging
+    restart: unless-stopped
+    mem_limit: ${RECURSOS_API_MEMORY:-384m}
+    cpus: ${RECURSOS_API_CPUS:-1.0}
+    pids_limit: ${RECURSOS_API_PIDS:-256}
     image: ${IMAGE_REGISTRY:-edutictac}/recursos-api:${RECURSOS_TAG:-local}
     build:
       context: ../recursos-api
@@ -196,6 +242,17 @@ services:
         condition: service_healthy
 
   recursos:
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/ >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 8
+      start_period: 20s
+    logging: *default-logging
+    restart: unless-stopped
+    mem_limit: ${RECURSOS_MEMORY:-128m}
+    cpus: ${RECURSOS_CPUS:-0.5}
+    pids_limit: ${RECURSOS_PIDS:-128}
     image: ${IMAGE_REGISTRY:-edutictac}/recursos:${RECURSOS_TAG:-local}
     build:
       context: ../recursos
@@ -209,6 +266,17 @@ services:
         condition: service_healthy
 
   admin:
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8091/', timeout=3).read()"]
+      interval: 10s
+      timeout: 5s
+      retries: 8
+      start_period: 20s
+    logging: *default-logging
+    restart: unless-stopped
+    mem_limit: ${ADMIN_MEMORY:-192m}
+    cpus: ${ADMIN_CPUS:-0.5}
+    pids_limit: ${ADMIN_PIDS:-128}
     image: ${IMAGE_REGISTRY:-edutictac}/commons-admin:${ADMIN_TAG:-${IMAGE_TAG:-0.1.1-alpha}}
     build:
       context: .
@@ -282,6 +350,11 @@ services:
         condition: service_healthy
 
   eduhoot-mongo:
+    logging: *default-logging
+    restart: unless-stopped
+    mem_limit: ${EDUHOOT_MONGO_MEMORY:-768m}
+    cpus: ${EDUHOOT_MONGO_CPUS:-1.0}
+    pids_limit: ${EDUHOOT_MONGO_PIDS:-512}
     image: mongo@sha256:c53852c00c23ca9f23fc39690350ffa9a80e3642fe8f96879726d8da0abe80a7
     profiles: ["eduhoot"]
     volumes:
@@ -295,6 +368,17 @@ services:
       retries: 10
 
   eduhoot:
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 8
+      start_period: 20s
+    logging: *default-logging
+    restart: unless-stopped
+    mem_limit: ${EDUHOOT_MEMORY:-512m}
+    cpus: ${EDUHOOT_CPUS:-1.0}
+    pids_limit: ${EDUHOOT_PIDS:-256}
     image: ${IMAGE_REGISTRY:-edutictac}/eduhoot:${EDUHOOT_TAG:-1.0.2}
     profiles: ["eduhoot"]
     depends_on:
@@ -329,6 +413,10 @@ services:
       - "${EDUHOOT_PORT:-8090}:3000"
 
   authentik-postgresql:
+    logging: *default-logging
+    mem_limit: ${AUTHENTIK_PG_MEMORY:-512m}
+    cpus: ${AUTHENTIK_PG_CPUS:-1.0}
+    pids_limit: ${AUTHENTIK_PG_PIDS:-512}
     image: postgres@sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea
     profiles: ["authentik"]
     environment:
@@ -345,6 +433,10 @@ services:
     restart: unless-stopped
 
   authentik-server:
+    logging: *default-logging
+    mem_limit: ${AUTHENTIK_SERVER_MEMORY:-1g}
+    cpus: ${AUTHENTIK_SERVER_CPUS:-1.0}
+    pids_limit: ${AUTHENTIK_SERVER_PIDS:-512}
     image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2026.8.3}
     profiles: ["authentik"]
     command: server
@@ -378,6 +470,10 @@ services:
     restart: unless-stopped
 
   authentik-worker:
+    logging: *default-logging
+    mem_limit: ${AUTHENTIK_WORKER_MEMORY:-768m}
+    cpus: ${AUTHENTIK_WORKER_CPUS:-1.0}
+    pids_limit: ${AUTHENTIK_WORKER_PIDS:-512}
     image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2026.8.3}
     profiles: ["authentik"]
     command: worker
