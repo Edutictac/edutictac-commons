@@ -1,0 +1,8 @@
+{
+  "version": "0.1.1~beta4",
+  "apt_signature_verified_with_pretrusted_key": true,
+  "packages_index_hash_verified": true,
+  "downloaded_deb_sha256": "442643b5cc2f631a2b01ad332ffe557be7ded78b2d1a65199a2afcfab1649852",
+  "size": 5880412,
+  "url": "https://packages.edutictac.es/pool/main/e/edutictac-commons/edutictac-commons_0.1.1~beta4_amd64.deb"
+}

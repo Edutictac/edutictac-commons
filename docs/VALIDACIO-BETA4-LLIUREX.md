@@ -1,7 +1,8 @@
 # Validació de beta4 en LliureX
 
 Data: 24 d’octubre de 2026. Imatges finals: `0.1.1-beta4`, conjunt C7.
-La publicació en APT i la web de descàrrega continua pendent.
+Publicació en APT i web de descàrrega completada el 24 d’octubre de 2026,
+amb firma, índex i paquet descarregat verificats.
 
 ## Entorn i paquet
 
@@ -78,4 +79,5 @@ d’alumnat, sense guardar el fitxer excessiu ni ampliar el límit de la resta d
 La primera prova de navegador del formulari d’accés docent esgotà el termini;
 es comprovà el formulari i la repetició focalitzada completà l’accés i l’activació,
 sense modificar l’aplicació. No es declara una validació física en tauleta.
-No s’han desplegat canvis en els serveis de producció durant esta preparació.
+S’han publicat el paquet APT i els dos fitxers de la pàgina de descàrrega.
+No s’han reiniciat ni substituït els serveis d’aplicació de producció.

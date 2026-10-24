@@ -8,14 +8,14 @@ El xip mostra i gestiona la sessió de Commons. Les funcionalitats pròpies
 de comptes i projectes de cada aplicació conserven els seus permisos.
 
 Instal·lador amd64: `edutictac-commons_0.1.1~beta4_amd64.deb`, amb descàrrega
-d’imatges per Internet. La publicació APT i la web pública estan pendents.
+d’imatges per Internet. Publicat en APT amb firma verificada i en la web de descàrrega.
 
 ## Estat de la preparació
 
 **Banc i peu comú integrats; validació LliureX completada.** La web
 retira les maquetes antigues dels taulers i conserva els accessos als de Commons.
-No s’ha publicat el paquet en APT ni actualitzat
-la web pública en esta preparació.
+El paquet exacte validat està publicat en APT. La pàgina de descàrrega i el
+manual s’han actualitzat conservant el xip i el peu de la web.
 
 La [candidata 7](../0.1.1-beta4-candidate7/README.md) incorpora el xip de Banc,
 la sessió central, la configuració del portal local i la comprovació del rol
@@ -37,3 +37,10 @@ punt de partida. Les comprovacions automatitzades es fan en entorns aïllats. La
 neta, els recorreguts docent/alumnat, la restauració i el reinici de la versió
 en LliureX s’han comprovat. Resultats i abast en el
 [registre de validació beta4](../../docs/VALIDACIO-BETA4-LLIUREX.md).
+
+## Publicació verificada
+
+[Descàrrega i manual](https://edutictac.es/instala-commons.html). La firma
+d’InRelease s’ha verificat amb la clau de confiança preexistent, així com el
+hash de l’índex, el paquet descarregat i la candidata APT `0.1.1~beta4`.
+Metadades en [apt-verification.json](apt-verification.json).
