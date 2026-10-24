@@ -79,6 +79,14 @@ Les xarxes Docker estan separades:
 Així les apps opcionals no poden arribar a serveis que no necessiten i les
 bases de dades queden fora de la xarxa de gestió.
 
+## mDNS i accés per IP
+
+Avahi publica `EDUTICTAC_MDNS_NAME` (per defecte `edutictac.local`). El
+`postinst` limita l'anunci a les interfícies físiques (`allow-interfaces`) per
+no exposar les IP de Docker. Si un client no resol `.local`, el portal és
+accessible per IP; per al login docent per IP cal `EDUTICTAC_PUBLIC_HOST`.
+Vegeu [LAN-SENSE-INTERNET.md](LAN-SENSE-INTERNET.md) i `make lan-doctor`.
+
 ## Política de backup
 
 Regla del projecte: **tot servei amb dades persistents ha de tindre backup,

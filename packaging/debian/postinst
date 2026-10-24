@@ -177,7 +177,9 @@ for line in path.read_text(encoding="utf-8").splitlines():
         env[key] = value
 
 name = env.get("EDUTICTAC_MDNS_NAME", "edutictac")
-public_name = name if name.endswith(".local") else f"{name}.local"
+mdns_name = name if name.endswith(".local") else f"{name}.local"
+public_host = env.get("EDUTICTAC_PUBLIC_HOST", "").strip()
+public_name = public_host or mdns_name
 portal_port = env.get("PORTAL_PORT", "80")
 portal_base = f"http://{public_name}" if portal_port == "80" else f"http://{public_name}:{portal_port}"
 authentik_base = f"http://{public_name}:{env.get('AUTHENTIK_PORT', '9000')}"
@@ -281,6 +283,51 @@ if not found:
     output.insert(index, f"host-name={name}")
 conf_path.write_text("\n".join(output) + "\n", encoding="utf-8")
 PY
+
+python3 - "$MDNS_CONF" <<'PYAVAHI'
+import os
+from pathlib import Path
+import sys
+
+path = Path(sys.argv[1])
+if path.exists():
+    lines = path.read_text(encoding="utf-8").splitlines()
+else:
+    lines = []
+
+physical = []
+for iface in sorted(os.listdir("/sys/class/net")):
+    if iface == "lo" or iface.startswith(("docker", "br-", "veth", "virbr", "vnet", "tun", "tap", "wg")):
+        continue
+    link = Path("/sys/class/net") / iface
+    if (link / "device").exists() or iface.startswith(("eth", "en", "wl")):
+        physical.append(iface)
+
+if physical:
+    value = ",".join(physical)
+    output = []
+    in_server = False
+    found = False
+    for line in lines:
+        if line.strip().startswith("["):
+            in_server = line.strip() == "[server]"
+        if in_server and line.strip().startswith("allow-interfaces="):
+            output.append(f"allow-interfaces={value}")
+            found = True
+        else:
+            output.append(line)
+    if not found:
+        try:
+            index = next(i for i, line in enumerate(output) if line.strip() == "[server]") + 1
+        except StopIteration:
+            output = ["[server]"] + output
+            index = 1
+        output.insert(index, f"allow-interfaces={value}")
+    path.write_text("\n".join(output) + "\n", encoding="utf-8")
+    print(f"Avahi: allow-interfaces={value}")
+else:
+    print("Avís: no s'ha detectat cap interfície física per a mDNS; Avahi no es restringeix.", file=sys.stderr)
+PYAVAHI
 
 if command -v systemctl >/dev/null 2>&1 && systemctl list-unit-files avahi-daemon.service >/dev/null 2>&1; then
     systemctl enable avahi-daemon.service >/dev/null 2>&1 || true

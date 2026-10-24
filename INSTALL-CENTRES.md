@@ -383,6 +383,14 @@ L'ingress cobreix el portal; les apps (`recursos`, `blocs`, `eduhoot`, etc.)
 continuen publicant els seus ports directes. No els exposos a Internet sense
 un proxy propi.
 
+## LAN sense Internet i accés per IP
+
+El portal i les apps no depenen de CDN ni de serveis externs per funcionar. Si
+`edutictac.local` no resol en algun dispositiu, useu `http://<IP-del-servidor>:8082/`.
+Per al login docent per IP, configureu `EDUTICTAC_PUBLIC_HOST=<IP>` i
+reapliqueu la configuració. Diagnòstic: `make lan-doctor`.
+Detall i compatibilitat mDNS: [docs/LAN-SENSE-INTERNET.md](docs/LAN-SENSE-INTERNET.md).
+
 ## Solució de problemes
 
 ### El portal no obri

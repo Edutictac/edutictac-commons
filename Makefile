@@ -4,7 +4,7 @@ COMPOSE = $(DOCKER) compose --env-file $(ENV_FILE) -f compose.yml
 COMPOSE_INGRESS = $(DOCKER) compose --env-file $(ENV_FILE) -f compose.yml -f compose.ingress.yml
 COMPOSE_EXAMPLE = $(DOCKER) compose --env-file .env.example -f compose.yml
 
-.PHONY: init doctor up up-pulled up-example up-ingress down down-ingress ingress-ca build logs ps test-flow test-play-commons test-eduhoot-flow test-reset-flow bootstrap-demo release-check backup backup-check backup-auto backup-prune backup-timer-install backup-timer-status backup-timer-uninstall restore reset images check-images check-updates update-images rollback-images export-images load-images push-images
+.PHONY: init doctor lan-doctor up up-pulled up-example up-ingress down down-ingress ingress-ca build logs ps test-flow test-play-commons test-eduhoot-flow test-reset-flow bootstrap-demo release-check backup backup-check backup-auto backup-prune backup-timer-install backup-timer-status backup-timer-uninstall restore reset images check-images check-updates update-images rollback-images export-images load-images push-images
 .PHONY: test-i18n test-installation test-play test-moodle up-recursos up-authentik test-recursos test-teacher-resources test-authentik-config test-authentik-env-defaults test-group-management package-deb
 
 init:
@@ -12,6 +12,9 @@ init:
 
 doctor:
 	./scripts/doctor.sh
+
+lan-doctor:
+	./scripts/lan-doctor.sh
 
 up: init
 	$(COMPOSE) up --build -d
