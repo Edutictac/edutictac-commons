@@ -21,7 +21,7 @@ jobs:
       - run: npm ci
       - run: npm run build:portal
       - name: Comprovar bundles versionats
-        run: git diff --exit-code -- services/portal/public/assets/rebost-ui.js services/portal/public/assets/teacher-itineraries.js services/portal/public/assets/student-ui.js admin/public/assets/admin-ui.js services/play/public/assets/ui/play-ui.js
+        run: git diff --exit-code -- services/portal/public/assets/account-widget.js services/portal/public/assets/rebost-ui.js services/portal/public/assets/teacher-itineraries.js services/portal/public/assets/student-ui.js admin/public/assets/admin-ui.js services/play/public/assets/ui/play-ui.js
       - run: npx playwright install --with-deps chromium
       - run: npm test
       - run: npm run test:play

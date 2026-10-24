@@ -195,7 +195,7 @@ def add_group_identities(group_id: str, payload: AddIdentitiesIn, request: Reque
 @router.delete("/api/teacher/groups/{group_id}")
 def delete_group(group_id: str, request: Request, c: Commons = Depends(commons)) -> dict[str, Any]:
     c.auth.require_group_owner(request, group_id)
-    with c.connect() as conn:
+    with c.files.lock(), c.connect() as conn:
         group = conn.execute("SELECT id, name FROM groups WHERE id = ?", (group_id,)).fetchone()
         if not group:
             raise HTTPException(status_code=404, detail="group not found")
@@ -213,6 +213,8 @@ def delete_group(group_id: str, request: Request, c: Commons = Depends(commons))
         conn.execute("DELETE FROM student_identities WHERE group_id = ?", (group_id,))
         conn.execute("DELETE FROM group_memberships WHERE group_id = ?", (group_id,))
         conn.execute("DELETE FROM groups WHERE id = ?", (group_id,))
+    import shutil
+    shutil.rmtree(c.files.group_dir(group_id), ignore_errors=True)
     return {"deleted": group_id, "group_code": group["name"]}
 
 

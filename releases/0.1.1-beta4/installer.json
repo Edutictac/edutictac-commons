@@ -1,0 +1,15 @@
+{
+  "package": "edutictac-commons",
+  "version": "0.1.1~beta4",
+  "architecture": "amd64",
+  "filename": "edutictac-commons_0.1.1~beta4_amd64.deb",
+  "size": 5880412,
+  "sha256": "442643b5cc2f631a2b01ad332ffe557be7ded78b2d1a65199a2afcfab1649852",
+  "source_revision": "ca95f3d3829e7c6f7391115a26d7aceb51e3f3ee",
+  "apt_signature_verified": true,
+  "publication_status": "published",
+  "native_validation": "passed-with-incremental-candidate-updates",
+  "bank_chip": "integrated",
+  "validated_candidate": "0.1.1-beta4-candidate7",
+  "url": "https://packages.edutictac.es/pool/main/e/edutictac-commons/edutictac-commons_0.1.1~beta4_amd64.deb"
+}

@@ -38,7 +38,7 @@ Dins d'un contenidor que ja té padding (per exemple, la web pública):
     <span class="ett-footer__brand">EduTicTac</span>
     <span aria-hidden="true">·</span>
     <span class="ett-footer__service">Commons</span>
-    <span class="ett-footer__version">v0.1.1-beta2</span>
+    <span class="ett-footer__version">v0.1.1-beta4</span>
   </p>
   <div class="ett-footer__links">
     <a href="/" data-i18n="footer.home">Inici</a>
@@ -64,7 +64,7 @@ traduccions.
 
 ## On s'aplica
 
-- `edutictac.es`: les nou pàgines públiques.
+- `edutictac.es`: les set pàgines públiques.
 - Commons: portada, tauler docent, tauler alumnat, privacitat, ajuda docent,
   accés a Blocs, accés a Llibres i Rebost.
 - Apps: només portades o pantalles d'entrada; mai editors a pantalla completa

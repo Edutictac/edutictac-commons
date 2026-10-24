@@ -245,3 +245,34 @@ def test_combined_backup_failure_does_not_record_success(encrypted_backup, tmp_p
         module.backup(base, out, env, gpg, recipient, resources_db=bad, resources_config=tmp_path)
     assert (out / 'latest.json').read_bytes() == previous
     assert not list(out.glob('*.partial'))
+
+
+def test_classroom_blobs_are_streamed_encrypted_and_match_snapshot(encrypted_backup):
+    module,base,out,env,gpg,recipient,conn=encrypted_backup
+    name='a'*64+'/'+'b'*32+'.txt'
+    content=b'Private pupil submission'
+    blob=base/'data/id-api/files'/name;blob.parent.mkdir(parents=True,mode=0o700);blob.write_bytes(content)
+    conn.execute('CREATE TABLE classroom_files (storage_name TEXT,size INTEGER,sha256 TEXT,active INTEGER)')
+    conn.execute('INSERT INTO classroom_files VALUES (?,?,?,1)',(name,len(content),hashlib.sha256(content).hexdigest()));conn.commit()
+    report=module.backup(base,out,env,gpg,recipient)
+    with recover(out/report['name'],gpg) as archive:
+        manifest=json.load(archive.extractfile('manifest.json'))
+        restored=archive.extractfile('data/id-api/files/'+name).read()
+        assert restored==content
+        assert manifest['files']['data/id-api/files/'+name]==hashlib.sha256(restored).hexdigest()
+        db=sqlite3.connect(':memory:');db.deserialize(archive.extractfile('id.db').read())
+        assert db.execute('SELECT storage_name FROM classroom_files').fetchone()[0]==name
+        db.close()
+    assert not list(out.glob('.snapshot-*'))
+
+
+def test_missing_or_modified_classroom_blob_fails_closed(encrypted_backup):
+    module,base,out,env,gpg,recipient,conn=encrypted_backup
+    module.backup(base,out,env,gpg,recipient)
+    previous=(out/'latest.json').read_bytes()
+    conn.execute('CREATE TABLE classroom_files (storage_name TEXT,size INTEGER,sha256 TEXT,active INTEGER)')
+    conn.execute('INSERT INTO classroom_files VALUES (?,?,?,1)',('a'*64+'/'+'b'*32+'.txt',12,'b'*64));conn.commit()
+    with pytest.raises(RuntimeError,match='classroom blob unavailable'):
+        module.backup(base,out,env,gpg,recipient)
+    assert (out/'latest.json').read_bytes()==previous
+    assert not list(out.glob('*.partial'))

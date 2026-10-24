@@ -7,6 +7,7 @@ import AssignmentsPanel from './AssignmentsPanel.vue';
 import ResultsPanel from './ResultsPanel.vue';
 import ResourcesPanel from './ResourcesPanel.vue';
 import AdminGroupsPanel from './AdminGroupsPanel.vue';
+import ClassroomFilesPanel from './ClassroomFilesPanel.vue';
 
 export function mountItineraries(element, options) {
   return createApp(ItinerariesPanel, options).mount(element);
@@ -30,3 +31,5 @@ export function mountResources(element, options) { return createApp(ResourcesPan
 export function mountAdminGroups(element, options) {
   return createApp(AdminGroupsPanel, options).mount(element);
 }
+
+export function mountClassroomFiles(element,options){return createApp(ClassroomFilesPanel,options).mount(element);}

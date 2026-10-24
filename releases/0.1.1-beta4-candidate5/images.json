@@ -1,0 +1,40 @@
+{
+  "version": "0.1.1-beta4-candidate5",
+  "source_revisions": {
+    "commons": "a244dbdde41dd39bd4b7be239abf57b83311b8a0",
+    "recursos": "2dcc45e2d6d01966ffa6ece6d1b5167a3522473b",
+    "recursos-api": "d511969a5390f61c009ea523d4668b1645f11dd1",
+    "blocs": "fc80b6aae57daae2baafa129e8b45b0197f90d7e",
+    "llibres": "d9f5ee8ba27e6fa3570950b69253abab789ea760"
+  },
+  "images": {
+    "authentik-postgresql": "postgres@sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea",
+    "authentik-server": "ghcr.io/goauthentik/server@sha256:ab9b4e8cc4ab3f8d1198d2db6aeea66bafea1963b3f2843589e0d163f97d9849",
+    "authentik-worker": "ghcr.io/goauthentik/server@sha256:ab9b4e8cc4ab3f8d1198d2db6aeea66bafea1963b3f2843589e0d163f97d9849",
+    "eduhoot": "registry.edutictac.es/edutictac/eduhoot@sha256:473d3e0bdaf10846bf78ab5285e759f16ee2820b1f2bd8f9d4f0b16dce346bd7",
+    "eduhoot-mongo": "mongo@sha256:c53852c00c23ca9f23fc39690350ffa9a80e3642fe8f96879726d8da0abe80a7",
+    "id-api": "registry.edutictac.es/edutictac/commons-id-api@sha256:4ad32eb80fc227cb9546a88d1ea3553a39073b6cfb645c78978f144be850dcf0",
+    "portal": "registry.edutictac.es/edutictac/commons-portal@sha256:dd5016a23b2da5f3e159c5a2f9a4c75998ed2c3626eba78ee385577213392d4f",
+    "admin": "registry.edutictac.es/edutictac/commons-admin@sha256:06937f24358fbc4786a2109220aacc59fbf354fd2ee214f57b8f48e7e5a1dd01",
+    "play": "registry.edutictac.es/edutictac/commons-play@sha256:5ac86c85be2262382c734a30015c8b666401eda22829c7d8eef7fa6cc20a76d8",
+    "blocs": "registry.edutictac.es/edutictac/commons-blocs@sha256:774ec1ab31fd5d0904ec327062eed7bb0e3a3b327aa0298640fd89cc95ec0009",
+    "llibres": "registry.edutictac.es/edutictac/commons-llibres@sha256:48dd8971591bbcc33bbc12befabbfb2083842fc3f4c65250b7cff3db5fa10bc4",
+    "recursos": "registry.edutictac.es/edutictac/recursos@sha256:ab5d7b7fa70055634defe439b70f84fbfc80031761937415c1efd6cf9020502b",
+    "recursos-api": "registry.edutictac.es/edutictac/recursos-api@sha256:3a76bef06e2d2971b156d1f3b2fc0f34a628b46a6a85d6dd059f603251bade2c"
+  },
+  "platforms": {
+    "authentik-postgresql": "linux/amd64",
+    "authentik-server": "linux/amd64",
+    "authentik-worker": "linux/amd64",
+    "eduhoot": "linux/amd64",
+    "eduhoot-mongo": "linux/amd64",
+    "id-api": "linux/amd64",
+    "portal": "linux/amd64",
+    "admin": "linux/amd64",
+    "play": "linux/amd64",
+    "blocs": "linux/amd64",
+    "llibres": "linux/amd64",
+    "recursos": "linux/amd64",
+    "recursos-api": "linux/amd64"
+  }
+}

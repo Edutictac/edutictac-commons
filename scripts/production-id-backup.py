@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Consistent, encrypted ID API backup. No service changes or private GPG keys."""
 import argparse
+from contextlib import contextmanager
+import fcntl
 from datetime import datetime, timezone
 import hashlib
 import io
@@ -56,6 +58,61 @@ def snapshot_database(source, destination):
             raise RuntimeError('snapshot integrity check failed')
 
 
+@contextmanager
+def classroom_lock(root):
+    if not root.exists():
+        yield
+        return
+    if root.is_symlink():
+        raise RuntimeError('unsafe classroom storage')
+    fd = os.open(root / '.write.lock', os.O_CREAT | os.O_RDWR | os.O_NOFOLLOW, 0o600)
+    try:
+        owner = root.stat()
+        os.fchown(fd, owner.st_uid, owner.st_gid)
+        # All classroom mutations use this lock. Snapshot metadata and stream
+        # its immutable referenced blobs under it, without a plaintext copy.
+        fcntl.flock(fd, fcntl.LOCK_EX)
+        yield
+    finally:
+        os.close(fd)
+
+
+def classroom_blobs(database, root):
+    with sqlite3.connect(database) as conn:
+        if not conn.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='classroom_files'").fetchone():
+            return []
+        rows = conn.execute('SELECT storage_name,size,sha256 FROM classroom_files WHERE active=1').fetchall()
+    result = []
+    for name, size, sha in rows:
+        if not re.fullmatch(r'[a-f0-9]{64}/[a-f0-9]{32}\.[a-z0-9]+', name):
+            raise RuntimeError('unsafe classroom blob')
+        path = root / name
+        if path.is_symlink() or path.parent.is_symlink() or not path.is_file():
+            raise RuntimeError('classroom blob unavailable')
+        result.append(('data/id-api/files/' + name, path, size, sha))
+    return result
+
+
+def add_blob(archive, name, path, expected_size, expected_sha):
+    hasher = hashlib.sha256()
+    class Reader:
+        def __init__(self, stream): self.stream = stream
+        def read(self, size):
+            block = self.stream.read(size)
+            hasher.update(block)
+            return block
+    if path.stat().st_size != expected_size:
+        raise RuntimeError('classroom blob size mismatch')
+    info = tarfile.TarInfo(name)
+    info.size, info.mode = expected_size, 0o600
+    with path.open('rb') as stream:
+        archive.addfile(info, Reader(stream))
+    sha = hasher.hexdigest()
+    if sha != expected_sha:
+        raise RuntimeError('classroom blob hash mismatch')
+    return sha
+
+
 def backup(base, output, env_file, gpg_home, recipient, owner=None, keep=30,
            resources_db=None, resources_config=None):
     os.umask(0o077)
@@ -82,52 +139,55 @@ def backup(base, output, env_file, gpg_home, recipient, owner=None, keep=30,
     try:
         with tempfile.TemporaryDirectory(prefix='.snapshot-', dir=output) as directory:
             snapshot = Path(directory) / 'id.db'
-            # Book owners exist in identity before publication: snapshot the bank first.
-            resources_snapshot = Path(directory) / 'recursos.db'
-            if resources_db:
-                snapshot_database(resources_db, resources_snapshot)
-            snapshot_database(source, snapshot)
-            manifest = {'created_at': stamp, 'database_sha256': digest(snapshot),
-                        'format': 'edutictac-id-backup', 'version': 1, 'files': {}}
-            files = [('id.db', snapshot), ('legacy/main.py', base / 'main.py'),
-                     ('legacy/requirements.txt', base / 'requirements.txt'),
-                     ('configuration/legacy.env', env_file)]
-            for item in ['compose.yml', 'service.env']:
-                if (base / 'docker' / item).exists():
-                    files.append(('configuration/docker/' + item, base / 'docker' / item))
-            if resources_db:
-                files.append(('resources/recursos.db', resources_snapshot))
+            with classroom_lock(base / 'data/id-api/files'):
+                # Book owners exist in identity before publication: snapshot the bank first.
+                resources_snapshot = Path(directory) / 'recursos.db'
+                if resources_db:
+                    snapshot_database(resources_db, resources_snapshot)
+                snapshot_database(source, snapshot)
+                manifest = {'created_at': stamp, 'database_sha256': digest(snapshot),
+                            'format': 'edutictac-id-backup', 'version': 1, 'files': {}}
+                files = [('id.db', snapshot), ('legacy/main.py', base / 'main.py'),
+                         ('legacy/requirements.txt', base / 'requirements.txt'),
+                         ('configuration/legacy.env', env_file)]
                 for item in ['compose.yml', 'service.env']:
-                    files.append(('configuration/resources/' + item, resources_config / item))
-            command = ['gpg', '--homedir', str(gpg_home), '--batch', '--yes',
-                       '--trust-model', 'always', '--recipient', recipient, '--encrypt']
-            with partial.open('xb') as encrypted:
-                process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=encrypted, stderr=subprocess.DEVNULL)
-                try:
-                    with tarfile.open(fileobj=process.stdin, mode='w|gz') as archive:
-                        for arcname, path in files:
-                            if not path.is_file() or path.is_symlink():
-                                raise RuntimeError('required backup file unavailable')
-                            # Hash the exact bytes archived, even if a config changes during a run.
-                            content = path.read_bytes()
-                            manifest['files'][arcname] = hashlib.sha256(content).hexdigest()
-                            add_bytes(archive, arcname, content)
-                        unit = subprocess.run(['systemctl', 'cat', 'edutictac-id-api.service'],
-                                              capture_output=True, timeout=20)
-                        if unit.returncode == 0:
-                            add_bytes(archive, 'configuration/legacy-unit.txt', unit.stdout)
-                        add_bytes(archive, 'manifest.json', json.dumps(manifest).encode())
-                    process.stdin.close()
-                    if process.wait(timeout=60) != 0:
-                        raise RuntimeError('backup encryption failed')
-                finally:
-                    if process.stdin and not process.stdin.closed:
+                    if (base / 'docker' / item).exists():
+                        files.append(('configuration/docker/' + item, base / 'docker' / item))
+                if resources_db:
+                    files.append(('resources/recursos.db', resources_snapshot))
+                    for item in ['compose.yml', 'service.env']:
+                        files.append(('configuration/resources/' + item, resources_config / item))
+                command = ['gpg', '--homedir', str(gpg_home), '--batch', '--yes',
+                           '--trust-model', 'always', '--recipient', recipient, '--encrypt']
+                with partial.open('xb') as encrypted:
+                    process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=encrypted, stderr=subprocess.DEVNULL)
+                    try:
+                        with tarfile.open(fileobj=process.stdin, mode='w|gz') as archive:
+                            for arcname, path in files:
+                                if not path.is_file() or path.is_symlink():
+                                    raise RuntimeError('required backup file unavailable')
+                                # Hash the exact bytes archived, even if a config changes during a run.
+                                content = path.read_bytes()
+                                manifest['files'][arcname] = hashlib.sha256(content).hexdigest()
+                                add_bytes(archive, arcname, content)
+                            for arcname, path, size, sha in classroom_blobs(snapshot, base / 'data/id-api/files'):
+                                manifest['files'][arcname] = add_blob(archive, arcname, path, size, sha)
+                            unit = subprocess.run(['systemctl', 'cat', 'edutictac-id-api.service'],
+                                                  capture_output=True, timeout=20)
+                            if unit.returncode == 0:
+                                add_bytes(archive, 'configuration/legacy-unit.txt', unit.stdout)
+                            add_bytes(archive, 'manifest.json', json.dumps(manifest).encode())
                         process.stdin.close()
-                    if process.poll() is None:
-                        process.kill()
-                        process.wait()
-                encrypted.flush()
-                os.fsync(encrypted.fileno())
+                        if process.wait(timeout=60) != 0:
+                            raise RuntimeError('backup encryption failed')
+                    finally:
+                        if process.stdin and not process.stdin.closed:
+                            process.stdin.close()
+                        if process.poll() is None:
+                            process.kill()
+                            process.wait()
+                    encrypted.flush()
+                    os.fsync(encrypted.fileno())
         os.chmod(partial, 0o600)
         if owner is not None:
             os.chown(partial, owner, owner)

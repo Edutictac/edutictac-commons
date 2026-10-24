@@ -20,6 +20,7 @@ from fastapi.testclient import TestClient
 ROOT = Path(__file__).parents[1] / "services/id-api"
 ACTORS = ["owner", "member", "former", "stranger", "admin"]
 CASES = {
+    "files.list": ("GET", "/api/teacher/groups/G/files", None),
     "members.list": ("GET", "/api/teacher/groups/G/members", None),
     "members.add": ("POST", "/api/teacher/groups/G/members", {"teacher_id": "newbie"}),
     "members.remove": ("DELETE", "/api/teacher/groups/G/members/member", None),
@@ -53,6 +54,7 @@ CASES = {
 # gestiona aules (col·laboradors, propietat, baixa) però no hi fa treball
 # pedagògic. Qualsevol canvi d'accés ha de modificar esta taula.
 EXPECTED = {
+    "files.list": {"owner": [200, 2], "member": [200, 2], "former": [404, None], "stranger": [404, None], "admin": [404, None]},
     # cas: owner, member, former, stranger, admin
     "members.list": {"owner": [200, 2], "member": [404, None], "former": [404, None], "stranger": [404, None], "admin": [200, 2]},
     "members.add": {"owner": [201, None], "member": [404, None], "former": [404, None], "stranger": [404, None], "admin": [201, None]},
@@ -119,6 +121,10 @@ def load(tmp_path, monkeypatch):
             INSERT INTO group_itinerary_selection VALUES ('G', 'itG'), ('H', 'itH');
             """
         )
+    with module.get_conn() as db:
+        for file_id,scope,identity in [('shared','shared',None),('private','submission','i1')]:
+            db.execute("INSERT INTO classroom_files VALUES (?,?,?,?,?,?,?,?,?,?,?,?,1)",
+                       (file_id,'G',scope,identity,'owner',file_id+'.txt','unavailable/'+file_id+'.txt','application/octet-stream',4,'a'*64,'2026','2026'))
     return module
 
 
@@ -141,7 +147,7 @@ def visible(response):
     if response.headers.get("content-type", "").startswith("text/"):
         return len(response.text.strip().splitlines())
     body = response.json()
-    for key in ("members", "identities", "assignments", "itineraries", "results"):
+    for key in ("members", "identities", "assignments", "itineraries", "results", "files"):
         if isinstance(body, dict) and isinstance(body.get(key), list):
             return len(body[key])
     if isinstance(body, dict) and "total" in body:

@@ -41,6 +41,7 @@ de Compose.
 |---|---|---|---|
 | `data/id.db` | contenidor `id-api` | SQLite de grups, identitats, sessions, assignacions i puntuacions | No |
 | `data/id.db-wal`, `data/id.db-shm` | contenidor `id-api` | fitxers auxiliars SQLite | No |
+| `data/id-api/files` | contenidor `id-api` | Compartits i entregues privades de Fitxers de l’aula; còpia com a arrel addicional `local-data` | No |
 | `data/eduhoot-mongo/` | contenidor MongoDB | base Mongo d'EduHoot | No |
 | `data/eduhoot-uploads/` | contenidor `eduhoot` | imatges pujades a EduHoot | No |
 | `data/eduhoot-logs/` | contenidor `eduhoot` | informes i logs locals d'EduHoot | No |
@@ -404,3 +405,10 @@ sudo env PWD=/opt/edutictac-commons docker compose --env-file .env -f compose.ym
 
 `make release-check` comprova part d'aquesta política abans de compartir una
 versió.
+
+
+## Fitxers de l’aula
+
+Funció del nucli amb migració additiva 2 de l’API. No crea servicis ni volums.
+Vegeu [ús, permisos, quotes i endpoints](FITXERS-AULA.md) i
+[validació de l’actualització d’imatges sobre beta2](VALIDACIO-BETA3-FITXERS.md).

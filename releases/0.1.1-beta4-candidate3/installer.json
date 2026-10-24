@@ -1,0 +1,16 @@
+{
+  "package": "edutictac-commons",
+  "version": "0.1.1~beta4~candidate3",
+  "architecture": "amd64",
+  "source_revision": "b58bb00004f110a050f6d26a0fcf37b774124305",
+  "filename": "edutictac-commons_0.1.1~beta4~candidate3_amd64.deb",
+  "sha256": "c8ada568f6e84ede84c69362507a0336c84d41ba3e17a3d1f2fe75a1becb58a7",
+  "size": 5873628,
+  "default_commons_images": "0.1.1-beta4-candidate3",
+  "default_resources_images": "0.1.1-beta4-candidate3",
+  "bundle_images": "none",
+  "apt_signature_verified": false,
+  "publication_status": "candidate-not-published",
+  "native_validation": "deferred-until-bank-chip",
+  "bank_chip": "pending"
+}

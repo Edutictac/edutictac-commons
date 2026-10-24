@@ -77,6 +77,7 @@ for (const families of [false, true]) {
       document.body.append(frame);
     }, families);
     const picker = page.frameLocator('#picker');
+    await expect(picker.locator('#access')).toBeHidden();
     await picker.getByRole('button', {name: families ? 'Añadir personaje con disfraces' : 'Usar en el proyecto', exact: true}).click();
     expect(errors).toEqual([]);
     await expect.poll(() => page.evaluate(() => window.selections.length)).toBe(1);
