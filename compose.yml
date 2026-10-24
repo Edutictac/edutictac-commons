@@ -154,6 +154,10 @@ services:
       RECURSOS_SECRET: ${RECURSOS_SECRET:-local-recursos-secret}
       RECURSOS_COOKIE_SECURE: ${RECURSOS_COOKIE_SECURE:-0}
       RECURSOS_APP_URL: ${RECURSOS_APP_URL:-http://localhost:8086}
+      # Sessió central de Commons en el Banc (vegeu README de recursos-api). Desactivada
+      # per defecte en els centres fins que el portal publique la seua URL real.
+      RECURSOS_CENTRAL_SESSION: ${RECURSOS_CENTRAL_SESSION:-0}
+      RECURSOS_COMMONS_URL: ${RECURSOS_COMMONS_URL:-http://localhost:8082}
       LLIBRES_PUBLIC_BASE_URL: ${LLIBRES_PUBLIC_BASE_URL:-${RECURSOS_APP_URL:-http://localhost:8086}}
       LLIBRES_PUBLIC_MAX_BYTES: ${LLIBRES_PUBLIC_MAX_BYTES:-2147483648}
       PLAY_INGEST_TOKEN: ${PLAY_INGEST_TOKEN:-local-play-ingest-token}

@@ -192,3 +192,47 @@ def test_same_host_other_port_is_trusted_without_configuration(module, monkeypat
     teacher.base_url = 'http://commons.centre:8082'
     teacher.headers['Origin'] = 'http://commons.centre:8084'
     assert teacher.post('/api/auth/session/logout').status_code == 200
+
+
+def app_headers(cookie_client=None):
+    return {'Authorization': 'Bearer synthetic-internal-app-token'}
+
+
+@pytest.fixture
+def internal(module, monkeypatch):
+    module.commons.settings.app_token = 'synthetic-internal-app-token'
+    return module
+
+
+def test_internal_resolve_requires_the_app_token(internal):
+    client = TestClient(internal.app)
+    assert client.get('/api/internal/session/resolve').status_code == 401
+    assert client.get('/api/internal/session/resolve', headers={'Authorization': 'Bearer wrong'}).status_code == 403
+    response = client.get('/api/internal/session/resolve', headers=app_headers())
+    assert response.json() == {'kind': 'anonymous'}
+    assert response.headers['cache-control'] == 'no-store'
+
+
+def test_internal_resolve_returns_the_stable_identity(internal):
+    teacher = oidc_client(internal, {'name': 'Laia Ferrer', 'email': 'laia@example.test'})
+    data = teacher.get('/api/internal/session/resolve', headers=app_headers()).json()
+    assert data == {'kind': 'oidc', 'sub': 'person', 'role': 'profesor', 'display_name': 'Laia Ferrer'}
+    pupil = student_client(internal)
+    assert pupil.get('/api/internal/session/resolve', headers=app_headers()).json() == {'kind': 'student', 'id': 'a', 'public_code': 'K7M'}
+    with internal.get_conn() as db:
+        db.execute("UPDATE student_sessions SET revoked_at = '2026'")
+    assert pupil.get('/api/internal/session/resolve', headers=app_headers()).json() == {'kind': 'anonymous'}
+
+
+def test_internal_resolve_ignores_forged_cookies(internal):
+    client = TestClient(internal.app)
+    client.headers['Cookie'] = 'edutictac_oidc=forged.value; edutictac_id=forged.value'
+    assert client.get('/api/internal/session/resolve', headers=app_headers()).json() == {'kind': 'anonymous'}
+
+
+def test_nginx_never_exposes_internal_routes():
+    root = Path(__file__).parents[1] / 'services/portal/nginx'
+    for name in ('default.conf', 'federated.conf'):
+        conf = (root / name).read_text()
+        assert 'location ^~ /api/internal/ { return 404; }' in conf, name
+        assert conf.index('/api/internal/') < conf.index('location /api/ {'), name

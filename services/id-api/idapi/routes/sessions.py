@@ -293,3 +293,28 @@ def central_logout(request: Request, response: Response, c: Commons = Depends(co
     for name in (SESSION_COOKIE, OIDC_COOKIE, TEACHER_COOKIE):
         response.delete_cookie(name, **c.cookies.delete_options())
     return {"ok": True}
+
+
+# --- Resolució interna per a aplicacions pròpies (Banc de recursos) -------
+#
+# L'app reenvia les galetes centrals de la persona i rep la identitat estable
+# amb què guarda les seues dades: el `sub` d'Authentik (igual en tots els
+# proveïdors, `hashed_user_id`) o la identitat de l'alumnat. Només amb el
+# testimoni d'aplicació i només per la xarxa interna: nginx la bloqueja fora.
+
+@router.get("/api/internal/session/resolve")
+def internal_session_resolve(request: Request, response: Response, c: Commons = Depends(commons)) -> dict[str, Any]:
+    c.auth.require_app_token(request)
+    no_store(response)
+    oidc = c.auth.oidc_cookie(request)
+    if oidc:
+        return {
+            "kind": "oidc",
+            "sub": str(oidc.get("sub") or ""),
+            "role": str(oidc.get("role") or "alumno"),
+            "display_name": display_name(oidc),
+        }
+    student = c.auth.current_identity(request)
+    if student:
+        return {"kind": "student", "id": student["id"], "public_code": student["public_code"]}
+    return {"kind": "anonymous"}
