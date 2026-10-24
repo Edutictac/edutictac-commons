@@ -53,7 +53,7 @@ def test_app_token_is_scoped_per_application():
         environment='development',
         session_secret='s' * 48,
         app_token='global-token',
-        app_tokens={'edutictac-play': 'play-token', 'edutictac-recursos': 'recursos-token'},
+        app_tokens={'edutictac-play': 'play-token', 'eduhoot': 'eduhoot-token'},
     )
     auth = Auth(settings, None, None)
 
@@ -61,10 +61,10 @@ def test_app_token_is_scoped_per_application():
         return SimpleNamespace(headers={'authorization': f'Bearer {token}'})
 
     auth.require_app_token(request('play-token'), 'edutictac-play')
-    auth.require_app_token(request('recursos-token'), 'edutictac-recursos')
+    auth.require_app_token(request('eduhoot-token'), 'eduhoot')
     auth.require_app_token(request('global-token'), 'edutictac-otra')
     auth.require_app_token(request('play-token'))  # ruta interna sense app_id
     with pytest.raises(HTTPException):
         auth.require_app_token(request('global-token'), 'edutictac-play')
     with pytest.raises(HTTPException):
-        auth.require_app_token(request('play-token'), 'edutictac-recursos')
+        auth.require_app_token(request('play-token'), 'eduhoot')

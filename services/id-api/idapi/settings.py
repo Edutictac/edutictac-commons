@@ -46,8 +46,9 @@ class Settings:
             teacher_token=env.get("EDUTICTAC_ID_TEACHER_TOKEN", ""),
             app_token=env.get("EDUTICTAC_ID_APP_TOKEN", ""),
             app_tokens={
-                name: env.get(f"{name.upper()}_ID_APP_TOKEN", "").strip()
-                for name in ("play", "recursos", "eduhoot")
+                "edutictac-play": env.get("PLAY_ID_APP_TOKEN", "").strip(),
+                "eduhoot": env.get("EDUHOOT_ID_APP_TOKEN", "").strip(),
+                "recursos": env.get("RECURSOS_ID_APP_TOKEN", "").strip(),
             },
             cookie_domain=env.get("EDUTICTAC_ID_COOKIE_DOMAIN", ""),
             cookie_secure=env.get("EDUTICTAC_ID_COOKIE_SECURE", "1") != "0",
