@@ -16,6 +16,9 @@ privada conserva l’autenticació.
   descàrrega d’imatges per Internet i valors inicials de la candidata 3.
 - No s’ha publicat en APT ni canviat la pàgina pública de descàrrega.
 
+Resultats i límits de les comprovacions en el
+[registre de preparació](../../docs/VALIDACIO-BETA4-PREPARACIO.md).
+
 ## Pendent abans de tancar beta4
 
 1. Incorporar el xip en Banc de recursos.
