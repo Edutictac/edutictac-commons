@@ -12,7 +12,7 @@ updates=importlib.util.module_from_spec(spec);spec.loader.exec_module(updates)
     ('0.1.1-alpha9','0.1.1-alpha10'),('0.1.1-alpha37','0.1.1-beta1'),
     ('0.1.1-beta2-candidate5','0.1.1-beta2'),('0.1.1-beta3-candidate1','0.1.1-beta3-candidate2'),
     ('0.1.1-beta3-candidate9','0.1.1-beta3-candidate10'),('0.1.1-beta3-candidate10','0.1.1-beta3'),
-    ('0.1.1-beta4','0.1.1-beta5-candidate1'),('0.1.1-beta5-candidate1','0.1.1-beta5'),('0.1.1-beta5','0.1.1-beta6'),('0.1.1-beta6','0.1.1-beta6.1'),
+    ('0.1.1-beta4','0.1.1-beta5-candidate1'),('0.1.1-beta5-candidate1','0.1.1-beta5'),('0.1.1-beta5','0.1.1-beta6'),('0.1.1-beta6','0.1.1-beta6.1'),('0.1.1-beta6.1','0.1.1-beta6.2'),
     ('0.1.1-beta3','0.1.1-beta4-candidate1'),('0.1.1-beta3','0.1.1-rc1'),
     ('0.1.1-rc1','0.1.1'),('0.1.1','0.1.2-alpha1'),('0.1.1-beta3','v0.1.1'),
 ])

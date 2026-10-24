@@ -1,7 +1,7 @@
 # EduTicTac Commons Stack Local
 
-Versió d’imatges: [0.1.1-beta6.1](releases/0.1.1-beta6.1/README.md).
-Instal·lador amd64 per a LliureX 23, Ubuntu i Debian: `0.1.1~beta6.1`.
+Versió d’imatges: [0.1.1-beta6.2](releases/0.1.1-beta6.2/README.md).
+Instal·lador amd64 per a LliureX 23, Ubuntu i Debian: `0.1.1~beta6.2`.
 La beta6.1 inclou l’estabilització de la pila, les xarxes Docker separades,
 l’accés per LAN amb mDNS/IP, el nom humà d’aula i el límit visible.
 La beta6 continua disponible com a versió anterior validada.
