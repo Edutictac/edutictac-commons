@@ -1,0 +1,15 @@
+{
+  "package": "edutictac-commons",
+  "version": "0.1.1~beta6.1",
+  "architecture": "amd64",
+  "filename": "edutictac-commons_0.1.1~beta6.1_amd64.deb",
+  "size": 5909832,
+  "sha256": "9205116a2537d729fcf8d088c9e20c12fbfc4068da20c577a14de328a8f478bb",
+  "source_revision": "2f67faa312346a4b6316b7f93991f96dfe3790e5",
+  "apt_signature_verified": true,
+  "publication_status": "published",
+  "native_validation": "passed-in-lliurex-upgrade",
+  "validated_installer_candidate": "0.1.1~beta6.1",
+  "validated_image_candidate": "0.1.1-beta6.1",
+  "url": "https://packages.edutictac.es/pool/main/e/edutictac-commons/edutictac-commons_0.1.1~beta6.1_amd64.deb"
+}
