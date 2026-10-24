@@ -231,3 +231,29 @@ test('sense theme-preference.js el xip es queda clar encara que el sistema siga 
   await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'dark'));
   await expect.poll(() => chip.evaluate(node => getComputedStyle(node).backgroundColor)).not.toBe(light);
 });
+
+test('abans d’entrar avisa l’app, que pot desar la feina i continuar ella', async ({ page }) => {
+  await mockSession(page, { session: anonymous, logouts: 0 });
+  await page.route('**/api/auth/oidc/login**', route => route.fulfill({ contentType: 'text/html', body: '<p id="login">login</p>' }));
+  await page.goto('/student.html?lang=ca');
+  await page.evaluate(() => {
+    window.addEventListener('edutictac:beforelogin', event => {
+      event.preventDefault();
+      window.savedBeforeLogin = event.detail.url;
+      setTimeout(() => location.assign(event.detail.url), 50);
+    });
+  });
+  await page.locator('edutictac-account summary').click();
+  await page.locator('edutictac-account').getByRole('menuitem', { name: /Professorat/ }).click();
+  await expect(page.locator('#login')).toBeVisible();
+  expect(page.url()).toContain('/api/auth/oidc/login');
+});
+
+test('sense ningú que cancel·le, l’enllaç d’entrar funciona com sempre', async ({ page }) => {
+  await mockSession(page, { session: anonymous, logouts: 0 });
+  await page.route('**/student.html', route => route.continue());
+  await page.goto('/teacher.html?lang=ca');
+  await page.locator('edutictac-account summary').click();
+  await page.locator('edutictac-account').getByRole('menuitem', { name: /Alumnat/ }).click();
+  await expect(page).toHaveURL(/student\.html$/);
+});

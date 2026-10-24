@@ -19,6 +19,8 @@
  * Només mostra la sessió: no protegix cap contingut. Emet
  * `edutictac:sessionchange` (detail = estat) quan canvia i escolta
  * `edutictac:sessionrefresh` per a tornar-la a consultar.
+ * Abans d'anar a entrar emet `edutictac:beforelogin` (cancel·lable, detail.url): una app
+ * que el cancel·la desa la feina i després navega ella mateixa a detail.url.
  */
 import {defineCustomElement} from 'vue';
 import AccountWidget from './AccountWidget.ce.vue';

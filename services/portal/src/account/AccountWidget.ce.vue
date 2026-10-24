@@ -123,6 +123,14 @@ async function logout() {
   else location.reload();
 }
 
+// Abans d'anar a entrar, l'app pot guardar la feina (Blocs desa el projecte obert):
+// si cancel·la l'esdeveniment, ella mateixa continua cap a `detail.url` quan acabe.
+function beforeLogin(event) {
+  const url = event.currentTarget.href;
+  const notice = new CustomEvent('edutictac:beforelogin', {cancelable: true, detail: {url}});
+  if (!window.dispatchEvent(notice)) event.preventDefault();
+}
+
 function chooseTheme(value) {
   theme.value = value;
   window.edutictacTheme?.remember?.(value);
@@ -226,8 +234,8 @@ onBeforeUnmount(() => {
           <a v-if="state.kind === 'oidc' && accountLink" class="eta-item" role="menuitem" :href="accountLink"><span>{{ t.account }}</span></a>
         </template>
         <template v-else-if="status === 'ready'">
-          <a class="eta-item" role="menuitem" :href="resolve(links.login || links.teacher)"><span>{{ t.teacherLogin }}</span><small>{{ t.teacherLoginHint }}</small></a>
-          <a class="eta-item" role="menuitem" :href="resolve(links.student)"><span>{{ t.studentLogin }}</span><small>{{ t.studentLoginHint }}</small></a>
+          <a class="eta-item" role="menuitem" :href="resolve(links.login || links.teacher)" @click="beforeLogin"><span>{{ t.teacherLogin }}</span><small>{{ t.teacherLoginHint }}</small></a>
+          <a class="eta-item" role="menuitem" :href="resolve(links.student)" @click="beforeLogin"><span>{{ t.studentLogin }}</span><small>{{ t.studentLoginHint }}</small></a>
         </template>
 
         <div v-if="languages.length > 1" class="eta-theme eta-language" role="radiogroup" :aria-label="t.language"
