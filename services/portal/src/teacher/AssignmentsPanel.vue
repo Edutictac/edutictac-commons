@@ -35,7 +35,7 @@ onBeforeUnmount(() => { alive = false; epoch++; });
     <template v-else>
       <p v-if="context.summary"><strong>{{ context.summary.active || 0 }}</strong> {{ t('teacher.activeOfTotal', {total: context.summary.total || 0}) }}</p>
       <div class="teacher-context">
-        <p>{{ t(context.group ? 'teacher.groupSelected' : 'teacher.noGroupSelected') }} <strong v-if="context.group">{{ context.group.group_code || context.group.name }}</strong></p>
+        <p>{{ t(context.group ? 'teacher.groupSelected' : 'teacher.noGroupSelected') }} <strong v-if="context.group">{{ context.group.label || context.group.group_code || context.group.name }}</strong></p>
         <p>{{ t(context.assignment ? 'teacher.activitySelected' : 'teacher.noActivitySelected') }} <strong v-if="context.assignment && context.dataReady">{{ context.assignments.find(item => item.id === context.assignment.id)?.title || '' }}</strong></p>
         <div class="export-actions" :aria-label="t('teacher.exports')">
           <template v-if="context.group">
@@ -51,7 +51,7 @@ onBeforeUnmount(() => { alive = false; epoch++; });
       <table v-else>
         <thead><tr><th>{{ t('common.title') }}</th><th>{{ t('common.group') }}</th><th>{{ t('common.activity') }}</th><th>{{ t('common.select') }}</th></tr></thead>
         <tbody><tr v-for="assignment in context.assignments" :key="assignment.id">
-          <td>{{ assignment.title }}</td><td>{{ context.groups.find(group => group.id === assignment.group_id)?.name || assignment.group_id }}</td><td>{{ assignment.activity_id }}</td>
+          <td>{{ assignment.title }}</td><td>{{ context.groups.find(group => group.id === assignment.group_id)?.label || context.groups.find(group => group.id === assignment.group_id)?.name || assignment.group_id }}</td><td>{{ assignment.activity_id }}</td>
           <td><button type="button" class="compact secondary" :data-select-assignment="assignment.id" :aria-pressed="context.assignment?.id === assignment.id" :disabled="pending" @click="select(assignment.id)">{{ t('common.select') }}</button></td>
         </tr></tbody>
       </table>

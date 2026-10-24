@@ -54,7 +54,7 @@ conega el nom, el correu ni cap identificador institucional de l'alumne/a.
 
 | Dada | Contingut | Observacions |
 |---|---|---|
-| Grups | `id` opac, codi de grup (`G7F4K2`), `tenant_id`, `created_by_teacher_id`, dates | El codi de grup és opac, no identifica cap aula real |
+| Grups | `id` opac, codi de grup (`G7F4K2`), etiqueta opcional, `tenant_id`, `created_by_teacher_id`, dates | El codi de grup és opac; l’etiqueta l’escriu el docent i no ha de contenir dades personals de l’alumnat |
 | Identitats | `id` opac, `public_code`, `pin_hash`, `active`, dates | **Mai** nom ni identificador d'alumne/a |
 | Sessions | `token_hash` (sha256), data d'expiració, `revoked_at` | La sessió no conté el codi en clar |
 | Puntuacions | `app_id`, `activity_id`, `assignment_id`, `score`, metadades, data | Vinculades a la identitat pseudònima |

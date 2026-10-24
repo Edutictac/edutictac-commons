@@ -75,7 +75,7 @@ onBeforeUnmount(() => { alive = false; epoch++; });
         <table v-else>
           <thead><tr><th>{{ t('teacher.groupOpaque') }}</th><th>{{ t('admin.owner') }}</th><th>{{ t('admin.collaborators') }}</th><th>{{ t('common.date') }}</th><th>{{ t('admin.manage') }}</th></tr></thead>
           <tbody><tr v-for="group in groups" :key="group.id">
-            <td>{{ group.group_code }}</td><td>{{ group.owner_id || t('admin.noOwner') }}</td><td>{{ group.collaborators }}</td><td>{{ (group.created_at || '').slice(0, 10) }}</td>
+            <td><strong v-if="group.label">{{ group.label }}</strong><span v-if="group.label"> · </span>{{ group.group_code }}</td><td>{{ group.owner_id || t('admin.noOwner') }}</td><td>{{ group.collaborators }}</td><td>{{ (group.created_at || '').slice(0, 10) }}</td>
             <td><button type="button" class="compact secondary" :data-admin-group="group.id" :aria-pressed="selected?.id === group.id" :disabled="pending" @click="manage(group)">{{ t('admin.manage') }}</button></td>
           </tr></tbody>
         </table>

@@ -52,7 +52,7 @@ def test_legacy_alpha_database_is_upgraded_without_losing_data(tmp_path, db_modu
             CREATE TABLE activity_assignments (id TEXT PRIMARY KEY, app_id TEXT NOT NULL, activity_id TEXT NOT NULL,
                 title TEXT NOT NULL DEFAULT '', group_id TEXT NOT NULL, created_by_teacher_id TEXT NOT NULL DEFAULT '',
                 active INTEGER NOT NULL DEFAULT 1, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
-            INSERT INTO groups VALUES ('g', 'GABCDE', 'centre', 'teacher-a', '2026-09-01', '2026-09-01');
+            INSERT INTO groups (id,name,tenant_id,created_by_teacher_id,created_at,updated_at) VALUES ('g', 'GABCDE', 'centre', 'teacher-a', '2026-09-01', '2026-09-01');
             INSERT INTO student_identities VALUES ('i', 'g', 'ABC', 'hash', 1, '2026-09-01', '2026-09-01', NULL);
             INSERT INTO scores VALUES ('s', 'i', 'eduhoot', 'quiz', 7, '{}', '2026-09-02');
             """
@@ -77,11 +77,11 @@ def test_beta2_schema_upgrades_additively_to_classroom_files(tmp_path, db_module
         apply_migrations(conn,db_module.NAMESPACE,db_module.MIGRATIONS[:1])
         conn.execute("INSERT INTO groups (id,created_at,updated_at) VALUES ('previous','x','x')")
     assert database.version()==1
-    assert database.migrate()==2
+    assert database.migrate()==db_module.SCHEMA_VERSION
     with database.connect() as conn:
         assert conn.execute("SELECT id FROM groups WHERE id='previous'").fetchone()['id']=='previous'
         assert conn.execute('SELECT COUNT(*) FROM classroom_files').fetchone()[0]==0
-    assert database.migrate()==2
+    assert database.migrate()==db_module.SCHEMA_VERSION
 
 
 def test_classroom_migration_rolls_back_incomplete_ddl(tmp_path,db_module):
@@ -94,7 +94,7 @@ def test_classroom_migration_rolls_back_incomplete_ddl(tmp_path,db_module):
     assert database.version()==1
     assert columns(database.path,'classroom_files')==set()
     with database.connect() as conn:conn.execute('DROP TABLE classroom_file_settings')
-    assert database.migrate()==2
+    assert database.migrate()==db_module.SCHEMA_VERSION
 
 
 def test_beta4_upgrade_preserves_classroom_files_and_adds_oidc_namespace(tmp_path, db_module):
@@ -107,8 +107,8 @@ def test_beta4_upgrade_preserves_classroom_files_and_adds_oidc_namespace(tmp_pat
             (id,group_id,scope,relative_path,storage_name,content_type,size,sha256,created_at,updated_at)
             VALUES ('file','previous','shared','lesson.txt','blob','text/plain',5,'hash','x','x')""")
         before = tuple(conn.execute("SELECT * FROM classroom_files").fetchone())
-    assert database.migrate() == 2
-    assert database.migrate() == 2
+    assert database.migrate() == db_module.SCHEMA_VERSION
+    assert database.migrate() == db_module.SCHEMA_VERSION
     with database.connect() as conn:
         assert tuple(conn.execute("SELECT * FROM classroom_files").fetchone()) == before
         assert current_version(conn, db_module.OIDC_NAMESPACE) == 1

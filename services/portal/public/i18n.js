@@ -4,7 +4,7 @@
   document.documentElement.classList.add("i18n-pending");
 
   var SUPPORTED_LANGS = ["ca", "va", "es", "en"];
-  var FALLBACK_LANG = "es";
+  var FALLBACK_LANG = "ca";
   var STORAGE_KEY = "edutictac-portal-lang";
   var SHARED_STORAGE_KEY = "edutictac-lang";
 
@@ -329,6 +329,9 @@
       "teacher.summary": "Resumen",
       "teacher.refreshDashboard": "Actualizar panel",
       "teacher.tenantLabel": "Nombre interno del centro",
+      "teacher.groupLabel": "Nombre del aula (opcional)",
+      "teacher.groupLabelPlaceholder": "Ej. 3.º A · Matemáticas",
+      "teacher.groupsLimit": "Mostrando {shown} de {total} aulas. Las más antiguas no se listan aquí.",
       "teacher.generateCredentials": "Generar credenciales",
       "teacher.addStudentsCount": "Nuevas identidades",
       "teacher.addStudents": "Añadir al grupo seleccionado",
@@ -835,6 +838,9 @@
       "teacher.summary": "Resum",
       "teacher.refreshDashboard": "Actualitzar tauler",
       "teacher.tenantLabel": "Nom intern del centre",
+      "teacher.groupLabel": "Nom de l’aula (opcional)",
+      "teacher.groupLabelPlaceholder": "Ex. 3r A · Matemàtiques",
+      "teacher.groupsLimit": "Es mostren {shown} de {total} aules. Les més antigues no es llisten ací.",
       "teacher.generateCredentials": "Generar credencials",
       "teacher.addStudentsCount": "Noves identitats",
       "teacher.addStudents": "Afegir al grup seleccionat",
@@ -1650,6 +1656,9 @@
       "teacher.summary": "Summary",
       "teacher.refreshDashboard": "Refresh dashboard",
       "teacher.tenantLabel": "Internal centre name",
+      "teacher.groupLabel": "Classroom name (optional)",
+      "teacher.groupLabelPlaceholder": "E.g. Year 3 A · Maths",
+      "teacher.groupsLimit": "Showing {shown} of {total} classrooms. Older ones are not listed here.",
       "teacher.generateCredentials": "Generate credentials",
       "teacher.addStudentsCount": "New identities",
       "teacher.addStudents": "Add to selected group",

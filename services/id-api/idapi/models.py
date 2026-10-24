@@ -29,6 +29,12 @@ class SetupActivationIn(BaseModel):
 
 class GroupIn(BaseModel):
     tenant_id: str = "default"
+    label: str = Field(default="", max_length=80)
+
+    @field_validator("label")
+    @classmethod
+    def _label(cls, value: str) -> str:
+        return (value or "").strip()[:80]
 
     @field_validator("tenant_id")
     @classmethod

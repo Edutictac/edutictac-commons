@@ -16,7 +16,7 @@ defineExpose({setContext});
       <button v-if="context.favoritesEnabled !== false" id="assignFavoriteResources" type="button" :disabled="unavailable || !basket || !rows.length" @click="assign()">{{ t('teacher.assignBasket') }}</button>
     </div>
   </form>
-  <p v-if="context.teacher && context.group">{{ t('teacher.groupSelected') }} <strong>{{ context.group.group_code || context.group.name }}</strong></p>
+  <p v-if="context.teacher && context.group">{{ t('teacher.groupSelected') }} <strong>{{ context.group.label || context.group.group_code || context.group.name }}</strong></p>
   <div id="resourcesOutput" class="output" :class="{empty: !rows.length}" :aria-busy="loading || pending">
     <p v-if="feedback" role="status">{{ t(feedback, {count: completedCount}) }}</p>
     <p v-if="pending" role="status">{{ t('teacher.assigningBasket') }}</p>

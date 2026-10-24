@@ -11,20 +11,22 @@ const freshPanel = ref(null);
 const hideFresh = () => { if (freshPanel.value) freshPanel.value.hidden = true; };
 window.addEventListener('pagehide', hideFresh);
 onBeforeUnmount(() => window.removeEventListener('pagehide', hideFresh));
-const {context, tenant, count, additionalCount, fresh, pending, feedback, identities, unavailable, setContext, create, add, regenerate, revoke} = useCredentials(props);
+const {context, tenant, label, count, additionalCount, fresh, pending, feedback, identities, unavailable, setContext, create, add, regenerate, revoke} = useCredentials(props);
 function print() { if (!printCredentials(fresh.value, context.value.group?.group_code, t)) feedback.value = 'teacher.credentialsPopupBlocked'; }
 function remove(identity) { revoke(identity, confirm(t('teacher.confirmRevoke', {label: identity.public_code}))); }
+function groupName(id) { const group = context.value.groups.find(item => item.id === id); return group?.label || group?.name || id; }
 defineExpose({setContext});
 </script>
 
 <template>
   <form class="grid-fields" @submit.prevent="create">
     <label><span>{{ t('teacher.tenantLabel') }}</span><input id="tenantId" v-model="tenant" type="text" maxlength="200" :disabled="unavailable"></label>
+    <label><span>{{ t('teacher.groupLabel') }}</span><input id="groupLabel" v-model="label" type="text" maxlength="80" :placeholder="t('teacher.groupLabelPlaceholder')" :disabled="unavailable"></label>
     <label><span>{{ t('common.students') }}</span><input id="identityCount" v-model.number="count" type="number" min="1" max="30" required :disabled="unavailable"></label>
     <div class="actions"><button id="createBatch" type="submit" :disabled="unavailable">{{ t('teacher.generateCredentials') }}</button></div>
   </form>
   <Teleport to="#credentialsDetails">
-  <p v-if="feedback" :role="feedback.includes('Error') || feedback.includes('Unavailable') || feedback.includes('loginFirst') || feedback.includes('Blocked') ? 'alert' : 'status'">{{ t(feedback) }} <strong v-if="feedback === 'teacher.groupCreated'">{{ context.group?.group_code }}</strong><strong v-else-if="feedback === 'teacher.pinRegenerated'">{{ fresh.at(-1)?.public_code }}</strong></p>
+  <p v-if="feedback" :role="feedback.includes('Error') || feedback.includes('Unavailable') || feedback.includes('loginFirst') || feedback.includes('Blocked') ? 'alert' : 'status'">{{ t(feedback) }} <strong v-if="feedback === 'teacher.groupCreated'">{{ context.group?.label || context.group?.group_code }}</strong><strong v-else-if="feedback === 'teacher.pinRegenerated'">{{ fresh.at(-1)?.public_code }}</strong></p>
   <section v-if="context.teacher && fresh.length" id="freshCredentials" ref="freshPanel" :aria-label="t('teacher.generateCredentials')">
     <p class="pin-notice">{{ t('teacher.credentialsFreshHint') }}</p>
     <div class="export-actions" :aria-label="t('teacher.exports')">
@@ -42,7 +44,7 @@ defineExpose({setContext});
     <table v-else>
       <thead><tr><th>{{ t('common.code') }}</th><th>{{ t('common.group') }}</th><th>{{ t('teacher.pinUpdated') }}</th><th>{{ t('teacher.credentialActions') }}</th></tr></thead>
       <tbody><tr v-for="identity in identities" :key="identity.id">
-        <td>{{ identity.public_code }}</td><td>{{ context.groups.find(group => group.id === identity.group_id)?.name || identity.group_name || identity.group_id }}</td><td>{{ identity.pin_rotated_at || '' }}</td>
+        <td>{{ identity.public_code }}</td><td>{{ groupName(identity.group_id) }}</td><td>{{ identity.pin_rotated_at || '' }}</td>
         <td><div class="inline-actions">
           <button type="button" class="compact secondary" :data-regenerate-pin="identity.id" :disabled="unavailable" @click="regenerate(identity)">{{ t('teacher.regeneratePin') }}</button>
           <button type="button" class="compact danger" :data-revoke-identity="identity.id" :disabled="unavailable" @click="remove(identity)">{{ t('teacher.revoke') }}</button>

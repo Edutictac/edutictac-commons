@@ -51,10 +51,19 @@ async function storageHasPins(page) {
   }, [SAMPLE_PIN, ROTATED_PIN]);
 }
 
+test('la etiqueta opcional de l’aula arriba a l’API', async ({page}) => {
+  const calls = await dashboard(page);
+  await page.locator('#groupLabel').fill('3r A · Ciències');
+  await page.locator('#identityCount').fill('1');
+  await page.locator('#identityCount').press('Enter');
+  await expect(page.locator('#freshCredentials .credential')).toHaveCount(1);
+  expect(calls.find(call => call.path === '/api/identities/batch').body).toMatchObject({label: '3r A · Ciències'});
+});
+
 test('crear aula, CSV explícit amb PIN i recàrrega sense credencials recuperables', async ({page}) => {
   const calls = await dashboard(page);
   await create(page);
-  expect(calls.find(call => call.path === '/api/identities/batch').body).toEqual({tenant_id: 'centre', count: 1, pin_length: 4});
+  expect(calls.find(call => call.path === '/api/identities/batch').body).toEqual({tenant_id: 'centre', label: '', count: 1, pin_length: 4});
   await expect(page.locator('[data-select-group=created]')).toHaveAttribute('aria-pressed', 'true');
   expect(await storageHasPins(page)).toBe(false);
   expect(await page.evaluate(async () => (await indexedDB.databases()).length)).toBe(0);

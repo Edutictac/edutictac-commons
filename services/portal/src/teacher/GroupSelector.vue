@@ -52,12 +52,13 @@ onBeforeUnmount(() => { alive = false; epoch++; });
       <p v-if="!context.teacher">{{ t('teacher.errors.loginFirst') }}</p>
       <p v-else-if="!context.groups.length">{{ t('common.tableEmpty') }}</p>
       <table v-else>
-        <thead><tr><th>{{ t('teacher.groupOpaque') }}</th><th>{{ t('teacher.tenant') }}</th><th>{{ t('teacher.active') }}</th><th>{{ t('common.select') }}</th></tr></thead>
+        <thead><tr><th>{{ t('teacher.groupLabel') }}</th><th>{{ t('teacher.tenant') }}</th><th>{{ t('teacher.active') }}</th><th>{{ t('common.select') }}</th></tr></thead>
         <tbody><tr v-for="group in context.groups" :key="group.id">
-          <td>{{ group.name }}</td><td>{{ group.tenant_id }}</td><td>{{ group.active ?? 0 }}</td>
+          <td><strong v-if="group.label">{{ group.label }}</strong><span v-if="group.label" class="hint"> · </span>{{ group.name }}</td><td>{{ group.tenant_id }}</td><td>{{ group.active ?? 0 }}</td>
           <td><button type="button" class="compact secondary" :data-select-group="group.id" :aria-pressed="context.group?.id === group.id" :disabled="pending" @click="select(group.id)">{{ t('common.select') }}</button></td>
         </tr></tbody>
       </table>
+      <p v-if="context.teacher && context.groupsTotal > context.groups.length" class="hint">{{ t('teacher.groupsLimit', {shown: context.groups.length, total: context.groupsTotal}) }}</p>
     </div>
     <div class="actions"><button id="deleteGroup" type="button" class="danger" :disabled="!context.teacher || !context.group || pending" @click="remove">{{ t('teacher.deleteGroup') }}</button></div>
   </section>

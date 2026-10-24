@@ -4,6 +4,7 @@ const state = {
   teacher: false,
   group: null,
   groups: [],
+  groupsTotal: 0,
   identities: [],
   assignment: null,
   assignments: [],
@@ -30,7 +31,7 @@ let teacherDataSequence = 0, identityStatusSequence = 0;
 let studentPanel = null;
 
 function syncTeacherPanels() {
-  const context = {teacher: state.teacher, group: state.group, groups: state.groups,
+  const context = {teacher: state.teacher, group: state.group, groups: state.groups, groupsTotal: state.groupsTotal,
     assignments: state.assignments, assignment: state.assignment, identities: state.identities, summary: state.summary, dataReady: state.dataReady, resourcesEnabled: !state.enabledModules || state.enabledModules.has("recursos"), favoritesEnabled: !federated || deployment.bankFavorites === true};
   itinerariesPanel?.setContext(context);
   groupsPanel?.setContext(context);
@@ -46,7 +47,7 @@ function syncTeacherPanels() {
 async function selectTeacherGroup(id) {
   const group = state.groups.find(item => item.id === id);
   if (!group || !state.teacher) return;
-  state.group = {id: group.id, group_code: group.name, tenant_id: group.tenant_id};
+  state.group = {id: group.id, group_code: group.name, label: group.label || '', tenant_id: group.tenant_id};
   state.assignment = null;
   saveState();
   await refreshDashboard();
@@ -58,7 +59,7 @@ async function selectTeacherAssignment(id) {
   if (!assignment) return;
   const group = state.groups.find(item => item.id === assignment.group_id);
   state.assignment = assignment;
-  if (group) state.group = {id: group.id, group_code: group.name, tenant_id: group.tenant_id};
+  if (group) state.group = {id: group.id, group_code: group.name, label: group.label || '', tenant_id: group.tenant_id};
   saveState();
   if (has("itinerariesOutput")) await loadItineraries();
 }
@@ -366,6 +367,7 @@ async function teacherSummary() {
   const summary = await api("/api/teacher/summary", {method: "GET"});
   if (!state.teacher) return;
   state.groups = summary.groups || [];
+  state.groupsTotal = summary.groups_total ?? state.groups.length;
   state.summary = summary;
   syncTeacherPanels();
 }
@@ -386,12 +388,13 @@ async function loadTeacherData() {
   const [summary, assignmentData, identityData] = data;
   state.summary = summary; state.dataReady = true;
   state.groups = summary.groups || [];
+  state.groupsTotal = summary.groups_total ?? state.groups.length;
   state.assignments = assignmentData.assignments || [];
   state.identities = identityData.identities || [];
   if (state.group) {
     const freshGroup = state.groups.find((group) => group.id === state.group.id);
     if (freshGroup) {
-      state.group = { id: freshGroup.id, group_code: freshGroup.name, tenant_id: freshGroup.tenant_id };
+      state.group = { id: freshGroup.id, group_code: freshGroup.name, label: freshGroup.label || '', tenant_id: freshGroup.tenant_id };
     }
   }
   if (state.assignment) {
@@ -413,8 +416,9 @@ async function refreshDashboard() {
 
 function afterClassCreated({group, count}) {
   state.group = group;
-  state.groups = [{id: group.id, name: group.group_code, tenant_id: group.tenant_id, active: count},
+  state.groups = [{id: group.id, name: group.group_code, label: group.label || '', tenant_id: group.tenant_id, active: count},
     ...state.groups.filter(item => item.id !== group.id)];
+  state.groupsTotal = Math.max(state.groupsTotal, state.groups.length);
   state.identities = []; state.assignment = null; state.assignments = [];
   saveState();
 }

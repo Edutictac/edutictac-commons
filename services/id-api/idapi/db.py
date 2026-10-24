@@ -259,9 +259,15 @@ def _oidc_sessions(conn: sqlite3.Connection) -> None:
     )
 
 
+def _group_labels(conn: sqlite3.Connection) -> None:
+    if "label" not in _columns(conn, "groups"):
+        conn.execute("ALTER TABLE groups ADD COLUMN label TEXT NOT NULL DEFAULT ''")
+
+
 MIGRATIONS = [
     Migration(1, _baseline),
     Migration(2, _classroom_files),
+    Migration(3, _group_labels),
 ]
 SCHEMA_VERSION = MIGRATIONS[-1].version
 

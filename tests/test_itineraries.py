@@ -25,7 +25,7 @@ def api(tmp_path, monkeypatch):
     client.headers["Authorization"] = "Bearer test-only-teacher"
     with module.get_conn() as conn:
         for group, teacher in [("group", "teacher-token"), ("other", "other-teacher")]:
-            conn.execute("INSERT INTO groups VALUES (?, ?, 'test', ?, '2026-10-17', '2026-10-17')", (group, group, teacher))
+            conn.execute("INSERT INTO groups (id,name,tenant_id,created_by_teacher_id,created_at,updated_at) VALUES (?, ?, 'test', ?, '2026-10-17', '2026-10-17')", (group, group, teacher))
         for assignment, group, active in [("a", "group", 1), ("b", "group", 1), ("c", "group", 1), ("foreign", "other", 1), ("inactive", "group", 0)]:
             conn.execute(
                 """INSERT INTO activity_assignments

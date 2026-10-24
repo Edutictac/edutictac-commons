@@ -2,7 +2,7 @@ import {computed, onBeforeUnmount, ref, shallowRef} from 'vue';
 
 export function useCredentials({api, onCreated, onRefresh, onSessionExpired}) {
   const context = shallowRef({teacher: false, group: null, identities: [], groups: []});
-  const tenant = ref('centre'), count = ref(6), additionalCount = ref(6);
+  const tenant = ref('centre'), label = ref(''), count = ref(6), additionalCount = ref(6);
   const fresh = ref([]), pending = ref(false), blocked = ref(false), feedback = ref('');
   const identities = computed(() => context.value.teacher ? context.value.identities.filter(item => !context.value.group || item.group_id === context.value.group.id) : []);
   const unavailable = computed(() => !context.value.teacher || pending.value || blocked.value);
@@ -53,7 +53,7 @@ export function useCredentials({api, onCreated, onRefresh, onSessionExpired}) {
   function create() {
     if (!Number.isInteger(count.value) || count.value < 1 || count.value > 30) { feedback.value = 'teacher.credentialsCountError'; return; }
     return run(async scope => {
-      const batch = await api('/api/identities/batch', {method: 'POST', body: JSON.stringify({tenant_id: tenant.value.trim() || 'centre', count: count.value, pin_length: 4})});
+      const batch = await api('/api/identities/batch', {method: 'POST', body: JSON.stringify({tenant_id: tenant.value.trim() || 'centre', label: label.value.trim(), count: count.value, pin_length: 4})});
       if (!scope.current()) return;
       const items = batchItems(batch);
       // Only group metadata crosses into the legacy portal, never the PINs.
@@ -103,5 +103,5 @@ export function useCredentials({api, onCreated, onRefresh, onSessionExpired}) {
   }
   window.addEventListener('pagehide', pagehide);
   onBeforeUnmount(() => { alive = false; pagehide(); window.removeEventListener('pagehide', pagehide); });
-  return {context, tenant, count, additionalCount, fresh, pending, blocked, feedback, identities, unavailable, setContext, create, add, regenerate, revoke};
+  return {context, tenant, label, count, additionalCount, fresh, pending, blocked, feedback, identities, unavailable, setContext, create, add, regenerate, revoke};
 }

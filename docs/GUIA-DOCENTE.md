@@ -17,13 +17,18 @@ Google. El alumnado utiliza sus credenciales pseudónimas de Commons.
 
 Desde el panel docente:
 
-1. Crea un grupo para la clase o selecciona uno existente.
+1. Crea un grupo para la clase o selecciona uno existente. El **nombre del
+   aula** es opcional: sirve para reconocerla en el panel; el código opaco
+   sigue siendo el identificador real.
 2. Genera las credenciales del alumnado.
 3. Descarga o imprime las tarjetas con el código y el PIN.
 4. Entrega cada tarjeta al alumno correspondiente.
 
 El código identifica al alumno dentro de Commons sin mostrar su nombre. El PIN
 solo se muestra al generarlo o regenerarlo; si se pierde, genera uno nuevo.
+
+El panel muestra hasta 20 aulas. Si tienes más, aparece un aviso con el total;
+las más antiguas no se listan en esa vista.
 
 ## 3. Buscar actividades en Recursos
 

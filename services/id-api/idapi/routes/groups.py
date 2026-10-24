@@ -47,16 +47,16 @@ def generate_identities(c: Commons, conn: sqlite3.Connection, group_id: str, cou
     return generated
 
 
-def insert_group(conn: sqlite3.Connection, tenant_id: str, teacher_id: str, ts: str) -> tuple[str, str]:
+def insert_group(conn: sqlite3.Connection, tenant_id: str, teacher_id: str, ts: str, label: str = "") -> tuple[str, str]:
     """Crea l'aula i registra qui la crea com a propietari."""
     group_id = secrets.token_urlsafe(10)
     group_code = make_group_code()
     conn.execute(
         """
-        INSERT INTO groups (id, name, tenant_id, created_by_teacher_id, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?)
+        INSERT INTO groups (id, name, label, tenant_id, created_by_teacher_id, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
         """,
-        (group_id, group_code, tenant_id, teacher_id, ts, ts),
+        (group_id, group_code, label.strip()[:80], tenant_id, teacher_id, ts, ts),
     )
     conn.execute(
         "INSERT INTO group_memberships (group_id, teacher_id, role, created_at) VALUES (?, ?, 'owner', ?)",
@@ -79,8 +79,8 @@ def accessible_group(conn: sqlite3.Connection, group_id: str, teacher_id: str, c
 def create_group(payload: GroupIn, request: Request, c: Commons = Depends(commons)) -> dict[str, Any]:
     teacher_id = c.auth.require_teacher(request)
     with c.connect() as conn:
-        group_id, group_code = insert_group(conn, payload.tenant_id, teacher_id, iso_now())
-    return {"id": group_id, "group_code": group_code, "tenant_id": payload.tenant_id}
+        group_id, group_code = insert_group(conn, payload.tenant_id, teacher_id, iso_now(), payload.label)
+    return {"id": group_id, "group_code": group_code, "label": payload.label, "tenant_id": payload.tenant_id}
 
 
 @router.get("/api/teacher/groups/{group_id}/members")
@@ -154,7 +154,7 @@ def admin_groups(request: Request, c: Commons = Depends(commons)) -> dict[str, A
     with c.connect() as conn:
         rows = conn.execute(
             """
-            SELECT g.id, g.name, g.tenant_id, g.created_by_teacher_id, g.created_at,
+            SELECT g.id, g.name, g.label, g.tenant_id, g.created_by_teacher_id, g.created_at,
                    (SELECT COUNT(*) FROM group_memberships m
                     WHERE m.group_id = g.id AND m.role <> 'owner') AS collaborators
             FROM groups g
@@ -167,6 +167,7 @@ def admin_groups(request: Request, c: Commons = Depends(commons)) -> dict[str, A
             {
                 "id": row["id"],
                 "group_code": row["name"],
+                "label": row["label"],
                 "tenant_id": row["tenant_id"],
                 "owner_id": row["created_by_teacher_id"] or "",
                 "collaborators": int(row["collaborators"] or 0),
@@ -318,11 +319,16 @@ def teacher_summary(request: Request, c: Commons = Depends(commons)) -> dict[str
             """,
             teacher_params(teacher_id),
         ).fetchone()
+        groups_total = conn.execute(
+            f"SELECT COUNT(*) FROM groups g WHERE {member_of('g.id')}",
+            teacher_params(teacher_id),
+        ).fetchone()[0]
         groups = conn.execute(
             f"""
             SELECT
                 g.id,
                 g.name,
+                g.label,
                 g.tenant_id,
                 g.created_at,
                 COUNT(i.id) AS total,
@@ -330,7 +336,7 @@ def teacher_summary(request: Request, c: Commons = Depends(commons)) -> dict[str
             FROM groups g
             LEFT JOIN student_identities i ON i.group_id = g.id
             WHERE {member_of("g.id")}
-            GROUP BY g.id, g.name, g.tenant_id, g.created_at
+            GROUP BY g.id, g.name, g.label, g.tenant_id, g.created_at
             ORDER BY g.created_at DESC
             LIMIT 20
             """,
@@ -340,10 +346,12 @@ def teacher_summary(request: Request, c: Commons = Depends(commons)) -> dict[str
         "total": int(totals["total"] or 0),
         "active": int(totals["active"] or 0),
         "inactive": int(totals["inactive"] or 0),
+        "groups_total": int(groups_total or 0),
         "groups": [
             {
                 "id": row["id"],
                 "name": row["name"],
+                "label": row["label"],
                 "tenant_id": row["tenant_id"],
                 "created_at": row["created_at"],
                 "total": int(row["total"] or 0),

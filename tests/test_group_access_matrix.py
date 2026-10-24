@@ -102,8 +102,8 @@ def load(tmp_path, monkeypatch):
     with module.get_conn() as db:
         db.executescript(
             """
-            INSERT INTO groups VALUES ('G', 'GAAAAA', 't', 'owner', '2026', '2026');
-            INSERT INTO groups VALUES ('H', 'GBBBBB', 't', 'stranger', '2026', '2026');
+            INSERT INTO groups (id,name,tenant_id,created_by_teacher_id,created_at,updated_at) VALUES ('G', 'GAAAAA', 't', 'owner', '2026', '2026');
+            INSERT INTO groups (id,name,tenant_id,created_by_teacher_id,created_at,updated_at) VALUES ('H', 'GBBBBB', 't', 'stranger', '2026', '2026');
             INSERT INTO group_memberships VALUES ('G', 'owner', 'owner', '2026');
             INSERT INTO group_memberships VALUES ('G', 'member', 'teacher', '2026');
             INSERT INTO group_memberships VALUES ('H', 'stranger', 'owner', '2026');
@@ -201,7 +201,7 @@ def test_admin_rescues_orphaned_classroom_without_reading_pupil_data(api):
 
     listed = {group["id"]: group for group in admin.get("/api/admin/groups").json()["groups"]}
     assert listed["G"]["owner_id"] == "owner" and listed["G"]["collaborators"] == 1
-    assert set(listed["G"]) == {"id", "group_code", "tenant_id", "owner_id", "collaborators", "created_at"}
+    assert set(listed["G"]) == {"id", "group_code", "label", "tenant_id", "owner_id", "collaborators", "created_at"}
     assert admin.get("/api/teacher/activity-assignments/aG2/results").status_code == 404
 
     stale = admin.put("/api/teacher/groups/G/owner", json={"teacher_id": "member", "expected_owner_id": "someone"})
