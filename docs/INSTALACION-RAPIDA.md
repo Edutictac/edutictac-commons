@@ -3,7 +3,7 @@
 Guía para la persona que prepara el ordenador del centro. El alumnado no
 necesita instalar Commons: accede desde su navegador.
 
-**Beta 4 en preparación:** el instalador definitivo todavía no está publicado.
+**Beta 5 en preparación:** el instalador definitivo todavía no está publicado.
 Esta guía corresponde a `0.1.1~beta5`; la página pública de descarga se
 actualizará cuando termine su validación.
 
@@ -20,8 +20,10 @@ actualizará cuando termine su validación.
 ## Primera instalación
 
 1. **Descarga el instalador** desde la [página oficial de Commons](https://edutictac.es/instala-commons.html)
-   cuando anuncie la beta 3. Guárdalo en el ordenador que funcionará como servidor.
-2. **Instala el paquete.** Abre una terminal en la carpeta donde lo has
+   cuando anuncie la beta 5. Guárdalo en el ordenador que funcionará como servidor.
+2. **Añade el [repositorio APT oficial](ubuntu-package.md)** para obtener también
+   las dependencias de cifrado que faltan en algunos espejos LliureX.
+   **Instala el paquete.** Abre una terminal en la carpeta donde lo has
    descargado y ejecuta:
 
    ```bash
@@ -65,8 +67,11 @@ El acceso al alumnado es mediante código y PIN; no necesita una cuenta docente.
 1. Crea y verifica una copia de seguridad desde Administración. Conserva
    también una copia fuera del ordenador servidor.
 2. Instala el nuevo paquete con el mismo comando de instalación.
-3. En Administración, comprueba y actualiza las imágenes de las aplicaciones.
-4. Abre el portal y comprueba un aula y sus trabajos anteriores.
+3. Configura la clave pública de cifrado de backups y conserva la privada
+   fuera del servidor, siguiendo [BACKUPS.md](BACKUPS.md). La beta5 exige
+   cifrado antes de crear la copia previa de una actualización.
+4. En Administración, comprueba y actualiza las imágenes de las aplicaciones.
+5. Abre el portal y comprueba un aula y sus trabajos anteriores.
 
 **Actualizar el instalador y actualizar las aplicaciones son dos pasos.**
 El paquete conserva la configuración, las credenciales y las aplicaciones
