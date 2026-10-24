@@ -111,3 +111,22 @@ def test_database_images_are_pinned_to_tested_release_digests():
     compose = (root / 'compose.yml').read_text()
     assert 'image: ' + release['images']['authentik-postgresql'] in compose
     assert 'image: ' + release['images']['eduhoot-mongo'] in compose
+
+
+def test_backup_encryption_is_required_on_fresh_install_and_upgrade(tmp_path):
+    for existing in (False, True):
+        path = tmp_path / ("upgrade.env" if existing else "fresh.env")
+        path.touch(mode=0o600)
+        values = configure(path, existing=existing)
+        assert values["BACKUP_ENCRYPTION_REQUIRED"] == "1"
+        assert values["EDUTICTAC_ENV"] == "production"
+        assert all(len(values[name]) >= 24 for name in
+                   ("PLAY_ID_APP_TOKEN", "RECURSOS_ID_APP_TOKEN", "EDUHOOT_ID_APP_TOKEN"))
+
+
+def test_installer_preserves_external_backup_key_configuration(tmp_path):
+    path = tmp_path / "existing.env"
+    path.write_text("BACKUP_ENCRYPTION_REQUIRED=1\nBACKUP_AGE_RECIPIENT=age-public-fixture\n")
+    values = configure(path, existing=True)
+    assert values["BACKUP_ENCRYPTION_REQUIRED"] == "1"
+    assert values["BACKUP_AGE_RECIPIENT"] == "age-public-fixture"

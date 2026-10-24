@@ -40,6 +40,7 @@ text = path.read_text(encoding="utf-8")
 previous_module_selection = any(line.startswith("MODULES_CONFIGURED=") for line in text.splitlines())
 values = {
     "EDUTICTAC_ENV": "production",
+    "BACKUP_ENCRYPTION_REQUIRED": "1",
     "REPO_DIR": "/opt/edutictac-commons",
     "IMAGE_REGISTRY": "registry.edutictac.es/edutictac",
     "IMAGE_TAG": "0.1.1-beta5",
@@ -74,6 +75,7 @@ values = {
 }
 replace_if = {
     "EDUTICTAC_ENV": {"", "development"},
+    "BACKUP_ENCRYPTION_REQUIRED": {""},
     "REPO_DIR": {"", "/opt/edutictac-commons"},
     "IMAGE_REGISTRY": {"edutictac", ""},
     "IMAGE_TAG": {"", "0.1.1-alpha", "0.1.1-alpha10", "0.1.1-alpha14", "0.1.1-alpha15", "0.1.1-alpha16"},
