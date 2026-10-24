@@ -206,5 +206,4 @@ onBeforeUnmount(() => {
       <img id="previewImage" :src="previewUrl || undefined" :alt="previewName">
     </dialog>
   </main>
-  <footer v-if="federated && !picking" class="admin-entry"><a href="/privacy.html">{{ t('privacy.title') }}</a></footer>
 </template>
