@@ -7,6 +7,54 @@ el 22-10-2026; pendiente la aceptación humana del acceso docente y aula.**
 EduTicTac está en uso: avanzar paso a paso. Cada fase se
 ejecuta solo tras confirmación explícita.
 
+## Actualización a beta 4 del 24-10-2026
+
+Desplegada en `https://commons.edutictac.es/` tras autorización expresa para
+actualizar con copia de seguridad. Portal y API de identidad usan las imágenes
+`commons-portal:0.1.1-beta4-federated1` y
+`commons-id-api:0.1.1-beta4-federated1` de `registry.edutictac.es/edutictac`.
+Esta variante conserva las correcciones de orígenes CORS e IP real que ya estaban
+en producción. No cambia el paquete ni las etiquetas de la beta 4 publicada.
+
+- Antes del cambio: copias cifradas de configuración, base de identidad e
+  imágenes Docker anteriores, transferidas al NAS y verificadas mediante lectura,
+  descifrado e integridad SQLite. También se verificó allí la instantánea tomada
+  con la API detenida, justo antes de migrar.
+- Ensayo aislado sin red: migración a esquema `id-api` 2, conservación de todos
+  los datos existentes y arranque de la imagen anterior sobre la base migrada.
+- Resultado: datos existentes preservados, integridad SQLite correcta, entorno
+  y configuración pública conservados. Solo se recrearon portal e identidad;
+  los demás contenedores conservaron su inicio y estado.
+- El límite de subida de 110 MB se aplica únicamente a las rutas de archivos de
+  aula en ambos proxies. Las demás rutas conservan sus límites. El proxy interior
+  mantiene la IP real establecida por el proxy exterior de confianza.
+- La copia automática incluye el almacenamiento persistente de archivos del aula
+  y se ejecutó correctamente tras actualizar.
+- Comprobaciones HTTPS: portada beta 4, accesos docente/alumnado, Rebost y salud
+  de API; origen del Banc permitido y origen ajeno rechazado. Administración,
+  configuración local y rutas internas siguen sin exponerse.
+- Validación previa: 87 pruebas Python, 72 pruebas de navegador y 2 pruebas
+  específicas del proxy. Las comprobaciones de producción no crean alumnado ni
+  modifican trabajos reales. No sustituyen la aceptación humana del acceso OIDC.
+
+Resguardo del servidor:
+`/opt/edutictac-id-api/backups/beta4-production-20261024T142017Z`.
+La copia externa está en el NAS, directorio
+`05_Backups/edutictac/commons-beta4-production-20261024T142017Z`.
+Contienen configuración sensible: mantener permisos restrictivos y cifrado;
+no adjuntarlos a incidencias ni al repositorio.
+
+Para volver atrás, restaurar las configuraciones originales y las dos imágenes
+anteriores registradas en el resguardo, recrear únicamente esos dos servicios y
+validar nginx antes de recargarlo. La compatibilidad de la imagen anterior con
+la base migrada se comprobó: **no restaurar automáticamente una base anterior**,
+pues se perderían las escrituras realizadas después del cambio. Las copias de
+base son una recuperación de último recurso. El registro privado de la operación
+incluye el resultado y los identificadores exactos de las imágenes.
+
+Acceso SSH verificado para esta operación: puerto **22**. Las referencias al
+puerto 2222 en la situación histórica siguiente no son el procedimiento actual.
+
 ## Objetivo
 
 Las aplicaciones conservan sus URL y siguen funcionando solas. Commons añade la
