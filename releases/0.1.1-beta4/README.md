@@ -12,7 +12,7 @@ d’imatges per Internet. La publicació APT i la web pública estan pendents.
 
 ## Estat de la preparació
 
-**Banc i peu comú integrats; pendent completar la validació final.** La web
+**Banc i peu comú integrats; validació LliureX completada.** La web
 retira les maquetes antigues dels taulers i conserva els accessos als de Commons.
 No s’ha publicat el paquet en APT ni actualitzat
 la web pública en esta preparació.
@@ -35,4 +35,5 @@ Això conserva els secrets, les aules i la selecció de mòduls.
 La validació anterior de [beta3](../../docs/VALIDACIO-BETA3-LLIUREX.md) és el
 punt de partida. Les comprovacions automatitzades es fan en entorns aïllats. La instal·lació
 neta, els recorreguts docent/alumnat, la restauració i el reinici de la versió
-definitiva en LliureX queden pendents de completar la passada final.
+en LliureX s’han comprovat. Resultats i abast en el
+[registre de validació beta4](../../docs/VALIDACIO-BETA4-LLIUREX.md).
