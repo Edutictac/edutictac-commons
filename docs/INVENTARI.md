@@ -125,8 +125,14 @@ Variables principals:
   PIN Commons; si val `1`, exigeix codi + PIN Commons.
 - `EDUHOOT_PUBLIC_IMPORT_SOURCE`: font d'importació d'activitats públiques
   d'EduHoot; buit desactiva la funció.
-- `ADMIN_OIDC_USERNAME`: identitat Authentik autoritzada per al panell `/admin`;
-  per defecte `akadmin`.
+- `ADMIN_OIDC_USERNAME`: usuari Authentik de bootstrap admès al panell
+  `/admin` a més de qualsevol compte amb rol `administrador`; per defecte
+  `akadmin`.
+- `EDUTICTAC_ENV`: `development` en demo local; `production` en un centre.
+  En producció l'API refusa arrancar amb els secrets de demo.
+- `PLAY_ID_APP_TOKEN`, `RECURSOS_ID_APP_TOKEN`, `EDUHOOT_ID_APP_TOKEN`:
+  credencials internes per aplicació; si falten, s'usa
+  `EDUTICTAC_ID_APP_TOKEN`.
 - `ADMIN_PORT`: port del panell `/admin` al host (només `127.0.0.1`).
 
 En qualsevol entorn que no siga demo local cal canviar
@@ -198,7 +204,7 @@ PIN, EduHoot valida contra `id-api`, no demana cap nom addicional i envia la
 puntuació final a Commons per `/api/apps/eduhoot/scores` amb
 `EDUTICTAC_ID_APP_TOKEN`.
 
-El panell `/admin` (`http://127.0.0.1:8091/`) mostra l'estat agregat: versió
+El panell `/admin` (via portal, només localhost/Tailnet/túnel) mostra l'estat agregat: versió
 instal·lada, serveis actius, últim backup, cobertura i estat del timer de
 backup automàtic. També permet crear backups, restaurar una còpia seleccionada
 i activar/desactivar el timer.
@@ -249,14 +255,21 @@ del canal:
 `make update-images` és el flux segur actual:
 
 1. backup nou i verificable (`backup.sh` + `backup-check.sh`);
-2. detecció del candidat del canal i actualització local de `IMAGE_TAG` /
+2. captura dels digests de les imatges actuals a `update.json`;
+3. detecció del candidat del canal i actualització local de `IMAGE_TAG` /
    `ADMIN_TAG` / `EDUHOOT_TAG` en `.env` (`apply-update-tags.py`);
-3. verificació amb `check-images.sh` que totes les imatges (incloent-hi
+4. verificació amb `check-images.sh` que totes les imatges (incloent-hi
    `commons-admin`) existeixen al registre abans de tocar res més;
-4. descàrrega de noves imatges;
-5. reinici controlat amb `docker compose up -d --wait --no-build`;
-6. healthchecks;
-7. `test-flow` final.
+5. descàrrega de noves imatges i resolució dels digests remots;
+6. `image-digests.py pin`: es descarrega cada digest i es reetiqueta amb el
+   tag de compose, de manera que el reinici no depén d'un tag mòbil;
+7. reinici controlat amb `docker compose up -d --wait --no-build`;
+8. healthchecks;
+9. `test-flow` final.
+
+Si falla qualsevol pas després de canviar tags, `update-images.sh` crida
+`rollback-images.sh` amb el backup previ; el rollback fixa els digests
+antics (`previous_images`) i no torna a descarregar tags mòbils.
 
 `make rollback-images BACKUP=commons-<stamp>` segueix el mateix patró amb els
 tags guardats en `update.json` del backup indicat, i també passa per
@@ -336,6 +349,19 @@ sudo env PWD=/opt/edutictac-commons docker compose --env-file .env -f compose.ym
   admin` (o equivalent) quan es recrea el contenidor `admin` a mà. Es pot
   comprovar amb `docker exec edutictac-commons-admin-1 sh -c 'echo
   $REPO_DIR'`.
+
+## TLS i ingress
+
+Producció (`commons.edutictac.es`) usa nginx del host amb TLS, HSTS,
+`Permissions-Policy` i CSP conservadora; els serveis escolten en loopback. La
+configuració de referència és `services/portal/nginx/production-vhost.conf`.
+
+En centres, el portal i les apps continuen publicant ports directes en HTTP.
+Per a exposició exterior cal un proxy invers amb TLS i filtrar els ports
+`8084`, `8086`, `8090`, `8098`, `9000` i `9443`. Hi ha un perfil opcional `compose.ingress.yml` amb Caddy per al portal:
+`make up-ingress`, CA interna per a `edutictac.local` (`make ingress-ca`) o
+ACME amb `Caddyfile.acme` i un domini públic. L'ingress cobreix el portal; les
+apps continuen publicant ports directes i cal un proxy propi per a elles.
 
 ## Riscos operatius
 

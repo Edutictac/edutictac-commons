@@ -95,3 +95,21 @@ def test_classroom_migration_rolls_back_incomplete_ddl(tmp_path,db_module):
     assert columns(database.path,'classroom_files')==set()
     with database.connect() as conn:conn.execute('DROP TABLE classroom_file_settings')
     assert database.migrate()==2
+
+
+def test_beta4_upgrade_preserves_classroom_files_and_adds_oidc_namespace(tmp_path, db_module):
+    from edutictac_community.migrations import apply_migrations, current_version
+    database = db_module.Database(str(tmp_path / 'beta4.db'))
+    with database.connect() as conn:
+        apply_migrations(conn, db_module.NAMESPACE, db_module.MIGRATIONS)
+        conn.execute("INSERT INTO groups (id,created_at,updated_at) VALUES ('previous','x','x')")
+        conn.execute("""INSERT INTO classroom_files
+            (id,group_id,scope,relative_path,storage_name,content_type,size,sha256,created_at,updated_at)
+            VALUES ('file','previous','shared','lesson.txt','blob','text/plain',5,'hash','x','x')""")
+        before = tuple(conn.execute("SELECT * FROM classroom_files").fetchone())
+    assert database.migrate() == 2
+    assert database.migrate() == 2
+    with database.connect() as conn:
+        assert tuple(conn.execute("SELECT * FROM classroom_files").fetchone()) == before
+        assert current_version(conn, db_module.OIDC_NAMESPACE) == 1
+        assert conn.execute('SELECT COUNT(*) FROM oidc_sessions').fetchone()[0] == 0

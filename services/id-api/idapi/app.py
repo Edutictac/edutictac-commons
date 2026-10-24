@@ -5,7 +5,7 @@ from __future__ import annotations
 import os
 
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import Response
+from fastapi.responses import JSONResponse, Response
 from starlette.middleware.sessions import SessionMiddleware
 
 from .context import Commons
@@ -111,8 +111,40 @@ def install_session_cors(app: FastAPI, c: Commons) -> None:
         return response
 
 
+UNSAFE_METHODS = frozenset({"POST", "PUT", "PATCH", "DELETE"})
+
+
+def install_origin_guard(app: FastAPI, c: Commons) -> None:
+    """Bloqueja mutacions de navegador des d'orígens que no siguen propis.
+
+    Les crides entre serveis no porten `Origin` i continuen permeses. Els
+    navegadors sí que l'envien en POST/PUT/PATCH/DELETE; si l'origen no és
+    exactament un dels permesos o el mateix host, es rebutja abans d'arribar
+    a la ruta. Això cobrix els endpoints sense cos (regenerar PIN, revocar
+    identitat) que abans depenien només de SameSite.
+    """
+
+    @app.middleware("http")
+    async def origin_guard(request: Request, call_next):
+        if request.method in UNSAFE_METHODS:
+            if request.headers.get("sec-fetch-site", "").lower() == "cross-site":
+                return JSONResponse({"detail": "origin not allowed"}, status_code=403)
+            origin = request.headers.get("origin")
+            if origin and not (
+                origin_allowed(origin, c.settings.allowed_origins)
+                or same_host(origin, request.headers.get("host", ""))
+                # Rebost has its own explicit public origin behind TLS proxies.
+                # Keep that trust scoped to its API; its route guard still runs.
+                or (request.url.path.startswith("/api/assets/")
+                    and origin == c.rebost.public_origin)
+            ):
+                return JSONResponse({"detail": "origin not allowed"}, status_code=403)
+        return await call_next(request)
+
+
 def create_app(settings: Settings | None = None) -> FastAPI:
     settings = settings or Settings.from_env()
+    settings.validate_production_secrets()
     c = Commons(settings)
     c.db.migrate()
     c.files.cleanup()
@@ -133,4 +165,5 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     install_quiosc(app, c)
     install_library(app, c)
     install_session_cors(app, c)
+    install_origin_guard(app, c)
     return app

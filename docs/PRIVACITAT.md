@@ -26,9 +26,9 @@ al professorat i l'administració.
 El professorat i l'administració **no accedeixen amb un token compartit**:
 inicien sessió amb Authentik, el proveïdor OIDC autoallotjat pel mateix
 centre. L'`id-api` no crea una base de contrasenyes pròpia ni copia nom,
-correu ni grups d'Authentik: després del login només conserva una cookie de
-sessió firmada amb el `sub` opac del proveïdor i un pseudònim derivat per
-HMAC. La resta de dades (nom, correu, grups) resta a Authentik, que el
+correu ni grups d'Authentik: després del login conserva una sessió de
+servidor revocable de 12 hores amb el `sub` opac del proveïdor i un pseudònim
+derivat per HMAC. La resta de dades (nom, correu, grups) resta a Authentik, que el
 centre gestiona i allotja ell mateix. Vegeu `authentik.md` per al detall
 tècnic.
 
@@ -118,7 +118,8 @@ exportacions ordinàries del grup no permeten recuperar els PIN.
 | Cookie | Ús | Caducitat | Propietats |
 |---|---|---|---|
 | `edutictac_id` | sessió de l'alumnat | 180 dies | `HttpOnly`, `SameSite=Lax`; `Secure` en HTTPS |
-| `edutictac_teacher` | sessió del professorat | 8 hores | `HttpOnly`, `SameSite=Lax`; `Secure` en HTTPS |
+| `edutictac_oidc` | sessió del professorat i administració | 12 hores | `HttpOnly`, `SameSite=Lax`; `Secure` en HTTPS; revocable al servidor |
+| `edutictac_teacher` | accés docent local (llegat) | 8 hores | `HttpOnly`, `SameSite=Lax`; `Secure` en HTTPS |
 
 Són cookies tècniques de sessió, firmades (HMAC). El portal també pot guardar en
 `localStorage` del navegador un estat de demostració local
@@ -147,6 +148,7 @@ desplegament real s'ha d'usar HTTPS i cookies `Secure`.
 | Element | Conservació per defecte |
 |---|---|
 | Sessions d'alumnat | 180 dies (renovables) |
+| Sessions de professorat/administració | 12 hores; revocables |
 | PIN (hash) | mentre la identitat estiga activa |
 | Còpies de seguretat | retenció 7 diàries / 4 setmanals / 6 mensuals |
 | Identitats i puntuacions | **a decidir pel centre** (vegeu `DIRECCIO-DPD.md`) |

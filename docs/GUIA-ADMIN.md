@@ -11,15 +11,14 @@ la instal·lació del centre, no per al professorat que crea activitats.
 
 ## 1. Accedir al panell
 
-El panell està disponible en dues adreces, segons des d'on hi accedixes:
+El panell s'usa a través del portal: `http://<host-del-centre>:8082/admin/`.
+El portal el proxyja perquè el navegador puga completar el login OIDC al
+mateix origen.
 
-- `http://<host-del-centre>:8082/admin/` — a través del portal públic. Esta és
-  l'adreça recomanada: funciona des de qualsevol dispositiu de la mateixa
-  xarxa (per exemple, la Tailnet del centre), no només des de l'ordinador
-  servidor.
-- `http://127.0.0.1:8091/` — accés directe, només funciona des del mateix
-  ordinador on corre el stack (el port `8091` es publica lligat a
-  `127.0.0.1`).
+Per seguretat, `/admin/` només admet connexions des del mateix servidor, la
+Tailnet (`100.64.0.0/10`) o un túnel SSH. Un equip de la LAN que no use la
+Tailnet rep `403`. L'accés directe a `127.0.0.1:8091` és només per a
+diagnòstic: el login OIDC es fa sempre pel portal.
 
 Passos:
 
@@ -30,9 +29,9 @@ Passos:
    (`ADMIN_OIDC_USERNAME` en `.env`; per defecte `akadmin`).
 4. Tornes al panell i l'"Estat" apareix omplit automàticament.
 
-Només eixe usuari concret pot fer servir el panell: si inicies sessió amb un
-altre compte Authentik (encara que siga professorat), les peticions a
-`/api/*` tornen `401 no autoritzat`.
+Poden fer servir el panell eixe usuari concret i qualsevol compte Authentik
+amb rol `administrador`. Si inicies sessió amb un altre compte (encara que
+siga professorat), les peticions a `/api/*` tornen `401 no autoritzat`.
 
 Botons de la secció "Accés":
 
@@ -182,12 +181,12 @@ Estes dues accions són síncrones (acaben en segons) i no fan servir el
 
 ## 7. Notes de seguretat
 
-- Només l'usuari configurat en `ADMIN_OIDC_USERNAME` (per defecte
-  `akadmin`) pot fer servir el panell; l'autenticació es delega sempre en
-  Authentik.
-- El panell no exposa cap port públic propi: només és accessible en
-  `127.0.0.1:8091` en l'ordinador servidor o, a través del portal, en el
-  mateix origen que la resta del stack (`:8082/admin/`).
+- Pot fer servir el panell l'usuari configurat en `ADMIN_OIDC_USERNAME`
+  (per defecte `akadmin`) o qualsevol compte Authentik amb rol
+  `administrador`; l'autenticació es delega sempre en Authentik.
+- El panell no exposa cap port públic propi: el port `8091` escolta només en
+  `127.0.0.1` i el portal només proxyja `/admin/` des de localhost, la
+  Tailnet o un túnel SSH. La LAN directa queda denegada.
 - Les accions destructives (restaurar un backup, actualitzar imatges, fer
   rollback) sempre demanen escriure una paraula de confirmació abans
   d'executar-se.

@@ -184,6 +184,33 @@ def test_parse_origins_rejects_subdomain_wildcards():
             parse_origins(value)
 
 
+def test_cookie_mutations_require_own_origin(module):
+    teacher = oidc_client(module, {'name': 'Laia'}, role='profesor')
+    payload = {'tenant_id': 'origin-test'}
+
+    for headers in (
+        {'Origin': 'https://pages.edutictac.es'},
+        {'Origin': 'https://evil.edutictac.es'},
+        {'Origin': 'null'},
+        {'Sec-Fetch-Site': 'cross-site'},
+    ):
+        response = teacher.post('/api/groups', json=payload, headers=headers)
+        assert response.status_code == 403, headers
+
+    assert teacher.post('/api/groups', json=payload, headers={'Origin': 'https://edutictac.es'}).status_code == 201
+    # Les crides entre serveis no porten Origin i no són CSRF.
+    assert teacher.post('/api/groups', json=payload).status_code == 201
+
+
+def test_login_posts_reject_foreign_or_cross_site_origins(module):
+    client = TestClient(module.app)
+    body = {'public_code': 'K7M', 'pin': '0000'}
+    assert client.post('/api/auth/student', json=body, headers={'Origin': 'https://evil.edutictac.es'}).status_code == 403
+    assert client.post('/api/auth/student', json=body, headers={'Sec-Fetch-Site': 'cross-site'}).status_code == 403
+    assert client.post('/api/auth/student', json=body, headers={'Origin': 'https://edutictac.es'}).status_code == 401
+    assert client.post('/api/auth/student', json=body).status_code == 401
+
+
 @pytest.mark.parametrize('value,expected', [
     ('/teacher.html', '/teacher.html'),
     ('/assets/?x=1#y', '/assets/?x=1#y'),
@@ -278,3 +305,47 @@ def test_nginx_never_exposes_internal_routes():
         conf = (root / name).read_text()
         assert 'location ^~ /api/internal/ { return 404; }' in conf, name
         assert conf.index('/api/internal/') < conf.index('location /api/ {'), name
+
+
+def test_admin_proxy_is_limited_to_local_tailnet_and_tunnel():
+    conf = (Path(__file__).parents[1] / 'services/portal/nginx/default.conf').read_text()
+    for marker in (
+        'allow 127.0.0.1;',
+        'allow ::1;',
+        'allow 172.16.0.0/12;',
+        'allow 100.64.0.0/10;',
+        'allow fd7a:115c:a1e0::/48;',
+        'deny all;',
+    ):
+        assert conf.count(marker) == 2, marker
+
+
+def test_oidc_session_is_revocable_server_side(module):
+    teacher = oidc_client(module, {'name': 'Laia'}, role='profesor')
+    assert teacher.get('/api/auth/session').json()['authenticated'] is True
+    with module.get_conn() as db:
+        db.execute("UPDATE oidc_sessions SET revoked_at = '2026-01-01T00:00:00+00:00'")
+    assert teacher.get('/api/auth/session').json()['authenticated'] is False
+
+
+def test_oidc_session_expires_server_side(module):
+    teacher = oidc_client(module, {'name': 'Laia'}, role='profesor')
+    assert teacher.get('/api/auth/session').json()['authenticated'] is True
+    with module.get_conn() as db:
+        db.execute("UPDATE oidc_sessions SET expires_at = '2000-01-01T00:00:00+00:00'")
+    assert teacher.get('/api/auth/session').json()['authenticated'] is False
+
+
+def test_oidc_cookie_is_short_lived_and_requires_a_session_id(module):
+    response = Response()
+    module.set_oidc_cookie(response, {'name': 'Laia'}, 'profesor')
+    assert 'Max-Age=43200' in response.headers['set-cookie']
+
+    client = TestClient(module.app)
+    client.headers['Cookie'] = 'edutictac_oidc=' + module.commons.cookies.encode({
+        'oidc': True,
+        'iss': module.OIDC_ISSUER_URL,
+        'sub': 'person',
+        'role': 'profesor',
+    })
+    assert client.get('/api/auth/session').json()['authenticated'] is False

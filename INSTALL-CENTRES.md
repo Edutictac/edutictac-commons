@@ -58,6 +58,15 @@ El comandament crea un grup, assigna l'activitat demo i escriu un fitxer TSV de 
 
 Els PINs només es mostren just després de generar credencials. El CSV està pensat per exportar codis, però no inclou PINs.
 
+## Secrets de producció
+
+El paquet genera secrets aleatoris i posa `EDUTICTAC_ENV=production`. Si
+instal·les manualment amb `make up`, canvia abans
+`EDUTICTAC_ID_SECRET`, `EDUTICTAC_ID_TEACHER_TOKEN`, `EDUTICTAC_ID_APP_TOKEN`
+i els tokens `PLAY_ID_APP_TOKEN`, `RECURSOS_ID_APP_TOKEN` i
+`EDUHOOT_ID_APP_TOKEN`. En producció, l'API refusa arrancar si detecta els
+valors de demo.
+
 ## Configuració mínima
 
 Edita `.env` abans d'usar la demo amb professorat real:
@@ -75,6 +84,21 @@ No uses els valors `change-this-local-secret`, `dev-teacher`,
 
 Abans d'usar el prototip amb professorat o alumnat real, revisa
 `docs/PRIVACITAT.md` i completa `docs/DIRECCIO-DPD.md`.
+
+## Xifratge de les còpies
+
+Abans d'usar el centre amb dades reals, configura una clau age pròpia:
+
+```bash
+# En el teu equip, no en el servidor
+age-keygen -o ~/edutictac-backup-key.txt
+age-keygen -y ~/edutictac-backup-key.txt
+```
+
+Posa la clau pública en `BACKUP_AGE_RECIPIENT` i la ruta de la privada en
+`BACKUP_AGE_IDENTITY_FILE` (només per restaurar). Amb
+`BACKUP_ENCRYPTION_REQUIRED=1`, si no hi ha recipient el backup falla en lloc
+de crear-se en clar. La clau privada no s'ha de copiar al servidor.
 
 ## Operació habitual
 
@@ -115,10 +139,12 @@ make update-images
 ```
 
 `make update-images` crea i verifica un backup abans de canviar tags, descarrega
-imatges, reinicia serveis i executa `make test-flow`. Actualitza totes les
-imatges pròpies (`commons-id-api`, `commons-portal`, `commons-admin` i
-`commons-play`) en un sol pas, incloent el panell `/admin`: no cal cap acció
-manual addicional perquè el panell quede al dia.
+imatges, **fixa els digests resolts** i reinicia serveis; després executa
+`make test-flow`. Actualitza totes les imatges pròpies (`commons-id-api`,
+`commons-portal`, `commons-admin` i `commons-play`) en un sol pas, incloent el
+panell `/admin`: no cal cap acció manual addicional perquè el panell quede al
+dia. Si qualsevol comprovació falla després d'haver canviat els tags, es fa un
+**rollback automàtic** als tags i digests anteriors.
 
 Si una actualització falla alguna comprovació, es pot desfer amb:
 
@@ -308,9 +334,54 @@ make restore BACKUP=backups/commons-YYYYmmddTHHMMSSZ/
 
 Totes aquestes accions, i activar/desactivar el backup automàtic diari, es
 poden fer també sense terminal des del panell `/admin`
-(`http://127.0.0.1:8091/`, amb la sessió Authentik d'`akadmin`) — vegeu
+(`http://<host-del-centre>:8082/admin/`, amb el rol `administrador` o
+l'usuari `ADMIN_OIDC_USERNAME`; només des del servidor, la Tailnet o un
+túnel SSH) — vegeu
 `README.md#panell-dadministracio` i la guia pas a pas
 [docs/GUIA-ADMIN.md](docs/GUIA-ADMIN.md).
+
+## TLS, HSTS i ingress
+
+Producció publica Commons darrere nginx amb TLS, HSTS, `Permissions-Policy` i
+una CSP conservadora (`frame-ancestors`, `base-uri`, `object-src`,
+`form-action`). Els ports interns (`8084`, `8086`, `8090`, `8098`, `9000`,
+`9443`) estan lligats a `127.0.0.1` i no s'exposen directament.
+
+En una instal·lació de centre el portal continua en HTTP. Per exposar-lo fora
+de la LAN, posa un proxy invers amb TLS davant del portal i no òbrigs els
+ports directes de les apps a Internet. L'ingress únic amb TLS automàtic per a
+centres queda pendent; el paquet no genera certificats.
+
+### Ingress TLS opcional amb Caddy
+
+Per publicar el portal amb HTTPS sense instal·lar nginx al host:
+
+```bash
+make up-ingress
+```
+
+Això recrea el portal en `127.0.0.1:8082` i arranca Caddy en els ports 80/443.
+Per defecte usa `edutictac.local` i una **CA interna**; els dispositius han de
+confiar-hi:
+
+```bash
+make ingress-ca
+# distribueix dist/caddy-root.crt i instal·la'l com a autoritat de confiança
+```
+
+Per a un domini públic amb DNS i ports 80/443 accessibles, posa a `.env`:
+
+```env
+COMMONS_INGRESS_HOST=commons.example.org
+INGRESS_CADDYFILE=./services/ingress/Caddyfile.acme
+```
+
+i torna a executar `make up-ingress`. Caddy obtindrà el certificat per ACME.
+Per tornar enrere: `make down-ingress` i `make up`.
+
+L'ingress cobreix el portal; les apps (`recursos`, `blocs`, `eduhoot`, etc.)
+continuen publicant els seus ports directes. No els exposos a Internet sense
+un proxy propi.
 
 ## Solució de problemes
 

@@ -22,6 +22,7 @@ import uuid
 
 ROOT = Path(__file__).resolve().parent.parent
 NAME = re.compile(r'commons-\d{8}T\d{6}Z')
+AGE_ARCHIVE = 'backup.tar.gz.age'
 WRITERS = {'id-api', 'admin', 'play', 'recursos-api', 'eduhoot', 'authentik-server', 'authentik-worker'}
 FRONTENDS = {'recursos'}  # nginx resolves its API address when the frontend starts.
 GROUPS = {'play': ['play'], 'recursos': ['recursos-api', 'recursos-www'],
@@ -347,6 +348,87 @@ class Stack:
         started.append(service)
         return True
 
+    def encryption_recipient(self):
+        return str(self.values.get('BACKUP_AGE_RECIPIENT') or os.environ.get('BACKUP_AGE_RECIPIENT') or '').strip()
+
+    def encryption_required(self):
+        return str(self.values.get('BACKUP_ENCRYPTION_REQUIRED') or os.environ.get('BACKUP_ENCRYPTION_REQUIRED') or '0').strip() == '1'
+
+    def age_identity(self):
+        value = str(self.values.get('BACKUP_AGE_IDENTITY_FILE') or os.environ.get('BACKUP_AGE_IDENTITY_FILE') or '').strip()
+        path = Path(value).expanduser() if value else (Path.home() / '.config/age/keys.txt')
+        if not path.is_file():
+            raise BackupError('backup_encryption_key_missing')
+        return path
+
+    def encrypt_directory(self, directory, recipient):
+        archive = directory / AGE_ARCHIVE
+        if not shutil.which('age'):
+            raise BackupError('backup_encryption_tool_missing')
+        process = subprocess.Popen(
+            ['age', '--recipient', recipient, '--output', str(archive)],
+            stdin=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        try:
+            with tarfile.open(fileobj=process.stdin, mode='w|gz') as bundle:
+                for entry in sorted(directory.iterdir()):
+                    if entry.name in {'manifest.json', AGE_ARCHIVE}:
+                        continue
+                    bundle.add(entry, arcname=entry.name)
+            if process.stdin:
+                process.stdin.close()
+            stderr = process.stderr.read() if process.stderr else b''
+            if process.wait() != 0:
+                raise BackupError('backup_encryption_failed')
+        except Exception:
+            if process.poll() is None:
+                process.kill()
+                process.wait()
+            archive.unlink(missing_ok=True)
+            raise
+        archive.chmod(0o600)
+        for entry in list(directory.iterdir()):
+            if entry.name in {'manifest.json', AGE_ARCHIVE}:
+                continue
+            if entry.is_dir() and not entry.is_symlink():
+                shutil.rmtree(entry)
+            else:
+                entry.unlink()
+
+    def decrypt_archive(self, source, destination):
+        identity = self.age_identity()
+        if not shutil.which('age'):
+            raise BackupError('backup_encryption_tool_missing')
+        result = subprocess.run(
+            ['age', '--decrypt', '--identity', str(identity), '--output', str(destination), str(source)],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        if result.returncode != 0:
+            raise BackupError('backup_decryption_failed')
+        destination.chmod(0o600)
+
+    @contextmanager
+    def materialized(self, backup):
+        archive = backup / AGE_ARCHIVE
+        if not archive.is_file():
+            yield backup
+            return
+        work = Path(tempfile.mkdtemp(prefix='.plain-', dir=self.backups))
+        tar_path = work / 'backup.tar.gz'
+        try:
+            self.decrypt_archive(archive, tar_path)
+            with tarfile.open(tar_path) as bundle:
+                members = archive_members(bundle)
+                bundle.extractall(work, members=members, filter='tar')
+            tar_path.unlink(missing_ok=True)
+            shutil.copyfile(backup / 'manifest.json', work / 'manifest.json')
+            (work / 'manifest.json').chmod(0o600)
+            yield work
+        finally:
+            shutil.rmtree(work, ignore_errors=True)
+
     def create(self):
         with self.stopped_writers() as (before, started):
             stamp = datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')
@@ -389,15 +471,28 @@ class Stack:
                     paths = sorted(path for service, path in pairs if service == name)
                     services.append({'name': name, 'status': 'ok', 'paths': paths,
                                      'checksums': {path: digest(temporary / path) for path in paths}})
+                recipient = self.encryption_recipient()
+                if self.encryption_required() and not recipient:
+                    raise BackupError('backup_encryption_required')
                 manifest = {'manifest_version': 2, 'created_at': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
                     'stack_version': (self.root / 'VERSION').read_text().strip(), 'services': services, 'warnings': [],
                     'profiles': sorted(filter(None, self.values.get('COMPOSE_PROFILES', '').split(','))),
                     'metadata': metadata, 'extra_roots': self.extra_roots(), 'complete': True}
+                if recipient:
+                    manifest['encrypted'] = {'format': 'age', 'recipient': recipient}
                 (temporary / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
                 for path in temporary.rglob('*'):
                     if not path.is_symlink():
                         path.chmod(0o700 if path.is_dir() else 0o600)
                 self.validate(temporary, age=False)
+                if recipient:
+                    self.encrypt_directory(temporary, recipient)
+                    try:
+                        self.age_identity()
+                    except BackupError:
+                        pass
+                    else:
+                        self.validate(temporary, age=False)
                 os.replace(temporary, destination)
             finally:
                 if temporary.exists():
@@ -410,6 +505,13 @@ class Stack:
         return sorted(p.name for p in (self.root / 'data').iterdir() if p.name not in known)
 
     def validate(self, backup, age=True):
+        backup = Path(backup).resolve()
+        if (backup / AGE_ARCHIVE).is_file():
+            with self.materialized(backup) as plain:
+                return self._validate_plain(plain, age)
+        return self._validate_plain(backup, age)
+
+    def _validate_plain(self, backup, age=True):
         backup = Path(backup).resolve()
         if not backup.is_relative_to(self.backups.resolve()):
             raise BackupError('invalid_backup_directory')
@@ -480,6 +582,15 @@ class Stack:
         except (OSError, ValueError, TypeError, KeyError, tarfile.TarError, sqlite3.Error):
             raise BackupError('invalid_backup') from None
 
+    def metadata(self, backup):
+        try:
+            manifest = json.loads((Path(backup) / 'manifest.json').read_text())
+        except (OSError, ValueError, TypeError):
+            raise BackupError('invalid_backup') from None
+        if manifest.get('manifest_version') not in (1, 2):
+            raise BackupError('unsupported_manifest')
+        return manifest
+
     def latest(self):
         candidates = sorted(p for p in self.backups.iterdir() if p.is_dir() and NAME.fullmatch(p.name))
         if not candidates:
@@ -490,6 +601,13 @@ class Stack:
         backup = Path(backup).resolve()
         if not NAME.fullmatch(backup.name):
             raise BackupError('invalid_backup_name')
+        if (backup / AGE_ARCHIVE).is_file():
+            with self.materialized(backup) as plain:
+                return self._restore_plain(plain, backup.name)
+        return self._restore_plain(backup)
+
+    def _restore_plain(self, backup, display_name=None):
+        backup = Path(backup).resolve()
         manifest = self.validate(backup, age=False)
         # Full safety backup must succeed before any data or configuration changes.
         safety = self.create()
@@ -557,7 +675,7 @@ class Stack:
             # Never announce a successful restore after a partial failure. The
             # pre-restore safety backup remains available for recovery.
             self.compose(['stop', *sorted(WRITERS & self.running())], 'failed_restore_stop_failed')
-            (self.backups / 'restore-failed.json').write_text(json.dumps({'backup': backup.name, 'safety_backup': safety.name}) + '\n')
+            (self.backups / 'restore-failed.json').write_text(json.dumps({'backup': display_name or backup.name, 'safety_backup': safety.name}) + '\n')
             print('Restauració interrompuda; serveis amb escriptura aturats i còpia prèvia disponible', flush=True)
             raise
 
@@ -586,8 +704,16 @@ def main():
     args = parser.parse_args()
     stack = Stack(args.root)
     if args.action == 'check':
-        manifest = stack.validate(Path(args.backup) if args.backup else stack.latest())
-        print('Backup verificat: ' + ', '.join(s['name'] for s in manifest['services']))
+        target = Path(args.backup) if args.backup else stack.latest()
+        try:
+            manifest = stack.validate(target)
+        except BackupError as error:
+            if str(error) != 'backup_encryption_key_missing' or not (target / AGE_ARCHIVE).is_file():
+                raise
+            manifest = stack.metadata(target)
+            print('Backup xifrat: manifest vàlid; cal la clau privada per validar el contingut')
+        else:
+            print('Backup verificat: ' + ', '.join(s['name'] for s in manifest['services']))
         if manifest['manifest_version'] == 1:
             print('Avís: format antic; cobertura parcial, sense configuració completa')
     else:

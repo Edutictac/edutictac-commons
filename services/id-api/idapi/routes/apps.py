@@ -105,8 +105,8 @@ def add_score(payload: ScoreIn, request: Request, c: Commons = Depends(commons))
 
 @router.post("/api/apps/{app_id}/scores", status_code=201)
 def add_app_score(app_id: str, payload: AppScoreIn, request: Request, c: Commons = Depends(commons)) -> dict[str, Any]:
-    c.auth.require_app_token(request)
     app_key = normalize_app_id(app_id)
+    c.auth.require_app_token(request, app_key)
     activity_id = normalize_activity_id(payload.activity_id)
     assignment_id = (payload.assignment_id or "").strip()
     with c.connect() as conn:
@@ -154,8 +154,8 @@ def add_app_score(app_id: str, payload: AppScoreIn, request: Request, c: Commons
 
 @router.post("/api/apps/{app_id}/launch-tokens/consume")
 def consume_app_launch_token(app_id: str, payload: ConsumeLaunchTokenIn, request: Request, c: Commons = Depends(commons)) -> dict[str, Any]:
-    c.auth.require_app_token(request)
     app_key = normalize_app_id(app_id)
+    c.auth.require_app_token(request, app_key)
     token = (payload.token or "").strip()
     if not token:
         raise HTTPException(status_code=401, detail="invalid launch token")

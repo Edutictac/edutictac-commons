@@ -164,3 +164,25 @@ def test_admin_imports_secondary_support_in_container_layout(tmp_path):
     result = subprocess.run([sys.executable, '-c', 'import server; assert callable(server.secondary_status)'],
                             cwd=tmp_path, capture_output=True, timeout=10)
     assert result.returncode == 0
+
+
+def test_role_administrador_can_use_the_panel(api):
+    request, state, identity, calls = api
+    identity["username"] = "direccio"
+    identity["role"] = "administrador"
+    assert request("GET", "/api/modules")[0] == 200
+    identity["role"] = "profesor"
+    identity["username"] = "teacher"
+    assert request("GET", "/api/modules")[0] == 401
+
+
+@pytest.mark.parametrize("headers", [
+    {"Origin": "https://pages.edutictac.es"},
+    {"Origin": "null"},
+    {"Sec-Fetch-Site": "cross-site"},
+    {"Content-Type": "text/plain"},
+])
+def test_all_admin_posts_need_same_origin_and_json(api, headers):
+    request, state, identity, calls = api
+    assert request("POST", "/api/teachers", {"username": "synthetic.teacher", "name": "Synthetic"}, headers=headers)[0] == 403
+    assert calls == []

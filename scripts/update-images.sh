@@ -28,8 +28,16 @@ restore_tags() {
 
 cleanup_update() {
   status="$?"
-  rm -f /tmp/edutictac-commons-updates.$$.json
-  if [ "$status" -ne 0 ]; then
+  rm -f /tmp/edutictac-commons-updates.$$.json /tmp/edutictac-commons-digests.$$.json
+  if [ "$status" -ne 0 ] && [ "${tags_changed:-0}" = "1" ] && [ -n "${update_backup:-}" ]; then
+    echo "== Rollback automatic =="
+    if ROLLBACK_SKIP_BACKUP=1 ./scripts/rollback-images.sh "$update_backup"; then
+      echo "Rollback automatic completat."
+    else
+      echo "Rollback automatic fallit; es restauren els tags." >&2
+      restore_tags
+    fi
+  elif [ "$status" -ne 0 ]; then
     restore_tags
   fi
   exit "$status"
@@ -70,7 +78,22 @@ backup = Path("backups") / sys.argv[1]
     "previous_recursos_tag": sys.argv[4],
 }, indent=2) + "\n")
 PY
-echo "Tags anteriors guardats en $update_backup/update.json"
+python3 ./scripts/image-digests.py local --env-file "$env_file" --output "backups/$update_backup/previous-images.json"
+python3 - "$update_backup" <<'PYJSON'
+import json
+import sys
+from pathlib import Path
+backup = Path("backups") / sys.argv[1]
+update = json.loads((backup / "update.json").read_text())
+digests = {}
+try:
+    digests = json.loads((backup / "previous-images.json").read_text())
+except (OSError, json.JSONDecodeError):
+    pass
+update["previous_images"] = digests
+(backup / "update.json").write_text(json.dumps(update, indent=2) + "\n")
+PYJSON
+echo "Tags i digests anteriors guardats en $update_backup/update.json"
 
 echo
 echo "== Deteccio de versions disponibles =="
@@ -119,6 +142,24 @@ echo "== Comprovacio d'imatges remotes =="
 echo
 echo "== Descarregant imatges =="
 $compose pull
+
+echo
+echo "== Fitant digests de les imatges =="
+digest_file="/tmp/edutictac-commons-digests.$$.json"
+python3 ./scripts/image-digests.py remote --env-file "$env_file" --output "$digest_file" \
+  || { echo "No s'han pogut resoldre els digests remots." >&2; exit 1; }
+tags_changed=1
+python3 ./scripts/image-digests.py pin --digests "$digest_file"
+python3 - "$update_backup" "$digest_file" <<'PYJSON'
+import json
+import sys
+from pathlib import Path
+backup = Path("backups") / sys.argv[1]
+update = json.loads((backup / "update.json").read_text())
+update["pulled_images"] = json.loads(Path(sys.argv[2]).read_text())
+(backup / "update.json").write_text(json.dumps(update, indent=2) + "\n")
+PYJSON
+rm -f "$digest_file"
 
 echo
 echo "== Reiniciant stack amb imatges descarregades =="

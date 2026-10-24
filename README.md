@@ -85,10 +85,11 @@ el panell tècnic en [docs/GUIA-ADMIN.md](docs/GUIA-ADMIN.md).
 
 ## Panell d'administració
 
-El panell està en `/admin/` dins de la mateixa adreça del portal. S’accedix amb
-el compte d’administració del centre (`akadmin`). El port intern 8091 es
-publica només en loopback; el proxy del portal permet usar el panell des
-d’altres dispositius autoritzats.
+`http://<host-del-centre>:8082/admin/` — el panell s'usa a través del portal
+per completar el login OIDC al mateix origen. L'accés es fa amb Authentik:
+pot entrar l'usuari de `ADMIN_OIDC_USERNAME` (per defecte `akadmin`) o
+qualsevol compte amb rol `administrador`. El portal només admet `/admin/`
+des del mateix servidor, la Tailnet o un túnel SSH; la LAN directa rep 403.
 
 Mostra la versió instal·lada, l'estat dels serveis, l'últim backup i la
 llista de còpies disponibles, els avisos de cobertura i l'estat del timer de

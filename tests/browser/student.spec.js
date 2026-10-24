@@ -188,7 +188,7 @@ test('un URL executable no navega i tanca la pestanya provisional',async ({page,
   await student(page,{items:[{id:'bad',app_id:'resource',activity_id:'bad',title:'Bad',launch_url:'javascript:window.bad=true'}]});
   await page.locator('[data-launch-resource-assignment]').click();
   await expect(page.locator('#studentOutput')).toContainText('No s’ha pogut obrir');
-  expect(context.pages()).toHaveLength(1);
+  await expect.poll(() => context.pages().length).toBe(1);
   expect(await page.evaluate(()=>window.bad)).toBeUndefined();
 });
 
@@ -245,7 +245,7 @@ for (const status of [200,401]) {
     await page.locator('#studentLogout').click(); release();
     await expect(page.locator('#studentLogin')).toBeEnabled();
     await expect(page.locator('.student-profile')).toHaveCount(0);
-    expect(context.pages()).toHaveLength(1);
+    await expect.poll(() => context.pages().length).toBe(1);
   });
 }
 

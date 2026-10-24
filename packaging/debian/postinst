@@ -39,6 +39,7 @@ existing = len(sys.argv) > 4 and sys.argv[4] == "1"
 text = path.read_text(encoding="utf-8")
 previous_module_selection = any(line.startswith("MODULES_CONFIGURED=") for line in text.splitlines())
 values = {
+    "EDUTICTAC_ENV": "production",
     "REPO_DIR": "/opt/edutictac-commons",
     "IMAGE_REGISTRY": "registry.edutictac.es/edutictac",
     "IMAGE_TAG": "0.1.1-beta4",
@@ -58,6 +59,9 @@ values = {
     "EDUTICTAC_ID_SECRET": secrets.token_hex(32),
     "EDUTICTAC_ID_TEACHER_TOKEN": secrets.token_urlsafe(32),
     "EDUTICTAC_ID_APP_TOKEN": secrets.token_urlsafe(32),
+    "PLAY_ID_APP_TOKEN": secrets.token_urlsafe(32),
+    "RECURSOS_ID_APP_TOKEN": secrets.token_urlsafe(32),
+    "EDUHOOT_ID_APP_TOKEN": secrets.token_urlsafe(32),
     "AUTHENTIK_PG_PASS": secrets.token_urlsafe(32),
     "AUTHENTIK_SECRET_KEY": secrets.token_urlsafe(64),
     "EDUTICTAC_SETUP_TOKEN": secrets.token_hex(6).upper(),
@@ -69,6 +73,7 @@ values = {
     "EDUTICTAC_ID_OIDC_ROLE_CLAIM": "groups",
 }
 replace_if = {
+    "EDUTICTAC_ENV": {"", "development"},
     "REPO_DIR": {"", "/opt/edutictac-commons"},
     "IMAGE_REGISTRY": {"edutictac", ""},
     "IMAGE_TAG": {"", "0.1.1-alpha", "0.1.1-alpha10", "0.1.1-alpha14", "0.1.1-alpha15", "0.1.1-alpha16"},
@@ -77,6 +82,9 @@ replace_if = {
     "EDUTICTAC_ID_SECRET": {"change-this-local-secret", ""},
     "EDUTICTAC_ID_TEACHER_TOKEN": {"dev-teacher", ""},
     "EDUTICTAC_ID_APP_TOKEN": {"dev-app-token", ""},
+    "PLAY_ID_APP_TOKEN": {"", "dev-app-token"},
+    "RECURSOS_ID_APP_TOKEN": {"", "dev-app-token"},
+    "EDUHOOT_ID_APP_TOKEN": {"", "dev-app-token"},
     "COMPOSE_PROFILES": {"", "play"} if not existing else set(),
     "MODULES_CONFIGURED": {""},
     "RECURSOS_TAG": {"", "local", "0.1.1-alpha10"},
@@ -134,6 +142,10 @@ PY
  )"
 
 chmod 600 "$ENV_FILE"
+
+if ! grep -Eq '^BACKUP_AGE_RECIPIENT=.+' "$ENV_FILE"; then
+    echo "Avís: no hi ha BACKUP_AGE_RECIPIENT. Els backups falliran fins que configures una clau age; vegeu INSTALL-CENTRES.md." >&2
+fi
 
 if [ "$had_existing_env" -eq 0 ] \
     && grep -q '^PORTAL_PORT=80$' "$ENV_FILE" && command -v ss >/dev/null 2>&1 \

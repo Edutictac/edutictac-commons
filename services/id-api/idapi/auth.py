@@ -118,7 +118,29 @@ class Auth:
             return None
         if not hmac.compare_digest(str(cookie["iss"]), self.settings.oidc_issuer_url):
             return None
-        return cookie
+        session_token = cookie.get("sid")
+        if not isinstance(session_token, str) or not session_token:
+            return None
+        with self.db.connect() as conn:
+            row = conn.execute(
+                """
+                SELECT id FROM oidc_sessions
+                WHERE token_hash = ? AND revoked_at IS NULL AND expires_at > ?
+                """,
+                (hash_token(session_token), iso_now()),
+            ).fetchone()
+        return cookie if row else None
+
+    def revoke_oidc_session(self, request: Request) -> None:
+        cookie = self.cookies.decode(request.cookies.get(OIDC_COOKIE))
+        session_token = cookie.get("sid") if cookie else None
+        if not isinstance(session_token, str) or not session_token:
+            return
+        with self.db.connect() as conn:
+            conn.execute(
+                "UPDATE oidc_sessions SET revoked_at = ? WHERE token_hash = ? AND revoked_at IS NULL",
+                (iso_now(), hash_token(session_token)),
+            )
 
     def is_oidc_admin(self, request: Request) -> bool:
         session = self.oidc_cookie(request)
@@ -193,13 +215,22 @@ class Auth:
 
     # --- Aplicacions ------------------------------------------------------
 
-    def require_app_token(self, request: Request) -> None:
-        if not self.settings.app_token:
+    def require_app_token(self, request: Request, app_id: str | None = None) -> None:
+        if app_id:
+            expected = self.settings.app_tokens.get(app_id, "") or self.settings.app_token
+            candidates = [expected] if expected else []
+        else:
+            # Rutes internes sense app_id (resolució de sessió): qualsevol
+            # credencial d'aplicació configurada és acceptable.
+            candidates = [self.settings.app_token, *self.settings.app_tokens.values()]
+            candidates = [value for value in candidates if value]
+        if not candidates:
             raise HTTPException(status_code=503, detail="app token not configured")
         auth = request.headers.get("authorization", "")
         if not auth.startswith("Bearer "):
             raise HTTPException(status_code=401, detail="app token required")
-        if not hmac.compare_digest(auth[7:].encode(), self.settings.app_token.encode()):
+        supplied = auth[7:].encode()
+        if not any(hmac.compare_digest(supplied, value.encode()) for value in candidates):
             raise HTTPException(status_code=403, detail="invalid app token")
 
     # --- Alumnat ----------------------------------------------------------

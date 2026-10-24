@@ -382,6 +382,7 @@ def test_public_origin_behind_a_tls_proxy(api):
     module.rebost.public_origin = 'https://commons.example.test'
     client.headers['Origin'] = 'https://commons.example.test'
     assert upload(client).status_code == 201
+    assert client.post('/api/auth/logout').status_code == 403
     client.headers['Origin'] = 'http://testserver'
     assert upload(client).status_code == 403
 
