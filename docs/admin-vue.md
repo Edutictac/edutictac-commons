@@ -4,8 +4,8 @@
 
 `admin/` és un servei propi de Commons: Python `ThreadingHTTPServer` servix
 `admin/public` i la API operativa. No és el panell d’aules del portal docent,
-que ja usa Vue. La API comprova la identitat d’Authentik amb ID API i exigix
-l’usuari administrador configurat; els mòduls i les còpies mantenen les
+que ja usa Vue. La API comprova la identitat d’Authentik amb ID API i exigix el rol
+`administrador` o l’usuari configurat; els mòduls i les còpies mantenen les
 capçaleres anti-CSRF i les operacions fixes del servidor.
 
 La interfície anterior era un controlador de 569 línies amb formularis,

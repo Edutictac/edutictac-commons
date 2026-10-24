@@ -124,8 +124,9 @@ Variables principals:
   PIN Commons; si val `1`, exigeix codi + PIN Commons.
 - `EDUHOOT_PUBLIC_IMPORT_SOURCE`: font d'importació d'activitats públiques
   d'EduHoot; buit desactiva la funció.
-- `ADMIN_OIDC_USERNAME`: identitat Authentik autoritzada per al panell `/admin`;
-  per defecte `akadmin`.
+- `ADMIN_OIDC_USERNAME`: usuari Authentik de bootstrap admès al panell
+  `/admin` a més de qualsevol compte amb rol `administrador`; per defecte
+  `akadmin`.
 - `ADMIN_PORT`: port del panell `/admin` al host (només `127.0.0.1`).
 
 En qualsevol entorn que no siga demo local cal canviar
@@ -197,7 +198,7 @@ PIN, EduHoot valida contra `id-api`, no demana cap nom addicional i envia la
 puntuació final a Commons per `/api/apps/eduhoot/scores` amb
 `EDUTICTAC_ID_APP_TOKEN`.
 
-El panell `/admin` (`http://127.0.0.1:8091/`) mostra l'estat agregat: versió
+El panell `/admin` (via portal, només localhost/Tailnet/túnel) mostra l'estat agregat: versió
 instal·lada, serveis actius, últim backup, cobertura i estat del timer de
 backup automàtic. També permet crear backups, restaurar una còpia seleccionada
 i activar/desactivar el timer.

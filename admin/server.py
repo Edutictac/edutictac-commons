@@ -67,6 +67,41 @@ BACKUP_NAME_RE = re.compile(r"^commons-\d{8}T\d{6}Z$")
 JOB_UNIT_RE = re.compile(r"^edutictac-commons-(?:(update|restore|rollback)-\d{14}|(?:modules|backup)-\d{14}-[a-f0-9]{8})$")
 
 
+def identity_is_admin(identity):
+    """Authentik admin or the explicit bootstrap username."""
+    provider = str(identity.get("provider", "")).strip().lower()
+    username = str(identity.get("username", "")).strip().lower()
+    role = str(identity.get("role", "")).strip().lower()
+    return provider == "authentik" and (username == ADMIN_OIDC_USERNAME or role == "administrador")
+
+
+def same_origin_request(headers):
+    """Same-origin browser request, or a non-browser client without Origin."""
+    if headers.get("Sec-Fetch-Site", "").lower() == "cross-site":
+        return False
+    origin = headers.get("Origin")
+    if origin is None:
+        return True
+    try:
+        parsed = urllib.parse.urlsplit(origin)
+    except ValueError:
+        return False
+    if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+        return False
+    host = headers.get("Host", "").strip().lower()
+    scheme = headers.get("X-Forwarded-Proto", "http").split(",", 1)[0].strip().lower()
+    return bool(host) and parsed.netloc.lower() == host and parsed.scheme == scheme
+
+
+def admin_post_allowed(headers):
+    """All admin mutations need same-origin and a JSON body."""
+    if not same_origin_request(headers):
+        return False
+    content_type = headers.get("Content-Type", "").split(";", 1)[0].strip().lower()
+    return content_type == "application/json"
+
+
+
 def get_modules():
     fallback = module_snapshot({"COMPOSE_PROFILES": COMPOSE_PROFILES,
                                 "QUIOSC_MODE": os.environ.get("QUIOSC_MODE", "disabled"),
@@ -573,14 +608,16 @@ class Handler(BaseHTTPRequestHandler):
         except (OSError, urllib.error.URLError, json.JSONDecodeError, TimeoutError):
             return False
         identity = payload.get("identity") or {}
-        username = str(identity.get("username", "")).strip().lower()
-        return identity.get("provider") == "authentik" and username == ADMIN_OIDC_USERNAME
+        return identity_is_admin(identity)
 
     def _send_json(self, status, payload):
         body = json.dumps(payload).encode("utf-8")
         self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Cache-Control", "no-store")
+        self.send_header("X-Content-Type-Options", "nosniff")
+        self.send_header("X-Frame-Options", "DENY")
+        self.send_header("Referrer-Policy", "no-referrer")
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body)
@@ -616,6 +653,10 @@ class Handler(BaseHTTPRequestHandler):
         body = target.read_bytes()
         self.send_response(200)
         self.send_header("Content-Type", content_type)
+        self.send_header("Cache-Control", "no-store")
+        self.send_header("X-Content-Type-Options", "nosniff")
+        self.send_header("X-Frame-Options", "DENY")
+        self.send_header("Referrer-Policy", "no-referrer")
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body)
@@ -651,17 +692,15 @@ class Handler(BaseHTTPRequestHandler):
         if not self.path.startswith("/api/"):
             self.send_error(404)
             return
+        if not admin_post_allowed(self.headers):
+            self._send_json(403, {"ok": False, "output": "request_not_allowed"})
+            return
         if not self._is_authorized():
             self._send_json(401, {"error": "no autoritzat"})
             return
         if self.path in {"/api/modules", "/api/backup/create", "/api/backup/restore", "/api/backup/secondary"}:
-            origin = self.headers.get("Origin")
-            host = self.headers.get("Host", "")
-            invalid_origin = origin is not None and urllib.parse.urlsplit(origin).netloc.lower() != host.lower()
             header = "X-Commons-Modules" if self.path == "/api/modules" else "X-Commons-Backup"
-            if (self.headers.get(header) != "1" or invalid_origin
-                    or self.headers.get("Sec-Fetch-Site") == "cross-site"
-                    or self.headers.get("Content-Type", "").split(";", 1)[0].strip() != "application/json"):
+            if self.headers.get(header) != "1":
                 self._send_json(403, {"ok": False, "output": "request_not_allowed"})
                 return
         if self.path == "/api/teachers":

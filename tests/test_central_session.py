@@ -184,6 +184,33 @@ def test_parse_origins_rejects_subdomain_wildcards():
             parse_origins(value)
 
 
+def test_cookie_mutations_require_own_origin(module):
+    teacher = oidc_client(module, {'name': 'Laia'}, role='profesor')
+    payload = {'tenant_id': 'origin-test'}
+
+    for headers in (
+        {'Origin': 'https://pages.edutictac.es'},
+        {'Origin': 'https://evil.edutictac.es'},
+        {'Origin': 'null'},
+        {'Sec-Fetch-Site': 'cross-site'},
+    ):
+        response = teacher.post('/api/groups', json=payload, headers=headers)
+        assert response.status_code == 403, headers
+
+    assert teacher.post('/api/groups', json=payload, headers={'Origin': 'https://edutictac.es'}).status_code == 201
+    # Les crides entre serveis no porten Origin i no són CSRF.
+    assert teacher.post('/api/groups', json=payload).status_code == 201
+
+
+def test_login_posts_reject_foreign_or_cross_site_origins(module):
+    client = TestClient(module.app)
+    body = {'public_code': 'K7M', 'pin': '0000'}
+    assert client.post('/api/auth/student', json=body, headers={'Origin': 'https://evil.edutictac.es'}).status_code == 403
+    assert client.post('/api/auth/student', json=body, headers={'Sec-Fetch-Site': 'cross-site'}).status_code == 403
+    assert client.post('/api/auth/student', json=body, headers={'Origin': 'https://edutictac.es'}).status_code == 401
+    assert client.post('/api/auth/student', json=body).status_code == 401
+
+
 @pytest.mark.parametrize('value,expected', [
     ('/teacher.html', '/teacher.html'),
     ('/assets/?x=1#y', '/assets/?x=1#y'),
@@ -278,3 +305,15 @@ def test_nginx_never_exposes_internal_routes():
         conf = (root / name).read_text()
         assert 'location ^~ /api/internal/ { return 404; }' in conf, name
         assert conf.index('/api/internal/') < conf.index('location /api/ {'), name
+
+
+def test_admin_proxy_is_limited_to_local_tailnet_and_tunnel():
+    conf = (Path(__file__).parents[1] / 'services/portal/nginx/default.conf').read_text()
+    for marker in (
+        'allow 127.0.0.1;',
+        'allow ::1;',
+        'allow 172.16.0.0/12;',
+        'allow 100.64.0.0/10;',
+        'deny all;',
+    ):
+        assert conf.count(marker) == 2, marker

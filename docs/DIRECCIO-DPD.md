@@ -23,8 +23,8 @@
   llicència del material, no dades de l'alumnat ni del professorat).
 - Panell `/admin` local per a operacions tècniques (estat, backups,
   restauració i actualitzacions); l'accés requereix identitat Authentik amb
-  rol d'administrador (`ADMIN_OIDC_USERNAME`) i no s'ha d'exposar directament
-  a internet.
+  rol `administrador` o l'usuari `ADMIN_OIDC_USERNAME`; el portal només
+  l'exposa a localhost, la Tailnet o un túnel SSH, mai a la LAN directa.
 
 ## Taula de dades
 

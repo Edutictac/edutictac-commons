@@ -96,7 +96,9 @@ La entrada principal queda disponible en `http://edutictac.local/` (o con la
 IP del equipo si el cliente no soporta mDNS). En la primera visita aparece un
 asistente: introduce el código que mostró el instalador y el navegador muestra
 una sola vez las credenciales iniciales de Authentik. El asistente enlaza con Authentik para cambiar la contraseña y con
-`/admin/` para elegir las herramientas del centro.
+`/admin/` para elegir las herramientas del centro. El panel solo admite
+acceso desde el propio servidor, la Tailnet o un túnel SSH; la LAN directa
+recibe 403.
 El código queda invalidado al canjearlo y la contraseña no se guarda en el
 portal.
 
