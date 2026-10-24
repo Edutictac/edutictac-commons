@@ -257,3 +257,13 @@ test('sense ningú que cancel·le, l’enllaç d’entrar funciona com sempre', 
   await page.locator('edutictac-account').getByRole('menuitem', { name: /Alumnat/ }).click();
   await expect(page).toHaveURL(/student\.html$/);
 });
+
+test('data-no-student amaga l’accés de l’alumnat i manté el del professorat', async ({ page }) => {
+  await mockSession(page, { session: anonymous, logouts: 0 });
+  await page.goto('/teacher.html?lang=ca');
+  await page.evaluate(() => document.querySelector('edutictac-account').setAttribute('data-no-student', ''));
+  const widget = page.locator('edutictac-account');
+  await widget.locator('summary').click();
+  await expect(widget.getByRole('menuitem', { name: /Professorat/ })).toBeVisible();
+  await expect(widget.getByRole('menuitem', { name: /Alumnat/ })).toHaveCount(0);
+});

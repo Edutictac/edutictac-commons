@@ -37,6 +37,8 @@ const installed = window.matchMedia?.('(display-mode: standalone)').matches || w
 const homeUrl = computed(() => data.value.home || (sameOrigin.value ? '/' : PUBLIC_HOME));
 // data-home-only: només l'enllaç d'inici, sense consultar cap sessió (jocs infantils).
 const homeOnly = computed(() => 'homeOnly' in data.value);
+// data-no-student: l'app encara no guarda feina de l'alumnat (Blocs), així que no s'oferix l'accés amb codi i PIN.
+const noStudent = computed(() => 'noStudent' in data.value);
 // «Inici» no té sentit en la mateixa pàgina d'inici (portada d'edutictac.es o del portal).
 const onHome = computed(() => {
   const clean = url => { const u = new URL(url, location.href); return u.origin + u.pathname.replace(/\/index\.html$/, '/'); };
@@ -235,7 +237,7 @@ onBeforeUnmount(() => {
         </template>
         <template v-else-if="status === 'ready'">
           <a class="eta-item" role="menuitem" :href="resolve(links.login || links.teacher)" @click="beforeLogin"><span>{{ t.teacherLogin }}</span><small>{{ t.teacherLoginHint }}</small></a>
-          <a class="eta-item" role="menuitem" :href="resolve(links.student)" @click="beforeLogin"><span>{{ t.studentLogin }}</span><small>{{ t.studentLoginHint }}</small></a>
+          <a v-if="!noStudent" class="eta-item" role="menuitem" :href="resolve(links.student)" @click="beforeLogin"><span>{{ t.studentLogin }}</span><small>{{ t.studentLoginHint }}</small></a>
         </template>
 
         <div v-if="languages.length > 1" class="eta-theme eta-language" role="radiogroup" :aria-label="t.language"
