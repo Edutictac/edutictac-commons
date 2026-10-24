@@ -24,6 +24,32 @@ def test_fresh_install_uses_selector_release_images(tmp_path):
     assert values["COMPOSE_PROFILES"] == "authentik"
     assert values["MODULES_CONFIGURED"] == "0"
     assert values.get("QUIOSC_MODE", "disabled") == "disabled"
+    assert values["RECURSOS_CENTRAL_SESSION"] == "1"
+
+
+def test_upgrade_keeps_explicit_independent_bank_login(tmp_path):
+    path = tmp_path / "test.env"
+    path.write_text("RECURSOS_CENTRAL_SESSION=0\n")
+    assert configure(path, existing=True)["RECURSOS_CENTRAL_SESSION"] == "0"
+
+
+def test_installer_sets_the_bank_portal_url_without_replacing_custom_hosts(tmp_path):
+    source = (Path(__file__).parents[1] / "packaging/debian/postinst").read_text()
+    blocks = source.split("<<'PY'\n")
+    # The public URL configuration block follows the secret generation block.
+    block = next(part.split("\nPY", 1)[0] for part in blocks[2:]
+                 if '"RECURSOS_COMMONS_URL": portal_base' in part.split("\nPY", 1)[0])
+    path = tmp_path / "test.env"
+    for port in ("80", "8082"):
+        path.write_text(f"PORTAL_PORT={port}\nEDUTICTAC_MDNS_NAME=aula\n")
+        result = subprocess.run([sys.executable, "-", str(path)], input=block, capture_output=True, text=True)
+        assert result.returncode == 0
+        expected = "http://aula.local" + (":8082" if port == "8082" else "")
+        assert f"RECURSOS_COMMONS_URL={expected}\n" in path.read_text()
+    path.write_text("RECURSOS_COMMONS_URL=https://commons.centre.test\n")
+    result = subprocess.run([sys.executable, "-", str(path)], input=block, capture_output=True, text=True)
+    assert result.returncode == 0
+    assert "RECURSOS_COMMONS_URL=https://commons.centre.test\n" in path.read_text()
 
 
 def test_upgrade_preserves_configured_images_and_activation_state(tmp_path):
