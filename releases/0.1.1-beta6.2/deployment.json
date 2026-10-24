@@ -1,0 +1,19 @@
+{
+  "version": "0.1.1-beta6.2",
+  "url": "https://commons.edutictac.es/",
+  "images": {
+    "id-api": "registry.edutictac.es/edutictac/commons-id-api@sha256:0c5ae1319fe7b68489e52452cb3069559dba95728ca2b05902df93e6fd94864d",
+    "portal": "registry.edutictac.es/edutictac/commons-portal@sha256:85b8dc0c9f29f7e4331f507be18de91623d56df3a21334dade663b2734df8f23"
+  },
+  "existing_user_data_preserved": true,
+  "database_integrity_verified": true,
+  "environment_preserved": true,
+  "cors_and_private_routes_verified": true,
+  "other_containers_unchanged": true,
+  "label_schema_deployed": true,
+  "personal_oidc_login_acceptance": "not_performed",
+  "rollback_images": {
+    "id-api": "registry.edutictac.es/edutictac/commons-id-api:before-beta6.2",
+    "portal": "registry.edutictac.es/edutictac/commons-portal:before-beta6.2"
+  }
+}

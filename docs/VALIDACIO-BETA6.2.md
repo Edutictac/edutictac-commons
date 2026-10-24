@@ -20,7 +20,15 @@ beta6.1.
 - Portal `v0.1.1-beta6.2` per `127.0.0.1`, `edutictac.local` i IP des de l’alumne.
 - `edutictac-commons-open`, entrada de menú i xarxes B3 activos.
 
+## Producció
+
+- API i portal desplegats amb els digests de beta6.2; només canviaren eixos dos
+  contenidors. Base de dades amb integritat correcta i columna `label`.
+- Portal `v0.1.1-beta6.2`, API 200, rutes privades 403/404 i CORS aliè sense
+  capçalera. Altres contenidors conservaren ID.
+- Rollback: imatges `before-beta6.2`, còpies de configuració i SQLite al VPS.
+
 ## Pendent
 
 - Instal·lació neta en LliureX (la validada ací és una actualització).
-- Desplegament en producció.
+- Aceptació humana amb login OIDC personal.
