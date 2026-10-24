@@ -201,8 +201,33 @@ test('el script carrega el seu CSS si la pàgina no l’enllaça, i només una v
   await page.goto('/blank-widget.html');
   await expect(page.locator('edutictac-account .eta-home')).toBeVisible();
   await expect(page.locator('link[href$="account-widget.css"]')).toHaveCount(1);
-  await page.goto('/index.html');
+  await page.goto('/teacher.html');
   await expect(page.locator('edutictac-account .eta-home')).toBeVisible();
   await expect(page.locator('link[href*="account-widget.css"]')).toHaveCount(1);
   expect(await page.locator('edutictac-account .eta-home').getAttribute('target')).toBe(null);
+});
+
+test('en la portada no hi ha «Inici»: ja s’hi és', async ({ page }) => {
+  await mockSession(page, { session: anonymous, logouts: 0 });
+  for (const path of ['/', '/index.html']) {
+    await page.goto(path);
+    await expect(page.locator('edutictac-account summary')).toBeVisible();
+    await expect(page.locator('edutictac-account .eta-home')).toHaveCount(0);
+  }
+  await page.goto('/student.html');
+  await expect(page.locator('edutictac-account .eta-home')).toHaveAttribute('href', '/');
+});
+
+test('sense theme-preference.js el xip es queda clar encara que el sistema siga fosc', async ({ page }) => {
+  await mockSession(page, { session: anonymous, logouts: 0 });
+  await page.emulateMedia({ colorScheme: 'dark' });
+  await page.route('**/plain-app.html', route => route.fulfill({ contentType: 'text/html', body:
+    '<!doctype html><html><head><script src="/assets/account-widget.js" defer></script></head><body style="background:#fff"><edutictac-account></edutictac-account></body></html>' }));
+  await page.goto('/plain-app.html');
+  const chip = page.locator('edutictac-account summary');
+  await expect(chip).toBeVisible();
+  const light = await chip.evaluate(node => getComputedStyle(node).backgroundColor);
+  expect(light).toBe('rgb(232, 243, 239)');
+  await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'dark'));
+  await expect.poll(() => chip.evaluate(node => getComputedStyle(node).backgroundColor)).not.toBe(light);
 });
