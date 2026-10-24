@@ -6,6 +6,7 @@ x-logging: &default-logging
 
 services:
   id-api:
+    networks: [core, recursos, play, eduhoot, authentik]
     logging: *default-logging
     restart: unless-stopped
     mem_limit: ${ID_API_MEMORY:-384m}
@@ -82,6 +83,7 @@ services:
       retries: 5
 
   portal:
+    networks: [core, recursos]
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/ >/dev/null || exit 1"]
       interval: 10s
@@ -103,6 +105,7 @@ services:
       - "${PORTAL_PORT:-8082}:80"
 
   blocs:
+    networks: [editors]
     logging: *default-logging
     mem_limit: ${BLOCS_MEMORY:-256m}
     cpus: ${BLOCS_CPUS:-0.5}
@@ -123,6 +126,7 @@ services:
     restart: unless-stopped
 
   llibres:
+    networks: [editors]
     logging: *default-logging
     mem_limit: ${LLIBRES_MEMORY:-256m}
     cpus: ${LLIBRES_CPUS:-0.5}
@@ -149,6 +153,7 @@ services:
       retries: 5
 
   play:
+    networks: [play, recursos]
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8083/api/health', timeout=3).read()"]
       interval: 10s
@@ -187,6 +192,7 @@ services:
         condition: service_healthy
 
   recursos-api:
+    networks: [recursos, eduhoot]
     logging: *default-logging
     restart: unless-stopped
     mem_limit: ${RECURSOS_API_MEMORY:-384m}
@@ -242,6 +248,7 @@ services:
         condition: service_healthy
 
   recursos:
+    networks: [recursos]
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/ >/dev/null || exit 1"]
       interval: 10s
@@ -266,6 +273,7 @@ services:
         condition: service_healthy
 
   admin:
+    networks: [core, recursos, eduhoot, authentik]
     healthcheck:
       test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8091/', timeout=3).read()"]
       interval: 10s
@@ -350,6 +358,7 @@ services:
         condition: service_healthy
 
   eduhoot-mongo:
+    networks: [eduhoot-db]
     logging: *default-logging
     restart: unless-stopped
     mem_limit: ${EDUHOOT_MONGO_MEMORY:-768m}
@@ -368,6 +377,7 @@ services:
       retries: 10
 
   eduhoot:
+    networks: [eduhoot, eduhoot-db]
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
       interval: 10s
@@ -413,6 +423,7 @@ services:
       - "${EDUHOOT_PORT:-8090}:3000"
 
   authentik-postgresql:
+    networks: [authentik-db]
     logging: *default-logging
     mem_limit: ${AUTHENTIK_PG_MEMORY:-512m}
     cpus: ${AUTHENTIK_PG_CPUS:-1.0}
@@ -433,6 +444,7 @@ services:
     restart: unless-stopped
 
   authentik-server:
+    networks: [authentik, authentik-db]
     logging: *default-logging
     mem_limit: ${AUTHENTIK_SERVER_MEMORY:-1g}
     cpus: ${AUTHENTIK_SERVER_CPUS:-1.0}
@@ -470,6 +482,7 @@ services:
     restart: unless-stopped
 
   authentik-worker:
+    networks: [authentik, authentik-db]
     logging: *default-logging
     mem_limit: ${AUTHENTIK_WORKER_MEMORY:-768m}
     cpus: ${AUTHENTIK_WORKER_CPUS:-1.0}
@@ -508,6 +521,16 @@ services:
       - ./authentik-branding/startup_migration.py:/lifecycle/system_migrations/zz_edutictac_branding.py:ro
       - ./authentik-branding/i18n/2026.8.3/django.mo:/locale/es_ES/LC_MESSAGES/django.mo:ro
     restart: unless-stopped
+
+networks:
+  core:
+  recursos:
+  play:
+  eduhoot:
+  eduhoot-db:
+  editors:
+  authentik:
+  authentik-db:
 
 volumes:
   blocs_catalog_cache:

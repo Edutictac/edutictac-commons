@@ -65,6 +65,20 @@ SQLite usa `PRAGMA busy_timeout` (5 s per defecte,
 `EDUTICTAC_SQLITE_BUSY_TIMEOUT_MS`) perquè una escriptura concurrent no falle
 de seguida. Els logs Docker es retenen a `10m` × 3 fitxers.
 
+Les xarxes Docker estan separades:
+
+- `core`: `id-api`, `portal`, `admin`.
+- `recursos`: `recursos`, `recursos-api`, `portal`, `admin`, `id-api` i `play`.
+- `play`: `play` i `id-api`.
+- `eduhoot`: `eduhoot`, `id-api` i `admin`.
+- `eduhoot-db`: només `eduhoot` i `eduhoot-mongo`.
+- `editors`: només `blocs` i `llibres`.
+- `authentik`: `authentik-server`, `authentik-worker`, `id-api` i `admin`.
+- `authentik-db`: només `authentik-server`, `authentik-worker` i PostgreSQL.
+
+Així les apps opcionals no poden arribar a serveis que no necessiten i les
+bases de dades queden fora de la xarxa de gestió.
+
 ## Política de backup
 
 Regla del projecte: **tot servei amb dades persistents ha de tindre backup,
