@@ -14,7 +14,7 @@
     "eduhoot": "registry.edutictac.es/edutictac/eduhoot@sha256:473d3e0bdaf10846bf78ab5285e759f16ee2820b1f2bd8f9d4f0b16dce346bd7",
     "eduhoot-mongo": "mongo@sha256:c53852c00c23ca9f23fc39690350ffa9a80e3642fe8f96879726d8da0abe80a7",
     "id-api": "registry.edutictac.es/edutictac/commons-id-api@sha256:0c5ae1319fe7b68489e52452cb3069559dba95728ca2b05902df93e6fd94864d",
-    "portal": "registry.edutictac.es/edutictac/commons-portal@sha256:eff0a2241585f25d33223457fe3b57b9f89b9a74fb3e6ced3b296e5b02b5369d",
+    "portal": "registry.edutictac.es/edutictac/commons-portal@sha256:c65abe1ea99fded53bcffb5e2be20dc0aab69c6b8a735b0d73a0128ff7f24ff4",
     "admin": "registry.edutictac.es/edutictac/commons-admin@sha256:d16f6b644e8a38bc0fd151733b8fcc904f5eaeb688ade1de976656ff3aa45973",
     "play": "registry.edutictac.es/edutictac/commons-play@sha256:5ac86c85be2262382c734a30015c8b666401eda22829c7d8eef7fa6cc20a76d8",
     "blocs": "registry.edutictac.es/edutictac/commons-blocs@sha256:774ec1ab31fd5d0904ec327062eed7bb0e3a3b327aa0298640fd89cc95ec0009",

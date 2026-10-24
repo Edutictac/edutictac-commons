@@ -19,7 +19,7 @@
       "image": "registry.edutictac.es/edutictac/commons-id-api@sha256:0c5ae1319fe7b68489e52452cb3069559dba95728ca2b05902df93e6fd94864d"
     },
     "portal": {
-      "image": "registry.edutictac.es/edutictac/commons-portal@sha256:eff0a2241585f25d33223457fe3b57b9f89b9a74fb3e6ced3b296e5b02b5369d"
+      "image": "registry.edutictac.es/edutictac/commons-portal@sha256:c65abe1ea99fded53bcffb5e2be20dc0aab69c6b8a735b0d73a0128ff7f24ff4"
     },
     "admin": {
       "image": "registry.edutictac.es/edutictac/commons-admin@sha256:d16f6b644e8a38bc0fd151733b8fcc904f5eaeb688ade1de976656ff3aa45973"
