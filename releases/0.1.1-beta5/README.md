@@ -15,3 +15,10 @@ apps continuen pendents; el perfil TLS cobrix el portal.
 
 Estat: preparació d’imatges i instal·lador; encara no publicat en APT ni validat
 en instal·lació neta/actualització LliureX. No sobreescriure els artefactes beta4.
+
+## Dependència de xifratge en LliureX 23
+
+El repositori APT EduTicTac proporcionarà també el paquet `age` actualitzat
+de Jammy, sense modificar-lo. La procedència, SHA-256 i verificació de les
+firmes originals d’Ubuntu es documenten en [age-provenance.json](age-provenance.json).
+Això cobrix els espills LliureX que no inclouen esta dependència.
