@@ -93,7 +93,9 @@ instalación existente a alpha27 hace falta actualizar también sus imágenes;
 instalar este paquete no garantiza por sí solo que ejecute la nueva API.
 
 La entrada principal queda disponible en `http://edutictac.local/` (o con la
-IP del equipo si el cliente no soporta mDNS). En la primera visita aparece un
+IP del equipo si el cliente no soporta mDNS). El instalador muestra la URL
+mDNS y la IP; la entrada de menú/escritorio usa `edutictac-commons-open`, que
+incluye el puerto configurado y cae a la IP si `.local` no responde. En la primera visita aparece un
 asistente: introduce el código que mostró el instalador y el navegador muestra
 una sola vez las credenciales iniciales de Authentik. El asistente enlaza con Authentik para cambiar la contraseña y con
 `/admin/` para elegir las herramientas del centro. El panel solo admite

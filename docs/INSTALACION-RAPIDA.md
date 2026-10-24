@@ -33,9 +33,21 @@ necesita instalar Commons: accede desde su navegador.
    **Guarda el código de activación que aparece al final**; no lo compartas.
 3. **Reinicia el ordenador.** Hazlo antes de activar aplicaciones o crear
    copias desde el panel, para aplicar los permisos de Docker.
-4. **Abre EduTicTac Commons** desde el menú de aplicaciones. En LliureX,
-   la dirección habitual es `http://edutictac.local:8082/`.
-   Si el instalador indica otra dirección, utiliza esa.
+4. **Abre EduTicTac Commons** desde el menú de aplicaciones. La entrada usa
+   `edutictac-commons-open`: incluye automáticamente el puerto configurado
+   (`PORTAL_PORT`) y prueba primero `edutictac.local`; si no responde, abre la
+   IP del servidor.
+
+   Al terminar, el instalador muestra las dos direcciones. Úsalas si no
+   encuentras el icono:
+
+   ```text
+   Accés al portal: http://edutictac.local:8082/
+   Accés per IP:   http://192.168.1.50:8082/
+   ```
+
+   Si el puerto configurado es el 80, las direcciones no llevan `:8082`.
+   También se crea una copia del icono en el escritorio del usuario que instala.
 5. **Activa la instalación.** Introduce el código que guardaste. La pantalla
    muestra las credenciales iniciales de administración. Guárdalas de forma
    segura y cambia la contraseña desde el enlace al panel de acceso.
@@ -81,10 +93,16 @@ seleccionadas; después hay que actualizar sus imágenes desde el panel.
   conexión a Internet.
 - **El primer acceso todavía no aparece:** el servicio de acceso puede tardar
   más que el portal en arrancar. Espera un poco y vuelve a intentarlo.
-- **No abre desde el menú:** prueba la dirección indicada por el instalador.
-  En LliureX, Commons suele usar el puerto 8082 porque el 80 ya está ocupado.
-- **No se reconoce el nombre desde otro equipo:** comprueba que ambos están
-  en la misma red y pide al responsable del centro que revise la dirección.
+- **No abre desde el menú:** usa la dirección que muestra el instalador.
+  El icono incluye el puerto y prueba mDNS y IP; si tampoco abre, comprueba
+  que el servicio esté iniciado.
+- **No se reconoce `edutictac.local` desde otro equipo:** usa
+  `http://<IP-del-servidor>:<puerto>/`, que el instalador muestra al terminar.
+  Si el login docente por IP falla, pide que configure
+  `EDUTICTAC_PUBLIC_HOST=<IP>` y reaplique la configuración.
+- **El acceso directo no aparece:** abre el menú de aplicaciones y busca
+  «EduTicTac Commons»; la copia del escritorio solo se crea para el usuario
+  que ejecutó la instalación.
 - **Falta el código o la contraseña inicial:** pide ayuda a quien instaló el
   servidor; no reinstales ni borres datos para recuperar el acceso.
 

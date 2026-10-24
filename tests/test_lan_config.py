@@ -53,3 +53,11 @@ def test_launcher_falls_back_to_ip(tmp_path):
             break
         import time; time.sleep(0.05)
     assert opened.read_text().strip() == 'http://192.0.2.10:8082/'
+
+
+def test_installer_guide_documents_url_ip_icon_and_port():
+    guide = (ROOT / 'docs/INSTALACION-RAPIDA.md').read_text()
+    assert 'edutictac-commons-open' in guide
+    assert 'Accés per IP' in guide
+    assert 'PORTAL_PORT' in guide
+    assert 'escritorio' in guide
