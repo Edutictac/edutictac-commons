@@ -349,6 +349,17 @@ sudo env PWD=/opt/edutictac-commons docker compose --env-file .env -f compose.ym
   comprovar amb `docker exec edutictac-commons-admin-1 sh -c 'echo
   $REPO_DIR'`.
 
+## TLS i ingress
+
+Producció (`commons.edutictac.es`) usa nginx del host amb TLS, HSTS,
+`Permissions-Policy` i CSP conservadora; els serveis escolten en loopback. La
+configuració de referència és `services/portal/nginx/production-vhost.conf`.
+
+En centres, el portal i les apps continuen publicant ports directes en HTTP.
+Per a exposició exterior cal un proxy invers amb TLS i filtrar els ports
+`8084`, `8086`, `8090`, `8098`, `9000` i `9443`. L'ingress únic amb
+certificats automàtics per a centres no està implementat.
+
 ## Riscos operatius
 
 - `.env` conté secrets locals: no s'ha de mostrar ni versionar.

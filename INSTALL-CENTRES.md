@@ -335,6 +335,18 @@ túnel SSH) — vegeu
 `README.md#panell-dadministracio` i la guia pas a pas
 [docs/GUIA-ADMIN.md](docs/GUIA-ADMIN.md).
 
+## TLS, HSTS i ingress
+
+Producció publica Commons darrere nginx amb TLS, HSTS, `Permissions-Policy` i
+una CSP conservadora (`frame-ancestors`, `base-uri`, `object-src`,
+`form-action`). Els ports interns (`8084`, `8086`, `8090`, `8098`, `9000`,
+`9443`) estan lligats a `127.0.0.1` i no s'exposen directament.
+
+En una instal·lació de centre el portal continua en HTTP. Per exposar-lo fora
+de la LAN, posa un proxy invers amb TLS davant del portal i no òbrigs els
+ports directes de les apps a Internet. L'ingress únic amb TLS automàtic per a
+centres queda pendent; el paquet no genera certificats.
+
 ## Solució de problemes
 
 ### El portal no obri
