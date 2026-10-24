@@ -24,3 +24,6 @@ def test_federated_files_have_their_own_limit_without_widening_generic_api():
     assert 'client_max_body_size 110m;' in upload
     assert 'proxy_pass http://127.0.0.1:8005;' in upload
     assert 'proxy_set_header Host $http_host;' in upload
+
+    assert 'proxy_set_header X-Real-IP $http_x_real_ip;' in upload
+    assert 'proxy_set_header X-Real-IP $http_x_real_ip;' in generic
