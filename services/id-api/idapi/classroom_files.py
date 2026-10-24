@@ -195,7 +195,11 @@ class ClassroomFiles:
             with self.c.connect() as conn:
                 settings = self.settings(conn)
             if identity and not settings['students_can_upload']: fail(403, 'student_upload_disabled')
-            if length is not None and int(length)>settings['max_file_bytes']: fail(413, 'file_too_large')
+            if length is not None and int(length)>settings['max_file_bytes']:
+                # Finish receiving without storing bytes. Otherwise an early 413
+                # can reset nginx's unbuffered upstream connection and become 502.
+                async for _ in request.stream():pass
+                fail(413, 'file_too_large')
             group_dir = self.group_dir(group)
             if group_dir.is_symlink():fail(507, "files_disk_full")
             group_dir.mkdir(mode=0o700, exist_ok=True)
@@ -208,9 +212,12 @@ class ClassroomFiles:
             committed = False
             try:
                 with os.fdopen(fd, 'wb') as stream:
-                    async for chunk in request.stream():
+                    incoming = request.stream()
+                    async for chunk in incoming:
                         size += len(chunk)
-                        if size>settings['max_file_bytes']: fail(413, 'file_too_large')
+                        if size>settings['max_file_bytes']:
+                            async for _ in incoming:pass
+                            fail(413, 'file_too_large')
                         if shutil.disk_usage(self.root).free < len(chunk)+self.reserve: fail(507, 'files_disk_full')
                         stream.write(chunk);sha.update(chunk)
                     stream.flush();os.fsync(stream.fileno())

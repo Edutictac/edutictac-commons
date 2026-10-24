@@ -110,6 +110,22 @@ def test_settings_permissions_and_limits_take_effect_without_restart(api):
     assert settings(t['admin'],group_quota_bytes=10,student_quota_bytes=11).status_code==422
 
 
+def test_oversized_upload_receives_the_body_without_storing_it(api):
+    module,t,p=api
+    assert settings(t['admin'],max_file_bytes=8,group_quota_bytes=100,student_quota_bytes=10).status_code==200
+    received=[]
+    def body():
+        for chunk in (b'1234',b'5678',b'90'):
+            received.append(chunk)
+            yield chunk
+    response=upload(p['i1'],'oversize.txt',body(),student=True,**{'Content-Length':'10'})
+    assert response.status_code==413
+    assert response.json()['detail']=='file_too_large'
+    assert b''.join(received)==b'1234567890'
+    assert p['i1'].get('/api/student/group-files').json()['files']==[]
+    assert not list(module.commons.files.root.glob('*/*'))
+
+
 def test_student_quota_streaming_limit_and_disk_reserve(api,monkeypatch):
     module,t,p=api
     assert settings(t['admin'],max_file_bytes=8,group_quota_bytes=100,student_quota_bytes=10).status_code==200
