@@ -30,6 +30,8 @@ Actualitza primer el paquet i després les imatges des del panell. Fes una còpi
 de seguretat i comprova-la abans del canvi. La beta5 es conserva com a versió
 anterior per a rollback.
 
-El paquet `0.1.1~beta6` es publicarà a APT amb la firma habitual. La validació
-final i el desplegament en centres es documentaran en
-[docs/VALIDACIO-BETA6.md](../../docs/VALIDACIO-BETA6.md).
+El paquet `0.1.1~beta6` està publicat a APT amb la firma habitual. La descàrrega,
+l’índex i la selecció de versió s’han verificat; els hashes consten en
+[installer.json](installer.json) i [apt-verification.json](apt-verification.json).
+La validació final en LliureX i el desplegament en centres queden pendents i es
+documentaran en [docs/VALIDACIO-BETA6.md](../../docs/VALIDACIO-BETA6.md).

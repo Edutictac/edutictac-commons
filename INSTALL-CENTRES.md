@@ -4,7 +4,7 @@ Per a instal·lar el paquet sense preparar un entorn de desenvolupament,
 comença per la [guia bàsica d’instal·lació](docs/INSTALACION-RAPIDA.md).
 
 Entrega: [Commons 0.1.1-beta6](releases/0.1.1-beta6/README.md).
-Paquet amd64 amb descàrrega d’imatges; publicació APT i validació final en curs.
+Paquet amd64 amb descàrrega d’imatges; publicat en APT i pendent de validació final en LliureX.
 Per a actualitzar: primer el paquet, després les imatges des d’Administració.
 Inclou un manifest de digests i una prova d'instal·lació/restauració aïllada.
 

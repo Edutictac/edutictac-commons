@@ -1,0 +1,11 @@
+{
+  "version": "0.1.1~beta6",
+  "apt_signature_verified_with_pretrusted_key": true,
+  "index_hash_verified": true,
+  "commons_download_hash_verified": true,
+  "age_download_hash_verified": true,
+  "isolated_apt_candidate_verified": true,
+  "url": "https://packages.edutictac.es/pool/main/e/edutictac-commons/edutictac-commons_0.1.1~beta6_amd64.deb",
+  "sha256": "5ed9f2fd40adbcf9db4cfd39951091dacf446d5a5bb2000e360aaed6bd5d05f1",
+  "size": 5908732
+}
