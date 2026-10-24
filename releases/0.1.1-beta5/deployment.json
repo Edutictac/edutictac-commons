@@ -1,0 +1,18 @@
+{
+  "version": "0.1.1-beta5",
+  "url": "https://commons.edutictac.es/",
+  "images": {
+    "id-api": "registry.edutictac.es/edutictac/commons-id-api@sha256:b7a57947bfbae28a149f5be98bb27ce9015cb000929586427197300076db1597",
+    "portal": "registry.edutictac.es/edutictac/commons-portal@sha256:ca04764411bada0c1f50852ee51775d5a650101a46a7c9fb11214357e759d36d"
+  },
+  "existing_user_data_preserved": true,
+  "database_integrity_verified": true,
+  "environment_preserved": true,
+  "cors_and_csrf_verified": true,
+  "oidc_redirect_verified": true,
+  "private_routes_blocked": true,
+  "other_containers_unchanged": true,
+  "encrypted_nas_backup_readback_verified": true,
+  "cutover_seconds": 64.5,
+  "personal_oidc_login_acceptance": "not_performed"
+}

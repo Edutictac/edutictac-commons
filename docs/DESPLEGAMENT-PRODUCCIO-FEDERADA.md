@@ -1016,3 +1016,20 @@ Copias de Compose, configuración pública y los dos archivos del sitio en
 restaurar esos archivos y recrear solo el servicio `portal`; no restaurar bases
 de datos. Identificadores/arranques/imágenes del resto de contenedores y
 PID/arranque de Play conservados. Candidato privado retirado; staging eliminado.
+
+## Actualització beta5 — 24-10-2026
+
+Portal i ID API actualitzats amb els digests de la release beta5. Només es
+canvien les imatges dels dos serveis: configuració, secrets, volums, xarxa,
+ports i nginx conservats. Dades prèvies i integritat SQLite comprovades; la
+resta de contenidors conserva el seu identificador i instant d’arrancada.
+
+Còpies GPG prèvies de configuració/dades i imatges, més snapshot consistent
+del moment del canvi amb l’API parada. Rèplica NAS comprovada amb SHA-256,
+descifrat i integritat de la base. El rollback de codi usa els compose
+anteriors i conserva la base actual; no cal substituir-la per dades antigues.
+
+Salut, sessió, CORS, CSRF, redirecció OIDC, privacitat de rutes internes i
+versió pública verificades. Les apps públiques responen 200. No s’ha fet
+un login personal ni creat dades de prova en producció. Resultats públics
+no sensibles en [deployment.json](../releases/0.1.1-beta5/deployment.json).

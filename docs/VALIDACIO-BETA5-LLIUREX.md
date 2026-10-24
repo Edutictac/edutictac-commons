@@ -63,3 +63,11 @@ operacions diferents d’esta validació amb comptes de prova.
 
 Ingress de totes les apps, certificats de centre, 2FA/systemd i els blocs B/C
 continuen fora d’esta release. Els artefactes beta4 publicats es conserven.
+
+## Estat final del laboratori
+
+El paquet final exacte s’ha instal·lat i les 13 imatges coincidixen amb el
+manifest. Després de conservar el disc de la instal·lació neta validada,
+s’ha recuperat el disc de l’aula original i actualitzat també a beta5 final.
+Configuració, files prèvies i blobs d’aula conservats; professor i alumne
+arrancats i les sis eines seleccionades.
