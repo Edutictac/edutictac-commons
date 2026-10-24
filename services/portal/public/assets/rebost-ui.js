@@ -3146,7 +3146,7 @@ Ja({
 				Q("section", {
 					id: "access",
 					class: "panel",
-					hidden: !f.value || p.value
+					hidden: !f.value || p.value || W(a) && g.value !== "mine"
 				}, [Q("p", go, F(W(d)("rebost.access")), 1), Q("div", _o, [Q("a", {
 					class: "button-link secondary",
 					id: "studentLogin",

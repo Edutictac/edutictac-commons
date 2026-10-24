@@ -171,7 +171,7 @@ onBeforeUnmount(() => {
       <p id="intro" class="teacher-intro">{{ t('rebost.intro') }}</p>
     </div>
     <p id="status" :class="{success: ['success', 'image_saved'].includes(status), error: status && !['success', 'image_saved', 'working'].includes(status)}" role="status" aria-live="polite">{{ status ? t('rebost.' + status) : '' }}</p>
-    <section id="access" class="panel" :hidden="!active || authenticated">
+    <section id="access" class="panel" :hidden="!active || authenticated || (picking && collection !== 'mine')">
       <p id="accessHint">{{ t('rebost.access') }}</p>
       <div class="actions"><a class="button-link secondary" id="studentLogin" href="/student.html?next=%2Fassets%2F" :target="picking ? '_blank' : undefined" rel="noopener noreferrer">{{ t('rebost.student') }}</a>
       <a class="button-link" id="oidcLogin" href="/api/auth/oidc/login?next=%2Fassets%2F" :target="picking ? '_blank' : undefined" rel="noopener noreferrer">{{ t('rebost.oidc') }}</a></div>
