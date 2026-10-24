@@ -12,8 +12,8 @@
  * data-hide-when selector CSS: el xip s'amaga mentre la pàgina el complix (p. ex. el
  *                mode presentació de Robotics, ".app.presentation"); també en pantalla completa
  *
- * Commons ha d'admetre l'origen de l'app en EDUTICTAC_ID_ALLOWED_ORIGINS
- * (https://*.edutictac.es ja els cobrix). Només mostra la sessió.
+ * Commons ha d'admetre l'origen exacte de l'app en EDUTICTAC_ID_ALLOWED_ORIGINS
+ * (no s'admeten comodins de subdomini). Només mostra la sessió.
  */
 (function () {
   'use strict';

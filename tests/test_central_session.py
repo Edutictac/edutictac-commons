@@ -9,7 +9,12 @@ import pytest
 from fastapi import Response
 from fastapi.testclient import TestClient
 
-ORIGINS = 'https://edutictac.es,https://*.edutictac.es,http://localhost:*'
+ORIGINS = (
+    'https://edutictac.es,https://commons.edutictac.es,https://recursos.edutictac.es,'
+    'https://blocs.edutictac.es,https://blocs-junior.edutictac.es,https://blockly.edutictac.es,'
+    'https://llibres.edutictac.es,https://eduhoot.edutictac.es,https://play.edutictac.es,'
+    'http://localhost:*'
+)
 
 
 @pytest.fixture
@@ -123,7 +128,18 @@ def test_central_logout_rejects_foreign_or_missing_origin(module):
 
 def test_cors_only_for_allowed_origins_and_session_paths(module):
     client = TestClient(module.app)
-    for origin in ('https://edutictac.es', 'https://play.edutictac.es', 'http://localhost:8098'):
+    for origin in (
+        'https://edutictac.es',
+        'https://commons.edutictac.es',
+        'https://recursos.edutictac.es',
+        'https://blocs.edutictac.es',
+        'https://blocs-junior.edutictac.es',
+        'https://blockly.edutictac.es',
+        'https://llibres.edutictac.es',
+        'https://eduhoot.edutictac.es',
+        'https://play.edutictac.es',
+        'http://localhost:8098',
+    ):
         response = client.get('/api/auth/session', headers={'Origin': origin})
         assert response.headers['access-control-allow-origin'] == origin
         assert response.headers['access-control-allow-credentials'] == 'true'
@@ -132,7 +148,14 @@ def test_cors_only_for_allowed_origins_and_session_paths(module):
         assert preflight.status_code == 204
         assert 'POST' in preflight.headers['access-control-allow-methods']
 
-    for origin in ('https://evil.test', 'https://edutictac.es.evil.test', 'http://edutictac.es', 'null'):
+    for origin in (
+        'https://evil.test',
+        'https://edutictac.es.evil.test',
+        'https://pages.edutictac.es',
+        'https://evil.edutictac.es',
+        'http://edutictac.es',
+        'null',
+    ):
         response = client.get('/api/auth/session', headers={'Origin': origin})
         assert 'access-control-allow-origin' not in response.headers
         assert client.options('/api/auth/session', headers={
@@ -140,6 +163,25 @@ def test_cors_only_for_allowed_origins_and_session_paths(module):
 
     other = client.get('/api/health', headers={'Origin': 'https://edutictac.es'})
     assert 'access-control-allow-origin' not in other.headers
+
+
+def test_parse_origins_rejects_subdomain_wildcards():
+    from idapi.origins import parse_origins
+
+    assert parse_origins('https://edutictac.es,http://localhost:*') == (
+        'https://edutictac.es',
+        'http://localhost:*',
+    )
+    for value in (
+        'https://*.edutictac.es',
+        'https://*.example.test,https://edutictac.es',
+        'edutictac.es',
+        'https://edutictac.es/path',
+        'https://user:pass@edutictac.es',
+        'https://edutictac.es:notaport',
+    ):
+        with pytest.raises(ValueError):
+            parse_origins(value)
 
 
 @pytest.mark.parametrize('value,expected', [
