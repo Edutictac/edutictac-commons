@@ -11,10 +11,12 @@ from .origins import parse_origins
 
 @dataclass
 class Settings:
+    environment: str = "development"
     db_path: str = "/var/lib/edutictac-id-api/id.db"
     session_secret: str = ""
     teacher_token: str = ""
     app_token: str = ""
+    app_tokens: dict[str, str] = field(default_factory=dict)
     cookie_domain: str = ""
     cookie_secure: bool = True
     pin_hash_iterations: int = 210000
@@ -38,10 +40,15 @@ class Settings:
     def from_env(cls, env: Mapping[str, str] | None = None) -> Settings:
         env = os.environ if env is None else env
         return cls(
+            environment=env.get("EDUTICTAC_ENV", "development").strip().lower() or "development",
             db_path=env.get("EDUTICTAC_ID_DB", cls.db_path),
             session_secret=env.get("EDUTICTAC_ID_SECRET", ""),
             teacher_token=env.get("EDUTICTAC_ID_TEACHER_TOKEN", ""),
             app_token=env.get("EDUTICTAC_ID_APP_TOKEN", ""),
+            app_tokens={
+                name: env.get(f"{name.upper()}_ID_APP_TOKEN", "").strip()
+                for name in ("play", "recursos", "eduhoot")
+            },
             cookie_domain=env.get("EDUTICTAC_ID_COOKIE_DOMAIN", ""),
             cookie_secure=env.get("EDUTICTAC_ID_COOKIE_SECURE", "1") != "0",
             pin_hash_iterations=int(env.get("EDUTICTAC_ID_PIN_HASH_ITERATIONS", "210000")),
@@ -59,6 +66,24 @@ class Settings:
             allowed_origins=parse_origins(env.get("EDUTICTAC_ID_ALLOWED_ORIGINS", "")),
             account_url=env.get("EDUTICTAC_ID_ACCOUNT_URL", "").strip(),
         )
+
+    def validate_production_secrets(self) -> None:
+        """Fail closed when a production deployment keeps known demo secrets."""
+        if self.environment != "production":
+            return
+        problems: list[str] = []
+        if len(self.session_secret) < 32 or self.session_secret in {"change-this-local-secret"}:
+            problems.append("EDUTICTAC_ID_SECRET")
+        if len(self.teacher_token) < 24 or self.teacher_token in {"dev-teacher"}:
+            problems.append("EDUTICTAC_ID_TEACHER_TOKEN")
+        if len(self.app_token) < 24 or self.app_token in {"dev-app-token"}:
+            problems.append("EDUTICTAC_ID_APP_TOKEN")
+        if self.oidc_configured and (
+            len(self.oidc_client_secret) < 16 or self.oidc_client_secret in {"change-this-oidc-client-secret"}
+        ):
+            problems.append("EDUTICTAC_ID_OIDC_CLIENT_SECRET")
+        if problems:
+            raise RuntimeError("unsafe production secrets: " + ", ".join(problems))
 
     @property
     def oidc_configured(self) -> bool:

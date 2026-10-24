@@ -127,6 +127,11 @@ Variables principals:
 - `ADMIN_OIDC_USERNAME`: usuari Authentik de bootstrap admès al panell
   `/admin` a més de qualsevol compte amb rol `administrador`; per defecte
   `akadmin`.
+- `EDUTICTAC_ENV`: `development` en demo local; `production` en un centre.
+  En producció l'API refusa arrancar amb els secrets de demo.
+- `PLAY_ID_APP_TOKEN`, `RECURSOS_ID_APP_TOKEN`, `EDUHOOT_ID_APP_TOKEN`:
+  credencials internes per aplicació; si falten, s'usa
+  `EDUTICTAC_ID_APP_TOKEN`.
 - `ADMIN_PORT`: port del panell `/admin` al host (només `127.0.0.1`).
 
 En qualsevol entorn que no siga demo local cal canviar

@@ -53,6 +53,15 @@ El comandament crea un grup, assigna l'activitat demo i escriu un fitxer TSV de 
 
 Els PINs només es mostren just després de generar credencials. El CSV està pensat per exportar codis, però no inclou PINs.
 
+## Secrets de producció
+
+El paquet genera secrets aleatoris i posa `EDUTICTAC_ENV=production`. Si
+instal·les manualment amb `make up`, canvia abans
+`EDUTICTAC_ID_SECRET`, `EDUTICTAC_ID_TEACHER_TOKEN`, `EDUTICTAC_ID_APP_TOKEN`
+i els tokens `PLAY_ID_APP_TOKEN`, `RECURSOS_ID_APP_TOKEN` i
+`EDUHOOT_ID_APP_TOKEN`. En producció, l'API refusa arrancar si detecta els
+valors de demo.
+
 ## Configuració mínima
 
 Edita `.env` abans d'usar la demo amb professorat real:

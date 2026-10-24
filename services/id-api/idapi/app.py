@@ -138,6 +138,7 @@ def install_origin_guard(app: FastAPI, c: Commons) -> None:
 
 def create_app(settings: Settings | None = None) -> FastAPI:
     settings = settings or Settings.from_env()
+    settings.validate_production_secrets()
     c = Commons(settings)
     c.db.migrate()
 

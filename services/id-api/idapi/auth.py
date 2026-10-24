@@ -215,13 +215,22 @@ class Auth:
 
     # --- Aplicacions ------------------------------------------------------
 
-    def require_app_token(self, request: Request) -> None:
-        if not self.settings.app_token:
+    def require_app_token(self, request: Request, app_id: str | None = None) -> None:
+        if app_id:
+            expected = self.settings.app_tokens.get(app_id, "") or self.settings.app_token
+            candidates = [expected] if expected else []
+        else:
+            # Rutes internes sense app_id (resolució de sessió): qualsevol
+            # credencial d'aplicació configurada és acceptable.
+            candidates = [self.settings.app_token, *self.settings.app_tokens.values()]
+            candidates = [value for value in candidates if value]
+        if not candidates:
             raise HTTPException(status_code=503, detail="app token not configured")
         auth = request.headers.get("authorization", "")
         if not auth.startswith("Bearer "):
             raise HTTPException(status_code=401, detail="app token required")
-        if not hmac.compare_digest(auth[7:].encode(), self.settings.app_token.encode()):
+        supplied = auth[7:].encode()
+        if not any(hmac.compare_digest(supplied, value.encode()) for value in candidates):
             raise HTTPException(status_code=403, detail="invalid app token")
 
     # --- Alumnat ----------------------------------------------------------
