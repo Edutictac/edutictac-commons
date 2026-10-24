@@ -134,10 +134,12 @@ make update-images
 ```
 
 `make update-images` crea i verifica un backup abans de canviar tags, descarrega
-imatges, reinicia serveis i executa `make test-flow`. Actualitza totes les
-imatges pròpies (`commons-id-api`, `commons-portal`, `commons-admin` i
-`commons-play`) en un sol pas, incloent el panell `/admin`: no cal cap acció
-manual addicional perquè el panell quede al dia.
+imatges, **fixa els digests resolts** i reinicia serveis; després executa
+`make test-flow`. Actualitza totes les imatges pròpies (`commons-id-api`,
+`commons-portal`, `commons-admin` i `commons-play`) en un sol pas, incloent el
+panell `/admin`: no cal cap acció manual addicional perquè el panell quede al
+dia. Si qualsevol comprovació falla després d'haver canviat els tags, es fa un
+**rollback automàtic** als tags i digests anteriors.
 
 Si una actualització falla alguna comprovació, es pot desfer amb:
 

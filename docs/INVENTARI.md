@@ -254,14 +254,21 @@ del canal:
 `make update-images` és el flux segur actual:
 
 1. backup nou i verificable (`backup.sh` + `backup-check.sh`);
-2. detecció del candidat del canal i actualització local de `IMAGE_TAG` /
+2. captura dels digests de les imatges actuals a `update.json`;
+3. detecció del candidat del canal i actualització local de `IMAGE_TAG` /
    `ADMIN_TAG` / `EDUHOOT_TAG` en `.env` (`apply-update-tags.py`);
-3. verificació amb `check-images.sh` que totes les imatges (incloent-hi
+4. verificació amb `check-images.sh` que totes les imatges (incloent-hi
    `commons-admin`) existeixen al registre abans de tocar res més;
-4. descàrrega de noves imatges;
-5. reinici controlat amb `docker compose up -d --wait --no-build`;
-6. healthchecks;
-7. `test-flow` final.
+5. descàrrega de noves imatges i resolució dels digests remots;
+6. `image-digests.py pin`: es descarrega cada digest i es reetiqueta amb el
+   tag de compose, de manera que el reinici no depén d'un tag mòbil;
+7. reinici controlat amb `docker compose up -d --wait --no-build`;
+8. healthchecks;
+9. `test-flow` final.
+
+Si falla qualsevol pas després de canviar tags, `update-images.sh` crida
+`rollback-images.sh` amb el backup previ; el rollback fixa els digests
+antics (`previous_images`) i no torna a descarregar tags mòbils.
 
 `make rollback-images BACKUP=commons-<stamp>` segueix el mateix patró amb els
 tags guardats en `update.json` del backup indicat, i també passa per

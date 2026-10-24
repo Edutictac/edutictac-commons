@@ -79,6 +79,11 @@ falta `age`. Sense aquesta variable, el comportament és el de sempre
 (pla), per compatibilitat amb instal·lacions existents; en producció cal
 posar-la a `1`.
 
+Quan `update-images.sh` crea el backup previ a una actualització, afig a
+`update.json` els camps `previous_images` (digests de les imatges abans) i
+`pulled_images` (digests resolts després de descarregar). El rollback els usa
+per tornar exactament a les imatges anteriors.
+
 La clau privada no s'ha de copiar mai al servidor. Si es perd, les còpies
 xifrades no es poden recuperar.
 
