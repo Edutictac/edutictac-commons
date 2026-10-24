@@ -314,6 +314,7 @@ def test_admin_proxy_is_limited_to_local_tailnet_and_tunnel():
         'allow ::1;',
         'allow 172.16.0.0/12;',
         'allow 100.64.0.0/10;',
+        'allow fd7a:115c:a1e0::/48;',
         'deny all;',
     ):
         assert conf.count(marker) == 2, marker
