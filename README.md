@@ -1,12 +1,10 @@
 # EduTicTac Commons Stack Local
 
-Versió d’imatges: [0.1.1-beta5](releases/0.1.1-beta5/README.md).
-Instal·lador amd64 per a LliureX 23, Ubuntu i Debian: `0.1.1~beta5`.
-La beta5 incorpora les correccions de seguretat i conserva el xip i els fitxers de l’aula.
-La [validació anterior de beta3](docs/VALIDACIO-BETA3-LLIUREX.md) és el punt de partida;
-la validació final en LliureX es farà després d’integrar el xip de Banc.
-La publicació APT i el canvi de la pàgina de descàrrega continuen pendents;
-la versió APT pública anterior és beta1.
+Versió d’imatges: [0.1.1-beta6](releases/0.1.1-beta6/README.md).
+Instal·lador amd64 per a LliureX 23, Ubuntu i Debian: `0.1.1~beta6`.
+La beta6 inclou l’estabilització de la pila, les xarxes Docker separades, l’accés
+per LAN amb mDNS/IP i les millores d’aula (nom humà i límit visible).
+La beta5 continua disponible com a versió anterior validada.
 Proves d'idiomes: `npm ci`, `npx playwright install --with-deps chromium` i
 `make test-i18n`. Instal·lació i restauració aïllades: `make test-installation`.
 

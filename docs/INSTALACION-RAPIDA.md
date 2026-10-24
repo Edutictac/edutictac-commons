@@ -3,7 +3,7 @@
 Guía para la persona que prepara el ordenador del centro. El alumnado no
 necesita instalar Commons: accede desde su navegador.
 
-**Versión de esta guía: 0.1.1-beta5.** La página oficial indica el instalador disponible y las instrucciones del repositorio APT.
+**Versión de esta guía: 0.1.1-beta6.** La página oficial indica el instalador disponible y las instrucciones del repositorio APT.
 
 ## Antes de empezar
 
@@ -18,14 +18,14 @@ necesita instalar Commons: accede desde su navegador.
 ## Primera instalación
 
 1. **Descarga el instalador** desde la [página oficial de Commons](https://edutictac.es/instala-commons.html)
-   cuando anuncie la beta 5. Guárdalo en el ordenador que funcionará como servidor.
+   cuando anuncie la beta 6. Guárdalo en el ordenador que funcionará como servidor.
 2. **Añade el [repositorio APT oficial](ubuntu-package.md)** para obtener también
    las dependencias de cifrado que faltan en algunos espejos LliureX.
    **Instala el paquete.** Abre una terminal en la carpeta donde lo has
    descargado y ejecuta:
 
    ```bash
-   sudo apt install ./edutictac-commons_0.1.1~beta5_amd64.deb
+   sudo apt install ./edutictac-commons_0.1.1~beta6_amd64.deb
    ```
 
    Introduce la contraseña de administración del ordenador y espera a que
