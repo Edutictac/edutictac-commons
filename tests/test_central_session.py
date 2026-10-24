@@ -61,6 +61,21 @@ def student_client(module):
     return client_with(module, response)
 
 
+def test_batch_creation_saves_and_returns_the_classroom_label(module):
+    client = TestClient(module.app)
+    login = client.post('/api/teacher/login', json={'token': 'synthetic-session-test-teacher'})
+    assert login.status_code == 200
+    response = client.post(
+        '/api/identities/batch',
+        json={'tenant_id': 'centre', 'label': '3r A · Ciències', 'count': 1, 'pin_length': 4},
+    )
+    assert response.status_code == 201
+    group = response.json()['group']
+    assert group['label'] == '3r A · Ciències'
+    summary = client.get('/api/teacher/summary').json()
+    assert any(item['id'] == group['id'] and item['label'] == '3r A · Ciències' for item in summary['groups'])
+
+
 def test_anonymous_session_is_public_and_never_cached(module):
     response = TestClient(module.app).get('/api/auth/session')
     assert response.status_code == 200

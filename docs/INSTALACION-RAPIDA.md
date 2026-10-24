@@ -3,7 +3,7 @@
 Guía para la persona que prepara el ordenador del centro. El alumnado no
 necesita instalar Commons: accede desde su navegador.
 
-**Versión de esta guía: 0.1.1-beta6.** La página oficial indica el instalador disponible y las instrucciones del repositorio APT.
+**Versión de esta guía: 0.1.1-beta6.1.** La página oficial indica el instalador disponible y las instrucciones del repositorio APT.
 
 ## Antes de empezar
 
@@ -25,7 +25,7 @@ necesita instalar Commons: accede desde su navegador.
    descargado y ejecuta:
 
    ```bash
-   sudo apt install ./edutictac-commons_0.1.1~beta6_amd64.deb
+   sudo apt install ./edutictac-commons_0.1.1~beta6.1_amd64.deb
    ```
 
    Introduce la contraseña de administración del ordenador y espera a que

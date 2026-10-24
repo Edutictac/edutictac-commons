@@ -122,11 +122,11 @@ def semver_key(tag: str) -> tuple:
         return (-1, -1, -1, -1, (0, 0, 0, 0, tag))
     major, minor, patch = (int(match.group(i)) for i in range(1, 4))
     prerelease = match.group(4) or ""
-    project = re.fullmatch(r"(alpha|beta|rc)(\d*)(?:[-.]candidate(\d+))?", prerelease)
+    project = re.fullmatch(r"(alpha|beta|rc)(\d*)(?:[.-](\d+))?(?:[-.]candidate(\d+))?", prerelease)
     if project:
-        phase, number, candidate = project.groups()
+        phase, number, delivery_patch, candidate = project.groups()
         detail = ({"alpha": 1, "beta": 2, "rc": 3}[phase], int(number or 0),
-                  int(candidate is None), int(candidate or 0), "")
+                  int(delivery_patch or 0), int(candidate is None), int(candidate or 0), "")
     else:
         detail = (0, 0, 0, 0, prerelease)
     return (major, minor, patch, int(not prerelease), detail)

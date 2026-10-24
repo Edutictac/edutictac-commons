@@ -247,10 +247,10 @@ def create_batch(payload: BatchIn, request: Request, c: Commons = Depends(common
         raise HTTPException(status_code=400, detail="pin_length must be 4 or 6")
     ts = iso_now()
     with c.connect() as conn:
-        group_id, group_code = insert_group(conn, payload.tenant_id, teacher_id, ts)
+        group_id, group_code = insert_group(conn, payload.tenant_id, teacher_id, ts, payload.label)
         generated = generate_identities(c, conn, group_id, payload.count, payload.pin_length, ts)
     return {
-        "group": {"id": group_id, "group_code": group_code, "tenant_id": payload.tenant_id},
+        "group": {"id": group_id, "group_code": group_code, "label": payload.label, "tenant_id": payload.tenant_id},
         "identities": generated,
     }
 
