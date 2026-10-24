@@ -6,10 +6,10 @@ beta6.1.
 
 ## Canvis
 
-- El paquet beta6.2 incorpora el manifest amb la imatge del portal beta6.1
-  reconstruïda (footer `v0.1.1-beta6.1`) i la correcció del nom d’aula.
-- Les imatges es publiquen amb el tag `0.1.1-beta6.2`; la de id-api manté la
-  correcció del lot i el portal manté el footer de la sèrie beta6.
+- El paquet beta6.2 incorpora el manifest amb la imatge del portal beta6.2
+  (footer `v0.1.1-beta6.2`) i la correcció del nom d’aula.
+- Les imatges es publiquen amb el tag `0.1.1-beta6.2`; id-api manté la
+  correcció del lot i portal mostra el footer definitiu.
 
 ## Imatges
 
