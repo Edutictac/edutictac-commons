@@ -20,5 +20,6 @@ de codi respecte de beta6.1.
 ## Instal·lació
 
 Paquet `0.1.1~beta6.2` publicat a APT. Beta6.1 queda com a versió anterior.
-La validació en LliureX i el desplegament es documenten en
-[docs/VALIDACIO-BETA6.2.md](../../docs/VALIDACIO-BETA6.2.md).
+La descàrrega i el candidat APT estan verificats; el SHA-256 consta en
+[installer.json](installer.json). La validació en LliureX i el desplegament es
+documenten en [docs/VALIDACIO-BETA6.2.md](../../docs/VALIDACIO-BETA6.2.md).

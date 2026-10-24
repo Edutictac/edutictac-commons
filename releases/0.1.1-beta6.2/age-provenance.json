@@ -1,0 +1,14 @@
+{
+  "version": "1.0.0-1ubuntu0.1",
+  "sha256": "eb1cabdf8f04fe759c8014ea2146ae0f7a8a11ae3d62905c685bb20af9cc3f5c",
+  "bytes": 1368336,
+  "suite": "jammy-updates",
+  "url": "https://archive.ubuntu.com/ubuntu/pool/universe/a/age/age_1.0.0-1ubuntu0.1_amd64.deb",
+  "ubuntu_signatures_verified": [
+    "jammy",
+    "jammy-updates",
+    "jammy-security"
+  ],
+  "filename": "age_1.0.0-1ubuntu0.1_amd64.deb",
+  "purpose": "Supplemental Ubuntu Jammy dependency for LliureX mirrors without age"
+}
