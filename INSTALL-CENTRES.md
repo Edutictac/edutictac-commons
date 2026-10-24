@@ -347,6 +347,37 @@ de la LAN, posa un proxy invers amb TLS davant del portal i no òbrigs els
 ports directes de les apps a Internet. L'ingress únic amb TLS automàtic per a
 centres queda pendent; el paquet no genera certificats.
 
+### Ingress TLS opcional amb Caddy
+
+Per publicar el portal amb HTTPS sense instal·lar nginx al host:
+
+```bash
+make up-ingress
+```
+
+Això recrea el portal en `127.0.0.1:8082` i arranca Caddy en els ports 80/443.
+Per defecte usa `edutictac.local` i una **CA interna**; els dispositius han de
+confiar-hi:
+
+```bash
+make ingress-ca
+# distribueix dist/caddy-root.crt i instal·la'l com a autoritat de confiança
+```
+
+Per a un domini públic amb DNS i ports 80/443 accessibles, posa a `.env`:
+
+```env
+COMMONS_INGRESS_HOST=commons.example.org
+INGRESS_CADDYFILE=./services/ingress/Caddyfile.acme
+```
+
+i torna a executar `make up-ingress`. Caddy obtindrà el certificat per ACME.
+Per tornar enrere: `make down-ingress` i `make up`.
+
+L'ingress cobreix el portal; les apps (`recursos`, `blocs`, `eduhoot`, etc.)
+continuen publicant els seus ports directes. No els exposos a Internet sense
+un proxy propi.
+
 ## Solució de problemes
 
 ### El portal no obri

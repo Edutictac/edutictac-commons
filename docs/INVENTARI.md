@@ -357,8 +357,10 @@ configuració de referència és `services/portal/nginx/production-vhost.conf`.
 
 En centres, el portal i les apps continuen publicant ports directes en HTTP.
 Per a exposició exterior cal un proxy invers amb TLS i filtrar els ports
-`8084`, `8086`, `8090`, `8098`, `9000` i `9443`. L'ingress únic amb
-certificats automàtics per a centres no està implementat.
+`8084`, `8086`, `8090`, `8098`, `9000` i `9443`. Hi ha un perfil opcional `compose.ingress.yml` amb Caddy per al portal:
+`make up-ingress`, CA interna per a `edutictac.local` (`make ingress-ca`) o
+ACME amb `Caddyfile.acme` i un domini públic. L'ingress cobreix el portal; les
+apps continuen publicant ports directes i cal un proxy propi per a elles.
 
 ## Riscos operatius
 
