@@ -19,7 +19,7 @@
       "image": "registry.edutictac.es/edutictac/commons-id-api@sha256:ccb70142423d25beeec99d499bed2ac86ca180bef918153e337052864de8c39a"
     },
     "portal": {
-      "image": "registry.edutictac.es/edutictac/commons-portal@sha256:dd5016a23b2da5f3e159c5a2f9a4c75998ed2c3626eba78ee385577213392d4f"
+      "image": "registry.edutictac.es/edutictac/commons-portal@sha256:a0db0552223268c13f3bb34943272dc2d8ae85239acc1fec050a7deb2159f10e"
     },
     "admin": {
       "image": "registry.edutictac.es/edutictac/commons-admin@sha256:06937f24358fbc4786a2109220aacc59fbf354fd2ee214f57b8f48e7e5a1dd01"
@@ -31,7 +31,7 @@
       "image": "registry.edutictac.es/edutictac/commons-blocs@sha256:774ec1ab31fd5d0904ec327062eed7bb0e3a3b327aa0298640fd89cc95ec0009"
     },
     "llibres": {
-      "image": "registry.edutictac.es/edutictac/commons-llibres@sha256:48dd8971591bbcc33bbc12befabbfb2083842fc3f4c65250b7cff3db5fa10bc4"
+      "image": "registry.edutictac.es/edutictac/commons-llibres@sha256:783639f060f6be438efabf21a5b304f169b65fcafabb87bee02153626c719f1b"
     },
     "recursos": {
       "image": "registry.edutictac.es/edutictac/recursos@sha256:ab5d7b7fa70055634defe439b70f84fbfc80031761937415c1efd6cf9020502b"

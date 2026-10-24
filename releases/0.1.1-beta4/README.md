@@ -12,13 +12,14 @@ d’imatges per Internet. La publicació APT i la web pública estan pendents.
 
 ## Estat de la preparació
 
-**Banc integrat; pendent la validació final en LliureX.** Els taulers públics
-estan traduïts a CA/VA/ES/EN. No s’ha publicat el paquet en APT ni actualitzat
+**Banc i peu comú integrats; pendent completar la validació final.** La web
+retira les maquetes antigues dels taulers i conserva els accessos als de Commons.
+No s’ha publicat el paquet en APT ni actualitzat
 la web pública en esta preparació.
 
-La [candidata 6](../0.1.1-beta4-candidate6/README.md) incorpora el xip de Banc,
+La [candidata 7](../0.1.1-beta4-candidate7/README.md) incorpora el xip de Banc,
 la sessió central, la configuració del portal local i la comprovació del rol
-docent, i conserva l’error de límit de pujada a través del proxy. Les referències d’esta
+docent, el peu compartit i l’error de límit de pujada correcte a través del proxy. Les referències d’esta
 carpeta ja coincidixen amb eixa candidata. Els paquets generats abans d’esta
 integració continuen sent prototips; no acrediten una entrega final validada.
 
