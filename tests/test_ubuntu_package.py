@@ -88,11 +88,13 @@ def test_fresh_install_from_example_starts_only_core(tmp_path):
 def test_installer_announces_real_portal_port():
     # En LliureX el port 80 és d'Apache: Commons passa al 8082 i ha d'anunciar-ho.
     postinst = (Path(__file__).parents[1] / "packaging/debian/postinst").read_text(encoding="utf-8")
-    assert 'portal_url="http://edutictac.local:${portal_port}/"' in postinst
+    assert 'portal_url="http://${primary_host}${url_suffix}/"' in postinst
+    assert 'ip_url="http://${ip}${url_suffix}/"' in postinst
     assert "Obri ${bold}${portal_url}${reset}" in postinst
-    assert "obri ${portal_url}'" in postinst
-    assert 'sed -i "s#^Exec=xdg-open .*#Exec=xdg-open ${portal_url}#"' in postinst
-    assert "http://edutictac.local/${reset}" not in postinst
+    assert "obri ${bold}${ip_url}${reset}" in postinst
+    assert 'sed -i "s#^Exec=.*#Exec=edutictac-commons-open#" "$desktop_file"' in postinst
+    assert 'portal_port="${portal_port:-80}"' in postinst
+    assert 'url_suffix=":${portal_port}"' in postinst
 
 
 def test_installer_gives_service_user_docker_and_linger_only_if_admin():
