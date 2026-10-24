@@ -64,7 +64,7 @@ trap 'rm -rf "$stage_dir"' EXIT
 
 root_dir="$stage_dir/$package_name"
 mkdir -p "$root_dir/DEBIAN" "$root_dir/opt/edutictac-commons" "$root_dir/lib/systemd/system" \
-  "$root_dir/usr/share/applications" "$root_dir/usr/share/icons/hicolor/scalable/apps"
+  "$root_dir/usr/bin" "$root_dir/usr/share/applications" "$root_dir/usr/share/icons/hicolor/scalable/apps"
 
 # Package tracked source files only. Local memory, credentials and generated
 # artifacts must never enter a distributable installer.
