@@ -130,3 +130,11 @@ def test_installer_preserves_external_backup_key_configuration(tmp_path):
     values = configure(path, existing=True)
     assert values["BACKUP_ENCRYPTION_REQUIRED"] == "1"
     assert values["BACKUP_AGE_RECIPIENT"] == "age-public-fixture"
+
+
+def test_fresh_install_uses_installer_tags_over_copied_template(tmp_path):
+    path = tmp_path / "fresh-template.env"
+    path.write_text("IMAGE_TAG=template\nADMIN_TAG=template\nRECURSOS_TAG=template\n")
+    expected = (Path(__file__).parents[1] / "VERSION").read_text().strip()
+    values = configure(path, existing=False)
+    assert all(values[name] == expected for name in ("IMAGE_TAG", "ADMIN_TAG", "RECURSOS_TAG"))

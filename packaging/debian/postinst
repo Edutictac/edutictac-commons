@@ -118,7 +118,8 @@ for index, line in enumerate(lines):
     current = line.split("=", 1)[1]
     if key not in values:
         continue
-    if key in replace_if and current not in replace_if[key]:
+    fresh_image_default = not existing and key in {"IMAGE_TAG", "ADMIN_TAG", "RECURSOS_TAG"}
+    if not fresh_image_default and key in replace_if and current not in replace_if[key]:
         seen.add(key)
         continue
     if key == "EDUTICTAC_SETUP_TOKEN" and current in replace_if[key]:
