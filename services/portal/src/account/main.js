@@ -14,6 +14,7 @@
  *   data-lang         ca | va | es | en; si falta, segueix la pàgina.
  *   data-no-reload    no recarregar la pàgina després d'eixir.
  *   data-home-only    només l'enllaç «Inici»: no consulta ni mostra cap sessió.
+ *   data-no-student   no oferix l'accés de l'alumnat (codi i PIN) en el menú.
  *   data-density      "compact" per a barres baixes.
  *
  * Només mostra la sessió: no protegix cap contingut. Emet
