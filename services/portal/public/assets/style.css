@@ -54,6 +54,7 @@
 .rebost-page.picking .topbar {padding:8px 16px; justify-content:flex-end}
 .rebost-page.picking .rebost-layout {padding:12px 16px; gap:12px}
 .rebost-page.picking .role-heading {display:none}
+.rebost-page.picking .ett-footer {display:none}
 .rebost-page.picking #mine {font-size:18px}
 .rebost-page.picking .library-toolbar {padding:12px; gap:10px; margin-bottom:12px}
 .rebost-page.picking #grid {grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:12px}

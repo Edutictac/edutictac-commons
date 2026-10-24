@@ -506,15 +506,5 @@ async function initializePortal() {
 
 initializePortal();
 
-if (window.commonsDeployment?.mode === 'federated') {
-  const footer = document.createElement('footer');
-  footer.className = 'admin-entry';
-  const link = document.createElement('a');
-  link.href = '/privacy.html';
-  link.setAttribute('data-i18n', 'privacy.title');
-  link.textContent = window.i18nPortal.t('privacy.title');
-  footer.append(link);
-  document.body.append(footer);
-}
 
 window.addEventListener('edutictac:langchange', setApplicationLinks);
