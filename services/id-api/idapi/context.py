@@ -6,7 +6,9 @@ import hashlib
 import hmac
 import ipaddress
 import logging
+import secrets
 import sqlite3
+from datetime import timedelta
 from typing import Any
 
 from authlib.integrations.starlette_client import OAuth
@@ -15,8 +17,15 @@ from fastapi import Request, Response
 from edutictac_community.ratelimit import RateLimiter
 
 from .auth import Auth, build_oauth
-from .db import Database
-from .security import OIDC_COOKIE, SESSION_TTL_DAYS, Cookies, hash_pin
+from .db import Database, iso_now, now_utc
+from .security import (
+    OIDC_COOKIE,
+    OIDC_SESSION_TTL_SECONDS,
+    SESSION_TTL_DAYS,
+    Cookies,
+    hash_pin,
+    hash_token,
+)
 from .settings import Settings
 
 RATE_WINDOW = 60
@@ -55,11 +64,34 @@ class Commons:
             f"{issuer}:{subject}".encode(),
             hashlib.sha256,
         ).hexdigest()[:20]
+        rebost_sid = self.rebost.issue_oidc(issuer, subject)
+        session_token = secrets.token_urlsafe(32)
+        created_at = now_utc()
+        expires_at = created_at + timedelta(seconds=OIDC_SESSION_TTL_SECONDS)
+        with self.connect() as conn:
+            conn.execute("DELETE FROM oidc_sessions WHERE expires_at <= ?", (iso_now(),))
+            conn.execute(
+                """
+                INSERT INTO oidc_sessions
+                    (id, token_hash, issuer, subject, role, created_at, expires_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    secrets.token_urlsafe(18),
+                    hash_token(session_token),
+                    issuer,
+                    subject,
+                    role,
+                    created_at.isoformat(),
+                    expires_at.isoformat(),
+                ),
+            )
         response.set_cookie(
             OIDC_COOKIE,
             self.cookies.encode({
                 "oidc": True,
-                "rebost_sid": self.rebost.issue_oidc(issuer, subject),
+                "sid": session_token,
+                "rebost_sid": rebost_sid,
                 "iss": issuer,
                 "sub": subject,
                 "id": f"oidc:{pseudonym}",
@@ -74,7 +106,7 @@ class Commons:
                 "name": str(claims.get("name") or "")[:120],
                 "role": role,
             }),
-            **self.cookies.options(max_age=SESSION_TTL_DAYS * 24 * 60 * 60),
+            **self.cookies.options(max_age=OIDC_SESSION_TTL_SECONDS),
         )
 
 

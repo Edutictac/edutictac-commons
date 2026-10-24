@@ -22,6 +22,7 @@ CODE_RE = re.compile(r"^[A-Z2-9]{3}$")
 PIN_RE = re.compile(r"^[0-9]{4,6}$")
 TEACHER_ID_RE = re.compile(r"(?:oidc:)?[A-Za-z0-9:_-]{3,128}")
 SESSION_TTL_DAYS = 180
+OIDC_SESSION_TTL_SECONDS = 12 * 60 * 60
 LAUNCH_TOKEN_TTL_SECONDS = 5 * 60
 
 

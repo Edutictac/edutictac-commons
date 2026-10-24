@@ -103,6 +103,7 @@ async def oidc_callback(request: Request, c: Commons = Depends(commons)):
 
 @router.post("/api/auth/oidc/logout")
 def oidc_logout(request: Request, response: Response, c: Commons = Depends(commons)) -> dict[str, bool]:
+    c.auth.revoke_oidc_session(request)
     c.rebost.revoke_oidc(request)
     response.delete_cookie(OIDC_COOKIE, **c.cookies.delete_options())
     return {"ok": True}
@@ -185,6 +186,7 @@ def revoke_student_session(request: Request, c: Commons) -> None:
 
 @router.post("/api/auth/logout")
 def logout(request: Request, response: Response, c: Commons = Depends(commons)) -> dict[str, bool]:
+    c.auth.revoke_oidc_session(request)
     c.rebost.revoke_oidc(request)
     revoke_student_session(request, c)
     response.delete_cookie(SESSION_COOKIE, **c.cookies.delete_options())
@@ -288,6 +290,7 @@ def central_logout(request: Request, response: Response, c: Commons = Depends(co
     no_store(response)
     if not session_origin_ok(request, c):
         raise HTTPException(status_code=403, detail="origin not allowed")
+    c.auth.revoke_oidc_session(request)
     c.rebost.revoke_oidc(request)
     revoke_student_session(request, c)
     for name in (SESSION_COOKIE, OIDC_COOKIE, TEACHER_COOKIE):

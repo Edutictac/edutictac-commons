@@ -585,8 +585,8 @@ sustituyen una petición real al vhost. No hubo reinicios de aplicaciones.
   al dominio real del banco. Comportamiento local preservado.
 - Aviso técnico de datos en cuatro idiomas: identificador docente, nombre de
   usuario posible en cookie, alumnado código/PIN, resultados, copias y sesiones.
-  Describe los plazos implementados: cookie Commons hasta 180 días y sesión
-  adicional de Rebost de ocho horas. No copia el aviso de una instalación de
+  Describe los plazos implementados: sesión docente de 12 horas, sesión de
+  alumnado de hasta 180 días y sesión adicional de Rebost de ocho horas. No copia el aviso de una instalación de
   centro ni afirma que todas las aplicaciones compartan sesión.
 - 50 pruebas de navegador aprobadas, incluyendo escritorio/móvil, guía,
   privacidad, idiomas y regresiones del catálogo y favoritos locales.

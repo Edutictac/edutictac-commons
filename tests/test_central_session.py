@@ -318,3 +318,34 @@ def test_admin_proxy_is_limited_to_local_tailnet_and_tunnel():
         'deny all;',
     ):
         assert conf.count(marker) == 2, marker
+
+
+def test_oidc_session_is_revocable_server_side(module):
+    teacher = oidc_client(module, {'name': 'Laia'}, role='profesor')
+    assert teacher.get('/api/auth/session').json()['authenticated'] is True
+    with module.get_conn() as db:
+        db.execute("UPDATE oidc_sessions SET revoked_at = '2026-01-01T00:00:00+00:00'")
+    assert teacher.get('/api/auth/session').json()['authenticated'] is False
+
+
+def test_oidc_session_expires_server_side(module):
+    teacher = oidc_client(module, {'name': 'Laia'}, role='profesor')
+    assert teacher.get('/api/auth/session').json()['authenticated'] is True
+    with module.get_conn() as db:
+        db.execute("UPDATE oidc_sessions SET expires_at = '2000-01-01T00:00:00+00:00'")
+    assert teacher.get('/api/auth/session').json()['authenticated'] is False
+
+
+def test_oidc_cookie_is_short_lived_and_requires_a_session_id(module):
+    response = Response()
+    module.set_oidc_cookie(response, {'name': 'Laia'}, 'profesor')
+    assert 'Max-Age=43200' in response.headers['set-cookie']
+
+    client = TestClient(module.app)
+    client.headers['Cookie'] = 'edutictac_oidc=' + module.commons.cookies.encode({
+        'oidc': True,
+        'iss': module.OIDC_ISSUER_URL,
+        'sub': 'person',
+        'role': 'profesor',
+    })
+    assert client.get('/api/auth/session').json()['authenticated'] is False

@@ -118,7 +118,29 @@ class Auth:
             return None
         if not hmac.compare_digest(str(cookie["iss"]), self.settings.oidc_issuer_url):
             return None
-        return cookie
+        session_token = cookie.get("sid")
+        if not isinstance(session_token, str) or not session_token:
+            return None
+        with self.db.connect() as conn:
+            row = conn.execute(
+                """
+                SELECT id FROM oidc_sessions
+                WHERE token_hash = ? AND revoked_at IS NULL AND expires_at > ?
+                """,
+                (hash_token(session_token), iso_now()),
+            ).fetchone()
+        return cookie if row else None
+
+    def revoke_oidc_session(self, request: Request) -> None:
+        cookie = self.cookies.decode(request.cookies.get(OIDC_COOKIE))
+        session_token = cookie.get("sid") if cookie else None
+        if not isinstance(session_token, str) or not session_token:
+            return
+        with self.db.connect() as conn:
+            conn.execute(
+                "UPDATE oidc_sessions SET revoked_at = ? WHERE token_hash = ? AND revoked_at IS NULL",
+                (iso_now(), hash_token(session_token)),
+            )
 
     def is_oidc_admin(self, request: Request) -> bool:
         session = self.oidc_cookie(request)

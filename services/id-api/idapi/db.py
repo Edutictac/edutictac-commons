@@ -211,10 +211,36 @@ def _baseline(conn: sqlite3.Connection) -> None:
     )
 
 
+def _oidc_sessions(conn: sqlite3.Connection) -> None:
+    conn.executescript(
+        """
+        CREATE TABLE IF NOT EXISTS oidc_sessions (
+            id TEXT PRIMARY KEY,
+            token_hash TEXT NOT NULL UNIQUE,
+            issuer TEXT NOT NULL,
+            subject TEXT NOT NULL,
+            role TEXT NOT NULL,
+            created_at TEXT NOT NULL,
+            expires_at TEXT NOT NULL,
+            revoked_at TEXT
+        );
+        CREATE INDEX IF NOT EXISTS idx_oidc_sessions_hash
+            ON oidc_sessions(token_hash);
+        CREATE INDEX IF NOT EXISTS idx_oidc_sessions_expiry
+            ON oidc_sessions(expires_at);
+        """
+    )
+
+
 MIGRATIONS = [
     Migration(1, _baseline),
 ]
 SCHEMA_VERSION = MIGRATIONS[-1].version
+
+# Namespace propi per poder afegir la sessió revocable sense xocar amb les
+# migracions de l'aula que estan en altres branques.
+OIDC_NAMESPACE = "id-api-oidc"
+OIDC_MIGRATIONS = [Migration(1, _oidc_sessions)]
 
 
 class Database:
@@ -228,6 +254,7 @@ class Database:
 
     def migrate(self) -> int:
         with self.connect() as conn:
+            apply_migrations(conn, OIDC_NAMESPACE, OIDC_MIGRATIONS)
             return apply_migrations(conn, NAMESPACE, MIGRATIONS)
 
     def version(self) -> int:
