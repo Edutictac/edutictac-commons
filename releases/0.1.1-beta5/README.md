@@ -17,7 +17,7 @@ Actualització des de beta4, instal·lació neta i restauració xifrada validade
 
 ## Dependència de xifratge en LliureX 23
 
-El repositori APT EduTicTac proporcionarà també el paquet `age` actualitzat
+El repositori APT EduTicTac proporciona també el paquet `age` actualitzat
 de Jammy, sense modificar-lo. La procedència, SHA-256 i verificació de les
 firmes originals d’Ubuntu es documenten en [age-provenance.json](age-provenance.json).
 Això cobrix els espills LliureX que no inclouen esta dependència.
@@ -26,3 +26,8 @@ Les crides internes de publicació de Llibres i descàrrega de recursos usen
 també el token específic del Banc. Es conserva el token anterior quan una
 instal·lació no té tokens separats. Validat el recorregut alumnat → aprovació
 docent → lectura pública amb els tokens separats en LliureX.
+
+El paquet `0.1.1~beta5` està publicat en APT amb la firma d’InRelease,
+els índexs, les descàrregues i la selecció de versió verificats. El paquet
+exacte i el seu SHA-256 consten en [installer.json](installer.json).
+Resultats i abast: [validació LliureX](../../docs/VALIDACIO-BETA5-LLIUREX.md).

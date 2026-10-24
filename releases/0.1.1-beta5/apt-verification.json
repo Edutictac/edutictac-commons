@@ -1,0 +1,11 @@
+{
+  "version": "0.1.1~beta5",
+  "apt_signature_verified_with_pretrusted_key": true,
+  "index_hash_verified": true,
+  "commons_download_hash_verified": true,
+  "age_download_hash_verified": true,
+  "isolated_apt_candidate_verified": true,
+  "url": "https://packages.edutictac.es/pool/main/e/edutictac-commons/edutictac-commons_0.1.1~beta5_amd64.deb",
+  "sha256": "222bf205f8c4891245cd8574a0ff9593340b6ca14ff6d4bb6b74692179336f44",
+  "size": 5898536
+}
