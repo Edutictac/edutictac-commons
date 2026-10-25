@@ -42,7 +42,7 @@ def test_optional_apps_are_isolated_from_core():
         return {item.strip() for item in line.split('[', 1)[1].rstrip(']').split(',')}
 
     assert networks('id-api') == {'core', 'recursos', 'play', 'eduhoot', 'authentik'}
-    assert networks('portal') == {'core', 'recursos'}
+    assert networks('portal') == {'core', 'recursos', 'editors'}
     assert networks('admin') == {'core', 'recursos', 'eduhoot', 'authentik'}
     assert networks('recursos-api') == {'recursos', 'eduhoot'}
     assert networks('play') == {'play', 'recursos'}

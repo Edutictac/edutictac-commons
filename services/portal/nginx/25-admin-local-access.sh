@@ -9,6 +9,12 @@ temporary="$(mktemp /etc/nginx/.admin-local-access.XXXXXX)"
 trap 'rm -f "$temporary"' EXIT
 {
     printf '%s\n' 'allow 127.0.0.1;' 'allow ::1;' 'allow 100.64.0.0/10;' 'allow fd7a:115c:a1e0::/48;'
+    for address in $(printf '%s' "${EDUTICTAC_HOST_IPS:-}" | tr ',' ' '); do
+        case "$address" in
+            ''|*[!0-9A-Fa-f:.]*) continue ;;
+        esac
+        printf 'allow %s;\n' "$address"
+    done
     if ip -o link show dev eth0 2>/dev/null | grep -q 'eth0@if'; then
         ip -4 route show scope link | while read -r network rest; do
             case "$rest" in

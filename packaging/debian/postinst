@@ -360,6 +360,32 @@ chown "$target_uid:$target_gid" "$APP_DIR" "$ENV_FILE"
 python3 "$APP_DIR/scripts/manage-modules.py" status --write >/dev/null
 chmod 700 "$APP_DIR/data" "$APP_DIR/backups"
 
+# El muntatge de systemd d'usuari de l'administrador pot crear estos
+# directoris com a root. Repara'ls abans d'arrancar el servei perquè el
+# timer de còpies es puga instal·lar com a usuari del servei.
+target_home="$(getent passwd "$target_uid" | cut -d: -f6)"
+if [ -n "$target_home" ]; then
+    user_config="$target_home/.config"
+    install -d -m 0755 "$user_config" "$user_config/systemd" "$user_config/systemd/user"
+    chown "$target_uid:$target_gid" "$user_config" "$user_config/systemd" "$user_config/systemd/user" 2>/dev/null || true
+    python3 - "$ENV_FILE" "$user_config" <<'PY'
+from pathlib import Path
+import sys
+
+path = Path(sys.argv[1])
+value = sys.argv[2]
+lines = path.read_text(encoding="utf-8").splitlines()
+found = False
+for index, line in enumerate(lines):
+    if line.startswith("EDUTICTAC_USER_CONFIG_HOME="):
+        lines[index] = f"EDUTICTAC_USER_CONFIG_HOME={value}"
+        found = True
+if not found:
+    lines.append(f"EDUTICTAC_USER_CONFIG_HOME={value}")
+path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+PY
+fi
+
 step "Comprovant Docker Compose..."
 
 if command -v docker >/dev/null 2>&1 && ! docker compose version >/dev/null 2>&1; then

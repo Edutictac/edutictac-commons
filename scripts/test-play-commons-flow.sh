@@ -15,8 +15,11 @@ play_port="$(grep '^PLAY_PORT=' "$env_file" | tail -n 1 | cut -d= -f2)"
 play_port="${play_port:-8084}"
 teacher_token="$(grep '^EDUTICTAC_ID_TEACHER_TOKEN=' "$env_file" | tail -n 1 | cut -d= -f2)"
 teacher_token="${teacher_token:-dev-teacher}"
-base="http://127.0.0.1:${portal_port}"
-play_base="http://127.0.0.1:${play_port}"
+environment="$(grep '^EDUTICTAC_ENV=' "$env_file" | tail -n 1 | cut -d= -f2)"
+oidc_cookie_file="${COMMONS_OIDC_COOKIE_FILE:-}"
+test_host="${COMMONS_TEST_HOST:-127.0.0.1}"
+base="http://${test_host}:${portal_port}"
+play_base="http://${test_host}:${play_port}"
 
 teacher_cookie="$(mktemp /tmp/commons-play-teacher.XXXXXX)"
 student_cookie="$(mktemp /tmp/commons-play-student.XXXXXX)"
@@ -50,8 +53,25 @@ trap cleanup EXIT
 curl -fsS "$base/api/health" >/dev/null
 curl -fsS "$play_base/api/health" >/dev/null
 
-printf '{"token":"%s"}' "$teacher_token" | curl -fsS -c "$teacher_cookie" -b "$teacher_cookie" \
-  -H 'Content-Type: application/json' --data-binary @- "$base/api/teacher/login" >/dev/null
+if [ -n "$oidc_cookie_file" ]; then
+  [ -f "$oidc_cookie_file" ] || { echo "No existix COMMONS_OIDC_COOKIE_FILE: $oidc_cookie_file" >&2; exit 1; }
+  cp "$oidc_cookie_file" "$teacher_cookie"
+  chmod 600 "$teacher_cookie"
+  me="$(curl -fsS -b "$teacher_cookie" "$base/api/auth/me")"
+  provider="$(printf '%s' "$me" | jq -r '.identity.provider // ""')"
+  role="$(printf '%s' "$me" | jq -r '.identity.role // ""')"
+  if [ "$provider" != "authentik" ] || { [ "$role" != "profesor" ] && [ "$role" != "administrador" ]; }; then
+    echo "La cookie no correspon a una sessio OIDC docent de $base" >&2
+    exit 1
+  fi
+else
+  if [ "$environment" = "production" ]; then
+    echo "En produccio cal una sessio OIDC: exporta les cookies i usa COMMONS_OIDC_COOKIE_FILE." >&2
+    exit 1
+  fi
+  printf '{"token":"%s"}' "$teacher_token" | curl -fsS -c "$teacher_cookie" -b "$teacher_cookie" \
+    -H 'Content-Type: application/json' --data-binary @- "$base/api/teacher/login" >/dev/null
+fi
 
 activity_id="$(curl -fsS -X POST "$play_base/api/activities" \
   -b "$teacher_cookie" \

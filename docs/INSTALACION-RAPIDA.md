@@ -3,12 +3,12 @@
 Guía para la persona que prepara el ordenador del centro. El alumnado no
 necesita instalar Commons: accede desde su navegador.
 
-**Versión de esta guía: 0.1.1-beta6.2.** La página oficial indica el instalador disponible y las instrucciones del repositorio APT.
+**Versión del instalador: 0.1.1-beta6.2.1 (imágenes 0.1.1-beta6.2).** La página oficial indica el instalador disponible y las instrucciones del repositorio APT.
 
 ## Antes de empezar
 
 - Utiliza un ordenador o servidor Linux de 64 bits (amd64), con permisos
-  de administración y conexión a Internet. Las pruebas se realizan en LliureX 23.
+  de administración y conexión a Internet. Las pruebas se realizan en LliureX.
 - El ordenador del profesorado se ha probado con 5 GB de RAM y 4 CPU asignadas.
   El consumo depende de las aplicaciones que actives.
 - Reserva espacio para las imágenes Docker, los trabajos y las copias de
@@ -18,14 +18,14 @@ necesita instalar Commons: accede desde su navegador.
 ## Primera instalación
 
 1. **Descarga el instalador** desde la [página oficial de Commons](https://edutictac.es/instala-commons.html)
-   cuando anuncie la beta 6. Guárdalo en el ordenador que funcionará como servidor.
+   cuando anuncie la beta 6.2.1. Guárdalo en el ordenador que funcionará como servidor.
 2. **Añade el [repositorio APT oficial](ubuntu-package.md)** para obtener también
    las dependencias de cifrado que faltan en algunos espejos LliureX.
    **Instala el paquete.** Abre una terminal en la carpeta donde lo has
    descargado y ejecuta:
 
    ```bash
-   sudo apt install ./edutictac-commons_0.1.1~beta6.2_amd64.deb
+   sudo apt install ./edutictac-commons_0.1.1~beta6.2.1_amd64.deb
    ```
 
    Introduce la contraseña de administración del ordenador y espera a que
@@ -55,6 +55,9 @@ necesita instalar Commons: accede desde su navegador.
 6. **Elige las aplicaciones.** Entra en Administración con la cuenta inicial
    y selecciona las herramientas que necesita el centro: Play, EduHoot,
    Banc de recursos, Blocs, Llibres o Quiosc. Espera a que termine la operación.
+   Si es la primera selección y aún no hay clave de cifrado, el asistente
+   pedirá la clave pública age de las copias. Pega solo la línea `age1...`;
+   la clave privada debe quedarse fuera del servidor.
    El núcleo de Commons incluye las aulas, Rebost y los archivos del aula.
 
 Quiosc requiere un servidor Epoptes compatible; no hace falta activarlo para

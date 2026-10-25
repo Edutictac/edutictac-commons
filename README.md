@@ -1,7 +1,11 @@
 # EduTicTac Commons Stack Local
 
 Versió d’imatges: [0.1.1-beta6.2](releases/0.1.1-beta6.2/README.md).
-Instal·lador amd64 per a LliureX 23, Ubuntu i Debian: `0.1.1~beta6.2`.
+Instal·lador amd64 per a LliureX, Ubuntu i Debian: `0.1.1~beta6.2.1`.
+La beta6.2.1 és un hotfix del paquet: el portal passa a la xarxa `editors` i el
+selector demana la clau pública age si falta, abans de fer la còpia prèvia.
+Blocs i Llibres funcionen també després de reiniciar. Les imatges continuen sent
+beta6.2, excepte l’administració, que incorpora el formulari de la clau.
 La beta6.1 inclou l’estabilització de la pila, les xarxes Docker separades,
 l’accés per LAN amb mDNS/IP, el nom humà d’aula i el límit visible.
 La beta6 continua disponible com a versió anterior validada.
@@ -87,7 +91,8 @@ el panell tècnic en [docs/GUIA-ADMIN.md](docs/GUIA-ADMIN.md).
 per completar el login OIDC al mateix origen. L'accés es fa amb Authentik:
 pot entrar l'usuari de `ADMIN_OIDC_USERNAME` (per defecte `akadmin`) o
 qualsevol compte amb rol `administrador`. El portal només admet `/admin/`
-des del mateix servidor, la Tailnet o un túnel SSH; la LAN directa rep 403.
+des del mateix servidor (per qualsevol IP local), la Tailnet o un túnel SSH;
+els altres equips de la LAN reben 403. No s’autoritza tota la subxarxa.
 
 Mostra la versió instal·lada, l'estat dels serveis, l'últim backup i la
 llista de còpies disponibles, els avisos de cobertura i l'estat del timer de

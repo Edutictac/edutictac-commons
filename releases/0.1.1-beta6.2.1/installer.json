@@ -1,0 +1,18 @@
+{
+  "package": "edutictac-commons",
+  "version": "0.1.1~beta6.2.1",
+  "architecture": "amd64",
+  "filename": "edutictac-commons_0.1.1~beta6.2.1_amd64.deb",
+  "size": 5917520,
+  "sha256": "6ef09104b6cf5341490ecf9181a78bd8efbfa02f0bec493d949883c6c33b3c59",
+  "source_revision": "7862fbb",
+  "source_dirty": true,
+  "image_tag": "0.1.1-beta6.2",
+  "admin_tag": "0.1.1-beta6.2.1",
+  "apt_signature_verified": false,
+  "publication_status": "candidate",
+  "native_validation": "passed-upgrade-fresh-install-modules-backups-admin-access-test-helpers-and-backup-timer-in-lliurex",
+  "validated_installer_candidate": "0.1.1~beta6.2.1",
+  "validated_image_candidate": "0.1.1-beta6.2",
+  "validated_admin_candidate": "0.1.1-beta6.2.1"
+}

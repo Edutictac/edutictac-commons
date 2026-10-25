@@ -1,9 +1,10 @@
 const { test, expect } = require('@playwright/test');
 
-async function mockModules(page, { configured = true, conflict = false } = {}) {
+async function mockModules(page, { configured = true, conflict = false, backupRequired = false, keyConfigured = !backupRequired } = {}) {
   const state = { schema: 1, configured, enabled: configured ? ['play'] : [], revision: '1'.repeat(64),
-    phase: 'idle', error: null, available: { play: true, eduhoot: true, recursos: true, blocs: true, llibres: true, quiosc: false }, manageable: true };
-  let submitted;
+    phase: 'idle', error: null, available: { play: true, eduhoot: true, recursos: true, blocs: true, llibres: true, quiosc: false }, manageable: true,
+    backup_encryption_required: backupRequired, backup_key_configured: keyConfigured, backup_key_required: backupRequired && !keyConfigured };
+  let submitted, submittedKey;
   await page.addInitScript(() => localStorage.setItem('edutictac-admin-lang', 'es'));
   await page.clock.install();
   await page.clock.pauseAt(await page.evaluate(() => new Date(Date.now() + 1000).toISOString()));
@@ -11,6 +12,11 @@ async function mockModules(page, { configured = true, conflict = false } = {}) {
     const path = new URL(route.request().url()).pathname;
     if (path.endsWith('/status')) return route.fulfill({ json: { stack_version: 'test', active_profiles: ['authentik'],
       services: {}, backups: [], backup_timer: {}, checked_at: 'test' } });
+    if (path.endsWith('/backup/key') && route.request().method() === 'POST') {
+      expect(route.request().headers()['x-commons-backup']).toBe('1');
+      submittedKey = route.request().postDataJSON();
+      return route.fulfill({ status: 202, json: { ok: true, unit: 'edutictac-commons-config-20261017120000-a1b2c3d4' } });
+    }
     if (path.endsWith('/modules') && route.request().method() === 'POST') {
       expect(route.request().headers()['x-commons-modules']).toBe('1');
       submitted = route.request().postDataJSON();
@@ -23,13 +29,18 @@ async function mockModules(page, { configured = true, conflict = false } = {}) {
     }
     if (path.endsWith('/modules')) return route.fulfill({ json: state });
     if (path.endsWith('/job-status')) {
+      const unit = new URL(route.request().url()).searchParams.get('unit') || '';
+      if (unit.includes('config-')) {
+        state.backup_key_configured = true; state.backup_key_required = false;
+        return route.fulfill({ json: { running: false, result: 'success', log: 'recipient_saved' } });
+      }
       state.enabled = submitted.enabled; state.revision = '2'.repeat(64); state.phase = 'idle'; state.configured = true;
       return route.fulfill({ json: { running: false, result: 'success', log: 'modules: success' } });
     }
     return route.fulfill({ status: 404, json: {} });
   });
   await page.goto('/admin/');
-  return { state, submitted: () => submitted };
+  return { state, submitted: () => submitted, submittedKey: () => submittedKey };
 }
 
 async function advanceJob(page) {
@@ -58,6 +69,19 @@ test('primer inici amb selector, idiomes i Quiosc sense Epoptes', async ({ page 
   await advanceJob(page);
   await expect(page.locator('#modulesNotice')).toContainText('actualizadas');
   await expect(page.locator('#modulesApply')).toBeEnabled();
+});
+
+test('el primer inicio exige guardar la clave pública de cifrado', async ({ page }) => {
+  const model = await mockModules(page, { configured: false, backupRequired: true, keyConfigured: false });
+  const dialog = page.locator('#modulesWizard');
+  await expect(dialog.locator('#backupKeyBox')).toBeVisible();
+  await expect(dialog.locator('#modulesApply')).toBeDisabled();
+  await dialog.locator('#backupKeyInput').fill('age1' + 'q'.repeat(58));
+  await dialog.locator('#backupKeySave').click();
+  expect(model.submittedKey()).toEqual({ recipient: 'age1' + 'q'.repeat(58) });
+  await advanceJob(page);
+  await expect(dialog.locator('#backupKeyBox')).toBeHidden();
+  await expect(dialog.locator('#modulesApply')).toBeEnabled();
 });
 
 test('desactivar conserva la selección vacía y permite cambiarla posteriormente', async ({ page }) => {

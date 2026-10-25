@@ -140,3 +140,17 @@ def test_fresh_install_uses_installer_tags_over_copied_template(tmp_path):
     expected = (Path(__file__).parents[1] / "VERSION").read_text().strip()
     values = configure(path, existing=False)
     assert all(values[name] == expected for name in ("IMAGE_TAG", "ADMIN_TAG", "RECURSOS_TAG"))
+
+
+def test_user_config_block_writes_real_lines(tmp_path):
+    source = (Path(__file__).parents[1] / "packaging/debian/postinst").read_text()
+    block = source.split('python3 - "$ENV_FILE" "$user_config" <<\'PY\'\n', 1)[1].split("\nPY", 1)[0]
+    path = tmp_path / ".env"
+    path.write_text("EDUTICTAC_ENV=production\n")
+    result = subprocess.run([sys.executable, "-", str(path), str(tmp_path / ".config")],
+                            input=block, capture_output=True, text=True)
+    assert result.returncode == 0
+    lines = path.read_text().splitlines()
+    assert "EDUTICTAC_ENV=production" in lines
+    assert "EDUTICTAC_USER_CONFIG_HOME=" + str(tmp_path / ".config") in lines
+    assert "\\n" not in path.read_text()

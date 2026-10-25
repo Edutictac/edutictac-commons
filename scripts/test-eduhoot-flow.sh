@@ -23,7 +23,7 @@ profile_enabled() {
 portal_port="$(value_from_env PORTAL_PORT 8082)"
 eduhoot_port="$(value_from_env EDUHOOT_PORT 8090)"
 teacher_token="$(value_from_env EDUTICTAC_ID_TEACHER_TOKEN dev-teacher)"
-app_token="$(value_from_env EDUTICTAC_ID_APP_TOKEN "")"
+app_token="$(value_from_env EDUHOOT_ID_APP_TOKEN "$(value_from_env EDUTICTAC_ID_APP_TOKEN "")")"
 docker_cmd="${DOCKER:-docker}"
 compose="$docker_cmd compose --env-file $env_file -f compose.yml"
 base="http://127.0.0.1:${portal_port}"
@@ -35,7 +35,7 @@ if ! profile_enabled; then
 fi
 
 if [ -z "$app_token" ]; then
-  echo "Falta EDUTICTAC_ID_APP_TOKEN en $env_file"
+  echo "Falta EDUHOOT_ID_APP_TOKEN (o EDUTICTAC_ID_APP_TOKEN) en $env_file"
   exit 1
 fi
 

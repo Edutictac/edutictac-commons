@@ -5,6 +5,7 @@ const JOBS={
   'commons-modules-job':/^edutictac-commons-modules-\d{14}-[a-f0-9]{8}$/,
   'commons-backup-job':/^edutictac-commons-(?:backup-\d{14}-[a-f0-9]{8}|restore-\d{14})$/,
   'commons-images-job':/^edutictac-commons-(?:update|rollback)-\d{14}$/,
+  'commons-config-job':/^edutictac-commons-config-\d{14}-[a-f0-9]{8}$/,
 };
 export function useAdmin(){
   const prefix=location.pathname.startsWith('/admin/')?'/admin':'';
@@ -13,6 +14,7 @@ export function useAdmin(){
   const {renderStatus,renderUpdateStatus}=formatters(t);
   const authorized=ref(false), checking=ref(false), pending=ref(false), loggingOut=ref(false), active=ref(true);
   const status=ref(null), modules=ref(null), selected=ref([]), moduleError=ref('');
+  const backupRecipient=ref(''), backupKeyMessage=ref('');
   const wizard=ref(),wizardOpen=ref(false),dismissed=ref(false);
   const apiMessage=ref('status.checking'),statusError=ref('');
   const output=ref({key:'common.actionPlaceholder'}),teacherMessage=ref('');
@@ -25,6 +27,8 @@ export function useAdmin(){
   const busy=computed(()=>pending.value||Boolean(job.value)||modules.value?.phase==='applying');
   const canWrite=computed(()=>active.value&&authorized.value&&!busy.value);
   const moduleManageable=computed(()=>Boolean(modules.value?.manageable));
+  const backupKeyRequired=computed(()=>Boolean(modules.value?.backup_key_required));
+  const backupConfigured=computed(()=>!backupKeyRequired.value||Boolean(modules.value?.backup_key_configured));
   const backups=computed(()=>(status.value?.backups||[]).filter(b=>!b.error));
   const rollbacks=computed(()=>backups.value.filter(b=>b.update));
   const secondary=computed(()=>status.value?.backup_secondary||{enabled:false,mount:'',last:{}});
@@ -72,6 +76,7 @@ export function useAdmin(){
       const data=await request('/api/modules',{},()=>seq===moduleSequence);if(e!==epoch||seq!==moduleSequence||!active.value)return;
       if(!modules.value||data.revision!==modules.value.revision||data.phase==='failed')selected.value=MODULES.filter(name=>data.enabled?.includes(name));
       modules.value=data;moduleError.value='';
+      if(data.backup_key_configured&&!data.backup_key_required&&backupKeyMessage.value==='modules.backupSaving')backupKeyMessage.value='modules.backupSaved';
       if(data.manageable&&!data.configured&&!busy.value&&!dismissed.value){wizardOpen.value=true;}
     }catch{if(e===epoch&&seq===moduleSequence){modules.value=null;moduleError.value='modules.unavailable';}}
   }
@@ -106,6 +111,7 @@ export function useAdmin(){
       }else{
         storage(current.key,null);job.value=storedJob();
         output.value={log:data.log||'',key:data.result==='success'?'job.success':'job.failed',error:data.result!=='success'};
+        if(current.key==='commons-config-job'&&data.result!=='success')backupKeyMessage.value='backup.key.save_failed';
         await loadStatus();if(stillCurrent())schedule();else if(l===life&&active.value&&job.value)schedule();
       }
     }catch{
@@ -136,12 +142,25 @@ export function useAdmin(){
       if(e!==epoch||seq!==actionSequence||!active.value)return;
       if(path==='/api/modules'){
         await loadModules();if(e!==epoch)return;
-        const code=['configuration_changed','operation_busy','quiosc_not_prepared','host_runner_unavailable'].includes(error.message)?'modules.error.'+error.message:'modules.failed';
+        const code=['configuration_changed','operation_busy','quiosc_not_prepared','host_runner_unavailable','backup_key_required'].includes(error.message)?'modules.error.'+error.message:'modules.failed';
         moduleError.value=code;message(code,true);
       }else message('admin.operationError',true);
     }finally{if(seq===actionSequence)pending.value=false;}
   }
-  function applyModules(){if(!moduleManageable.value||!canWrite.value)return;return operation('/api/modules',{enabled:MODULES.filter(name=>selected.value.includes(name)),revision:modules.value.revision},'commons-modules-job');}
+  function applyModules(){if(!moduleManageable.value||!canWrite.value||!backupConfigured.value)return;return operation('/api/modules',{enabled:MODULES.filter(name=>selected.value.includes(name)),revision:modules.value.revision},'commons-modules-job');}
+  async function saveBackupKey(){
+    const recipient=backupRecipient.value.trim();
+    if(!canWrite.value||!recipient)return;
+    pending.value=true;backupKeyMessage.value='modules.backupSaving';const e=epoch,seq=++actionSequence;
+    try{
+      const data=await request('/api/backup/key',{method:'POST',headers:{'Content-Type':'application/json','X-Commons-Backup':'1'},body:JSON.stringify({recipient})});
+      if(e!==epoch||seq!==actionSequence||!active.value)return;
+      if(!data.ok)throw new Error(data.output||'backup_key_save_failed');
+      backupRecipient.value='';track(data.unit,'commons-config-job');
+    }catch(error){
+      if(e===epoch&&seq===actionSequence&&active.value)backupKeyMessage.value=error.message==='invalid_recipient'?'backup.key.invalid_recipient':'backup.key.save_failed';
+    }finally{if(seq===actionSequence)pending.value=false;}
+  }
   async function createTeacher(){
     if(!canWrite.value)return;
     const payload=Object.fromEntries(Object.entries(teacher).map(([k,v])=>[k,v.trim()]));
@@ -190,5 +209,5 @@ export function useAdmin(){
   async function show(event){if(!event.persisted)return;active.value=true;document.getElementById('adminApp')?.removeAttribute('hidden');job.value=storedJob();trackingPaused.value=false;await loadStatus();schedule();}
   onMounted(()=>{job.value=storedJob();if(job.value)message('modules.applying');void loadStatus();schedule();window.addEventListener('edutictac:langchange',langChange);window.addEventListener('pagehide',hide);window.addEventListener('pageshow',show);});
   onBeforeUnmount(()=>{hide();window.removeEventListener('edutictac:langchange',langChange);window.removeEventListener('pagehide',hide);window.removeEventListener('pageshow',show);});
-  return {t,language,authorized,checking,pending,loggingOut,busy,canWrite,status,statusText,output,actionText,apiMessage,modules,selected,moduleManageable,moduleError,modulesNotice,wizard,wizardOpen,dismissed,closeWizard,teacher,teacherMessage,credential,clearTeacher,mount,mountDirty,restore,rollback,backups,rollbacks,secondary,secondaryText,job,pollState,trackingPaused,loadStatus,applyModules,createTeacher,checkUpdates,confirmed,backupCreate,typedAction,secondaryAction,operation,logout,login,resumeTracking};
+  return {t,language,authorized,checking,pending,loggingOut,busy,canWrite,status,statusText,output,actionText,apiMessage,modules,selected,moduleManageable,moduleError,modulesNotice,wizard,wizardOpen,dismissed,closeWizard,teacher,teacherMessage,credential,clearTeacher,mount,mountDirty,restore,rollback,backups,rollbacks,secondary,secondaryText,job,pollState,trackingPaused,loadStatus,applyModules,saveBackupKey,backupRecipient,backupKeyMessage,backupKeyRequired,backupConfigured,createTeacher,checkUpdates,confirmed,backupCreate,typedAction,secondaryAction,operation,logout,login,resumeTracking};
 }

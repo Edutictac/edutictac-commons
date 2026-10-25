@@ -192,6 +192,19 @@ al terminar elimina los datos de prueba. Además, `npm run test:play` contiene
 una prueba de navegador que responde realmente al Quiz H5P en escritorio y
 móvil y verifica la petición xAPI a Commons.
 
+En una instalación de producción la autoría de Play exige una sesión OIDC. La
+prueba acepta una cookie jar de curl exportada de una sesión real:
+
+```bash
+COMMONS_TEST_HOST=edutictac.local \
+COMMONS_OIDC_COOKIE_FILE=/ruta/a/cookies.txt \
+make test-play-commons
+```
+
+La cookie se copia a un temporal privado y se borra al terminar. El script
+comprueba que la sesión sea `authentik` y que el rol sea docente o
+administrador; no rebaja la autenticación del producto.
+
 ## Criterios de aceptación
 
 - Una actividad sin identidad sigue funcionando y exportándose offline.

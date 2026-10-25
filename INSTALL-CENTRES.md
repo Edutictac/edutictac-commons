@@ -3,8 +3,9 @@
 Per a instal·lar el paquet sense preparar un entorn de desenvolupament,
 comença per la [guia bàsica d’instal·lació](docs/INSTALACION-RAPIDA.md).
 
-Entrega: [Commons 0.1.1-beta6.2](releases/0.1.1-beta6.2/README.md).
-Paquet amd64 amb descàrrega d’imatges; publicat en APT i pendent de validació final en LliureX.
+Entrega: [Commons 0.1.1-beta6.2](releases/0.1.1-beta6.2/README.md), amb paquet
+[0.1.1-beta6.2.1](releases/0.1.1-beta6.2.1/README.md) com a hotfix de xarxa.
+Paquet amd64 amb descàrrega d’imatges; beta6.2.1 pendent de publicació a APT.
 Per a actualitzar: primer el paquet, després les imatges des d’Administració.
 Inclou un manifest de digests i una prova d'instal·lació/restauració aïllada.
 
@@ -99,6 +100,10 @@ Posa la clau pública en `BACKUP_AGE_RECIPIENT` i la ruta de la privada en
 `BACKUP_AGE_IDENTITY_FILE` (només per restaurar). Amb
 `BACKUP_ENCRYPTION_REQUIRED=1`, si no hi ha recipient el backup falla en lloc
 de crear-se en clar. La clau privada no s'ha de copiar al servidor.
+
+En una instal·lació nova, el selector **Eines del centre** mostra un camp per
+a la clau pública si encara no n'hi ha. Enganxa només la línia `age1...`; el
+formulari desa la pública en `.env` i no guarda la privada al servidor.
 
 ## Operació habitual
 

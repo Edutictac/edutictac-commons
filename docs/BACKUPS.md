@@ -70,6 +70,10 @@ BACKUP_AGE_IDENTITY_FILE=/ruta/a/edutictac-backup-key.txt
 BACKUP_ENCRYPTION_REQUIRED=1
 ```
 
+En una instal·lació nova també pots enganxar la clau pública des del selector
+**Eines del centre** d'Administració. El formulari desa només la pública i
+desbloqueja la selecció; la privada continua fora del servidor.
+
 Amb `BACKUP_AGE_RECIPIENT` configurat, cada còpia queda com un únic
 `backup.tar.gz.age` dins de `commons-<data>/`; el `manifest.json` i
 `update.json` queden com a metadades sense dades personals. La restauració

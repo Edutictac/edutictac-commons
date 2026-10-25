@@ -15,10 +15,12 @@ El panell s'usa a través del portal: `http://<host-del-centre>:8082/admin/`.
 El portal el proxyja perquè el navegador puga completar el login OIDC al
 mateix origen.
 
-Per seguretat, `/admin/` només admet connexions des del mateix servidor, la
-Tailnet (`100.64.0.0/10`) o un túnel SSH. Un equip de la LAN que no use la
-Tailnet rep `403`. L'accés directe a `127.0.0.1:8091` és només per a
-diagnòstic: el login OIDC es fa sempre pel portal.
+Per seguretat, `/admin/` només admet connexions des del mateix servidor (per
+qualsevol de les seues IP locals), la Tailnet (`100.64.0.0/10`) o un túnel
+SSH. Els altres equips de la LAN reben `403`; no s'autoritza tota la subxarxa
+de l'aula. El servei actualitza les IP locals exactes en arrancar
+(`scripts/update-host-ips.py`). L'accés directe a `127.0.0.1:8091` és només
+per a diagnòstic: el login OIDC es fa sempre pel portal.
 
 Passos:
 

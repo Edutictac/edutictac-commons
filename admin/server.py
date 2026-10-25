@@ -64,7 +64,8 @@ SERVICE_UNIT = "edutictac-commons-backup.service"
 
 SCRIPT_TIMEOUT = 120
 BACKUP_NAME_RE = re.compile(r"^commons-\d{8}T\d{6}Z$")
-JOB_UNIT_RE = re.compile(r"^edutictac-commons-(?:(update|restore|rollback)-\d{14}|(?:modules|backup)-\d{14}-[a-f0-9]{8})$")
+AGE_RECIPIENT_RE = re.compile(r"^age1[0-9a-z]{20,}$")
+JOB_UNIT_RE = re.compile(r"^edutictac-commons-(?:(update|restore|rollback)-\d{14}|(?:modules|backup|config)-\d{14}-[a-f0-9]{8})$")
 
 
 def identity_is_admin(identity):
@@ -102,6 +103,20 @@ def admin_post_allowed(headers):
 
 
 
+def backup_recipient():
+    value = os.environ.get("BACKUP_AGE_RECIPIENT", "").strip()
+    if value:
+        return value
+    try:
+        return (APP_DIR / "data" / "backup-recipient").read_text(encoding="utf-8").strip()
+    except OSError:
+        return ""
+
+
+def backup_encryption_required():
+    return os.environ.get("BACKUP_ENCRYPTION_REQUIRED", "0").strip() == "1"
+
+
 def get_modules():
     fallback = module_snapshot({"COMPOSE_PROFILES": COMPOSE_PROFILES,
                                 "QUIOSC_MODE": os.environ.get("QUIOSC_MODE", "disabled"),
@@ -110,6 +125,9 @@ def get_modules():
     # A missing host-side state file means the installation needs the matching
     # installer/scripts before it can apply module selections.
     state["manageable"] = (APP_DIR / "data" / "modules.json").is_file()
+    state["backup_encryption_required"] = backup_encryption_required()
+    state["backup_key_configured"] = bool(backup_recipient())
+    state["backup_key_required"] = state["backup_encryption_required"] and not state["backup_key_configured"]
     return state
 
 
@@ -121,6 +139,8 @@ def action_modules(payload):
     state = get_modules()
     if not state["manageable"]:
         return False, "installer_update_required", 409
+    if state.get("backup_key_required"):
+        return False, "backup_key_required", 409
     if state.get("phase") == "applying":
         return False, "operation_busy", 409
     if expected != state["revision"]:
@@ -375,8 +395,25 @@ def create_teacher(payload):
     }
 
 
+def action_backup_key(payload):
+    if not isinstance(payload, dict):
+        return False, "invalid_recipient", 400
+    recipient = str(payload.get("recipient", "")).strip()
+    if not AGE_RECIPIENT_RE.fullmatch(recipient):
+        return False, "invalid_recipient", 400
+    repo = os.environ.get("REPO_DIR", str(APP_DIR))
+    unit = "edutictac-commons-config-" + datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S") + "-" + secrets.token_hex(4)
+    ok, _ = run_script("systemd-run", "--user", "--service-type=oneshot", "--no-block",
+                       "--property=RemainAfterExit=yes", f"--unit={unit}",
+                       f"--property=WorkingDirectory={repo}", "/usr/bin/env", "/usr/bin/python3",
+                       str(Path(repo) / "scripts" / "set-backup-recipient.py"), "--root", repo,
+                       "--recipient", recipient)
+    return ok, "backup_key_started" if ok else "host_runner_unavailable", 202 if ok else 503, {"unit": unit} if ok else {}
+
+
 ACTIONS = {
     "/api/modules": action_modules,
+    "/api/backup/key": action_backup_key,
     "/api/backup-timer/install": lambda payload: run_script(str(APP_DIR / "scripts" / "install-backup-timer.sh")),
     "/api/backup-timer/uninstall": lambda payload: run_script(str(APP_DIR / "scripts" / "uninstall-backup-timer.sh")),
 }
@@ -735,7 +772,7 @@ class Handler(BaseHTTPRequestHandler):
         if not self._is_authorized():
             self._send_json(401, {"error": "no autoritzat"})
             return
-        if self.path in {"/api/modules", "/api/backup/create", "/api/backup/restore", "/api/backup/secondary"}:
+        if self.path in {"/api/modules", "/api/backup/create", "/api/backup/key", "/api/backup/restore", "/api/backup/secondary"}:
             header = "X-Commons-Modules" if self.path == "/api/modules" else "X-Commons-Backup"
             if self.headers.get(header) != "1":
                 self._send_json(403, {"ok": False, "output": "request_not_allowed"})

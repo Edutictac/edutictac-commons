@@ -194,3 +194,19 @@ def test_public_editor_port_is_validated_and_reports_the_selected_module(control
     assert public_modules() == {'enabled': ['blocs', 'llibres'], 'ports': {'llibres': 18298}}
     monkeypatch.setenv('LLIBRES_PORT', 'invalid:8098')
     assert public_modules()['ports']['llibres'] == 8098
+
+
+def test_missing_backup_public_key_blocks_before_any_backup(controller):
+    with controller.env_path.open("a") as stream:
+        stream.write("BACKUP_ENCRYPTION_REQUIRED=1\nBACKUP_AGE_RECIPIENT=\n")
+    with pytest.raises(manager.ModuleError, match="backup_key_required"):
+        apply(controller, ["play"])
+    assert controller.calls == []
+    assert not controller.state_path.exists()
+
+
+def test_configured_backup_public_key_allows_selection(controller):
+    with controller.env_path.open("a") as stream:
+        stream.write("BACKUP_ENCRYPTION_REQUIRED=1\nBACKUP_AGE_RECIPIENT=age1" + "q" * 58 + "\n")
+    apply(controller, ["play"])
+    assert manager.read_env(controller.env_path)["COMPOSE_PROFILES"] == "authentik,play"

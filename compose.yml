@@ -83,7 +83,7 @@ services:
       retries: 5
 
   portal:
-    networks: [core, recursos]
+    networks: [core, recursos, editors]
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/ >/dev/null || exit 1"]
       interval: 10s
@@ -103,6 +103,10 @@ services:
         condition: service_healthy
     ports:
       - "${PORTAL_PORT:-8082}:80"
+    environment:
+      EDUTICTAC_HOST_IPS: ${EDUTICTAC_HOST_IPS:-}
+    volumes:
+      - ./services/portal/nginx/25-admin-local-access.sh:/docker-entrypoint.d/25-admin-local-access.sh:ro
 
   blocs:
     networks: [editors]
@@ -317,6 +321,8 @@ services:
       COMPOSE_PROFILES: ${COMPOSE_PROFILES:-}
       MODULES_CONFIGURED: ${MODULES_CONFIGURED:-1}
       QUIOSC_MODE: ${QUIOSC_MODE:-disabled}
+      BACKUP_ENCRYPTION_REQUIRED: ${BACKUP_ENCRYPTION_REQUIRED:-1}
+      BACKUP_AGE_RECIPIENT: ${BACKUP_AGE_RECIPIENT:-}
       IMAGE_REGISTRY: ${IMAGE_REGISTRY:-edutictac}
       IMAGE_TAG: ${IMAGE_TAG:-0.1.1-alpha}
       EDUHOOT_TAG: ${EDUHOOT_TAG:-1.0.2}
@@ -346,7 +352,7 @@ services:
       # (no nomes la sessio d'usuari) arranca amb systemd. Nomes lectura,
       # es un directori marcador buit, no dona cap privilegi nou.
       - /run/systemd/system:/run/systemd/system:ro
-      - ${XDG_CONFIG_HOME:-$HOME/.config}/systemd/user:/hostcfg/systemd/user
+      - ${EDUTICTAC_USER_CONFIG_HOME:-${XDG_CONFIG_HOME:-$HOME/.config}}/systemd/user:/hostcfg/systemd/user
       - ./backups:/app/backups
       - ./VERSION:/app/VERSION:ro
       - ./data:/app/data:ro

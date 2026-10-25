@@ -171,6 +171,8 @@ class Controller:
             if revision(old) != expected:
                 self.publish(old, "failed", "configuration_changed")
                 raise ModuleError("configuration_changed")
+            if old.get("BACKUP_ENCRYPTION_REQUIRED", "0") == "1" and not old.get("BACKUP_AGE_RECIPIENT", "").strip():
+                raise ModuleError("backup_key_required")
             if "quiosc" in enabled and not self.quiosc_ready(old):
                 raise ModuleError("quiosc_not_prepared")
             if old.get("QUIOSC_MODE", "disabled") != "disabled":

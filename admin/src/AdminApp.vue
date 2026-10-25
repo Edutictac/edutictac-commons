@@ -3,7 +3,7 @@ import {watch,nextTick} from 'vue';
 import ClassroomFileSettings from './ClassroomFileSettings.vue';
 import {useAdmin} from './useAdmin.js';
 const model=useAdmin();
-const {t,language,authorized,checking,pending,loggingOut,canWrite,statusText,output,actionText,apiMessage,modules,selected,moduleManageable,modulesNotice,wizard,wizardOpen,closeWizard,teacher,teacherMessage,credential,clearTeacher,mount,mountDirty,restore,rollback,backups,rollbacks,secondary,secondaryText,job,pollState,trackingPaused,loadStatus,applyModules,createTeacher,checkUpdates,confirmed,backupCreate,typedAction,secondaryAction,operation,logout,login,resumeTracking}=model;
+const {t,language,authorized,checking,pending,loggingOut,canWrite,statusText,output,actionText,apiMessage,modules,selected,moduleManageable,modulesNotice,wizard,wizardOpen,closeWizard,teacher,teacherMessage,credential,clearTeacher,mount,mountDirty,restore,rollback,backups,rollbacks,secondary,secondaryText,job,pollState,trackingPaused,loadStatus,applyModules,saveBackupKey,backupRecipient,backupKeyMessage,backupKeyRequired,backupConfigured,createTeacher,checkUpdates,confirmed,backupCreate,typedAction,secondaryAction,operation,logout,login,resumeTracking}=model;
 watch(wizardOpen,async value=>{await nextTick();if(value&&!wizard.value?.open)wizard.value?.showModal();else if(!value&&wizard.value?.open)wizard.value.close();});
 </script>
 <template>
@@ -160,6 +160,19 @@ watch(wizardOpen,async value=>{await nextTick();if(value&&!wizard.value?.open)wi
 <Teleport :to="wizardOpen?'#modulesWizardContent':'#modulesFormHome'">
           <form id="modulesForm" @submit.prevent="applyModules">
             <p>{{ t("modules.core") }}</p>
+            <div v-if="backupKeyRequired" id="backupKeyBox" class="hint">
+              <p><strong>{{ t("modules.backupTitle") }}</strong></p>
+              <p>{{ t("modules.backupHelp") }}</p>
+              <label>
+                <span>{{ t("modules.backupLabel") }}</span>
+                <input id="backupKeyInput" v-model="backupRecipient" type="text" autocomplete="off" spellcheck="false" maxlength="200" :placeholder="t('modules.backupPlaceholder')">
+              </label>
+              <div class="actions">
+                <button id="backupKeySave" type="button" class="secondary" :disabled="!canWrite||!backupRecipient.trim()" @click="saveBackupKey">{{ t("modules.backupSave") }}</button>
+              </div>
+              <p id="backupKeyNotice" role="status" aria-live="polite">{{ backupKeyMessage?t(backupKeyMessage):t('modules.backupRequired') }}</p>
+            </div>
+            <p v-else-if="backupConfigured" class="hint">{{ t("modules.backupConfigured") }}</p>
             <fieldset id="modulesChoices" :disabled="!canWrite||!moduleManageable">
               <legend>{{ t("modules.choose") }}</legend>
               <label class="module-choice"><input type="checkbox" name="module" v-model="selected" value="play"><span><strong>EduTicTac Play</strong><small>{{ t("modules.play") }}</small></span></label>
@@ -173,7 +186,7 @@ watch(wizardOpen,async value=>{await nextTick();if(value&&!wizard.value?.open)wi
             <p class="hint">{{ t("modules.retention") }}</p>
             <p id="modulesNotice" role="status" aria-live="polite">{{ modulesNotice }}</p>
             <div class="actions">
-              <button id="modulesApply" type="submit" :disabled="!canWrite||!moduleManageable">{{ t("modules.apply") }}</button>
+              <button id="modulesApply" type="submit" :disabled="!canWrite||!moduleManageable||!backupConfigured">{{ t("modules.apply") }}</button>
               <button id="modulesLater" type="button" class="secondary" :hidden="!wizardOpen" @click="closeWizard">{{ t("modules.later") }}</button>
             </div>
           </form>

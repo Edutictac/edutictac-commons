@@ -186,3 +186,50 @@ def test_all_admin_posts_need_same_origin_and_json(api, headers):
     request, state, identity, calls = api
     assert request("POST", "/api/teachers", {"username": "synthetic.teacher", "name": "Synthetic"}, headers=headers)[0] == 403
     assert calls == []
+
+
+PUBLIC_AGE_KEY = "age1" + "q" * 58
+
+
+def test_first_module_selection_requires_an_encryption_public_key(api, monkeypatch):
+    request, state, identity, calls = api
+    monkeypatch.setenv("BACKUP_ENCRYPTION_REQUIRED", "1")
+    monkeypatch.delenv("BACKUP_AGE_RECIPIENT", raising=False)
+    status, modules = request("GET", "/api/modules")
+    assert status == 200
+    assert modules["backup_encryption_required"] is True
+    assert modules["backup_key_required"] is True
+    assert modules["backup_key_configured"] is False
+    status, result = request("POST", "/api/modules", {"enabled": ["play"], "revision": state["revision"]})
+    assert status == 409 and result["output"] == "backup_key_required"
+    assert calls == []
+
+
+def test_saved_public_key_unlocks_module_selection(api, monkeypatch):
+    request, state, identity, calls = api
+    monkeypatch.setenv("BACKUP_ENCRYPTION_REQUIRED", "1")
+    monkeypatch.delenv("BACKUP_AGE_RECIPIENT", raising=False)
+    (admin.APP_DIR / "data" / "backup-recipient").write_text(PUBLIC_AGE_KEY + "\n")
+    status, modules = request("GET", "/api/modules")
+    assert status == 200
+    assert modules["backup_key_required"] is False
+    assert modules["backup_key_configured"] is True
+    status, result = request("POST", "/api/modules", {"enabled": ["play"], "revision": state["revision"]})
+    assert status == 202 and result["ok"] is True
+
+
+def test_public_key_is_saved_by_a_retained_host_job(api, monkeypatch):
+    request, state, identity, calls = api
+    monkeypatch.setenv("BACKUP_ENCRYPTION_REQUIRED", "1")
+    monkeypatch.delenv("BACKUP_AGE_RECIPIENT", raising=False)
+    assert request("POST", "/api/backup/key", {"recipient": PUBLIC_AGE_KEY})[0] == 403
+    status, result = request("POST", "/api/backup/key", {"recipient": PUBLIC_AGE_KEY}, headers={"X-Commons-Backup": "1"})
+    assert status == 202 and result["ok"] is True
+    assert result["unit"].startswith("edutictac-commons-config-")
+    assert admin.JOB_UNIT_RE.fullmatch(result["unit"])
+    command = calls[-1]
+    assert command[:2] == ("systemd-run", "--user")
+    assert "--no-block" in command
+    assert "/opt/synthetic-commons/scripts/set-backup-recipient.py" in command
+    assert command[-4:] == ("--root", "/opt/synthetic-commons", "--recipient", PUBLIC_AGE_KEY)
+    assert request("POST", "/api/backup/key", {"recipient": "not-an-age-key"}, headers={"X-Commons-Backup": "1"})[0] == 400

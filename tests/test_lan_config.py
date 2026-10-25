@@ -61,3 +61,12 @@ def test_installer_guide_documents_url_ip_icon_and_port():
     assert 'Accés per IP' in guide
     assert 'PORTAL_PORT' in guide
     assert 'escritorio' in guide
+
+
+def test_installer_repairs_the_service_user_systemd_directory():
+    postinst = (ROOT / 'packaging/debian/postinst').read_text()
+    compose = (ROOT / 'compose.yml').read_text()
+    assert 'EDUTICTAC_USER_CONFIG_HOME' in postinst
+    assert 'chown "$target_uid:$target_gid" "$user_config" "$user_config/systemd" "$user_config/systemd/user"' in postinst
+    assert 'EDUTICTAC_USER_CONFIG_HOME:-${XDG_CONFIG_HOME:-$HOME/.config}' in compose
+    assert 'EDUTICTAC_USER_CONFIG_HOME=' in (ROOT / '.env.example').read_text()
