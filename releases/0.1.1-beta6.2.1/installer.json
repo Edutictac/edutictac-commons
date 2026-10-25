@@ -5,14 +5,17 @@
   "filename": "edutictac-commons_0.1.1~beta6.2.1_amd64.deb",
   "size": 5917520,
   "sha256": "6ef09104b6cf5341490ecf9181a78bd8efbfa02f0bec493d949883c6c33b3c59",
-  "source_revision": "7862fbb",
-  "source_dirty": true,
+  "source_revision": "4253cae3c31999685ef44bae02ee5dd2880d68d8",
+  "source_dirty": false,
   "image_tag": "0.1.1-beta6.2",
   "admin_tag": "0.1.1-beta6.2.1",
-  "apt_signature_verified": false,
-  "publication_status": "candidate",
+  "apt_signature_verified": true,
+  "publication_status": "published",
   "native_validation": "passed-upgrade-fresh-install-modules-backups-admin-access-test-helpers-and-backup-timer-in-lliurex",
   "validated_installer_candidate": "0.1.1~beta6.2.1",
   "validated_image_candidate": "0.1.1-beta6.2",
-  "validated_admin_candidate": "0.1.1-beta6.2.1"
+  "validated_admin_candidate": "0.1.1-beta6.2.1",
+  "published_at": "2026-10-25",
+  "admin_digest": "sha256:39b111f25fc3970dcfbf39d1e14681e9413ab9ca4fe52e72acaff5c95acd4bf6",
+  "url": "https://packages.edutictac.es/pool/main/e/edutictac-commons/edutictac-commons_0.1.1~beta6.2.1_amd64.deb"
 }
