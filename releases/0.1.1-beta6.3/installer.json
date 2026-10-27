@@ -1,0 +1,16 @@
+{
+  "version": "0.1.1-beta6.3",
+  "package": "edutictac-commons",
+  "apt_version": "0.1.1~beta6.3.1",
+  "architecture": "amd64",
+  "source_revision": "051079e05bd61367bc462e07016f0072c03df59a",
+  "sha256": "3162fa447881249017395eea7348526faf86c125f602fb349a7e1c5d57df00be",
+  "size_bytes": 5927720,
+  "image_tag": "0.1.1-beta6.3",
+  "validation": {
+    "package_contents_no_local_paths": true,
+    "vm_upgrade_earlier_package": true,
+    "vm_containers_healthy": 13,
+    "vm_transfer_disabled": true
+  }
+}

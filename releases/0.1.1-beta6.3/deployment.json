@@ -1,0 +1,26 @@
+{
+  "version": "0.1.1-beta6.3",
+  "scope": [
+    "id-api",
+    "portal"
+  ],
+  "images": {
+    "id-api": "sha256:71b3d4c2fb465117032abdb8ca18696c512adddb828137f07d4d56d24130dfd3",
+    "portal": "sha256:4ea0f4ed41e9b2a817497e9ef50a25093bf538d05efc1b4a399120905b155969"
+  },
+  "api_health": "healthy",
+  "portal_health": "healthy",
+  "http": {
+    "home": 200,
+    "teacher": 200,
+    "api_health": 200,
+    "transfer_status": 404,
+    "admin": 404
+  },
+  "teacher_bundle_sha256": "f1d571c6866199f16c307196658ecdd7beba4c4708b5dd529c838f717b01220c",
+  "teacher_bundle_internal_path_absent": true,
+  "transfer_enabled": false,
+  "existing_group_preserved": true,
+  "other_containers_unchanged": true,
+  "backup_created": true
+}

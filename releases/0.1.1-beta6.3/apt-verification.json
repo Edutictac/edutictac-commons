@@ -1,0 +1,10 @@
+{
+  "distribution": "stable",
+  "package": "edutictac-commons",
+  "version": "0.1.1~beta6.3.1",
+  "sha256": "3162fa447881249017395eea7348526faf86c125f602fb349a7e1c5d57df00be",
+  "inrelease_signature_valid": true,
+  "index_sha256_valid": true,
+  "public_package_sha256_valid": true,
+  "supersedes_package_version": "0.1.1~beta6.3"
+}
