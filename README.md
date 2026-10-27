@@ -1,11 +1,11 @@
 # EduTicTac Commons Stack Local
 
-Versió publicada d'imatges: [0.1.1-beta6.3](releases/0.1.1-beta6.3/README.md).
-Instal·lador amd64 publicat per a LliureX, Ubuntu i Debian: `0.1.1~beta6.3.1`.
-Candidata en validació: `0.1.1-beta6.4-candidate1`, amb control administratiu del trasllat.
+Versió publicada d'imatges: [0.1.1-beta6.4](releases/0.1.1-beta6.4/README.md).
+Instal·lador amd64 publicat per a LliureX, Ubuntu i Debian: `0.1.1~beta6.4`.
+La beta6.4 incorpora el control administratiu del trasllat.
 En instal·lacions noves, el trasllat comença activat; Admin pot apagar-lo.
-La beta6.3 publicada el manté desactivat per defecte.
-La beta6.2.1 és la versió anterior: el portal passa a la xarxa
+La beta6.3 anterior el manté desactivat per defecte.
+La beta6.2.1 va incorporar la connexió del portal a la xarxa
 `editors` i el selector demana la clau pública age si falta abans de la còpia.
 La beta6.1 inclou l’estabilització de la pila, les xarxes Docker separades,
 l’accés per LAN amb mDNS/IP, el nom humà d’aula i el límit visible.
@@ -135,7 +135,7 @@ altra instal·lació sense connexió directa entre els servidors:
    les dos instal·lacions han modificat l'aula des de l'últim trasllat,
    Commons deté la importació i cal resoldre el conflicte abans de continuar.
 
-En la candidata beta6.4, el trasllat està **activat per defecte en instal·lacions noves**.
+En beta6.4, el trasllat està **activat per defecte en instal·lacions noves**.
 Una persona administradora pot activar-lo o apagar-lo en el panell de grups
 del tauler docent; l'ajust es guarda en la base de dades i no requerix reinici.
 `EDUTICTAC_CLASSROOM_TRANSFER_ENABLED` només fixa el valor inicial en una
