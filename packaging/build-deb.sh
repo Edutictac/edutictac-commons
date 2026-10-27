@@ -3,7 +3,7 @@ set -euo pipefail
 
 repo_dir="$(cd "$(dirname "$0")/.." && pwd)"
 output_dir="${OUTPUT_DIR:-$repo_dir/dist}"
-package_version="${DEB_VERSION:-0.1.1~beta6.3}"
+package_version="${DEB_VERSION:-0.1.1~beta6.4~candidate1}"
 package_name="edutictac-commons"
 docker_cmd="${DOCKER:-docker}"
 

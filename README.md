@@ -2,6 +2,7 @@
 
 Versió publicada d'imatges: [0.1.1-beta6.3](releases/0.1.1-beta6.3/README.md).
 Instal·lador amd64 per a LliureX, Ubuntu i Debian: `0.1.1~beta6.3`.
+Candidata en validació: `0.1.1-beta6.4-candidate1`, amb control administratiu del trasllat.
 Incorpora el primer tall del trasllat xifrat d'aules, desactivat per defecte.
 La beta6.2.1 és la versió anterior: el portal passa a la xarxa
 `editors` i el selector demana la clau pública age si falta abans de la còpia.
