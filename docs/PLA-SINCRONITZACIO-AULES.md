@@ -10,8 +10,11 @@
 
 ## Primer tall implementat
 
-L'API d'identitat disposa de dos endpoints, ocults fins a activar
-`EDUTICTAC_CLASSROOM_TRANSFER_ENABLED=1` en un entorn de prova:
+L'API d'identitat disposa de dos endpoints, ocults fins que una persona
+administradora active el trasllat en el panell de grups del tauler docent.
+L'ajust és persistent i té efecte immediat en tota la instal·lació.
+`EDUTICTAC_CLASSROOM_TRANSFER_ENABLED=1` només establix el valor inicial
+si encara no hi ha cap ajust guardat:
 
 - `POST /api/teacher/groups/{group_id}/transfer/export`: retorna un paquet
   xifrat i una clau de recuperació aleatòria. La resposta no s'ha de guardar

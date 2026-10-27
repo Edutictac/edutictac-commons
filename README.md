@@ -133,8 +133,11 @@ altra instal·lació sense connexió directa entre els servidors:
    les dos instal·lacions han modificat l'aula des de l'últim trasllat,
    Commons deté la importació i cal resoldre el conflicte abans de continuar.
 
-El primer tall de l'API i dels controls docents està **desactivat per defecte**
-(`EDUTICTAC_CLASSROOM_TRANSFER_ENABLED=0`). S'ha provat amb dades fictícies
+El primer tall de l'API i dels controls docents està **desactivat per defecte**.
+Una persona administradora pot activar-lo o apagar-lo en el panell de grups
+del tauler docent; l'ajust es guarda en la base de dades i no requerix reinici.
+`EDUTICTAC_CLASSROOM_TRANSFER_ENABLED` només fixa el valor inicial en una
+instal·lació que encara no tinga l'ajust guardat. S'ha provat amb dades fictícies
 entre un host de proves i una VM LliureX docent; encara falten la
 previsualització, la recuperació guiada, els fitxers de l'aula i la validació
 institucional. Les dades pseudònimes continuen sent dades personals; la clau

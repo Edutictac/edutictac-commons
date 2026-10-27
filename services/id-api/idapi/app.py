@@ -147,6 +147,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     settings.validate_production_secrets()
     c = Commons(settings)
     c.db.migrate()
+    # La variable antiga només fixa el valor inicial. Després mana l'ajust
+    # administratiu persistent, també després dels reinicis del contenidor.
+    with c.connect() as conn:
+        conn.execute("""INSERT OR IGNORE INTO classroom_transfer_settings
+            (id, enabled) VALUES (1, ?)""", (int(settings.classroom_transfer_enabled),))
     c.files.cleanup()
 
     app = FastAPI(title="EduTicTac ID API")

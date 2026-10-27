@@ -127,9 +127,9 @@ def test_beta6_upgrade_adds_transfer_state_without_changing_existing_groups(tmp_
             VALUES ('existing','EXISTING','centre','teacher','2026','2026','Aula actual')""")
 
     assert database.version() == 3
-    assert database.migrate() == 4
+    assert database.migrate() == 5
     with database.connect() as conn:
         group = conn.execute("SELECT name,label FROM groups WHERE id='existing'").fetchone()
         assert (group['name'], group['label']) == ('EXISTING', 'Aula actual')
         assert conn.execute('SELECT COUNT(*) FROM group_transfer_state').fetchone()[0] == 0
-    assert database.migrate() == 4
+    assert database.migrate() == 5

@@ -9,12 +9,15 @@ const props = defineProps({api: Function, onDeleted: Function, onSessionExpired:
 const t = usePortalTranslations();
 const available = ref(false), groups = ref([]), selected = shallowRef(null);
 const pending = ref(false), feedback = ref(''), members = ref(null);
+const transferEnabled = ref(null), transferDraft = ref(false);
+const transferPending = ref(false), transferFeedback = ref('');
 let teacher = false, epoch = 0, alive = true;
 
 function setContext(next) {
   if (Boolean(next.teacher) === teacher) return;
   teacher = Boolean(next.teacher);
   epoch++; available.value = false; groups.value = []; selected.value = null; feedback.value = '';
+  transferEnabled.value = null; transferFeedback.value = '';
   if (teacher) load();
 }
 async function load() {
@@ -25,6 +28,15 @@ async function load() {
     if (!alive || version !== epoch) return;
     groups.value = data.groups || []; available.value = true; feedback.value = '';
     if (selected.value && !groups.value.some(group => group.id === selected.value.id)) selected.value = null;
+    try {
+      const settings = await props.api('/api/admin/transfer/settings', {method: 'GET'});
+      if (!alive || version !== epoch) return;
+      transferEnabled.value = settings.enabled === true;
+      transferDraft.value = transferEnabled.value;
+      transferFeedback.value = '';
+    } catch {
+      if (alive && version === epoch) transferFeedback.value = 'admin.transferLoadError';
+    }
   } catch (error) {
     if (!alive || version !== epoch) return;
     // Sense permís d'administració el panell no existeix per a esta sessió. Un
@@ -32,6 +44,26 @@ async function load() {
     if ([401, 403].includes(error.status)) { available.value = false; groups.value = []; }
     else if (available.value) feedback.value = 'admin.loadError';
   } finally { if (alive && version === epoch) pending.value = false; }
+}
+async function saveTransfer() {
+  if (transferPending.value || transferEnabled.value === null || transferDraft.value === transferEnabled.value) return;
+  if (transferDraft.value && !confirm(t('admin.transferConfirm'))) return;
+  const version = epoch;
+  transferPending.value = true; transferFeedback.value = '';
+  try {
+    const result = await props.api('/api/admin/transfer/settings', {
+      method: 'PUT', body: JSON.stringify({enabled: transferDraft.value}),
+    });
+    if (!alive || version !== epoch) return;
+    transferEnabled.value = result.enabled === true;
+    transferDraft.value = transferEnabled.value;
+    transferFeedback.value = 'admin.transferSaved';
+    window.dispatchEvent(new Event('commons:transfer-settings-changed'));
+  } catch (error) {
+    if (!alive || version !== epoch) return;
+    if (error.status === 401) props.onSessionExpired();
+    transferFeedback.value = 'admin.transferSaveError';
+  } finally { if (alive && version === epoch) transferPending.value = false; }
 }
 async function manage(group) {
   selected.value = group; feedback.value = '';
@@ -70,6 +102,13 @@ onBeforeUnmount(() => { alive = false; epoch++; });
     <div class="panel-content" :aria-busy="pending">
       <p class="hint">{{ t('admin.groupsHint') }}</p>
       <p v-if="feedback" role="alert">{{ t(feedback) }}</p>
+      <div class="panel" :aria-label="t('admin.transferTitle')">
+        <h3>{{ t('admin.transferTitle') }}</h3>
+        <p class="hint">{{ t('admin.transferHint') }}</p>
+        <p v-if="transferFeedback" :role="transferFeedback === 'admin.transferSaved' ? 'status' : 'alert'">{{ t(transferFeedback) }}</p>
+        <label v-if="transferEnabled !== null"><input v-model="transferDraft" type="checkbox" :disabled="transferPending"> {{ t('admin.transferEnable') }}</label>
+        <div class="actions"><button id="adminSaveTransfer" type="button" class="secondary" :disabled="transferPending || transferEnabled === null || transferDraft === transferEnabled" @click="saveTransfer">{{ t('admin.transferSave') }}</button></div>
+      </div>
       <div class="output" :class="{empty: !groups.length}">
         <p v-if="!groups.length">{{ t('common.tableEmpty') }}</p>
         <table v-else>

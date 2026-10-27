@@ -17,20 +17,23 @@ function clearSecrets() {
   if (selectedFile.value) selectedFile.value.value = '';
 }
 function onPageHide() { clearSecrets(); }
+function onSettingsChanged() { refreshStatus(); }
 window.addEventListener('pagehide', onPageHide);
+window.addEventListener('commons:transfer-settings-changed', onSettingsChanged);
 onBeforeUnmount(() => {
   alive = false; generation++; clearSecrets();
   window.removeEventListener('pagehide', onPageHide);
+  window.removeEventListener('commons:transfer-settings-changed', onSettingsChanged);
 });
 
 watch(() => props.group?.id, () => {
   generation++; pending.value = false; clearSecrets(); feedback.value = '';
 });
-watch(() => props.teacher, async value => {
+async function refreshStatus() {
   generation++;
   enabled.value = false;
   clearSecrets();
-  if (!value) return;
+  if (!props.teacher) return;
   const current = generation;
   try {
     const status = await props.api('/api/teacher/transfer/status', {method: 'GET'});
@@ -39,7 +42,8 @@ watch(() => props.teacher, async value => {
     // La disponibilitat d'esta funció opcional no governa la sessió docent.
     if (alive && current === generation) enabled.value = false;
   }
-}, {immediate: true});
+}
+watch(() => props.teacher, refreshStatus, {immediate: true});
 
 function showError(error) {
   if (error.status === 401) props.onSessionExpired();

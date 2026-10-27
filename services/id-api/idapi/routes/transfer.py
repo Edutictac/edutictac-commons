@@ -18,6 +18,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field
 
 from ..context import Commons, commons
+from ..db import iso_now
 
 router = APIRouter()
 MAGIC = b"ETC-AULA-1\n"
@@ -52,8 +53,48 @@ class ImportIn(BaseModel):
     recovery_key: str = Field(min_length=43, max_length=44)
 
 
+class TransferSettingsIn(BaseModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+    enabled: bool
+
+
+def transfer_settings(c: Commons) -> dict[str, Any]:
+    with c.connect() as conn:
+        row = conn.execute("""SELECT enabled, updated_at, updated_by
+            FROM classroom_transfer_settings WHERE id=1""").fetchone()
+    return {"enabled": bool(row["enabled"]) if row else False,
+            "updated_at": row["updated_at"] if row else "",
+            "updated_by": row["updated_by"] if row else ""}
+
+
+def require_admin(c: Commons, request: Request) -> str:
+    if not c.auth.is_oidc_admin(request):
+        raise HTTPException(403, "administrator required")
+    return str(c.auth.oidc_cookie(request)["id"])
+
+
+@router.get("/api/admin/transfer/settings")
+def get_transfer_settings(request: Request, c: Commons = Depends(commons)) -> JSONResponse:
+    require_admin(c, request)
+    return JSONResponse(transfer_settings(c), headers={"Cache-Control": "no-store"})
+
+
+@router.put("/api/admin/transfer/settings")
+def put_transfer_settings(payload: TransferSettingsIn, request: Request,
+                          c: Commons = Depends(commons)) -> JSONResponse:
+    check_origin(request)
+    if request.headers.get("sec-fetch-site") == "cross-site":
+        raise HTTPException(403, "origin_required")
+    actor = require_admin(c, request)
+    with c.connect() as conn:
+        conn.execute("""UPDATE classroom_transfer_settings
+            SET enabled=?, updated_at=?, updated_by=? WHERE id=1""",
+            (int(payload.enabled), iso_now(), actor))
+    return JSONResponse(transfer_settings(c), headers={"Cache-Control": "no-store"})
+
+
 def enabled(c: Commons) -> None:
-    if not c.settings.classroom_transfer_enabled:
+    if not transfer_settings(c)["enabled"]:
         raise HTTPException(404, "classroom transfer unavailable")
 
 

@@ -2,6 +2,7 @@ const {test, expect} = require('@playwright/test');
 
 // API simulada: el grup «a» és propi; «z» és d'una docent que ja no és al centre.
 async function dashboard(page, {admin}) {
+  let transferEnabled = false;
   let adminGroups = [
     {id: 'a', group_code: 'Aula a', tenant_id: 'centre', owner_id: 'oidc:owner', collaborators: 1, created_at: '2026-10-01'},
     {id: 'z', group_code: 'Aula z', tenant_id: 'centre', owner_id: 'oidc:gone', collaborators: 1, created_at: '2026-09-01'},
@@ -21,6 +22,13 @@ async function dashboard(page, {admin}) {
       calls.push({path, method});
       return admin ? route.fulfill({json: {groups: adminGroups}}) : route.fulfill({status: 403, json: {detail: 'administrator required'}});
     }
+    if (path === '/api/admin/transfer/settings') {
+      calls.push({path, method, ...(request.postData() ? {body: request.postDataJSON()} : {})});
+      if (!admin) return route.fulfill({status: 403, json: {detail: 'administrator required'}});
+      if (method === 'PUT') transferEnabled = request.postDataJSON().enabled;
+      return route.fulfill({json: {enabled: transferEnabled, updated_at: '', updated_by: 'oidc:admin'}});
+    }
+    if (path === '/api/teacher/transfer/status') return route.fulfill({status: transferEnabled ? 200 : 404, json: {enabled: transferEnabled}});
     if (path === '/api/teacher/summary') return route.fulfill({json: {groups: [{id: 'a', name: 'Aula a', tenant_id: 'centre', active: 2}], active: 2, total: 2}});
     if (path === '/api/teacher/activity-assignments') return route.fulfill({json: {assignments: []}});
     if (path === '/api/teacher/identities') return route.fulfill({json: {identities: []}});
@@ -53,6 +61,25 @@ test('el panell d’administració no apareix sense permís d’administració',
   const calls = await dashboard(page, {admin: false});
   await expect.poll(() => calls.filter(call => call.path === '/api/admin/groups').length).toBeGreaterThan(0);
   await expect(page.locator('#adminGroups')).toHaveCount(0);
+});
+
+test('administració activa i apaga el trasllat per a la instal·lació', async ({page}) => {
+  const calls = await dashboard(page, {admin: true});
+  await page.locator('#adminGroups summary').click();
+  const toggle = page.getByLabel('Permetre exportar i importar aules');
+  await expect(toggle).toBeVisible();
+  await expect(toggle).not.toBeChecked();
+  await toggle.check();
+  await page.locator('#adminSaveTransfer').click();
+  await expect(toggle).toBeChecked();
+  await expect(page.locator('#adminGroups').getByRole('status')).toContainText('Ajust del trasllat guardat');
+  await expect(page.locator('section[aria-label="Traslladar aula (prova)"]')).toHaveCount(1);
+  expect(calls).toContainEqual({path: '/api/admin/transfer/settings', method: 'PUT', body: {enabled: true}});
+  await toggle.uncheck();
+  await page.locator('#adminSaveTransfer').click();
+  await expect(toggle).not.toBeChecked();
+  await expect(page.locator('section[aria-label="Traslladar aula (prova)"]')).toHaveCount(0);
+  expect(calls).toContainEqual({path: '/api/admin/transfer/settings', method: 'PUT', body: {enabled: false}});
 });
 
 test('administració rescata una aula: traspassa la propietat i l’elimina', async ({page}) => {

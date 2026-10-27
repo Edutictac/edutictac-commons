@@ -149,10 +149,12 @@ def test_disabled_and_unsupported_files(tmp_path):
     source, db = client(tmp_path, "source")
     seed(db)
     endpoint = "/api/teacher/groups/g1/transfer/export"
-    source.app.state.commons.settings.classroom_transfer_enabled = False
+    with db.connect() as conn:
+        conn.execute("UPDATE classroom_transfer_settings SET enabled=0 WHERE id=1")
     assert source.get("/api/teacher/transfer/status").status_code == 404
     assert source.post(endpoint).status_code == 404
-    source.app.state.commons.settings.classroom_transfer_enabled = True
+    with db.connect() as conn:
+        conn.execute("UPDATE classroom_transfer_settings SET enabled=1 WHERE id=1")
     assert source.get("/api/teacher/transfer/status").json() == {"enabled": True}
     with db.connect() as conn:
         conn.execute("""INSERT INTO classroom_files

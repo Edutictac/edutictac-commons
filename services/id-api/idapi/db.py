@@ -272,11 +272,22 @@ def _classroom_transfer(conn: sqlite3.Connection) -> None:
     )""")
 
 
+def _classroom_transfer_settings(conn: sqlite3.Connection) -> None:
+    """Interruptor persistent de la instal·lació, inicialitzat en arrancar l'API."""
+    conn.execute("""CREATE TABLE IF NOT EXISTS classroom_transfer_settings (
+        id INTEGER PRIMARY KEY CHECK (id = 1),
+        enabled INTEGER NOT NULL DEFAULT 0 CHECK (enabled IN (0, 1)),
+        updated_at TEXT NOT NULL DEFAULT '',
+        updated_by TEXT NOT NULL DEFAULT ''
+    )""")
+
+
 MIGRATIONS = [
     Migration(1, _baseline),
     Migration(2, _classroom_files),
     Migration(3, _group_labels),
     Migration(4, _classroom_transfer),
+    Migration(5, _classroom_transfer_settings),
 ]
 SCHEMA_VERSION = MIGRATIONS[-1].version
 
