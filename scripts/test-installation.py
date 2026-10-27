@@ -40,6 +40,10 @@ def main():
         shutil.copytree(root / "scripts", work / "scripts", ignore=shutil.ignore_patterns("__pycache__"))
         (work / "admin").mkdir()
         shutil.copy2(root / "admin/modules.py", work / "admin/modules.py")
+        portal_nginx = work / "services/portal/nginx"
+        portal_nginx.mkdir(parents=True)
+        shutil.copy2(root / "services/portal/nginx/25-admin-local-access.sh",
+                     portal_nginx / "25-admin-local-access.sh")
         (work / "data").mkdir()
         (work / "backups").mkdir()
         portal_port, eduhoot_port, admin_port = free_port(), free_port(), free_port()

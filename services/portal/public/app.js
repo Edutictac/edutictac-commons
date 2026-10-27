@@ -440,6 +440,12 @@ async function afterGroupDeleted(groupId) {
   if (state.teacher) await refreshDashboard();
 }
 
+async function afterGroupImported(groupId) {
+  if (!state.teacher) return;
+  await loadTeacherData();
+  await selectTeacherGroup(groupId);
+}
+
 function bind(id, fn, outputId = "resultsOutput") {
   const node = $(id);
   if (!node) return;
@@ -467,7 +473,7 @@ async function initializePortal() {
       const {mountItineraries, mountGroups, mountMembers, mountCredentials, mountAssignments, mountResults, mountResources, mountAdminGroups, mountClassroomFiles} = await import('/assets/teacher-itineraries.js');
       const options = {api, onSessionExpired: () => setTeacherSession(false)};
       itinerariesPanel = mountItineraries($("itinerariesPanel"), options);
-      groupsPanel = mountGroups($("groupsPanel"), {...options, onSelect: selectTeacherGroup, onDeleted: afterGroupDeleted});
+      groupsPanel = mountGroups($("groupsPanel"), {...options, onSelect: selectTeacherGroup, onDeleted: afterGroupDeleted, onImported: afterGroupImported});
       membersPanel = mountMembers($("membersPanel"), options);
       credentialsPanel = mountCredentials($("credentialsPanel"), {...options, onCreated: afterClassCreated, onRefresh: refreshDashboard});
       assignmentsPanel = mountAssignments($("assignmentsPanel"), {...options, onSelect: selectTeacherAssignment});

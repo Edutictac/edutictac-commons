@@ -264,10 +264,19 @@ def _group_labels(conn: sqlite3.Connection) -> None:
         conn.execute("ALTER TABLE groups ADD COLUMN label TEXT NOT NULL DEFAULT ''")
 
 
+def _classroom_transfer(conn: sqlite3.Connection) -> None:
+    """Revisió importada per a rebutjar edicions divergents entre aules."""
+    conn.execute("""CREATE TABLE IF NOT EXISTS group_transfer_state (
+        group_id TEXT PRIMARY KEY REFERENCES groups(id) ON DELETE CASCADE,
+        baseline_digest TEXT NOT NULL
+    )""")
+
+
 MIGRATIONS = [
     Migration(1, _baseline),
     Migration(2, _classroom_files),
     Migration(3, _group_labels),
+    Migration(4, _classroom_transfer),
 ]
 SCHEMA_VERSION = MIGRATIONS[-1].version
 

@@ -81,6 +81,7 @@ def test_beta2_schema_upgrades_additively_to_classroom_files(tmp_path, db_module
     with database.connect() as conn:
         assert conn.execute("SELECT id FROM groups WHERE id='previous'").fetchone()['id']=='previous'
         assert conn.execute('SELECT COUNT(*) FROM classroom_files').fetchone()[0]==0
+        assert conn.execute('SELECT COUNT(*) FROM group_transfer_state').fetchone()[0]==0
     assert database.migrate()==db_module.SCHEMA_VERSION
 
 
@@ -113,3 +114,22 @@ def test_beta4_upgrade_preserves_classroom_files_and_adds_oidc_namespace(tmp_pat
         assert tuple(conn.execute("SELECT * FROM classroom_files").fetchone()) == before
         assert current_version(conn, db_module.OIDC_NAMESPACE) == 1
         assert conn.execute('SELECT COUNT(*) FROM oidc_sessions').fetchone()[0] == 0
+
+
+def test_beta6_upgrade_adds_transfer_state_without_changing_existing_groups(tmp_path, db_module):
+    from edutictac_community.migrations import apply_migrations
+
+    database = db_module.Database(str(tmp_path / 'beta6.db'))
+    with database.connect() as conn:
+        apply_migrations(conn, db_module.NAMESPACE, db_module.MIGRATIONS[:3])
+        conn.execute("""INSERT INTO groups
+            (id,name,tenant_id,created_by_teacher_id,created_at,updated_at,label)
+            VALUES ('existing','EXISTING','centre','teacher','2026','2026','Aula actual')""")
+
+    assert database.version() == 3
+    assert database.migrate() == 4
+    with database.connect() as conn:
+        group = conn.execute("SELECT name,label FROM groups WHERE id='existing'").fetchone()
+        assert (group['name'], group['label']) == ('EXISTING', 'Aula actual')
+        assert conn.execute('SELECT COUNT(*) FROM group_transfer_state').fetchone()[0] == 0
+    assert database.migrate() == 4

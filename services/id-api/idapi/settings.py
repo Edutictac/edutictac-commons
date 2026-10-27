@@ -35,6 +35,7 @@ class Settings:
     allowed_origins: tuple[str, ...] = field(default_factory=tuple)
     # Pàgina del compte en Authentik («canviar contrasenya», perfil).
     account_url: str = ""
+    classroom_transfer_enabled: bool = False
 
     files_dir: str = ""
     files_disk_reserve_bytes: int = 256 * 1024**2
@@ -73,6 +74,7 @@ class Settings:
             resources_api_url=env.get("EDUTICTAC_RESOURCES_API_URL", cls.resources_api_url).rstrip("/"),
             allowed_origins=parse_origins(env.get("EDUTICTAC_ID_ALLOWED_ORIGINS", "")),
             account_url=env.get("EDUTICTAC_ID_ACCOUNT_URL", "").strip(),
+            classroom_transfer_enabled=env.get("EDUTICTAC_CLASSROOM_TRANSFER_ENABLED", "0") == "1",
         )
 
     def validate_production_secrets(self) -> None:

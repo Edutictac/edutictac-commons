@@ -3,9 +3,10 @@
 Per a instal·lar el paquet sense preparar un entorn de desenvolupament,
 comença per la [guia bàsica d’instal·lació](docs/INSTALACION-RAPIDA.md).
 
-Entrega: [Commons 0.1.1-beta6.2](releases/0.1.1-beta6.2/README.md), amb paquet
-[0.1.1-beta6.2.1](releases/0.1.1-beta6.2.1/README.md) com a hotfix de xarxa.
-Paquet amd64 amb descàrrega d’imatges; beta6.2.1 pendent de publicació a APT.
+Entrega: [Commons 0.1.1-beta6.3](releases/0.1.1-beta6.3/README.md), publicada
+en el repositori APT i el registre d'imatges. La versió anterior és la
+beta6.2.1. El paquet amd64 descarrega les
+imatges; el trasllat xifrat d'aules continua desactivat per defecte.
 Per a actualitzar: primer el paquet, després les imatges des d’Administració.
 Inclou un manifest de digests i una prova d'instal·lació/restauració aïllada.
 

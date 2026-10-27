@@ -1,11 +1,10 @@
 # EduTicTac Commons Stack Local
 
-Versió d’imatges: [0.1.1-beta6.2](releases/0.1.1-beta6.2/README.md).
-Instal·lador amd64 per a LliureX, Ubuntu i Debian: `0.1.1~beta6.2.1`.
-La beta6.2.1 és un hotfix del paquet: el portal passa a la xarxa `editors` i el
-selector demana la clau pública age si falta, abans de fer la còpia prèvia.
-Blocs i Llibres funcionen també després de reiniciar. Les imatges continuen sent
-beta6.2, excepte l’administració, que incorpora el formulari de la clau.
+Versió publicada d'imatges: [0.1.1-beta6.3](releases/0.1.1-beta6.3/README.md).
+Instal·lador amd64 per a LliureX, Ubuntu i Debian: `0.1.1~beta6.3`.
+Incorpora el primer tall del trasllat xifrat d'aules, desactivat per defecte.
+La beta6.2.1 és la versió anterior: el portal passa a la xarxa
+`editors` i el selector demana la clau pública age si falta abans de la còpia.
 La beta6.1 inclou l’estabilització de la pila, les xarxes Docker separades,
 l’accés per LAN amb mDNS/IP, el nom humà d’aula i el límit visible.
 La beta6 continua disponible com a versió anterior validada.
@@ -116,6 +115,32 @@ Aquest stack no comença de zero: reutilitza l'API d'identitat pseudònima desen
 5. Entra com a alumne amb eixe codi + PIN.
 6. Registra una puntuació.
 7. Torna al tauler docent i consulta resultats.
+
+## Funcionalitat en desenvolupament: trasllat d'aules entre instal·lacions
+
+Commons prepara un trasllat manual per a centres amb servidors d'aula en VLAN
+separades. El docent podrà continuar treballant amb el mateix grup en una
+altra instal·lació sense connexió directa entre els servidors:
+
+1. En Commons A, obri l'aula i selecciona **Exportar aula**. Descarrega el
+   paquet xifrat i guarda la clau de recuperació per separat.
+2. Puja el paquet al seu OneDrive institucional amb el navegador, si el centre
+   ha autoritzat este ús. Commons no accedix a Microsoft Graph.
+3. En Commons B, descarrega el paquet, selecciona **Importar aula** i introduïx
+   la clau. Comprova que el grup, les activitats i els resultats estiguen
+   disponibles abans de continuar la classe.
+4. Per tornar a A amb els canvis nous, exporta des de B i importa en A. Si
+   les dos instal·lacions han modificat l'aula des de l'últim trasllat,
+   Commons deté la importació i cal resoldre el conflicte abans de continuar.
+
+El primer tall de l'API i dels controls docents està **desactivat per defecte**
+(`EDUTICTAC_CLASSROOM_TRANSFER_ENABLED=0`). S'ha provat amb dades fictícies
+entre un host de proves i una VM LliureX docent; encara falten la
+previsualització, la recuperació guiada, els fitxers de l'aula i la validació
+institucional. Les dades pseudònimes continuen sent dades personals; la clau
+no s'ha de pujar juntament amb el paquet. Vegeu el
+[pla de trasllat](docs/PLA-SINCRONITZACIO-AULES.md) per a l'abast i les
+condicions del pilot.
 
 ## Mòdul opcional: EduHoot
 
