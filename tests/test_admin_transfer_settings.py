@@ -10,6 +10,7 @@ sys.path.insert(0, str(ROOT / "vendor"))
 sys.path.insert(0, str(ROOT))
 
 from idapi.app import create_app  # noqa: E402
+from idapi.db import Database, MIGRATIONS, NAMESPACE, apply_migrations  # noqa: E402
 from idapi.settings import Settings  # noqa: E402
 
 
@@ -20,6 +21,34 @@ def make_client(path, *, initial=False):
     app = create_app(settings)
     client = TestClient(app, headers={"Origin": "http://testserver"})
     return client, app.state.commons
+
+
+def test_fresh_install_has_transfer_enabled_by_default(tmp_path):
+    settings = Settings(db_path=str(tmp_path / "id.db"),
+                        session_secret="synthetic-session-secret-for-tests",
+                        teacher_token="synthetic-teacher-token", cookie_secure=False)
+    assert Settings.from_env({}).classroom_transfer_enabled is True
+    client = TestClient(create_app(settings),
+                        headers={"Authorization": "Bearer synthetic-teacher-token"})
+    assert client.get("/api/teacher/transfer/status").json() == {"enabled": True}
+    with client.app.state.commons.connect() as conn:
+        assert conn.execute("SELECT enabled FROM classroom_transfer_settings WHERE id=1").fetchone()[0] == 1
+
+
+def test_beta63_database_upgrades_and_keeps_existing_group(tmp_path):
+    path = tmp_path / "id.db"
+    database = Database(str(path))
+    with database.connect() as conn:
+        apply_migrations(conn, NAMESPACE, MIGRATIONS[:4])
+        conn.execute("""INSERT INTO groups (id, name, created_at, updated_at)
+            VALUES ('existing', 'Aula existent', '2026', '2026')""")
+    settings = Settings(db_path=str(path), session_secret="synthetic-session-secret-for-tests",
+                        teacher_token="synthetic-teacher-token", cookie_secure=False)
+    app = create_app(settings)
+    with app.state.commons.connect() as conn:
+        assert database.version() == 5
+        assert conn.execute("SELECT name FROM groups WHERE id='existing'").fetchone()[0] == "Aula existent"
+        assert conn.execute("SELECT enabled FROM classroom_transfer_settings WHERE id=1").fetchone()[0] == 1
 
 
 def test_admin_can_toggle_and_setting_survives_restart(tmp_path, monkeypatch):

@@ -1,9 +1,10 @@
 # EduTicTac Commons Stack Local
 
 Versió publicada d'imatges: [0.1.1-beta6.3](releases/0.1.1-beta6.3/README.md).
-Instal·lador amd64 per a LliureX, Ubuntu i Debian: `0.1.1~beta6.3`.
+Instal·lador amd64 publicat per a LliureX, Ubuntu i Debian: `0.1.1~beta6.3.1`.
 Candidata en validació: `0.1.1-beta6.4-candidate1`, amb control administratiu del trasllat.
-Incorpora el primer tall del trasllat xifrat d'aules, desactivat per defecte.
+En instal·lacions noves, el trasllat comença activat; Admin pot apagar-lo.
+La beta6.3 publicada el manté desactivat per defecte.
 La beta6.2.1 és la versió anterior: el portal passa a la xarxa
 `editors` i el selector demana la clau pública age si falta abans de la còpia.
 La beta6.1 inclou l’estabilització de la pila, les xarxes Docker separades,
@@ -134,11 +135,12 @@ altra instal·lació sense connexió directa entre els servidors:
    les dos instal·lacions han modificat l'aula des de l'últim trasllat,
    Commons deté la importació i cal resoldre el conflicte abans de continuar.
 
-El primer tall de l'API i dels controls docents està **desactivat per defecte**.
+En la candidata beta6.4, el trasllat està **activat per defecte en instal·lacions noves**.
 Una persona administradora pot activar-lo o apagar-lo en el panell de grups
 del tauler docent; l'ajust es guarda en la base de dades i no requerix reinici.
 `EDUTICTAC_CLASSROOM_TRANSFER_ENABLED` només fixa el valor inicial en una
-instal·lació que encara no tinga l'ajust guardat. S'ha provat amb dades fictícies
+instal·lació que encara no tinga l'ajust guardat; `0` el deixa apagat.
+S'ha provat amb dades fictícies
 entre un host de proves i una VM LliureX docent; encara falten la
 previsualització, la recuperació guiada, els fitxers de l'aula i la validació
 institucional. Les dades pseudònimes continuen sent dades personals; la clau

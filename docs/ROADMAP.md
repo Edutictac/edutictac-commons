@@ -40,7 +40,8 @@ de conflictes abans d'usar-lo amb dades reals. Vegeu el
 [pla de trasllat entre aules](PLA-SINCRONITZACIO-AULES.md).
 
 El primer tall exporta i importa un grup entre instal·lacions amb dades
-fictícies i botons al panell docent; està desactivat per defecte. Resten la
+fictícies i botons al panell docent. La candidata beta6.4 incorpora el control
+en Admin i l'activa per defecte en instal·lacions noves. Resten la
 previsualització, la fusió de canvis divergents, la recuperació guiada i la
 validació institucional. La tornada A → B → A ja funciona quan el destí no
 ha canviat des de la revisió de partida.

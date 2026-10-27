@@ -1,7 +1,8 @@
 # Pla ajornat — trasllat xifrat d'aules entre instal·lacions Commons
 
-> Estat: primer tall d'API implementat i desactivat per defecte. No és una
-> funció completa per a alumnat real ni autoritza cap desplegament.
+> Estat: primer tall d'API implementat; en la candidata beta6.4 s'activa per
+> defecte en instal·lacions noves i Admin pot apagar-lo. Cal validació
+> institucional abans d'usar-lo amb dades d'alumnat real.
 >
 > Primera fase: exportació i importació manual d'un fitxer xifrat. El docent
 > pot guardar-lo en el seu OneDrive del tenant GVA amb el navegador, si TIC i
@@ -13,8 +14,9 @@
 L'API d'identitat disposa de dos endpoints, ocults fins que una persona
 administradora active el trasllat en el panell de grups del tauler docent.
 L'ajust és persistent i té efecte immediat en tota la instal·lació.
-`EDUTICTAC_CLASSROOM_TRANSFER_ENABLED=1` només establix el valor inicial
-si encara no hi ha cap ajust guardat:
+`EDUTICTAC_CLASSROOM_TRANSFER_ENABLED` només establix el valor inicial
+si encara no hi ha cap ajust guardat. Per defecte val `1`; amb `0` comença
+apagat:
 
 - `POST /api/teacher/groups/{group_id}/transfer/export`: retorna un paquet
   xifrat i una clau de recuperació aleatòria. La resposta no s'ha de guardar
