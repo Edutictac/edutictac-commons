@@ -1,0 +1,11 @@
+{
+  "version": "0.1.1-beta6.4",
+  "package": "edutictac-commons",
+  "apt_version": "0.1.1~beta6.4",
+  "architecture": "amd64",
+  "source_revision": "d0ae242c303caec722b029bede5926b871fce776",
+  "sha256": "de92a6d90dc36e23a9ee1e5f8b1200f34e2ba4b921eced965f67c3858dccdcc6",
+  "size_bytes": 5932092,
+  "image_tag": "0.1.1-beta6.4",
+  "local_package_audit_passed": true
+}
