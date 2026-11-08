@@ -261,6 +261,7 @@
       "common.home": "Inicio",
       "footer.home": "Inicio",
       "footer.privacy": "Privacidad",
+      "footer.cookies": "Cookies",
       "footer.source": "Código fuente",
       "common.login": "Entrar",
       "common.logout": "Salir",
@@ -782,6 +783,7 @@
       "common.home": "Inici",
       "footer.home": "Inici",
       "footer.privacy": "Privacitat",
+      "footer.cookies": "Galetes",
       "footer.source": "Codi font",
       "common.login": "Entrar",
       "common.logout": "Sortir",
@@ -1624,6 +1626,7 @@
       "common.home": "Home",
       "footer.home": "Home",
       "footer.privacy": "Privacy",
+      "footer.cookies": "Cookies",
       "footer.source": "Source code",
       "common.login": "Log in",
       "common.logout": "Log out",
@@ -1938,7 +1941,6 @@
   }
 
   var lang = detectLang();
-  window.commonsLanguage?.remember(lang);
 
   function t(key, vars) {
     if (key === 'home.title' && window.commonsDeployment?.mode === 'federated') return 'EduTicTac Commons';
