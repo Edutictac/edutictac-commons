@@ -22,10 +22,13 @@ from urllib.parse import unquote, urlsplit
 
 from fastapi import APIRouter, HTTPException, Request, Response
 from PIL import Image, ImageOps, UnidentifiedImageError
+from idapi.origins import origin_allowed, same_host
 from .catalogue import Catalogue
 from starlette.concurrency import run_in_threadpool
 
 TYPES = {"sprite", "background", "object", "illustration"}
+MAX_CREDIT = 300
+MAX_LICENSE = 100
 MAX_IMAGE = 5 * 1024 * 1024
 MAX_DIMENSION = 4096
 MAX_ITEMS = 200
@@ -48,6 +51,15 @@ def check_metadata(name, kind):
     if kind not in TYPES:
         fail(422, "invalid_type")
     return name.strip(), kind
+
+
+def check_labels(credit, license_text):
+    def clean(value, field, limit):
+        if not isinstance(value, str) or len(value) > limit or any(ord(c) < 32 for c in value):
+            fail(422, f"invalid_{field}")
+        return value.strip()
+
+    return clean(credit, "credit", MAX_CREDIT), clean(license_text, "license", MAX_LICENSE)
 
 
 def normalize(raw, declared):
@@ -88,11 +100,12 @@ def normalize(raw, declared):
 
 
 class Library:
-    def __init__(self, connect, db_path, oidc, student):
+    def __init__(self, connect, db_path, oidc, student, allowed_origins=()):
         self.catalogue = Catalogue(Path(__file__).parent / "catalog", normalize)
         self.catalogue.extend(Catalogue(Path(__file__).parent / "catalog-scratch", normalize, "scratch"))
         self.connect, self.db_path = connect, db_path
         self.oidc, self.student = oidc, student
+        self.allowed_origins = tuple(allowed_origins)
         self.public_origin = os.environ.get("REBOST_PUBLIC_ORIGIN", "").rstrip("/")
         if self.public_origin:
             parsed = urlsplit(self.public_origin)
@@ -125,6 +138,10 @@ class Library:
                     metadata TEXT NOT NULL, source BLOB NOT NULL, license_text TEXT NOT NULL);
 
             """)
+            columns = {row[1] for row in db.execute("PRAGMA table_info(assets)")}
+            for column in ("credit", "license"):
+                if column not in columns:
+                    db.execute(f"ALTER TABLE assets ADD COLUMN {column} TEXT NOT NULL DEFAULT ''")
 
     def bind(self, db, kind, issuer, subject):
         db.execute("INSERT OR IGNORE INTO asset_principals (id,kind,issuer,subject) VALUES (?,?,?,?)",
@@ -187,7 +204,7 @@ class Library:
 
     @staticmethod
     def metadata(row):
-        result = {key: row[key] for key in ("id", "name", "type", "width", "height", "bytes", "revision", "created_at", "updated_at")}
+        result = {key: row[key] for key in ("id", "name", "type", "width", "height", "bytes", "revision", "created_at", "updated_at", "credit", "license")}
         result.update({"collection": "mine", "readonly": False})
         if row["provenance"]:
             result["provenance"] = json.loads(row["provenance"])
@@ -222,7 +239,8 @@ class Library:
         if provenance:
             db.execute("INSERT INTO asset_provenance VALUES (?,?,?,?)", (asset_id, *provenance))
 
-    def add(self, owner, name, kind, normalized, provenance=None, source_id=None, source_revision=None):
+    def add(self, owner, name, kind, normalized, provenance=None, source_id=None,
+            source_revision=None, credit="", license_text=""):
         data, thumb, width, height = normalized
         digest = hashlib.sha256(data).hexdigest()
         with closing(self.connect()) as db, db:
@@ -234,8 +252,12 @@ class Library:
                 if catalog:
                     meta = catalog["metadata"]
                     provenance = catalog["provenance"]
+                    credit = credit or meta.get("attribution", "")
+                    license_text = license_text or meta.get("license", "")
                 else:
                     meta = self.row(db, owner, source_id)
+                    credit = credit or meta["credit"]
+                    license_text = license_text or meta["license"]
                     origin = db.execute("SELECT metadata,source,license_text FROM asset_provenance WHERE asset_id=?", (source_id,)).fetchone()
                     provenance = tuple(origin) if origin else None
                 if source_revision != f'"{meta["revision"]}"':
@@ -245,6 +267,7 @@ class Library:
                 metadata = json.loads(provenance[0])
                 metadata["changes"] = "Derived image; original source and license retained."
                 provenance = (json.dumps(metadata, ensure_ascii=False, sort_keys=True), provenance[1], provenance[2])
+            credit, license_text = check_labels(credit, license_text)
             found = db.execute("SELECT id FROM asset_contents WHERE principal=? AND sha256=?", (owner, digest)).fetchone()
             extra = self.provenance_size(provenance)
             self.capacity(db, owner, extra + (0 if found else len(data)), extra + (0 if found else len(data)+len(thumb)))
@@ -254,7 +277,10 @@ class Library:
                            (content_id, owner, digest, data, thumb, width, height))
             asset_id = "img-" + secrets.token_hex(32)
             now = timestamp()
-            db.execute("INSERT INTO assets VALUES (?,?,?,?,?,1,?,?)", (asset_id, owner, content_id, name, kind, now, now))
+            db.execute("""INSERT INTO assets
+                (id,principal,content_id,name,type,revision,created_at,updated_at,credit,license)
+                VALUES (?,?,?,?,?,1,?,?,?,?)""",
+                       (asset_id, owner, content_id, name, kind, now, now, credit, license_text))
             self.write_provenance(db, asset_id, provenance)
             return self.metadata(self.row(db, owner, asset_id))
 
@@ -315,15 +341,25 @@ class Library:
                  "schema": {"type": "string"}},
                 {"in": "header", "name": "X-Rebost-Type", "required": True,
                  "schema": {"type": "string", "enum": sorted(TYPES)}},
+                {"in": "header", "name": "X-Rebost-Credit", "required": False,
+                 "description": "UTF-8 credit line encoded with encodeURIComponent (maximum 300 decoded characters)",
+                 "schema": {"type": "string"}},
+                {"in": "header", "name": "X-Rebost-License", "required": False,
+                 "description": "UTF-8 license label encoded with encodeURIComponent (maximum 100 decoded characters)",
+                 "schema": {"type": "string"}},
             ],
             "requestBody": {"required": True, "content": {
                 mime: {"schema": {"type": "string", "format": "binary"}}
                 for mime in ("image/png", "image/jpeg", "image/webp")}},
         })
         async def upload(request: Request):
-            check_origin(request, self.public_origin)
+            check_origin(request, self.public_origin, self.allowed_origins)
             owner = await run_in_threadpool(self.principal, request)
             name, kind = check_metadata(unquote(request.headers.get("x-rebost-name", "")), request.headers.get("x-rebost-type"))
+            credit, license_text = check_labels(
+                unquote(request.headers.get("x-rebost-credit", "")),
+                unquote(request.headers.get("x-rebost-license", "")),
+            )
             if request.headers.get("content-length", "").isdigit() and int(request.headers["content-length"]) > MAX_IMAGE:
                 fail(413, "image_limit")
             body = bytearray()
@@ -336,7 +372,8 @@ class Library:
             if "if-match" in request.headers and not source_id:
                 fail(422, "invalid_source")
             return await run_in_threadpool(self.add, owner, name, kind, normalized, None,
-                                           source_id, request.headers.get("if-match"))
+                                           source_id, request.headers.get("if-match"),
+                                           credit, license_text)
 
         @router.get("/items/{asset_id}")
         def metadata(asset_id: str, request: Request, response: Response):
@@ -394,7 +431,7 @@ class Library:
 
         @router.patch("/items/{asset_id}")
         async def update(asset_id: str, request: Request):
-            check_origin(request, self.public_origin)
+            check_origin(request, self.public_origin, self.allowed_origins)
             owner = self.principal(request)
             raw = bytearray()
             async for chunk in request.stream():
@@ -403,7 +440,9 @@ class Library:
                     fail(413, "metadata_limit")
             try:
                 payload = json.loads(raw)
-                if not isinstance(payload, dict) or set(payload) != {"name", "type"}:
+                if (not isinstance(payload, dict)
+                        or not {"name", "type"} <= set(payload)
+                        or not set(payload) <= {"name", "type", "credit", "license"}):
                     fail(422, "invalid_metadata")
                 name, kind = check_metadata(payload["name"], payload["type"])
             except (ValueError, TypeError):
@@ -412,20 +451,27 @@ class Library:
                 db.execute("BEGIN IMMEDIATE")
                 row = self.row(db, owner, asset_id)
                 self.revision(request, row)
-                db.execute("UPDATE assets SET name=?,type=?,revision=revision+1,updated_at=? WHERE id=?",
-                           (name, kind, timestamp(), asset_id))
+                credit, license_text = check_labels(
+                    payload.get("credit", row["credit"]),
+                    payload.get("license", row["license"]),
+                )
+                db.execute("""UPDATE assets SET name=?,type=?,credit=?,license=?,
+                    revision=revision+1,updated_at=? WHERE id=?""",
+                           (name, kind, credit, license_text, timestamp(), asset_id))
                 return self.metadata(self.row(db, owner, asset_id))
 
         @router.post("/items/{asset_id}/copies", status_code=201)
         def copy(asset_id: str, request: Request):
-            check_origin(request, self.public_origin)
+            check_origin(request, self.public_origin, self.allowed_origins)
             owner = self.principal(request)
             catalog = self.catalogue.get(asset_id)
             if catalog:
                 meta = catalog["metadata"]
                 self.revision(request, meta)
                 return self.add(owner, meta["name"], meta["type"],
-                                (catalog["data"], catalog["thumbnail"], meta["width"], meta["height"]), catalog["provenance"])
+                                (catalog["data"], catalog["thumbnail"], meta["width"], meta["height"]),
+                                catalog["provenance"], credit=meta.get("attribution", ""),
+                                license_text=meta.get("license", ""))
             with closing(self.connect()) as db, db:
                 db.execute("BEGIN IMMEDIATE")
                 row = self.row(db, owner, asset_id)
@@ -435,14 +481,17 @@ class Library:
                 extra = self.provenance_size(provenance)
                 self.capacity(db, owner, extra, extra)
                 new_id, now = "img-"+secrets.token_hex(32), timestamp()
-                db.execute("INSERT INTO assets VALUES (?,?,?,?,?,1,?,?)",
-                           (new_id, owner, row["content_id"], row["name"], row["type"], now, now))
+                db.execute("""INSERT INTO assets
+                    (id,principal,content_id,name,type,revision,created_at,updated_at,credit,license)
+                    VALUES (?,?,?,?,?,1,?,?,?,?)""",
+                           (new_id, owner, row["content_id"], row["name"], row["type"],
+                            now, now, row["credit"], row["license"]))
                 self.write_provenance(db, new_id, provenance)
                 return self.metadata(self.row(db, owner, new_id))
 
         @router.delete("/items/{asset_id}", status_code=204)
         def remove(asset_id: str, request: Request):
-            check_origin(request, self.public_origin)
+            check_origin(request, self.public_origin, self.allowed_origins)
             owner = self.principal(request)
             with closing(self.connect()) as db, db:
                 db.execute("BEGIN IMMEDIATE")
@@ -456,7 +505,7 @@ class Library:
         return router
 
 
-def check_origin(request, expected=""):
+def check_origin(request, expected="", allowed=()):
     def origin(value):
         try:
             parsed = urlsplit(value)
@@ -464,5 +513,12 @@ def check_origin(request, expected=""):
         except ValueError:
             return None
     supplied = request.headers.get("origin", "")
-    if not supplied or supplied == "null" or origin(supplied) != origin(expected or str(request.base_url)):
+    trusted = bool(supplied) and supplied != "null" and (
+        origin(supplied) == origin(expected or str(request.base_url))
+        or origin_allowed(supplied, tuple(allowed))
+        # Quan hi ha un origen públic explícit, no s'accepta qualsevol port
+        # del mateix host: el proxy TLS ja fixa l'origen extern.
+        or (not expected and same_host(supplied, request.headers.get("host", "")))
+    )
+    if not trusted:
         fail(403, "origin_required")

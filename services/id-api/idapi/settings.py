@@ -33,6 +33,9 @@ class Settings:
     resources_api_url: str = "http://recursos-api:8004"
     # Llocs propis que poden mostrar la sessió central i rebre el retorn `next`.
     allowed_origins: tuple[str, ...] = field(default_factory=tuple)
+    # Orígens que poden llegir i escriure el Rebost amb la sessió central.
+    # Si no s'indica, s'usa la llista anterior per compatibilitat.
+    rebost_allowed_origins: tuple[str, ...] = field(default_factory=tuple)
     # Pàgina del compte en Authentik («canviar contrasenya», perfil).
     account_url: str = ""
     classroom_transfer_enabled: bool = True
@@ -44,6 +47,10 @@ class Settings:
     @classmethod
     def from_env(cls, env: Mapping[str, str] | None = None) -> Settings:
         env = os.environ if env is None else env
+        allowed_origins = parse_origins(env.get("EDUTICTAC_ID_ALLOWED_ORIGINS", ""))
+        rebost_allowed_origins = (
+            parse_origins(env.get("REBOST_ALLOWED_ORIGINS", "")) or allowed_origins
+        )
         return cls(
             files_dir=env.get("EDUTICTAC_ID_FILES_DIR", ""),
             files_disk_reserve_bytes=int(env.get("EDUTICTAC_ID_FILES_DISK_RESERVE_BYTES", str(cls.files_disk_reserve_bytes))),
@@ -72,7 +79,8 @@ class Settings:
             setup_token=env.get("EDUTICTAC_SETUP_TOKEN", "").strip(),
             authentik_bootstrap_password=env.get("EDUTICTAC_AUTHENTIK_BOOTSTRAP_PASSWORD", ""),
             resources_api_url=env.get("EDUTICTAC_RESOURCES_API_URL", cls.resources_api_url).rstrip("/"),
-            allowed_origins=parse_origins(env.get("EDUTICTAC_ID_ALLOWED_ORIGINS", "")),
+            allowed_origins=allowed_origins,
+            rebost_allowed_origins=rebost_allowed_origins,
             account_url=env.get("EDUTICTAC_ID_ACCOUNT_URL", "").strip(),
             classroom_transfer_enabled=env.get("EDUTICTAC_CLASSROOM_TRANSFER_ENABLED", "1") == "1",
         )

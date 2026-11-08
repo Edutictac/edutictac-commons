@@ -387,9 +387,47 @@ def test_public_origin_behind_a_tls_proxy(api):
     assert upload(client).status_code == 403
 
 
+def test_educrea_origin_cors_and_credit_metadata(api):
+    module, client, _, _ = api
+    origins = ('https://educrea.test',)
+    module.rebost.allowed_origins = origins
+    module.commons.settings.rebost_allowed_origins = origins
+    origin = origins[0]
+    client.headers['Origin'] = origin
+    from urllib.parse import quote
+    item = client.post('/api/assets/v1/items', content=image(),
+                       headers={'Content-Type': 'image/png',
+                                'X-Rebost-Name': quote('Paisatge'),
+                                'X-Rebost-Type': 'background',
+                                'X-Rebost-Credit': quote('Equip EduCrea'),
+                                'X-Rebost-License': quote('CC BY-NC-SA 4.0')}).json()
+    assert item['credit'] == 'Equip EduCrea'
+    assert item['license'] == 'CC BY-NC-SA 4.0'
+    assert client.get('/api/assets/v1/items').json()['items'][0]['credit'] == 'Equip EduCrea'
+    changed = client.patch(path(item), headers=revision(item),
+                           json={'name': 'Paisatge nou', 'type': 'illustration'}).json()
+    assert (changed['credit'], changed['license']) == ('Equip EduCrea', 'CC BY-NC-SA 4.0')
+    copied = client.post(path(changed) + '/copies', headers=revision(changed)).json()
+    assert (copied['credit'], copied['license']) == ('Equip EduCrea', 'CC BY-NC-SA 4.0')
+
+    preflight = client.options('/api/assets/v1/items', headers={
+        'Origin': origin, 'Access-Control-Request-Method': 'POST'})
+    assert preflight.status_code == 204
+    allowed_headers = preflight.headers['access-control-allow-headers'].lower()
+    assert 'x-rebost-credit' in allowed_headers and 'x-rebost-license' in allowed_headers
+    response = client.get('/api/assets/v1/items', headers={'Origin': origin})
+    assert response.headers['access-control-allow-origin'] == origin
+    assert response.headers['access-control-allow-credentials'] == 'true'
+    assert 'ETag' in response.headers['access-control-expose-headers']
+
+    client.headers['Origin'] = 'https://evil.test'
+    assert upload(client).status_code == 403
+
+
 def test_openapi_exposes_the_shared_upload_contract(api):
     _, client, _, _ = api
     operation = client.get('/openapi.json').json()['paths']['/api/assets/v1/items']['post']
     assert set(operation['requestBody']['content']) == {'image/png','image/jpeg','image/webp'}
     assert {p['name']:p['required'] for p in operation['parameters']} == {
-        'X-Rebost-Name':True,'X-Rebost-Type':True,'X-Rebost-Source':False,'If-Match':False}
+        'X-Rebost-Name':True,'X-Rebost-Type':True,'X-Rebost-Source':False,
+        'X-Rebost-Credit':False,'X-Rebost-License':False,'If-Match':False}

@@ -55,7 +55,8 @@ def install_library(app: FastAPI, c: Commons) -> None:
     from assets import Library
     from books import install_books
 
-    c.rebost = Library(c.connect, c.settings.db_path, c.auth.oidc_cookie, c.auth.current_identity)
+    c.rebost = Library(c.connect, c.settings.db_path, c.auth.oidc_cookie,
+                       c.auth.current_identity, c.settings.rebost_allowed_origins)
     app.include_router(c.rebost.router())
     def moderated_group_access(request: Request, group_id: str, **kwargs) -> str:
         # La moderació de Llibres és l'única tasca d'aula oberta a administració.
@@ -78,26 +79,47 @@ def install_library(app: FastAPI, c: Commons) -> None:
         return response
 
 
-# Només la sessió central s'obri a altres orígens propis: la resta de l'API
-# continua sent del mateix origen i no rep capçaleres CORS.
+# La sessió central i el Rebost s'obrin a altres orígens propis. La resta de
+# l'API continua sent del mateix origen i no rep capçaleres CORS.
 SESSION_CORS_PATHS = frozenset({"/api/auth/session", "/api/auth/session/logout"})
+REBOST_CORS_PREFIX = "/api/assets/v1"
+
+
+def _is_rebost_path(path: str) -> bool:
+    return path == REBOST_CORS_PREFIX or path.startswith(REBOST_CORS_PREFIX + "/")
 
 
 def install_session_cors(app: FastAPI, c: Commons) -> None:
     @app.middleware("http")
     async def session_cors(request: Request, call_next):
         origin = request.headers.get("origin", "")
+        path = request.url.path
+        rebost = _is_rebost_path(path)
+        cors_path = path in SESSION_CORS_PATHS or rebost
+        allowed_origins = (
+            c.settings.rebost_allowed_origins if rebost else c.settings.allowed_origins
+        )
         allowed = (
-            request.url.path in SESSION_CORS_PATHS
+            cors_path
             and bool(origin)
             and (
-                origin_allowed(origin, c.settings.allowed_origins)
+                origin_allowed(origin, allowed_origins)
+                or origin == c.rebost.public_origin
                 or same_host(origin, request.headers.get("host", ""))
             )
         )
-        if request.method == "OPTIONS" and request.url.path in SESSION_CORS_PATHS:
+        if request.method == "OPTIONS" and cors_path:
             response = Response(status_code=204 if allowed else 403)
-            if allowed:
+            if allowed and rebost:
+                response.headers["Access-Control-Allow-Methods"] = (
+                    "GET, HEAD, POST, PATCH, DELETE, OPTIONS"
+                )
+                response.headers["Access-Control-Allow-Headers"] = (
+                    "Content-Type, If-Match, X-Rebost-Name, X-Rebost-Type, "
+                    "X-Rebost-Source, X-Rebost-Credit, X-Rebost-License"
+                )
+                response.headers["Access-Control-Max-Age"] = "600"
+            elif allowed:
                 response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
                 response.headers["Access-Control-Allow-Headers"] = "Content-Type"
                 response.headers["Access-Control-Max-Age"] = "600"
@@ -106,7 +128,9 @@ def install_session_cors(app: FastAPI, c: Commons) -> None:
         if allowed:
             response.headers["Access-Control-Allow-Origin"] = origin
             response.headers["Access-Control-Allow-Credentials"] = "true"
-        if request.url.path in SESSION_CORS_PATHS:
+            if rebost:
+                response.headers["Access-Control-Expose-Headers"] = "ETag, Content-Disposition"
+        if cors_path:
             response.headers["Vary"] = "Cookie, Origin"
         return response
 
@@ -136,7 +160,8 @@ def install_origin_guard(app: FastAPI, c: Commons) -> None:
                 # Rebost has its own explicit public origin behind TLS proxies.
                 # Keep that trust scoped to its API; its route guard still runs.
                 or (request.url.path.startswith("/api/assets/")
-                    and origin == c.rebost.public_origin)
+                    and (origin == c.rebost.public_origin
+                         or origin_allowed(origin, c.settings.rebost_allowed_origins)))
             ):
                 return JSONResponse({"detail": "origin not allowed"}, status_code=403)
         return await call_next(request)
