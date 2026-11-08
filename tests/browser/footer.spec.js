@@ -17,6 +17,8 @@ for (const path of PAGES) {
     await expect(footer.locator('.ett-footer__version')).toHaveText(VERSION);
     await expect(footer.locator('.ett-footer__links a[href="/"]')).toHaveCount(1);
     await expect(footer.locator('.ett-footer__links a[href="/privacy.html"]')).toHaveCount(1);
+    await expect(footer.locator('.ett-footer__links a[href="https://edutictac.es/galetes.html"]')).toHaveCount(1);
+    await expect(footer.locator('.ett-footer__links a[href="https://edutictac.es/termes.html"]')).toHaveCount(1);
     await expect(footer.locator('.ett-footer__links a[href$="edutictac-commons"]')).toHaveCount(1);
     await expect(footer.locator('.ett-footer__links a', { hasText: 'AGPL-3.0' })).toHaveCount(1);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
@@ -37,8 +39,10 @@ test('els enllaços del peu es traduïxen amb el xip', async ({ page }) => {
   await chooseLanguage(page, 'en');
   await expect(footer.locator('a[href="/"]')).toHaveText('Home');
   await expect(footer.locator('a[href="/privacy.html"]')).toHaveText('Privacy');
+  await expect(footer.locator('a[href="https://edutictac.es/termes.html"]')).toHaveText('Terms');
   await expect(footer.locator('a[href*="edutictac-commons"]').first()).toHaveText('Source code');
   await chooseLanguage(page, 'es');
   await expect(footer.locator('a[href="/privacy.html"]')).toHaveText('Privacidad');
+  await expect(footer.locator('a[href="https://edutictac.es/termes.html"]')).toHaveText('Términos');
   await expect(footer.locator('a[href*="edutictac-commons"]').first()).toHaveText('Código fuente');
 });
