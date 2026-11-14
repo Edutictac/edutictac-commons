@@ -26,10 +26,16 @@ from idapi.origins import origin_allowed, same_host
 from .catalogue import Catalogue
 from starlette.concurrency import run_in_threadpool
 
-TYPES = {"sprite", "background", "object", "illustration"}
+IMAGE_TYPES = {"sprite", "background", "object", "illustration"}
+TYPES = IMAGE_TYPES | {"sound"}
 MAX_CREDIT = 300
 MAX_LICENSE = 100
 MAX_IMAGE = 5 * 1024 * 1024
+# Sons: es guarden tal qual (sense transcodificar) i només s'accepten formats
+# oberts o universals, amb un límit menut pensat per a efectes i locucions curtes.
+MAX_SOUND = 2 * 1024 * 1024
+SOUND_MIMES = {"audio/ogg", "audio/mpeg", "audio/wav"}
+SOUND_ALIASES = {"audio/x-wav": "audio/wav", "audio/wave": "audio/wav", "audio/mp3": "audio/mpeg"}
 MAX_DIMENSION = 4096
 MAX_ITEMS = 200
 MAX_USER_BYTES = 100 * 1024 * 1024
@@ -97,6 +103,28 @@ def normalize(raw, declared):
         except (UnidentifiedImageError, OSError, ValueError, SyntaxError,
                 Image.DecompressionBombError, Image.DecompressionBombWarning):
             fail(415, "invalid_image")
+
+
+def sniff_sound(raw):
+    """Tipus MIME d'un so segons la capçalera, o None si no és un format admés."""
+    if raw[:4] == b"OggS":
+        return "audio/ogg"
+    if raw[:4] == b"RIFF" and raw[8:12] == b"WAVE":
+        return "audio/wav"
+    if raw[:3] == b"ID3" or (len(raw) > 2 and raw[0] == 0xFF and raw[1] & 0xE0 == 0xE0 and raw[1] & 0x06 != 0):
+        return "audio/mpeg"
+    return None
+
+
+def normalize_sound(raw, declared):
+    """Valida la capçalera i la mida d'un so; no es transcodifica ni es descodifica."""
+    declared = SOUND_ALIASES.get(declared, declared)
+    if not raw or len(raw) > MAX_SOUND:
+        fail(413, "sound_limit")
+    if declared not in SOUND_MIMES or sniff_sound(raw) != declared:
+        fail(415, "invalid_sound")
+    # Sense miniatura ni dimensions: les columnes NOT NULL reben valors buits.
+    return raw, b"", 0, 0
 
 
 class Library:
@@ -300,12 +328,12 @@ class Library:
         def me(request: Request):
             self.principal(request)
             return {
-                "capabilities": ["private_library", "catalog", "scratch_catalog", "asset_families", "derived_upload"],
+                "capabilities": ["private_library", "catalog", "scratch_catalog", "asset_families", "derived_upload", "sounds"],
                 "catalog_items": sum(item["metadata"]["collection"]=="catalog" for item in self.catalogue.items.values()),
                 "scratch_items": sum(item["metadata"]["collection"]=="scratch" for item in self.catalogue.items.values()),
                 "scratch_families": len(self.catalogue.families),
                 "limits": {"image_bytes": MAX_IMAGE, "dimension": MAX_DIMENSION,
-                           "items": MAX_ITEMS, "library_bytes": MAX_USER_BYTES}}
+                           "sound_bytes": MAX_SOUND, "items": MAX_ITEMS, "library_bytes": MAX_USER_BYTES}}
 
 
         @router.get("/items")
@@ -324,7 +352,7 @@ class Library:
             with closing(self.connect()) as db:
                 rows = db.execute("""SELECT a.*,c.width,c.height,length(c.data) AS bytes,p.metadata AS provenance FROM assets a
                     JOIN asset_contents c ON c.id=a.content_id LEFT JOIN asset_provenance p ON p.asset_id=a.id WHERE a.principal=? AND a.id>?
-                    AND a.name LIKE ? ESCAPE '\\' AND (?='' OR a.type=?) ORDER BY a.id LIMIT ?""",
+                    AND a.name LIKE ? ESCAPE '\\' AND ((?='' AND a.type!='sound') OR a.type=?) ORDER BY a.id LIMIT ?""",
                     (owner, cursor, f"%{search}%", type, type, limit+1)).fetchall()
             return {"items": [self.metadata(row) for row in rows[:limit]],
                     "next_cursor": rows[limit-1]["id"] if len(rows)>limit else None}
@@ -350,7 +378,7 @@ class Library:
             ],
             "requestBody": {"required": True, "content": {
                 mime: {"schema": {"type": "string", "format": "binary"}}
-                for mime in ("image/png", "image/jpeg", "image/webp")}},
+                for mime in ("image/png", "image/jpeg", "image/webp", *sorted(SOUND_MIMES))}},
         })
         async def upload(request: Request):
             check_origin(request, self.public_origin, self.allowed_origins)
@@ -360,14 +388,23 @@ class Library:
                 unquote(request.headers.get("x-rebost-credit", "")),
                 unquote(request.headers.get("x-rebost-license", "")),
             )
-            if request.headers.get("content-length", "").isdigit() and int(request.headers["content-length"]) > MAX_IMAGE:
-                fail(413, "image_limit")
+            declared = request.headers.get("content-type", "").split(";")[0].strip().lower()
+            declared = SOUND_ALIASES.get(declared, declared)
+            sound = kind == "sound"
+            # El tipus de recurs i el format de la càrrega han de concordar.
+            if sound != (declared in SOUND_MIMES):
+                fail(422, "invalid_type")
+            limit, code = (MAX_SOUND, "sound_limit") if sound else (MAX_IMAGE, "image_limit")
+            if request.headers.get("content-length", "").isdigit() and int(request.headers["content-length"]) > limit:
+                fail(413, code)
             body = bytearray()
             async for chunk in request.stream():
-                if len(body) + len(chunk) > MAX_IMAGE:
-                    fail(413, "image_limit")
+                if len(body) + len(chunk) > limit:
+                    fail(413, code)
                 body.extend(chunk)
-            normalized = await run_in_threadpool(normalize, bytes(body), request.headers.get("content-type", "").split(";")[0])
+            if sound and request.headers.get("x-rebost-source"):
+                fail(422, "invalid_source")
+            normalized = await run_in_threadpool(normalize_sound if sound else normalize, bytes(body), declared)
             source_id = request.headers.get("x-rebost-source")
             if "if-match" in request.headers and not source_id:
                 fail(422, "invalid_source")
@@ -399,6 +436,7 @@ class Library:
         def content(asset_id: str, request: Request):
             field = "thumbnail" if request.url.path.endswith("/thumbnail") else "data"
             catalog = self.catalogue.get(asset_id)
+            mime, extension = "image/png", "png"
             if catalog:
                 data = catalog[field]
             else:
@@ -406,7 +444,13 @@ class Library:
                 with closing(self.connect()) as db:
                     row = self.row(db, owner, asset_id)
                     data = db.execute(f"SELECT {field} FROM asset_contents WHERE id=?", (row["content_id"],)).fetchone()[0]
-            return Response(data, media_type="image/png", headers={"Content-Disposition": f'inline; filename="{asset_id}.png"'})
+                if row["type"] == "sound":
+                    # Els sons no tenen miniatura; el tipus es dedueix de la capçalera validada en pujar-lo.
+                    if field == "thumbnail":
+                        fail(404, "not_found")
+                    mime = sniff_sound(data) or "application/octet-stream"
+                    extension = {"audio/ogg": "ogg", "audio/mpeg": "mp3", "audio/wav": "wav"}.get(mime, "bin")
+            return Response(data, media_type=mime, headers={"Content-Disposition": f'inline; filename="{asset_id}.{extension}"'})
 
         @router.get("/items/{asset_id}/source")
         @router.get("/items/{asset_id}/license")
@@ -451,6 +495,8 @@ class Library:
                 db.execute("BEGIN IMMEDIATE")
                 row = self.row(db, owner, asset_id)
                 self.revision(request, row)
+                if (row["type"] == "sound") != (kind == "sound"):
+                    fail(422, "invalid_type")
                 credit, license_text = check_labels(
                     payload.get("credit", row["credit"]),
                     payload.get("license", row["license"]),

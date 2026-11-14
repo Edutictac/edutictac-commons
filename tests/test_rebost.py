@@ -427,7 +427,7 @@ def test_educrea_origin_cors_and_credit_metadata(api):
 def test_openapi_exposes_the_shared_upload_contract(api):
     _, client, _, _ = api
     operation = client.get('/openapi.json').json()['paths']['/api/assets/v1/items']['post']
-    assert set(operation['requestBody']['content']) == {'image/png','image/jpeg','image/webp'}
+    assert set(operation['requestBody']['content']) == {'image/png','image/jpeg','image/webp','audio/ogg','audio/mpeg','audio/wav'}
     assert {p['name']:p['required'] for p in operation['parameters']} == {
         'X-Rebost-Name':True,'X-Rebost-Type':True,'X-Rebost-Source':False,
         'X-Rebost-Credit':False,'X-Rebost-License':False,'If-Match':False}
