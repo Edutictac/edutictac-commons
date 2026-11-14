@@ -60,3 +60,22 @@ def test_sound_and_image_types_do_not_convert(api):
     copy = a.post(path(item) + '/copies', headers={'If-Match': '"2"'})
     assert copy.status_code == 201 and copy.json()['type'] == 'sound'
     assert a.delete(path(item), headers={'If-Match': '"2"'}).status_code == 204
+
+
+def test_effects_catalogue_is_public_readonly_and_copyable(api):
+    _, a, b, _ = api
+    listing = a.get('/api/assets/v1/items', params={'collection': 'effects', 'limit': 80}).json()
+    assert listing['items'] and all(x['type'] == 'sound' and x['collection'] == 'effects' and x['readonly'] for x in listing['items'])
+    found = a.get('/api/assets/v1/items', params={'collection': 'effects', 'q': 'tornar'}).json()['items']
+    assert found, 'cerca en valencià pels noms i etiquetes'
+    item = found[0]
+    assert item['license'] == 'CC0-1.0' and item['attribution'].startswith('Kenney')
+    content = b.get(path(item) + '/content')
+    assert content.status_code == 200 and content.content[:4] == b'OggS' and content.headers['content-type'].startswith('audio/ogg')
+    assert b.get(path(item) + '/thumbnail').status_code == 404
+    # Les col·leccions d'imatges no barregen els efectes.
+    assert not [x for x in a.get('/api/assets/v1/items', params={'collection': 'catalog'}).json()['items'] if x['type'] == 'sound']
+    copy = a.post(path(item) + '/copies', headers={'If-Match': f'"{item["revision"]}"'})
+    assert copy.status_code == 201 and copy.json()['type'] == 'sound' and copy.json()['collection'] == 'mine'
+    assert a.get(path(copy.json()) + '/license').status_code == 200
+    assert a.delete(path(item), headers={'If-Match': f'"{item["revision"]}"'}).status_code in {403, 404}

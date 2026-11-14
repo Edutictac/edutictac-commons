@@ -24,6 +24,7 @@ from fastapi import APIRouter, HTTPException, Request, Response
 from PIL import Image, ImageOps, UnidentifiedImageError
 from idapi.origins import origin_allowed, same_host
 from .catalogue import Catalogue
+from . import sounds as effect_sounds
 from starlette.concurrency import run_in_threadpool
 
 IMAGE_TYPES = {"sprite", "background", "object", "illustration"}
@@ -131,6 +132,10 @@ class Library:
     def __init__(self, connect, db_path, oidc, student, allowed_origins=()):
         self.catalogue = Catalogue(Path(__file__).parent / "catalog", normalize)
         self.catalogue.extend(Catalogue(Path(__file__).parent / "catalog-scratch", normalize, "scratch"))
+        # Efectes de so CC0: es registren al mateix catàleg de només lectura.
+        effects, effects_bytes = effect_sounds.load(Path(__file__).parent / "catalog-effects")
+        self.catalogue.items.update(effects)
+        self.catalogue.total_bytes += effects_bytes
         self.connect, self.db_path = connect, db_path
         self.oidc, self.student = oidc, student
         self.allowed_origins = tuple(allowed_origins)
@@ -322,6 +327,7 @@ class Library:
                 "catalog_items": sum(item["metadata"]["collection"] == "catalog" for item in self.catalogue.items.values()),
                 "scratch_items": sum(item["metadata"]["collection"] == "scratch" for item in self.catalogue.items.values()),
                 "scratch_families": len(self.catalogue.families),
+                "effect_items": sum(item["metadata"]["collection"] == "effects" for item in self.catalogue.items.values()),
             }
 
         @router.get("/me")
@@ -340,7 +346,7 @@ class Library:
         def items(request: Request, q: str = "", type: str = "", cursor: str = "", limit: int = 40, collection: str = "mine", grouped: bool = False):
             if len(q) > 200 or (type and type not in TYPES) or not (1 <= limit <= 80) or (cursor and not ID.fullmatch(cursor)):
                 fail(422, "invalid_filter")
-            if collection not in {"mine", "catalog", "scratch"}:
+            if collection not in {"mine", "catalog", "scratch", "effects"}:
                 fail(422, "invalid_collection")
             if grouped:
                 if collection!="scratch":fail(422,"invalid_filter")
@@ -438,7 +444,11 @@ class Library:
             catalog = self.catalogue.get(asset_id)
             mime, extension = "image/png", "png"
             if catalog:
+                if field == "thumbnail" and catalog["metadata"]["type"] == "sound":
+                    fail(404, "not_found")
                 data = catalog[field]
+                if catalog["metadata"]["type"] == "sound":
+                    mime, extension = "audio/ogg", "ogg"
             else:
                 owner = self.principal(request)
                 with closing(self.connect()) as db:
