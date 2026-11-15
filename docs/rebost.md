@@ -307,7 +307,7 @@ La interfície central usa Vue i continua servint el selector de Blocs i Llibres
 
 ## Bancos externos consultados por el servidor
 
-Con `REBOST_BANKS_ENABLED=1`, Commons busca él mismo en ARASAAC, Wikimedia Commons, The Met y Openverse
+Con `REBOST_BANKS_ENABLED=1`, Commons busca él mismo en ARASAAC, Wikimedia Commons, The Met, Openverse, iconos (Iconify) y sonidos (Openverse audio)
 (`services/id-api/assets/banks.py`). El navegador nunca contacta con el proveedor: la pestaña «Bancs» del
 selector, también dentro de Llibres y Blocs, usa la sesión de Commons y el mismo origen, sin CORS ni
 sesión de EduCrea. La capacidad `banks` aparece en `/api/assets/v1/me`; el selector prefiere el modo
@@ -325,4 +325,13 @@ revalidadas (máx. 3); firma y tamaño comprobados (2 MiB miniatura, 4 MiB conte
 los bancos mixtos (ARASAAC, CC BY-NC-SA, se etiqueta); 120 peticiones por minuto y principal. Los errores
 llevan un código estable (`bank_unavailable`, `bank_timeout`, `bank_too_large`, `bank_rate_limited`…). No
 activar en instalaciones de centro sin salida a Internet ni sin haber informado de la consulta externa.
-**Pendiente:** el banco «Iconos» y los bancos de sonidos siguen solo en EduCrea.
+**Iconos.** Iconify (Tabler, Lucide, Fluent Emoji, OpenMoji; búsqueda en castellano y valenciano con
+`assets/data/icon_terms.txt`). El servidor entrega el icono como **SVG saneado** (lista blanca de etiquetas y
+atributos; rechaza scripts, estilos, `use`, `image`, `foreignObject`, DOCTYPE y referencias externas) y el navegador
+lo rasteriza a PNG de 512 px al guardarlo: la biblioteca solo almacena imágenes ráster y Commons no necesita ninguna
+librería nativa (cairo).
+
+**Sonidos.** Openverse audio (Freesound y Wikimedia), solo CC0, CC BY y CC BY-SA, ≤120 s y ≤2 MiB, OGG/MP3/WAV
+comprobados por firma; la descarga solo sigue anfitriones `freesound.org` y `wikimedia.org`. Los elementos llevan
+`kind: "sound"` y no tienen miniatura. La pestaña de bancos permite escucharlos y guardarlos como `type: sound`; el
+selector incrustado de Llibres y Blocs (solo imágenes) no los muestra. Los efectos Kenney ya estaban en el catálogo.

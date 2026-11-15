@@ -48,7 +48,7 @@ def test_requires_session_and_is_announced(banks_api):
     assert anonymous.get('/api/assets/v1/banks').status_code == 401
     assert anonymous.get('/api/assets/v1/banks/arasaac/search?q=sol').status_code == 401
     assert calls == []  # sense sessió no hi ha cap petició de sortida
-    assert [p['id'] for p in client.get('/api/assets/v1/banks').json()['providers']] == ['arasaac', 'wikimedia', 'met', 'openverse']
+    assert [p['id'] for p in client.get('/api/assets/v1/banks').json()['providers']] == ['arasaac', 'wikimedia', 'met', 'openverse', 'icons', 'openverse-audio']
 
 
 def test_arasaac_search_and_image(banks_api):
@@ -138,3 +138,62 @@ def test_banks_use_the_rebost_cors_policy(banks_api):
     assert pre.status_code == 204
     other = client.get('/api/assets/v1/banks/arasaac/search?q=sol', headers={'Origin': 'https://other.test'})
     assert 'access-control-allow-origin' not in other.headers
+
+
+SVG = b'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 3h18v18H3z" fill="none" stroke="#1f2937"/></svg>'
+
+
+def test_icons_search_terms_and_sanitized_svg(banks_api):
+    module, client, _, routes, calls, banks = banks_api
+    routes['https://api.iconify.design/search'] = lambda req: j({'icons': ['tabler:scissors', 'lucide:scissors', 'mdi:evil', 'bad']})
+    routes['https://api.iconify.design/tabler/scissors.svg'] = httpx.Response(200, content=SVG)
+    found = client.get('/api/assets/v1/banks/icons/search?q=tijeras&language=es').json()
+    assert [i['id'] for i in found['items']] == ['tabler:scissors', 'lucide:scissors']  # mdi no está permitido
+    assert any('query=scissors' in call for call in calls)  # «tijeras» se traduce con la lista de términos
+    item = found['items'][0]
+    assert item['license'] == 'MIT' and item['media_type'] == 'image/svg+xml'
+    got = client.get(item['content_url'])
+    assert got.status_code == 200 and got.headers['content-type'] == 'image/svg+xml'
+    assert b'<path' in got.content and b'script' not in got.content
+    assert client.get('/api/assets/v1/banks/icons/mdi:x/thumbnail').status_code == 422
+
+
+@pytest.mark.parametrize('payload', [
+    b'<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>',
+    b'<svg xmlns="http://www.w3.org/2000/svg" onload="alert(1)"><path d="M0 0"/></svg>',
+    b'<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0" fill="url(https://evil.test/x)"/></svg>',
+    b'<svg xmlns="http://www.w3.org/2000/svg"><image href="https://evil.test/x.png"/></svg>',
+    b'<svg xmlns="http://www.w3.org/2000/svg"><foreignObject><div/></foreignObject></svg>',
+    b'<svg xmlns="http://www.w3.org/2000/svg"><use xlink:href="#a"/></svg>',
+    b'<!DOCTYPE svg [<!ENTITY x "y">]><svg xmlns="http://www.w3.org/2000/svg"/>',
+    b'<html><body>no es svg</body></html>',
+    b'<svg xmlns="http://www.w3.org/2000/svg"><style>*{}</style></svg>',
+])
+def test_svg_sanitizer_rejects_active_content(banks_api, payload):
+    module, client, _, routes, calls, banks = banks_api
+    routes['https://api.iconify.design/lucide/a.svg'] = httpx.Response(200, content=payload)
+    assert client.get('/api/assets/v1/banks/icons/lucide:a/content').status_code == 502
+
+
+def test_sound_bank_filters_downloads_and_validates(banks_api):
+    module, client, _, routes, calls, banks = banks_api
+    good, big, nc = ('55555555-5555-5555-5555-555555555555', '66666666-6666-6666-6666-666666666666', '77777777-7777-7777-7777-777777777777')
+    def row(i, **extra):
+        return {'id': i, 'license': 'by', 'license_version': '4.0', 'source': 'freesound', 'filetype': 'ogg', 'duration': 3000,
+                'url': 'https://cdn.freesound.org/s.ogg', 'title': 'Plof', 'creator': 'Eva', **extra}
+    routes['https://api.openverse.org/v1/audio/?'] = j({'results': [row(good), row(big, filesize=9_000_000), row(nc, license='by-nc'),
+                                                                     row('88888888-8888-8888-8888-888888888888', url='https://evil.test/a.ogg'),
+                                                                     row('99999999-9999-9999-9999-999999999999', duration=500000)]})
+    routes['https://cdn.freesound.org/s.ogg'] = httpx.Response(200, content=b'OggS' + b'0' * 100)
+    items = client.get('/api/assets/v1/banks/openverse-audio/search?q=plof').json()['items']
+    assert [i['id'] for i in items] == [good] and items[0]['kind'] == 'sound' and items[0]['license'] == 'CC BY 4.0'
+    sound = client.get(items[0]['content_url'])
+    assert sound.status_code == 200 and sound.headers['content-type'] == 'audio/ogg'
+    assert client.get('/api/assets/v1/banks/openverse-audio/' + good + '/thumbnail').status_code == 404
+    routes['https://cdn.freesound.org/s.ogg'] = httpx.Response(200, content=b'<html>no es so</html>')
+    assert client.get(items[0]['content_url']).status_code == 502
+    routes['https://cdn.freesound.org/s.ogg'] = httpx.Response(200, content=b'OggS' + b'0' * (3 * 1024 * 1024))
+    assert client.get(items[0]['content_url']).status_code == 413
+    routes['https://cdn.freesound.org/s.ogg'] = httpx.Response(302, headers={'location': 'https://evil.test/a.ogg'})
+    assert client.get(items[0]['content_url']).status_code == 502  # la redirección sale de los anfitriones permitidos
+    assert not any('evil.test' in call for call in calls)

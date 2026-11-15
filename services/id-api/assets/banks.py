@@ -4,6 +4,11 @@ El navegador mai contacta amb el proveïdor: la cerca, les miniatures i les desc
 de manera que les aplicacions que incrusten el Rebost (Llibres, Blocs, EduCrea…) tenen una sola porta, la
 sessió de Commons, i no necessiten CORS ni galetes d'una altra aplicació.
 
+Proveïdors d'imatge: ARASAAC, Wikimedia Commons, The Met, Openverse i Iconify (icones). Proveïdor de so: Openverse àudio
+(Freesound i Wikimedia, només CC0, CC BY i CC BY-SA). Les icones es serveixen com a SVG **saneat** (llista blanca
+d'etiquetes i atributs, sense scripts ni referències externes): el navegador les rasteritza a PNG en guardar-les, de
+manera que Commons no necessita cap llibreria nativa de rasterització.
+
 Garanties:
 - només es consulten els amfitrions fixos de cada proveïdor; les URL de descàrrega que torna un proveïdor
   se sotmeten a les regles de `safe_get` (https, port 443, només adreces públiques, redireccions revalidades);
@@ -21,6 +26,9 @@ import ipaddress
 import re
 import socket
 import time
+import unicodedata
+import xml.etree.ElementTree as ET
+from pathlib import Path
 from urllib.parse import quote, urlsplit
 
 import httpx
@@ -52,6 +60,35 @@ MET_API = "https://collectionapi.metmuseum.org/public/collection/v1"
 MET_LICENSE = "CC0 1.0 (domini públic)"
 MET_LICENSE_URL = "https://creativecommons.org/publicdomain/zero/1.0/"
 
+ICONS, OPENVERSE_AUDIO = "icons", "openverse-audio"
+ICONIFY_API = "https://api.iconify.design"
+MAX_SVG = 300 * 1024
+MAX_SOUND = 2 * 1024 * 1024
+SOUND_MAX_SECONDS = 120
+SOUND_API = "https://api.openverse.org/v1/audio/"
+SOUND_SOURCES = "freesound,wikimedia_audio"
+SOUND_FILETYPES = {"mp3", "ogg", "oga", "wav"}
+SOUND_HOSTS = ("freesound.org", "wikimedia.org")
+TERMS_FILE = Path(__file__).parent / "data" / "icon_terms.txt"
+INK = "#1f2937"
+ICON_ID = re.compile(r"^(?P<prefix>[a-z0-9-]+):(?P<name>[a-z0-9][a-z0-9-]*)$")
+# prefix -> (nom, autor, llicència, URL de la llicència)
+ICON_SETS = {
+    "tabler": ("Tabler Icons", "Paweł Kuna", "MIT", "https://opensource.org/license/mit"),
+    "lucide": ("Lucide", "Lucide Contributors", "ISC", "https://opensource.org/license/isc-license-txt"),
+    "fluent-emoji-flat": ("Fluent Emoji", "Microsoft", "MIT", "https://opensource.org/license/mit"),
+    "openmoji": ("OpenMoji", "OpenMoji – the open-source emoji and icon project", "CC BY-SA 4.0",
+                 "https://creativecommons.org/licenses/by-sa/4.0/"),
+}
+SVG_NS = "http://www.w3.org/2000/svg"
+SVG_TAGS = {"svg", "g", "path", "circle", "ellipse", "rect", "line", "polyline", "polygon", "defs", "clipPath", "mask",
+            "linearGradient", "radialGradient", "stop", "title", "desc"}
+SVG_ATTRS = {"xmlns", "viewBox", "width", "height", "d", "fill", "stroke", "stroke-width", "stroke-linecap",
+             "stroke-linejoin", "stroke-miterlimit", "stroke-opacity", "fill-opacity", "fill-rule", "clip-rule", "opacity",
+             "transform", "cx", "cy", "r", "rx", "ry", "x", "y", "x1", "y1", "x2", "y2", "points", "id", "clip-path", "mask",
+             "offset", "stop-color", "stop-opacity", "gradientUnits", "gradientTransform", "clipPathUnits", "maskUnits",
+             "preserveAspectRatio", "color", "role", "aria-hidden", "focusable", "vector-effect"}
+
 PROVIDERS = [
     {"id": ARASAAC, "name": "ARASAAC", "license": ARASAAC_LICENSE, "license_url": ARASAAC_LICENSE_URL,
      "commercial_use": False},
@@ -60,6 +97,10 @@ PROVIDERS = [
     {"id": MET, "name": "The Met", "license": MET_LICENSE, "license_url": MET_LICENSE_URL, "commercial_use": True},
     {"id": OPENVERSE, "name": "Openverse", "license": "CC0, CC BY i CC BY-SA",
      "license_url": "https://openverse.org", "commercial_use": True},
+    {"id": ICONS, "name": "Icones i emojis", "license": "MIT, ISC i CC BY-SA 4.0 (OpenMoji)",
+     "license_url": "https://iconify.design/docs/icons/", "commercial_use": True},
+    {"id": OPENVERSE_AUDIO, "name": "Openverse (so)", "license": "CC0, CC BY i CC BY-SA",
+     "license_url": "https://openverse.org", "commercial_use": True, "kind": "sound"},
 ]
 
 
@@ -94,13 +135,15 @@ def check_url(url: str) -> str:
     return parts.geturl()
 
 
-def safe_get(url: str, *, params: dict | None = None, limit: int | None = None, accept: str = "*/*") -> tuple[httpx.Response, bytes]:
+def safe_get(url: str, *, params: dict | None = None, limit: int | None = None, accept: str = "*/*", allow=None) -> tuple[httpx.Response, bytes]:
     """GET amb redireccions manuals (màx. 3), cada salt revalidat. Torna la resposta i el cos (limitat)."""
     current = url
     try:
         with http_client() as http:
             for _hop in range(4):
                 target = check_url(current)
+                if allow is not None and not allow(target):
+                    raise BankError(502, "bank_unavailable")
                 with http.stream("GET", target, params=params if current == url else None, headers={"Accept": accept}) as response:
                     if response.status_code in (301, 302, 303, 307, 308) and response.headers.get("location"):
                         current = str(httpx.URL(target).join(response.headers["location"]))
@@ -158,6 +201,92 @@ def clean_query(query: str) -> str:
     return text
 
 
+def sanitize_svg(data: bytes) -> bytes:
+    """SVG de llista blanca: només formes i degradats, sense scripts, estils, enllaços ni referències externes."""
+    if len(data) > MAX_SVG or b"<!" in data.replace(b"<!--", b"")[:4096] or b"<?xml-stylesheet" in data:
+        raise BankError(502, "bank_invalid_image")
+    try:
+        root = ET.fromstring(data)
+    except ET.ParseError as exc:
+        raise BankError(502, "bank_invalid_image") from exc
+
+    def clean(node, top=False):
+        tag = node.tag.split("}", 1)[-1] if isinstance(node.tag, str) else ""
+        if tag not in SVG_TAGS or (node.tag.startswith("{") and not node.tag.startswith("{" + SVG_NS + "}")):
+            raise BankError(502, "bank_invalid_image")
+        if top and tag != "svg":
+            raise BankError(502, "bank_invalid_image")
+        for name, value in list(node.attrib.items()):
+            local = name.split("}", 1)[-1]
+            lowered = value.lower()
+            if (name.startswith("{") and local not in ("space",)) or local not in SVG_ATTRS or local.lower().startswith("on"):
+                raise BankError(502, "bank_invalid_image")
+            if "javascript:" in lowered or "data:" in lowered or ("url(" in lowered and not re.fullmatch(r"url\(#[\w.-]+\)", value.strip())):
+                raise BankError(502, "bank_invalid_image")
+        if node.text and node.text.strip() and tag not in ("title", "desc"):
+            raise BankError(502, "bank_invalid_image")
+        for child in list(node):
+            clean(child)
+
+    clean(root, top=True)
+    ET.register_namespace("", SVG_NS)
+    return ET.tostring(root, encoding="utf-8", xml_declaration=False)
+
+
+def sniff_sound(data: bytes) -> str:
+    if data[:4] == b"OggS":
+        return "audio/ogg"
+    if data[:3] == b"ID3" or (len(data) > 1 and data[0] == 0xFF and data[1] & 0xE0 == 0xE0):
+        return "audio/mpeg"
+    if data[:4] == b"RIFF" and data[8:12] == b"WAVE":
+        return "audio/wav"
+    raise BankError(502, "bank_invalid_audio")
+
+
+def fold(text: str) -> str:
+    base = unicodedata.normalize("NFKD", (text or "").strip().lower())
+    return re.sub(r"\s+", " ", "".join(c for c in base if not unicodedata.combining(c)))
+
+
+_terms: dict[str, list[str]] | None = None
+
+
+def icon_terms() -> dict[str, list[str]]:
+    """Paraules en castellà i valencià (sense accents) -> termes en anglès que Iconify entén."""
+    global _terms
+    if _terms is None:
+        table: dict[str, list[str]] = {}
+        for line in TERMS_FILE.read_text(encoding="utf-8").splitlines():
+            parts = line.split("|")
+            if not line.strip() or line.startswith("#") or len(parts) != 3:
+                continue
+            english = [value.strip() for value in parts[2].split(",") if value.strip()]
+            for word in parts[:2]:
+                key = fold(word)
+                if key:
+                    table.setdefault(key, [])
+                    table[key] += [value for value in english if value not in table[key]]
+        _terms = table
+    return _terms
+
+
+def english_terms(query: str) -> list[str]:
+    text = fold(query)
+    table = icon_terms()
+    if text in table:
+        return table[text][:3]
+    found: list[str] = []
+    for word in text.split(" "):
+        found += [value for value in table.get(word, []) if value not in found]
+    return (found or [text])[:3]
+
+
+def sound_host_ok(url) -> bool:
+    parts = urlsplit(str(url or ""))
+    host = (parts.hostname or "").lower()
+    return parts.scheme == "https" and any(host == name or host.endswith("." + name) for name in SOUND_HOSTS)
+
+
 class Banks:
     def __init__(self):
         self.cache: dict[tuple[str, str], tuple[float, dict]] = {}
@@ -196,20 +325,28 @@ class Banks:
     def search(self, provider: str, query: str, lang: str = "es") -> dict:
         text = clean_query(query)
         method = {ARASAAC: self.search_arasaac, WIKIMEDIA: self.search_wikimedia, MET: self.search_met,
-                  OPENVERSE: self.search_openverse}.get(provider)
+                  OPENVERSE: self.search_openverse, ICONS: self.search_icons,
+                  OPENVERSE_AUDIO: self.search_sounds}.get(provider)
         if method is None:
             raise BankError(422, "bank_provider")
         return method(text, language(lang))
 
     def image(self, provider: str, identifier: str, size: int) -> tuple[bytes, str]:
         """Bytes i tipus de la miniatura (size ≤ 300) o del contingut. Mai accepta una URL del client."""
+        if provider == OPENVERSE_AUDIO:
+            if size <= 300:
+                raise BankError(404, "bank_not_found")  # els sons no tenen miniatura
+            return self.sound(str(identifier))
         fetch = {ARASAAC: self.arasaac_urls, WIKIMEDIA: self.wikimedia_urls, MET: self.met_urls,
-                 OPENVERSE: self.openverse_urls}.get(provider)
+                 OPENVERSE: self.openverse_urls, ICONS: self.icon_urls}.get(provider)
         if fetch is None:
             raise BankError(422, "bank_provider")
         last = BankError(502, "bank_unavailable")
         for url in fetch(str(identifier), size):
             try:
+                if provider == ICONS:
+                    _, data = safe_get(url, limit=MAX_SVG)
+                    return sanitize_svg(data), "image/svg+xml"
                 _, data = safe_get(url, limit=MAX_THUMB if size <= 300 else MAX_CONTENT)
                 return data, image_type(data)
             except BankError as exc:
@@ -230,8 +367,8 @@ class Banks:
     @staticmethod
     def envelope(provider: str, items: list[dict]) -> dict:
         info = next(entry for entry in PROVIDERS if entry["id"] == provider)
-        return {"provider": provider, "license": info["license"], "license_url": info["license_url"],
-                "commercial_use": info["commercial_use"], "items": items}
+        return {"provider": provider, "kind": info.get("kind", "image"), "license": info["license"],
+                "license_url": info["license_url"], "commercial_use": info["commercial_use"], "items": items}
 
     # --- ARASAAC ---
     def search_arasaac(self, text: str, lang: str) -> dict:
@@ -393,3 +530,80 @@ class Banks:
                 raise BankError(404, "bank_not_found")
             self.remember(OPENVERSE, identifier, row)
         return [row.get("thumbnail")] if size <= 300 else [row.get("url"), row.get("thumbnail")]
+
+    # --- Icones (Iconify) ---
+    def search_icons(self, text: str, lang: str) -> dict:
+        words = english_terms(text)
+        per_set: dict[str, list[str]] = {prefix: [] for prefix in ICON_SETS}
+        for word in words:
+            data = get_json(f"{ICONIFY_API}/search", {"query": word, "limit": 32, "prefixes": ",".join(ICON_SETS)})
+            for identifier in (data.get("icons") or []) if isinstance(data, dict) else []:
+                match = ICON_ID.match(str(identifier))
+                if match and match.group("prefix") in ICON_SETS and identifier not in per_set[match.group("prefix")]:
+                    per_set[match.group("prefix")].append(identifier)
+        merged, seen = [], set()
+        groups = list(per_set.values())
+        for position in range(max((len(group) for group in groups), default=0)):
+            for group in groups:
+                if position < len(group) and group[position] not in seen:
+                    seen.add(group[position])
+                    merged.append(group[position])
+        items = []
+        for identifier in merged[:24]:
+            prefix, name = ICON_ID.match(identifier).group("prefix", "name")
+            label, author, licence, licence_url = ICON_SETS[prefix]
+            items.append(self.item(ICONS, identifier, name.replace("-", " ").capitalize(), words, licence, licence_url,
+                                   f"https://icon-sets.iconify.design/{prefix}/{name}/",
+                                   f"{label} · {author} · {licence} · Iconify", "image/svg+xml"))
+        return self.envelope(ICONS, items)
+
+    @staticmethod
+    def icon_urls(identifier: str, size: int):
+        match = ICON_ID.match(identifier)
+        if not match or match.group("prefix") not in ICON_SETS:
+            raise BankError(422, "bank_invalid_id")
+        yield f"{ICONIFY_API}/{match.group('prefix')}/{match.group('name')}.svg?height=512&color=%231f2937"
+
+    # --- So (Openverse àudio) ---
+    @staticmethod
+    def sound_usable(row, max_ms=SOUND_MAX_SECONDS * 1000) -> bool:
+        if not isinstance(row, dict) or str(row.get("category") or "") == "pronunciation":
+            return False
+        size, duration = row.get("filesize"), row.get("duration")
+        return (bool(UUID.match(str(row.get("id") or ""))) and str(row.get("license") or "").lower() in OPENVERSE_LICENSES
+                and str(row.get("source") or "") in SOUND_SOURCES.split(",")
+                and str(row.get("filetype") or "").lower() in SOUND_FILETYPES and sound_host_ok(row.get("url"))
+                and (not size or int(size) <= MAX_SOUND) and (not duration or int(duration) <= max_ms))
+
+    def search_sounds(self, text: str, lang: str) -> dict:
+        data = get_json(SOUND_API, {"q": text, "page_size": 20, "license": "cc0,by,by-sa", "source": SOUND_SOURCES,
+                                    "mature": "false"})
+        items = []
+        for row in (data.get("results") or []) if isinstance(data, dict) else []:
+            if not self.sound_usable(row):
+                continue
+            identifier = str(row["id"])
+            self.remember(OPENVERSE_AUDIO, identifier, row)
+            licence = self.ov_license(row)
+            credit = plain(row.get("attribution")) or " · ".join(part for part in (
+                plain(row.get("creator")), licence, plain(row.get("source"))) if part)
+            tags = [plain(tag.get("name")) for tag in (row.get("tags") or []) if isinstance(tag, dict) and plain(tag.get("name"))]
+            item = self.item(OPENVERSE_AUDIO, identifier, plain(row.get("title")) or "So", tags, licence,
+                             str(row.get("license_url") or "https://openverse.org"),
+                             str(row.get("foreign_landing_url") or row.get("detail_url") or "https://openverse.org"),
+                             credit, "audio/mpeg")
+            item.update({"kind": "sound", "duration_ms": int(row.get("duration") or 0), "thumbnail_url": ""})
+            items.append(item)
+        return self.envelope(OPENVERSE_AUDIO, items)
+
+    def sound(self, identifier: str) -> tuple[bytes, str]:
+        if not UUID.match(identifier):
+            raise BankError(422, "bank_invalid_id")
+        row = self.recall(OPENVERSE_AUDIO, identifier)
+        if row is None:
+            row = get_json(f"{SOUND_API}{identifier}/")
+            if not self.sound_usable(row, 10 ** 9):
+                raise BankError(404, "bank_not_found")
+            self.remember(OPENVERSE_AUDIO, identifier, row)
+        _, data = safe_get(str(row["url"]), limit=MAX_SOUND, allow=sound_host_ok)
+        return data, sniff_sound(data)
