@@ -1,4 +1,4 @@
-/* Copiado de @edutictac/rebost-client 152a39a (MIT). No editar aquí: scripts/sync-rebost-client.sh */
+/* Copiado de @edutictac/rebost-client ad4f585 (MIT). No editar aquí: scripts/sync-rebost-client.sh */
 /* Protocolo postMessage del selector (/assets/?mode=pick). Formato versionado: 'rebost-selection' v1. */
 import {ITEM_ID} from '/assets/client.js';
 
