@@ -35,12 +35,27 @@ Base: `v0.1.1-beta6.4`. Pot actualitzar-se des de beta6.4 i des de la producció
   The Met, icones i Openverse) a través de l'API d'EduCrea, i guarda la imatge triada al Rebost amb
   crèdit i llicència. ARASAAC apareix sempre amb l'etiqueta NC; el filtre (actiu per defecte) lleva
   les altres imatges amb llicència NC.
-- **Només apareix si l'instal·lació declara `bankSearchUrl`** a `deployment.js` (URL pública
-  d'EduCrea). Per defecte no hi és, de manera que les instal·lacions de centres no la veuen.
-  Mai apareix dins del selector incrustat de Blocs.
+- **Només apareix si l'instal·lació declara la URL d'EduCrea**: variable `REBOST_BANK_SEARCH_URL`
+  (només `https` i host; l'API la valida en arrancar i l'anuncia en `/api/assets/v1/me` i
+  `/catalogs` amb la capacitat `external_banks`) o, com a alternativa antiga, `bankSearchUrl` de
+  `deployment.js`. Per defecte no hi és, de manera que les instal·lacions de centres no la veuen.
+- **Dins del selector incrustat** (Llibres, Blocs: `/assets/?mode=pick`) la pestanya també hi és i el
+  botó és «Guardar i triar»: guarda la imatge al Rebost (tipus `background` si el selector és de
+  fons, `illustration` si no) i en lliura l'identificador a l'aplicació amb `postMessage`.
 - La metaetiqueta CSP de `assets/index.html` permet `connect-src 'self' https://crea.edutictac.es`.
 - Requisit a EduCrea: `EDUCREA_BANK_CORS_ORIGINS` amb l'origen de Commons (CORS de només lectura per
   a `GET /api/image-banks`).
+
+### Fora del paquet `.deb` (configuració de producció d'EduTicTac)
+
+Els proxies d'altres aplicacions no viatgen amb Commons i s'han configurat a part:
+
+- **Llibres** (`nginx.production.conf` dins de la seua imatge) i **Blocs** (vhost del host) només
+  deixaven `GET` en `/api/assets/v1/`. Ara permeten també `POST /api/assets/v1/items` (`location =`,
+  cos màxim 6 MiB); copiar, canviar i esborrar continuen només en Commons. El CSP de `/assets/` en
+  Llibres permet connectar amb `https://crea.edutictac.es`.
+- `REBOST_ALLOWED_ORIGINS` ha d'incloure els orígens de Llibres i Blocs perquè puguen crear recursos.
+- EduCrea: `EDUCREA_BANK_CORS_ORIGINS` amb els orígens de Commons, Llibres i Blocs.
 
 ### Traslat d'aules
 
