@@ -307,6 +307,8 @@ La interfície central usa Vue i continua servint el selector de Blocs i Llibres
 
 ## Bancos externos consultados por el servidor
 
+La lógica vive en el paquete compartido `edutictac-banks` (repositorio propio, MIT; copiado en
+`services/id-api/assets/edutictac_banks/` con `scripts/sync-banks.sh`, sin editarlo aquí) y la comparte EduCrea.
 Con `REBOST_BANKS_ENABLED=1`, Commons busca él mismo en ARASAAC, Wikimedia Commons, The Met, Openverse, iconos (Iconify) y sonidos (Openverse audio)
 (`services/id-api/assets/banks.py`). El navegador nunca contacta con el proveedor: la pestaña «Bancs» del
 selector, también dentro de Llibres y Blocs, usa la sesión de Commons y el mismo origen, sin CORS ni

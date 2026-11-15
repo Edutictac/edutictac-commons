@@ -14,7 +14,7 @@ JPEG = image('JPEG')
 def banks_api(monkeypatch, request):
     monkeypatch.setenv('REBOST_BANKS_ENABLED', '1')
     module, client, other, student = request.getfixturevalue('api')
-    import assets.banks as banks
+    from assets.edutictac_banks import net as banks  # costuras de xarxa del paquet compartit
     calls = []
     routes = {}
     dialed_ips = {'93.184.216.34'}
@@ -32,7 +32,6 @@ def banks_api(monkeypatch, request):
 
     monkeypatch.setattr(banks, 'http_client', lambda: httpx.Client(transport=httpx.MockTransport(handler), follow_redirects=False))
     monkeypatch.setattr(banks, 'resolve', lambda host: [(0, 0, 0, '', ('10.0.0.5' if host.startswith('internal') else '93.184.216.34', 443))])
-    banks.dialed_ips = dialed_ips
     return module, client, other, routes, calls, banks
 
 
@@ -107,11 +106,11 @@ def test_wikimedia_drops_non_free_and_met_needs_public_domain(banks_api):
                 'extmetadata': {'LicenseShortName': {'value': lic}, 'Artist': {'value': '<a>Eva</a>'}}}]}
     routes['https://commons.wikimedia.org/w/api.php'] = j({'query': {'pages': {'1': page(1, 'CC BY-SA 4.0'), '2': page(2, 'CC BY-NC 2.0'), '3': page(3, 'CC BY-ND 2.0')}}})
     items = client.get('/api/assets/v1/banks/wikimedia/search?q=x').json()['items']
-    assert [i['id'] for i in items] == ['1'] and 'Eva' in items[0]['credit']
+    assert [i['id'] for i in items] == [1] and 'Eva' in items[0]['credit']
     routes['https://collectionapi.metmuseum.org/public/collection/v1/search'] = j({'objectIDs': [10, 11]})
     routes['https://collectionapi.metmuseum.org/public/collection/v1/objects/10'] = j({'objectID': 10, 'isPublicDomain': True, 'primaryImageSmall': 'https://images.example/a.jpg', 'title': 'A'})
     routes['https://collectionapi.metmuseum.org/public/collection/v1/objects/11'] = j({'objectID': 11, 'isPublicDomain': False, 'primaryImageSmall': 'https://images.example/b.jpg'})
-    assert [i['id'] for i in client.get('/api/assets/v1/banks/met/search?q=x').json()['items']] == ['10']
+    assert [i['id'] for i in client.get('/api/assets/v1/banks/met/search?q=x').json()['items']] == [10]
 
 
 def test_size_signature_validation_limits_and_errors(banks_api, monkeypatch):
@@ -124,7 +123,8 @@ def test_size_signature_validation_limits_and_errors(banks_api, monkeypatch):
     assert client.get('/api/assets/v1/banks/unknown/search?q=x').status_code == 422
     assert client.get('/api/assets/v1/banks/arasaac/search?q=').status_code == 422
     assert client.get('/api/assets/v1/banks/arasaac/search?q=' + 'x' * 81).status_code == 422
-    monkeypatch.setattr(banks, 'RATE_PER_MINUTE', 3)
+    import assets.edutictac_banks.banks as engine
+    monkeypatch.setattr(engine, 'RATE_PER_MINUTE', 3)
     codes = [client.get('/api/assets/v1/banks').status_code for _ in range(5)]
     assert codes[-1] == 429
 
