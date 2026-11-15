@@ -31,10 +31,12 @@ export class RebostClient {
   async source(id, license = false) {
     return (await this.request(this.itemPath(id) + (license ? '/license' : '/source'))).blob();
   }
-  async add(file, name, type) {
+  async add(file, name, type, credit = '', license = '') {
     if (!file.size || file.size > 5 * 1024 * 1024) throw new Error('image_limit');
     return (await this.request('/items', {method: 'POST', body: file, headers: {
-      'Content-Type': file.type, 'X-Rebost-Name': encodeURIComponent(name), 'X-Rebost-Type': type
+      'Content-Type': file.type, 'X-Rebost-Name': encodeURIComponent(name), 'X-Rebost-Type': type,
+      ...(credit ? {'X-Rebost-Credit': encodeURIComponent(credit.slice(0, 300))} : {}),
+      ...(license ? {'X-Rebost-License': encodeURIComponent(license.slice(0, 100))} : {})
     }})).json();
   }
   async update(item, name, type) {

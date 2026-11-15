@@ -2,6 +2,7 @@
 import {computed, onBeforeUnmount, onMounted, provide, ref} from 'vue';
 import {RebostClient} from '/assets/client.js';
 import AssetCard from './AssetCard.vue';
+import BanksPanel from './BanksPanel.vue';
 import {usePortalTranslations} from '../shared/usePortalTranslations.js';
 
 const api = new RebostClient();
@@ -16,7 +17,9 @@ if (picking && ['es', 'ca', 'va', 'en'].includes(params.get('lang'))) window.i18
 const locale = ref(window.i18nPortal.getLang());
 const t = usePortalTranslations();
 const active = ref(false), authenticated = ref(false), busy = ref(false), capabilities = ref([]);
-const collection = ref(['mine', 'catalog', 'scratch'].includes(params.get('collection')) ? params.get('collection') : '');
+// Search of the free image banks through EduCrea: only when the installation points to an EduCrea (never in the picker).
+const bankUrl = picking ? '' : String(window.commonsDeployment?.bankSearchUrl || '');
+const collection = ref(['mine', 'catalog', 'scratch', ...(bankUrl ? ['banks'] : [])].includes(params.get('collection')) ? params.get('collection') : '');
 const search = ref(''), filter = ref(picking ? pickType : ''), uploadType = ref('sprite');
 const items = ref([]), cursor = ref(''), status = ref(''), drag = ref(false);
 const filesInput = ref(null), dialog = ref(null), previewUrl = ref(''), previewName = ref('');
@@ -49,6 +52,7 @@ async function run(operation) {
 }
 async function refresh(more = false) {
   const generation = ++listGeneration;
+  if (collection.value === 'banks') { items.value = []; cursor.value = ''; return; }
   if (locked.value) { items.value = []; cursor.value = ''; closePreview(); return; }
   const query = JSON.stringify([collection.value, search.value, filter.value]);
   // Never append a page belonging to a previous search.
@@ -182,9 +186,10 @@ onBeforeUnmount(() => {
         <div id="collections" class="collections" role="group" :aria-label="t('rebost.collection')">
           <button id="mineTab" class="secondary" type="button" :aria-pressed="collection === 'mine'" @click="run(() => chooseCollection('mine'))">{{ t('rebost.mine') }}{{ authenticated ? '' : ' · ' + t('common.login') }}</button>
           <button id="catalogTab" class="secondary" type="button" :hidden="!capabilities.includes('catalog')" :aria-pressed="collection === 'catalog'" @click="run(() => chooseCollection('catalog'))">{{ t('rebost.catalog') }}</button>
+          <button id="banksTab" class="secondary" type="button" :hidden="!bankUrl" :aria-pressed="collection === 'banks'" @click="run(() => chooseCollection('banks'))">{{ t('rebost.banks') }}</button>
           <button id="scratchTab" class="secondary" type="button" :hidden="!capabilities.includes('scratch_catalog')" :aria-pressed="collection === 'scratch'" @click="run(() => chooseCollection('scratch'))">{{ t('rebost.scratch') }}</button>
         </div>
-        <p id="collectionHint">{{ picking ? t('rebost.pickHint') : collection === 'mine' ? t('rebost.privateHint') : collection === 'scratch' ? t('rebost.scratchHint') : t('rebost.catalogHint') }}</p>
+        <p id="collectionHint">{{ picking ? t('rebost.pickHint') : collection === 'mine' ? t('rebost.privateHint') : collection === 'banks' ? t('rebost.banksHint') : collection === 'scratch' ? t('rebost.scratchHint') : t('rebost.catalogHint') }}</p>
         <div id="uploadArea" :hidden="picking || collection !== 'mine' || !authenticated">
           <section id="drop" tabindex="0" role="button" :aria-label="t('rebost.upload')" :class="{drag}" @click="openFiles" @keydown.self.enter.prevent="openFiles" @keydown.self.space.prevent="openFiles" @dragenter.prevent="drag = true" @dragover.prevent="drag = true" @dragleave="drag = false" @drop.prevent="dropped">
             <strong id="uploadText">{{ t('rebost.upload') }}</strong><p id="formats">{{ t('rebost.formats') }}</p>
@@ -192,14 +197,15 @@ onBeforeUnmount(() => {
           </section>
           <label><span id="uploadTypeLabel">{{ t('rebost.uploadType') }}</span><select id="uploadType" v-model="uploadType"><option v-for="value in types" :key="value" :value="value">{{ t('rebost.' + value) }}</option></select></label>
         </div>
-        <div class="filters" :hidden="locked">
+        <div class="filters" :hidden="locked || collection === 'banks'">
           <label><span id="searchLabel">{{ t('rebost.search') }}</span><input id="search" v-model="search" type="search" :placeholder="t('rebost.searchPlaceholder')" maxlength="200" @input="searchChanged"></label>
           <label><span id="filterLabel">{{ t('rebost.filter') }}</span><select id="filter" v-model="filter" @change="run(() => refresh())"><option v-for="value in filterTypes" :key="value" :value="value">{{ value ? t('rebost.' + value) : t('rebost.all') }}</option></select></label>
         </div>
       </div>
-      <p id="empty" :hidden="locked || items.length > 0 || busy">{{ t('rebost.empty') }}</p>
-      <section id="grid" :aria-label="title" :hidden="locked"><AssetCard v-for="item in items" :key="item.id" :item="item" /></section>
-      <button id="more" type="button" :hidden="locked || !cursor" @click="run(() => refresh(true))">{{ t('rebost.more') }}</button>
+      <BanksPanel v-if="collection === 'banks' && bankUrl" />
+      <p id="empty" :hidden="locked || collection === 'banks' || items.length > 0 || busy">{{ t('rebost.empty') }}</p>
+      <section id="grid" :aria-label="title" :hidden="locked || collection === 'banks'"><AssetCard v-for="item in items" :key="item.id" :item="item" /></section>
+      <button id="more" type="button" :hidden="locked || collection === 'banks' || !cursor" @click="run(() => refresh(true))">{{ t('rebost.more') }}</button>
     </fieldset>
     <dialog id="preview" ref="dialog" :aria-label="t('rebost.view')" @close="clearPreview">
       <button id="closePreview" type="button" @click="closePreview">{{ t('rebost.close') }}</button>
