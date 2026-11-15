@@ -13,7 +13,8 @@ const results = {
   openverse: [bankItem('openverse', 'o1', 'libre', 'CC BY 4.0'), bankItem('openverse', 'o2', 'noncomercial', 'CC BY-NC 4.0')],
 };
 
-async function setup(page, {configured = true, educreaSession = true, rebostSession = true} = {}) {
+async function setup(page, {configured = true, announce = false, educreaSession = true, rebostSession = true} = {}) {
+  const announced = announce ? {bank_search_url: EDUCREA} : {};
   await page.route('**/deployment.js', route => route.fulfill({contentType: 'text/javascript',
     body: `window.commonsDeployment = Object.freeze({ mode: 'local'${configured ? `, bankSearchUrl: '${EDUCREA}'` : ''} });`}));
   await page.route(/\/api\/auth\/session(\?|$)/, route => route.fulfill({json: {authenticated: rebostSession, kind: 'oidc', role: 'profesor',
@@ -21,8 +22,8 @@ async function setup(page, {configured = true, educreaSession = true, rebostSess
   const saves = [];
   await page.route('**/api/assets/v1/**', async route => {
     const request = route.request(), path = new URL(request.url()).pathname;
-    if (path.endsWith('/me')) return route.fulfill({status: rebostSession ? 200 : 401, json: rebostSession ? {capabilities: ['catalog', 'scratch_catalog']} : {detail: 'session_required'}});
-    if (path.endsWith('/catalogs')) return route.fulfill({json: {capabilities: ['catalog', 'scratch_catalog']}});
+    if (path.endsWith('/me')) return route.fulfill({status: rebostSession ? 200 : 401, json: rebostSession ? {capabilities: ['catalog', 'scratch_catalog'], ...announced} : {detail: 'session_required'}});
+    if (path.endsWith('/catalogs')) return route.fulfill({json: {capabilities: ['catalog', 'scratch_catalog'], ...announced}});
     if (path.endsWith('/items') && request.method() === 'POST') { saves.push(request.headers()); return route.fulfill({status: 201, json: {id: 'img-' + 'b'.repeat(64)}}); }
     if (path.endsWith('/items')) return route.fulfill({json: {items: [], next_cursor: ''}});
     return route.fulfill({status: 404, json: {detail: 'not_found'}});
@@ -98,4 +99,57 @@ test('without an EduCrea session it asks to sign in there; without a Rebost sess
   await page.locator('#banks button[type=submit]').click();
   await expect(page.locator('#banks .banks-login')).toBeVisible();
   await expect(page.locator('#banks .banks-login a')).toHaveAttribute('href', EDUCREA);
+});
+
+test('the server announces the EduCrea URL, so no deployment.js setting is needed', async ({page}) => {
+  await setup(page, {configured: false, announce: true});
+  await page.goto('/assets/');
+  await expect(page.locator('#banksTab')).toBeVisible();
+});
+
+async function openPicker(page, type) {
+  await page.goto('/assets/');
+  await page.evaluate(type => {
+    window.selections = [];
+    window.addEventListener('message', event => { if (event.origin === location.origin) window.selections.push(event.data); });
+    const frame = document.createElement('iframe');
+    frame.id = 'picker';
+    frame.src = `/assets/?mode=pick&type=${type}&request=banks&lang=es`;
+    document.body.append(frame);
+  }, type);
+  return page.frameLocator('#picker');
+}
+
+for (const [type, saved] of [['sprite', 'illustration'], ['background', 'background']]) {
+  test(`inside the ${type} picker, “Guardar y elegir” saves the bank image and hands it to the app`, async ({page}) => {
+    const mock = await setup(page, {configured: false, announce: true});
+    const picker = await openPicker(page, type);
+    await picker.locator('#banksTab').click();
+    await picker.locator('#banks input[type=search]').fill('casa');
+    await picker.locator('#banks button[type=submit]').click();
+    const card = picker.locator('#banks .bank-card', {hasText: 'home'});
+    await expect(card).toHaveCount(1);
+    await expect(card.locator('button')).toHaveText('Guardar y elegir');
+    await card.locator('button').click();
+    await expect.poll(() => page.evaluate(() => window.selections.length)).toBe(1);
+    expect(await page.evaluate(() => window.selections[0])).toEqual({format: 'rebost-selection', version: 1, request: 'banks', id: 'img-' + 'b'.repeat(64), name: 'home'});
+    expect(mock.saves[0]['x-rebost-type']).toBe(saved);
+    expect(decodeURIComponent(mock.saves[0]['x-rebost-license'])).toBe('MIT');
+  });
+}
+
+test('inside the picker without a Rebost session it offers to sign in and does not save', async ({page}) => {
+  const mock = await setup(page, {configured: false, announce: false, rebostSession: false});
+  await page.route('**/api/assets/v1/catalogs', route => route.fulfill({json: {capabilities: ['catalog'], bank_search_url: EDUCREA}}));
+  const picker = await openPicker(page, 'sprite');
+  await picker.locator('#banksTab').click();
+  await expect(picker.locator('#access')).toBeVisible();
+  await picker.locator('#banks input[type=search]').fill('casa');
+  await picker.locator('#banks button[type=submit]').click();
+  const card = picker.locator('#banks .bank-card', {hasText: 'home'});
+  await expect(card).toHaveCount(1);
+  await card.locator('button').click();
+  await expect(picker.locator('#banks [role=status]')).toBeVisible();
+  expect(mock.saves).toHaveLength(0);
+  expect(await page.evaluate(() => window.selections.length)).toBe(0);
 });

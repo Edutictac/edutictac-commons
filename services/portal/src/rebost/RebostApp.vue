@@ -17,9 +17,10 @@ if (picking && ['es', 'ca', 'va', 'en'].includes(params.get('lang'))) window.i18
 const locale = ref(window.i18nPortal.getLang());
 const t = usePortalTranslations();
 const active = ref(false), authenticated = ref(false), busy = ref(false), capabilities = ref([]);
-// Search of the free image banks through EduCrea: only when the installation points to an EduCrea (never in the picker).
-const bankUrl = picking ? '' : String(window.commonsDeployment?.bankSearchUrl || '');
-const collection = ref(['mine', 'catalog', 'scratch', ...(bankUrl ? ['banks'] : [])].includes(params.get('collection')) ? params.get('collection') : '');
+// Search of the free image banks through EduCrea. The server announces the EduCrea URL (also to the apps that embed
+// this picker, which have no configuration of their own); `deployment.js` stays as a fallback for older servers.
+const bankUrl = ref(String(window.commonsDeployment?.bankSearchUrl || ''));
+const collection = ref(['mine', 'catalog', 'scratch', 'banks'].includes(params.get('collection')) ? params.get('collection') : '');
 const search = ref(''), filter = ref(picking ? pickType : ''), uploadType = ref('sprite');
 const items = ref([]), cursor = ref(''), status = ref(''), drag = ref(false);
 const filesInput = ref(null), dialog = ref(null), previewUrl = ref(''), previewName = ref('');
@@ -127,7 +128,7 @@ async function recheckSession() {
   finally { checkingSession = false; }
 }
 function pagehide(event) { if (!event.persisted) { listGeneration++; items.value = []; clearPreview(); } }
-provide('rebost', {api, t, locale, authenticated, picking, familySelection, types, run, refresh, chooseCollection, preview, select, download, report});
+provide('rebost', {api, t, locale, authenticated, picking, pickType, familySelection, types, run, refresh, chooseCollection, preview, select, download, report});
 onMounted(async () => {
   document.body.classList.toggle('picking', picking);
   window.addEventListener('edutictac:langchange', language);
@@ -140,6 +141,8 @@ onMounted(async () => {
     try { profile = await api.me(); authenticated.value = true; }
     catch (error) { if (error.status !== 401) throw error; profile = await api.catalogs(); }
     capabilities.value = profile.capabilities;
+    if (typeof profile.bank_search_url === 'string' && profile.bank_search_url) bankUrl.value = profile.bank_search_url;
+    if (collection.value === 'banks' && !bankUrl.value) collection.value = '';
     if (!collection.value) collection.value = authenticated.value ? 'mine' : 'catalog';
     if ((collection.value === 'catalog' && !capabilities.value.includes('catalog')) || (collection.value === 'scratch' && !capabilities.value.includes('scratch_catalog'))) collection.value = 'mine';
     active.value = true; await refresh();
@@ -175,7 +178,7 @@ onBeforeUnmount(() => {
       <p id="intro" class="teacher-intro">{{ t('rebost.intro') }}</p>
     </div>
     <p id="status" :class="{success: ['success', 'image_saved'].includes(status), error: status && !['success', 'image_saved', 'working'].includes(status)}" role="status" aria-live="polite">{{ status ? t('rebost.' + status) : '' }}</p>
-    <section id="access" class="panel" :hidden="!active || authenticated || (picking && collection !== 'mine')">
+    <section id="access" class="panel" :hidden="!active || authenticated || (picking && !['mine', 'banks'].includes(collection))">
       <p id="accessHint">{{ t('rebost.access') }}</p>
       <div class="actions"><a class="button-link secondary" id="studentLogin" href="/student.html?next=%2Fassets%2F" :target="picking ? '_blank' : undefined" rel="noopener noreferrer">{{ t('rebost.student') }}</a>
       <a class="button-link" id="oidcLogin" href="/api/auth/oidc/login?next=%2Fassets%2F" :target="picking ? '_blank' : undefined" rel="noopener noreferrer">{{ t('rebost.oidc') }}</a></div>
@@ -189,7 +192,7 @@ onBeforeUnmount(() => {
           <button id="banksTab" class="secondary" type="button" :hidden="!bankUrl" :aria-pressed="collection === 'banks'" @click="run(() => chooseCollection('banks'))">{{ t('rebost.banks') }}</button>
           <button id="scratchTab" class="secondary" type="button" :hidden="!capabilities.includes('scratch_catalog')" :aria-pressed="collection === 'scratch'" @click="run(() => chooseCollection('scratch'))">{{ t('rebost.scratch') }}</button>
         </div>
-        <p id="collectionHint">{{ picking ? t('rebost.pickHint') : collection === 'mine' ? t('rebost.privateHint') : collection === 'banks' ? t('rebost.banksHint') : collection === 'scratch' ? t('rebost.scratchHint') : t('rebost.catalogHint') }}</p>
+        <p id="collectionHint">{{ collection === 'banks' ? t('rebost.banksHint') : picking ? t('rebost.pickHint') : collection === 'mine' ? t('rebost.privateHint') : collection === 'scratch' ? t('rebost.scratchHint') : t('rebost.catalogHint') }}</p>
         <div id="uploadArea" :hidden="picking || collection !== 'mine' || !authenticated">
           <section id="drop" tabindex="0" role="button" :aria-label="t('rebost.upload')" :class="{drag}" @click="openFiles" @keydown.self.enter.prevent="openFiles" @keydown.self.space.prevent="openFiles" @dragenter.prevent="drag = true" @dragover.prevent="drag = true" @dragleave="drag = false" @drop.prevent="dropped">
             <strong id="uploadText">{{ t('rebost.upload') }}</strong><p id="formats">{{ t('rebost.formats') }}</p>
@@ -202,7 +205,7 @@ onBeforeUnmount(() => {
           <label><span id="filterLabel">{{ t('rebost.filter') }}</span><select id="filter" v-model="filter" @change="run(() => refresh())"><option v-for="value in filterTypes" :key="value" :value="value">{{ value ? t('rebost.' + value) : t('rebost.all') }}</option></select></label>
         </div>
       </div>
-      <BanksPanel v-if="collection === 'banks' && bankUrl" />
+      <BanksPanel v-if="collection === 'banks' && bankUrl" :base="bankUrl" />
       <p id="empty" :hidden="locked || collection === 'banks' || items.length > 0 || busy">{{ t('rebost.empty') }}</p>
       <section id="grid" :aria-label="title" :hidden="locked || collection === 'banks'"><AssetCard v-for="item in items" :key="item.id" :item="item" /></section>
       <button id="more" type="button" :hidden="locked || collection === 'banks' || !cursor" @click="run(() => refresh(true))">{{ t('rebost.more') }}</button>

@@ -1,6 +1,8 @@
 """Sons al Rebost: validació, privacitat i convivència amb les imatges."""
 from urllib.parse import quote
 
+import pytest
+
 from test_rebost import api, image, path, upload  # noqa: F401
 
 OGG = b'OggS\x00\x02' + b'\x00' * 64
@@ -93,3 +95,33 @@ def test_sound_credit_and_license_are_stored(api):
     effect = a.get('/api/assets/v1/items', params={'collection': 'effects', 'limit': 1}).json()['items'][0]
     copy = a.post(path(effect) + '/copies', headers={'If-Match': f'"{effect["revision"]}"'}).json()
     assert copy['license'] == 'CC0-1.0' and copy['credit'].startswith('Kenney')
+
+
+def _library_with_bank_url(api, monkeypatch, value):
+    module, client, *_ = api
+    monkeypatch.setattr(module.rebost, 'bank_search_url', value)
+    return client
+
+
+def test_bank_search_url_is_announced_to_every_client(api, monkeypatch):
+    client = _library_with_bank_url(api, monkeypatch, 'https://crea.example.test')
+    me = client.get('/api/assets/v1/me').json()
+    assert me['bank_search_url'] == 'https://crea.example.test' and 'external_banks' in me['capabilities']
+    catalogs = client.get('/api/assets/v1/catalogs').json()
+    assert catalogs['bank_search_url'] == 'https://crea.example.test' and 'external_banks' in catalogs['capabilities']
+
+
+def test_without_bank_search_url_nothing_is_announced(api):
+    _, client, *_ = api
+    for path in ('/api/assets/v1/me', '/api/assets/v1/catalogs'):
+        data = client.get(path).json()
+        assert 'bank_search_url' not in data and 'external_banks' not in data['capabilities']
+
+
+@pytest.mark.parametrize('value', ['http://crea.example.test', 'https://crea.example.test/api', 'https://u:p@crea.example.test',
+                                   'https://crea.example.test?x=1', 'crea.example.test'])
+def test_invalid_bank_search_url_is_refused_at_startup(api, monkeypatch, value):
+    module, *_ = api
+    monkeypatch.setenv('REBOST_BANK_SEARCH_URL', value)
+    with pytest.raises(ValueError):
+        type(module.rebost)(module.rebost.connect, module.rebost.db_path, module.rebost.oidc, module.rebost.student)

@@ -144,6 +144,13 @@ class Library:
             parsed = urlsplit(self.public_origin)
             if parsed.scheme not in {"http", "https"} or not parsed.hostname or parsed.path or parsed.query or parsed.fragment or parsed.username:
                 raise ValueError("Invalid Rebost public origin configuration")
+        # URL pública de l'API de bancs d'imatges (EduCrea). El selector la rep del servidor, de manera que
+        # les aplicacions que l'incrusten (Llibres, Blocs) no necessiten cap configuració pròpia.
+        self.bank_search_url = os.environ.get("REBOST_BANK_SEARCH_URL", "").rstrip("/")
+        if self.bank_search_url:
+            parsed = urlsplit(self.bank_search_url)
+            if parsed.scheme != "https" or not parsed.hostname or parsed.path or parsed.query or parsed.fragment or parsed.username:
+                raise ValueError("Invalid Rebost bank search URL configuration")
         self.global_limit = int(os.environ.get("REBOST_MAX_BYTES", str(2 * 1024 ** 3)))
         self.disk_reserve = int(os.environ.get("REBOST_DISK_RESERVE", str(256 * 1024 ** 2)))
         with closing(connect()) as db, db:
@@ -317,16 +324,20 @@ class Library:
             self.write_provenance(db, asset_id, provenance)
             return self.metadata(self.row(db, owner, asset_id))
 
+    def bank_info(self):
+        return {"bank_search_url": self.bank_search_url} if self.bank_search_url else {}
+
     def router(self):
         router = APIRouter(prefix="/api/assets/v1", tags=["Rebost"])
 
         @router.get("/catalogs")
         def catalogs():
             return {
-                "capabilities": ["catalog", "scratch_catalog", "asset_families"],
+                "capabilities": ["catalog", "scratch_catalog", "asset_families", *(["external_banks"] if self.bank_search_url else [])],
                 "catalog_items": sum(item["metadata"]["collection"] == "catalog" for item in self.catalogue.items.values()),
                 "scratch_items": sum(item["metadata"]["collection"] == "scratch" for item in self.catalogue.items.values()),
                 "scratch_families": len(self.catalogue.families),
+                **self.bank_info(),
                 "effect_items": sum(item["metadata"]["collection"] == "effects" for item in self.catalogue.items.values()),
             }
 
@@ -334,7 +345,9 @@ class Library:
         def me(request: Request):
             self.principal(request)
             return {
-                "capabilities": ["private_library", "catalog", "scratch_catalog", "asset_families", "derived_upload", "sounds"],
+                "capabilities": ["private_library", "catalog", "scratch_catalog", "asset_families", "derived_upload", "sounds",
+                                 *(["external_banks"] if self.bank_search_url else [])],
+                **({"bank_search_url": self.bank_search_url} if self.bank_search_url else {}),
                 "catalog_items": sum(item["metadata"]["collection"]=="catalog" for item in self.catalogue.items.values()),
                 "scratch_items": sum(item["metadata"]["collection"]=="scratch" for item in self.catalogue.items.values()),
                 "scratch_families": len(self.catalogue.families),

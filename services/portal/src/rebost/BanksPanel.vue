@@ -4,8 +4,9 @@ import {computed, inject, onBeforeUnmount, reactive, ref} from 'vue';
 // Search of the free image banks through EduCrea (the banks live in its API, not in Commons). The teacher's EduCrea
 // session cookie travels with every request (same site); EduCrea only answers GET reads for this origin.
 const app = inject('rebost');
-const {api, t, locale, authenticated, run, report} = app;
-const base = String(window.commonsDeployment?.bankSearchUrl || '').replace(/\/$/, '');
+const {api, t, locale, authenticated, picking, pickType, select, run, report} = app;
+const props = defineProps({base: {type: String, required: true}});
+const base = props.base.replace(/\/$/, '');
 const BANKS = [
   {id: 'arasaac', name: 'ARASAAC', nc: true}, {id: 'wikimedia', name: 'Wikimedia Commons'}, {id: 'met', name: 'The Met'},
   {id: 'icons', name: 'Iconos y emojis'}, {id: 'openverse', name: 'Openverse'},
@@ -74,8 +75,11 @@ async function save(item) {
       const blob = await (await get(`/api/image-banks/${item.provider}/${encodeURIComponent(item.id)}/content`)).blob();
       const type = blob.type.split(';')[0];
       if (!['image/png', 'image/jpeg', 'image/webp'].includes(type)) throw new Error('image_format');
-      await api.add(new File([blob], 'image', {type}), (item.title || 'Imatge').slice(0, 200), 'illustration', item.credit || '', item.license || '');
+      const title = (item.title || 'Imatge').slice(0, 200);
+      // Inside Llibres or Blocs the image is saved and handed straight to the app that opened the picker.
+      const created = await api.add(new File([blob], 'image', {type}), title, picking && pickType === 'background' ? 'background' : 'illustration', item.credit || '', item.license || '');
       saved.value = new Set(saved.value).add(key(item));
+      if (picking) { select(created, title, false); return ''; }
       return t('rebost.banksSaved');
     } catch (error) {
       if (error.status === 401) return report(error);
@@ -110,7 +114,7 @@ onBeforeUnmount(() => { controller?.abort(); generation++; clearThumbs(); });
           <p class="credit"><span v-if="!isFree(item.license)" class="nc-badge" :title="t('rebost.banksNcTitle')">NC</span> {{ item.license }}
             <template v-if="item.source_url"> · <a :href="item.source_url" target="_blank" rel="noopener noreferrer">{{ group.name }}</a></template></p>
           <div class="actions"><button type="button" :disabled="savingId === key(item) || saved.has(key(item))" @click="save(item)">
-            {{ saved.has(key(item)) ? t('rebost.banksSaved') : t('rebost.banksSave') }}</button></div>
+            {{ saved.has(key(item)) ? t('rebost.banksSaved') : picking ? t('rebost.banksSaveChoose') : t('rebost.banksSave') }}</button></div>
         </article>
       </div>
       <button v-if="group.items.length > PER_BANK && !expanded.has(group.id)" type="button" class="secondary" @click="more(group)">
