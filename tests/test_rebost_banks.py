@@ -107,7 +107,7 @@ def test_wikimedia_drops_non_free_and_met_needs_public_domain(banks_api):
     routes['https://commons.wikimedia.org/w/api.php'] = j({'query': {'pages': {'1': page(1, 'CC BY-SA 4.0'), '2': page(2, 'CC BY-NC 2.0'), '3': page(3, 'CC BY-ND 2.0')}}})
     items = client.get('/api/assets/v1/banks/wikimedia/search?q=x').json()['items']
     assert [i['id'] for i in items] == [1] and 'Eva' in items[0]['credit']
-    routes['https://collectionapi.metmuseum.org/public/collection/v1/search'] = j({'objectIDs': [10, 11]})
+    routes['https://collectionapi.metmuseum.org/public/collection/v1.1/search'] = j({'objectIDs': [10, 11]})
     routes['https://collectionapi.metmuseum.org/public/collection/v1/objects/10'] = j({'objectID': 10, 'isPublicDomain': True, 'primaryImageSmall': 'https://images.example/a.jpg', 'title': 'A'})
     routes['https://collectionapi.metmuseum.org/public/collection/v1/objects/11'] = j({'objectID': 11, 'isPublicDomain': False, 'primaryImageSmall': 'https://images.example/b.jpg'})
     assert [i['id'] for i in client.get('/api/assets/v1/banks/met/search?q=x').json()['items']] == [10]

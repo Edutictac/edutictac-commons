@@ -33,7 +33,8 @@ OPENVERSE_LICENSES = {"cc0", "by", "by-sa"}
 WIKIMEDIA_API = "https://commons.wikimedia.org/w/api.php"
 WIKIMEDIA_LICENSE_URL = "https://commons.wikimedia.org/wiki/Commons:Licensing"
 MET_API = "https://collectionapi.metmuseum.org/public/collection/v1"
-MET_LICENSE = "CC0 1.0 (domini públic)"
+MET_SEARCH_API = "https://collectionapi.metmuseum.org/public/collection/v1.1/search"
+MET_LICENSE = "CC0 1.0 (dominio público)"
 MET_LICENSE_URL = "https://creativecommons.org/publicdomain/zero/1.0/"
 
 ICONS, OPENVERSE_AUDIO = "icons", "openverse-audio"
@@ -59,14 +60,14 @@ ICON_SETS = {
 PROVIDERS = [
     {"id": ARASAAC, "name": "ARASAAC", "license": ARASAAC_LICENSE, "license_url": ARASAAC_LICENSE_URL,
      "commercial_use": False},
-    {"id": WIKIMEDIA, "name": "Wikimedia Commons", "license": "Llicències lliures",
+    {"id": WIKIMEDIA, "name": "Wikimedia Commons", "license": "Licencias libres",
      "license_url": WIKIMEDIA_LICENSE_URL, "commercial_use": True},
     {"id": MET, "name": "The Met", "license": MET_LICENSE, "license_url": MET_LICENSE_URL, "commercial_use": True},
-    {"id": OPENVERSE, "name": "Openverse", "license": "CC0, CC BY i CC BY-SA",
+    {"id": OPENVERSE, "name": "Openverse", "license": "CC0, CC BY y CC BY-SA",
      "license_url": "https://openverse.org", "commercial_use": True},
-    {"id": ICONS, "name": "Icones i emojis", "license": "MIT, ISC i CC BY-SA 4.0 (OpenMoji)",
+    {"id": ICONS, "name": "Iconos y emojis", "license": "MIT, ISC y CC BY-SA 4.0 (OpenMoji)",
      "license_url": "https://iconify.design/docs/icons/", "commercial_use": True},
-    {"id": OPENVERSE_AUDIO, "name": "Openverse (so)", "license": "CC0, CC BY i CC BY-SA",
+    {"id": OPENVERSE_AUDIO, "name": "Openverse (sonidos)", "license": "CC0, CC BY y CC BY-SA",
      "license_url": "https://openverse.org", "commercial_use": True, "kind": "sound"},
 ]
 
@@ -75,7 +76,7 @@ _terms: dict[str, list[str]] | None = None
 
 
 def icon_terms() -> dict[str, list[str]]:
-    """Paraules en castellà i valencià (sense accents) -> termes en anglès que Iconify entén."""
+    """Palabras en castellano y valenciano (sin tildes) -> términos en inglés que Iconify entiende."""
     global _terms
     if _terms is None:
         table: dict[str, list[str]] = {}
@@ -257,7 +258,7 @@ class Banks:
             pageid = page.get("pageid") if isinstance(page, dict) else None
             if not pageid or mime not in ("image/jpeg", "image/png") or not (info.get("url") or info.get("thumburl")):
                 continue
-            licence = self.wiki_meta(info, "LicenseShortName") or "Llicència lliure"
+            licence = self.wiki_meta(info, "LicenseShortName") or "Licencia libre"
             if NON_FREE.search(licence):
                 continue
             title = plain(page.get("title") or text).removeprefix("File:") or text
@@ -298,7 +299,7 @@ class Banks:
         return obj
 
     def search_met(self, text: str, lang: str) -> dict:
-        data = get_json(f"{MET_API}/search", {"q": text, "hasImages": "true", "isPublicDomain": "true"})
+        data = get_json(MET_SEARCH_API, {"q": text, "hasImages": "true", "limit": 12})
         items = []
         for identifier in ((data.get("objectIDs") or []) if isinstance(data, dict) else [])[:12]:
             try:
@@ -325,7 +326,7 @@ class Banks:
     @staticmethod
     def ov_license(row: dict) -> str:
         code, version = str(row.get("license") or "").strip().lower(), str(row.get("license_version") or "").strip()
-        return "CC0 1.0" if code == "cc0" else (f"CC {code.upper()} {version}".strip() if code else "Llicència Creative Commons")
+        return "CC0 1.0" if code == "cc0" else (f"CC {code.upper()} {version}".strip() if code else "Licencia Creative Commons")
 
     def search_openverse(self, text: str, lang: str) -> dict:
         params = {"q": text, "page_size": 20, "license_type": "commercial", "mature": "false", "language": lang}
@@ -355,14 +356,7 @@ class Banks:
         return self.envelope(OPENVERSE, items)
 
     def openverse_urls(self, identifier: str, size: int):
-        if not UUID.match(identifier):
-            raise BankError(422, "bank_invalid_id")
-        row = self.recall(OPENVERSE, identifier)
-        if row is None:
-            row = get_json(f"{OPENVERSE_API}{identifier}/")
-            if not isinstance(row, dict) or str(row.get("license") or "").lower() not in OPENVERSE_LICENSES:
-                raise BankError(404, "bank_not_found")
-            self.remember(OPENVERSE, identifier, row)
+        row = self.openverse_row(identifier)
         return [row.get("thumbnail")] if size <= 300 else [row.get("url"), row.get("thumbnail")]
 
     # --- Icones (Iconify) ---
@@ -411,7 +405,7 @@ class Banks:
 
     def search_sounds(self, text: str, lang: str, max_seconds: int = DEFAULT_SOUND_SECONDS) -> dict:
         max_ms = max(1, min(int(max_seconds), SOUND_MAX_SECONDS)) * 1000
-        data = get_json(SOUND_API, {"q": text, "page_size": 20, "license": "cc0,by,by-sa", "source": SOUND_SOURCES,
+        data = get_json(SOUND_API, {"q": text, "page_size": 20, "license": ",".join(sorted(OPENVERSE_LICENSES)), "source": SOUND_SOURCES,
                                     "mature": "false"})
         items = []
         for row in (data.get("results") or []) if isinstance(data, dict) else []:
@@ -423,7 +417,7 @@ class Banks:
             credit = plain(row.get("attribution")) or " · ".join(part for part in (
                 plain(row.get("creator")), licence, plain(row.get("source"))) if part)
             tags = [plain(tag.get("name")) for tag in (row.get("tags") or []) if isinstance(tag, dict) and plain(tag.get("name"))]
-            item = self.item(OPENVERSE_AUDIO, identifier, plain(row.get("title")) or "So", tags, licence,
+            item = self.item(OPENVERSE_AUDIO, identifier, plain(row.get("title")) or "Sonido", tags, licence,
                              str(row.get("license_url") or "https://openverse.org"),
                              str(row.get("foreign_landing_url") or row.get("detail_url") or "https://openverse.org"),
                              credit, "audio/mpeg")
@@ -434,13 +428,66 @@ class Banks:
         return self.envelope(OPENVERSE_AUDIO, items)
 
     def sound(self, identifier: str) -> tuple[bytes, str]:
-        if not UUID.match(identifier):
-            raise BankError(422, "bank_invalid_id")
-        row = self.recall(OPENVERSE_AUDIO, identifier)
-        if row is None:
-            row = get_json(f"{SOUND_API}{identifier}/")
-            if not self.sound_usable(row, 10 ** 9):
-                raise BankError(404, "bank_not_found")
-            self.remember(OPENVERSE_AUDIO, identifier, row)
+        row = self.openverse_row(identifier, audio=True)
         _, data = safe_get(str(row["url"]), limit=self.max_sound_bytes, allow=sound_host_ok)
         return data, sniff_sound(data)
+
+    # --- Importación (descarga completa + crédito), para aplicaciones que guardan el recurso en el servidor ---
+    def credit_of(self, provider: str, identifier) -> str:
+        """Crédito de un recurso. Las búsquedas dejan los metadatos en caché; si faltan, se piden al proveedor."""
+        identifier = str(identifier)
+        if provider == ARASAAC:
+            if not identifier.isdigit() or not 0 < int(identifier) <= 10_000_000:
+                raise BankError(422, "bank_invalid_id")
+            return f"{ARASAAC_CREDIT} · {ARASAAC_SOURCE.format(identifier=int(identifier))}"[:300]
+        if provider == ICONS:
+            match = ICON_ID.match(identifier)
+            if not match or match.group("prefix") not in ICON_SETS:
+                raise BankError(422, "bank_invalid_id")
+            label, author, licence, _ = ICON_SETS[match.group("prefix")]
+            return f"{label} · {author} · {licence} · Iconify"[:300]
+        if provider == WIKIMEDIA:
+            list(self.wikimedia_urls(identifier, 500))  # rellena la caché
+            info = self.recall(WIKIMEDIA, identifier) or {}
+            artist = self.wiki_meta(info, "Artist") or "Wikimedia Commons"
+            licence = self.wiki_meta(info, "LicenseShortName") or "Licencia libre"
+            return f"{artist} · {licence} · Wikimedia Commons"[:300]
+        if provider == MET:
+            obj = self.met_object(identifier)
+            artist = plain(obj.get("artistDisplayName")) or "The Metropolitan Museum of Art"
+            date = plain(obj.get("objectDate"))
+            return (f"{artist} · {MET_LICENSE} · The Met" + (f" · {date}" if date else ""))[:300]
+        if provider in (OPENVERSE, OPENVERSE_AUDIO):
+            row = self.openverse_row(identifier, audio=provider == OPENVERSE_AUDIO)
+            return self.openverse_credit(row)
+        raise BankError(422, "bank_provider")
+
+    def title_of(self, provider: str, identifier) -> str:
+        if provider in (OPENVERSE, OPENVERSE_AUDIO):
+            row = self.openverse_row(str(identifier), audio=provider == OPENVERSE_AUDIO)
+            return plain(row.get("title"))[:300]
+        return ""
+
+    def import_asset(self, provider: str, identifier) -> tuple[bytes, str, str, str]:
+        """(bytes, tipo MIME, crédito, título) del recurso completo; los iconos llegan como SVG saneado."""
+        data, media_type = self.image(provider, str(identifier), 500)
+        return data, media_type, self.credit_of(provider, identifier), self.title_of(provider, identifier)
+
+    def openverse_row(self, identifier: str, audio: bool = False) -> dict:
+        provider = OPENVERSE_AUDIO if audio else OPENVERSE
+        if not UUID.match(identifier):
+            raise BankError(422, "bank_invalid_id")
+        row = self.recall(provider, identifier)
+        if row is None:
+            row = get_json(f"{SOUND_API if audio else OPENVERSE_API}{identifier}/")
+            valid = self.sound_usable(row, 10 ** 9) if audio else (
+                isinstance(row, dict) and str(row.get("license") or "").lower() in OPENVERSE_LICENSES)
+            if not valid:
+                raise BankError(404, "bank_not_found")
+            self.remember(provider, identifier, row)
+        return row
+
+    def openverse_credit(self, row: dict) -> str:
+        licence = self.ov_license(row)
+        return (plain(row.get("attribution")) or " · ".join(part for part in (
+            plain(row.get("creator")), licence, plain(row.get("source"))) if part))[:300]
