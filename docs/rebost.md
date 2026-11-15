@@ -26,7 +26,7 @@ aislados. [Configuración, pruebas y límites del acceso compartido](rebost-comm
   Redux, Scratch y Blocs: `@edutictac/rebost-client` (repositorio propio, MIT, `git.edutictac.es/Edutictac/edutictac-rebost-client`),
   copiado sin cambios en `services/portal/public/assets/client.js` y `rebost-selection.js` con
   `scripts/sync-rebost-client.sh`. No se editan aquí. Contrato del selector: `docs/CONTRACT.md` del paquete.
-  CORS del Rebost: `REBOST_ALLOWED_ORIGINS`; si está vacío se usa la lista central `EDUTICTAC_ID_ALLOWED_ORIGINS`.
+  Orígenes y proxies: una sola lista, `EDUTICTAC_ID_ALLOWED_ORIGINS` (`REBOST_ALLOWED_ORIGINS` solo la estrecha): [rebost-origins.md](rebost-origins.md).
 - Almacenamiento de metadatos y bytes en la SQLite existente `EDUTICTAC_ID_DB` (`/data/id.db`
   en Compose). No se añade contenedor, puerto ni base de datos al stack.
 

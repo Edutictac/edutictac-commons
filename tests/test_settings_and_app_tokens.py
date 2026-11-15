@@ -68,3 +68,17 @@ def test_app_token_is_scoped_per_application():
         auth.require_app_token(request('global-token'), 'edutictac-play')
     with pytest.raises(HTTPException):
         auth.require_app_token(request('play-token'), 'eduhoot')
+
+
+def test_one_origin_list_serves_sessions_and_rebost():
+    """EDUTICTAC_ID_ALLOWED_ORIGINS is the single list; REBOST_ALLOWED_ORIGINS only overrides it on purpose."""
+    base = {'EDUTICTAC_ID_ALLOWED_ORIGINS': 'https://crea.example.test, https://llibres.example.test/'}
+    shared = Settings.from_env(base)
+    assert shared.allowed_origins == ('https://crea.example.test', 'https://llibres.example.test')
+    assert shared.rebost_allowed_origins == shared.allowed_origins
+    narrowed = Settings.from_env({**base, 'REBOST_ALLOWED_ORIGINS': 'https://crea.example.test'})
+    assert narrowed.rebost_allowed_origins == ('https://crea.example.test',)
+    assert narrowed.allowed_origins == shared.allowed_origins
+    assert Settings.from_env({}).rebost_allowed_origins == ()
+    with pytest.raises(ValueError):
+        Settings.from_env({'EDUTICTAC_ID_ALLOWED_ORIGINS': 'https://*.example.test'})

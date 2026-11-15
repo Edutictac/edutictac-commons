@@ -121,3 +121,20 @@ def test_size_signature_validation_limits_and_errors(banks_api, monkeypatch):
     monkeypatch.setattr(banks, 'RATE_PER_MINUTE', 3)
     codes = [client.get('/api/assets/v1/banks').status_code for _ in range(5)]
     assert codes[-1] == 429
+
+
+def test_banks_use_the_rebost_cors_policy(banks_api):
+    """Same list as the rest of the Rebost: an allowed origin may read banks with credentials, others may not."""
+    module, client, _, routes, calls, banks = banks_api
+    origins = ('https://educrea.test',)
+    module.rebost.allowed_origins = origins
+    module.commons.settings.rebost_allowed_origins = origins
+    routes['https://api.arasaac.org/api/pictograms/es/search/sol'] = j([])
+    ok = client.get('/api/assets/v1/banks/arasaac/search?q=sol', headers={'Origin': origins[0]})
+    assert ok.status_code == 200
+    assert ok.headers['access-control-allow-origin'] == origins[0]
+    assert ok.headers['access-control-allow-credentials'] == 'true'
+    pre = client.options('/api/assets/v1/banks/arasaac/search', headers={'Origin': origins[0], 'Access-Control-Request-Method': 'GET'})
+    assert pre.status_code == 204
+    other = client.get('/api/assets/v1/banks/arasaac/search?q=sol', headers={'Origin': 'https://other.test'})
+    assert 'access-control-allow-origin' not in other.headers
