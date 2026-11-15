@@ -95,7 +95,7 @@ onBeforeUnmount(() => { controller?.abort(); generation++; clearThumbs(); });
       <label class="banks-free"><input v-model="freeOnly" type="checkbox"> {{ t('rebost.banksFreeOnly') }}</label>
       <button type="submit" :disabled="searching || !query.trim()">{{ searching ? t('rebost.banksSearching') : t('rebost.search') }}</button>
     </form>
-    <p class="banks-note">{{ t('rebost.banksNcNote') }} {{ searching ? t('rebost.banksSlow') : '' }}</p>
+    <p v-if="searching" class="banks-note">{{ t('rebost.banksSlow') }}</p>
     <p v-if="loginNeeded" class="banks-login" role="alert">{{ t('rebost.banksLogin') }}
       <a class="button-link secondary" :href="base" target="_blank" rel="noopener noreferrer">{{ t('rebost.banksOpenEducrea') }}</a></p>
     <p v-if="message" role="status">{{ message }}</p>
