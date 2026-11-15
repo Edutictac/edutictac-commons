@@ -81,8 +81,8 @@ test('saves a bank image into the personal Rebost with its credit and licence', 
   const card = page.locator('#banks .bank-card', {hasText: 'home'});
   await expect(card).toHaveCount(1);
   await card.locator('button').click();
-  await expect(card.locator('button')).toBeDisabled();
-  expect(mock.saves).toHaveLength(1);
+  await expect.poll(() => mock.saves.length).toBe(1);
+  await expect(card.locator('button')).toBeDisabled(); // stays disabled once saved
   const headers = mock.saves[0];
   expect(headers['x-rebost-type']).toBe('illustration');
   expect(decodeURIComponent(headers['x-rebost-credit'])).toBe('Autoria icons');
