@@ -1,6 +1,6 @@
 # EduTicTac Commons Stack Local
 
-Versió publicada d'imatges: [0.1.1-beta6.4](releases/0.1.1-beta6.4/README.md).
+Preparada per a publicar: [0.1.1-beta6.5](releases/0.1.1-beta6.5/README.md), amb sons i bancs externs al Rebost. Versió publicada d'imatges: [0.1.1-beta6.4](releases/0.1.1-beta6.4/README.md).
 Instal·lador amd64 publicat per a LliureX, Ubuntu i Debian: `0.1.1~beta6.4`.
 La beta6.4 incorpora el control administratiu del trasllat.
 En instal·lacions noves, el trasllat comença activat; Admin pot apagar-lo.

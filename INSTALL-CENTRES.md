@@ -3,7 +3,7 @@
 Per a instal·lar el paquet sense preparar un entorn de desenvolupament,
 comença per la [guia bàsica d’instal·lació](docs/INSTALACION-RAPIDA.md).
 
-Entrega: [Commons 0.1.1-beta6.4](releases/0.1.1-beta6.4/README.md), publicada
+Entrega: [Commons 0.1.1-beta6.5](releases/0.1.1-beta6.5/README.md), preparada per a publicar
 en el repositori APT i el registre d'imatges. La versió anterior és la
 beta6.3. El paquet amd64 descarrega les
 imatges; en instal·lacions noves, el trasllat xifrat d'aules comença activat
