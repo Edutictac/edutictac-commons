@@ -79,3 +79,17 @@ def test_effects_catalogue_is_public_readonly_and_copyable(api):
     assert copy.status_code == 201 and copy.json()['type'] == 'sound' and copy.json()['collection'] == 'mine'
     assert a.get(path(copy.json()) + '/license').status_code == 200
     assert a.delete(path(item), headers={'If-Match': f'"{item["revision"]}"'}).status_code in {403, 404}
+
+
+def test_sound_credit_and_license_are_stored(api):
+    _, a, _, _ = api
+    headers = {'Content-Type': 'audio/ogg', 'X-Rebost-Name': quote('Gos'), 'X-Rebost-Type': 'sound',
+               'X-Rebost-Credit': quote('Autoria: Ñu — Freesound'), 'X-Rebost-License': quote('CC BY 4.0')}
+    item = a.post('/api/assets/v1/items', content=OGG, headers=headers).json()
+    assert item['credit'] == 'Autoria: Ñu — Freesound' and item['license'] == 'CC BY 4.0'
+    headers['X-Rebost-Credit'] = quote('x' * 301)
+    assert a.post('/api/assets/v1/items', content=OGG, headers=headers).status_code == 422
+    # Un so copiat dels efectes conserva l'autoria i la llicència CC0.
+    effect = a.get('/api/assets/v1/items', params={'collection': 'effects', 'limit': 1}).json()['items'][0]
+    copy = a.post(path(effect) + '/copies', headers={'If-Match': f'"{effect["revision"]}"'}).json()
+    assert copy['license'] == 'CC0-1.0' and copy['credit'].startswith('Kenney')
