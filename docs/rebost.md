@@ -321,7 +321,9 @@ servidor y mantiene `REBOST_BANK_SEARCH_URL` (EduCrea) como alternativa para ser
 
 Garantías: sin sesión no hay ninguna petición de salida; solo se consultan los anfitriones fijos de cada
 proveedor y las URL de imagen que estos devuelven pasan por https:443, direcciones públicas y redirecciones
-revalidadas (máx. 3); firma y tamaño comprobados (2 MiB miniatura, 4 MiB contenido); licencias NC/ND fuera de
+revalidadas (máx. 3). **Anti DNS rebinding:** cada salto resuelve el nombre una sola vez, rechaza la respuesta si alguna
+dirección no es pública y conecta a esa misma IP, con `Host` y SNI del nombre (el certificado se verifica contra el nombre,
+no contra la IP); un DNS que cambie de respuesta después de la comprobación no puede redirigir la conexión; firma y tamaño comprobados (2 MiB miniatura, 4 MiB contenido); licencias NC/ND fuera de
 los bancos mixtos (ARASAAC, CC BY-NC-SA, se etiqueta); 120 peticiones por minuto y principal. Los errores
 llevan un código estable (`bank_unavailable`, `bank_timeout`, `bank_too_large`, `bank_rate_limited`…). No
 activar en instalaciones de centro sin salida a Internet ni sin haber informado de la consulta externa.

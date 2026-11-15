@@ -11,7 +11,8 @@ manera que Commons no necessita cap llibreria nativa de rasterització.
 
 Garanties:
 - només es consulten els amfitrions fixos de cada proveïdor; les URL de descàrrega que torna un proveïdor
-  se sotmeten a les regles de `safe_get` (https, port 443, només adreces públiques, redireccions revalidades);
+  se sotmeten a les regles de `safe_get` (https, port 443, només adreces públiques, redireccions revalidades i
+  connexió a la IP ja comprovada, contra el rebinding de DNS);
 - només s'accepten PNG, JPEG i WebP, comprovats per signatura i amb límit de mida;
 - les licencies no lliures (NC, ND) s'exclouen dels bancs mixtos; ARASAAC (CC BY-NC-SA) s'etiqueta;
 - cada principal té un límit de peticions per minut.
@@ -121,30 +122,40 @@ def resolve(host: str):
     return socket.getaddrinfo(host, 443, type=socket.SOCK_STREAM)
 
 
-def check_url(url: str) -> str:
-    """Accepta només https:443 cap a adreces públiques."""
+def check_url(url: str) -> tuple[str, str]:
+    """Accepta només https:443 cap a adreces públiques. Torna (URL, IP fixada): la mateixa resolució es fa servir per
+    connectar, de manera que un DNS que canvie de resposta entre la comprovació i la connexió (rebinding) no hi pot fer res."""
     parts = urlsplit(str(url))
     if parts.scheme != "https" or not parts.hostname or parts.username or parts.password or parts.port not in (None, 443):
         raise BankError(502, "bank_unavailable")
     try:
-        addresses = {info[4][0] for info in resolve(parts.hostname)}
+        addresses = [info[4][0] for info in resolve(parts.hostname)]
     except OSError as exc:
         raise BankError(502, "bank_unavailable") from exc
-    if not addresses or not all(ipaddress.ip_address(address).is_global for address in addresses):
+    try:
+        public = bool(addresses) and all(ipaddress.ip_address(address).is_global for address in addresses)
+    except ValueError as exc:
+        raise BankError(502, "bank_unavailable") from exc
+    if not public:
         raise BankError(502, "bank_unavailable")
-    return parts.geturl()
+    return parts.geturl(), addresses[0]
 
 
 def safe_get(url: str, *, params: dict | None = None, limit: int | None = None, accept: str = "*/*", allow=None) -> tuple[httpx.Response, bytes]:
-    """GET amb redireccions manuals (màx. 3), cada salt revalidat. Torna la resposta i el cos (limitat)."""
+    """GET amb redireccions manuals (màx. 3), cada salt revalidat i connectat a la IP ja comprovada.
+    Torna la resposta i el cos (limitat)."""
     current = url
     try:
         with http_client() as http:
             for _hop in range(4):
-                target = check_url(current)
+                target, address = check_url(current)
                 if allow is not None and not allow(target):
                     raise BankError(502, "bank_unavailable")
-                with http.stream("GET", target, params=params if current == url else None, headers={"Accept": accept}) as response:
+                host = urlsplit(target).hostname
+                # Connexió a la IP validada; Host i SNI porten el nom, així que el certificat es verifica contra el nom.
+                pinned = httpx.URL(target).copy_with(host=address)
+                with http.stream("GET", pinned, params=params if current == url else None, headers={"Accept": accept, "Host": host},
+                                 extensions={"sni_hostname": host}) as response:
                     if response.status_code in (301, 302, 303, 307, 308) and response.headers.get("location"):
                         current = str(httpx.URL(target).join(response.headers["location"]))
                         continue

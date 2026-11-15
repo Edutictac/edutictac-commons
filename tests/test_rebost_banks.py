@@ -17,16 +17,22 @@ def banks_api(monkeypatch, request):
     import assets.banks as banks
     calls = []
     routes = {}
+    dialed_ips = {'93.184.216.34'}
 
     def handler(req: httpx.Request):
-        calls.append(str(req.url))
+        # La connexió es fa a la IP validada; el nom lògic viaja a Host i SNI.
+        logical = f"https://{req.headers['host']}{req.url.raw_path.decode()}"
+        assert req.extensions.get('sni_hostname') == req.headers['host']
+        assert req.url.host in dialed_ips, f'connexió a {req.url.host}, no a una IP resolta'
+        calls.append(logical)
         for prefix, reply in routes.items():
-            if str(req.url).startswith(prefix):
+            if logical.startswith(prefix):
                 return reply(req) if callable(reply) else reply
         return httpx.Response(404)
 
     monkeypatch.setattr(banks, 'http_client', lambda: httpx.Client(transport=httpx.MockTransport(handler), follow_redirects=False))
     monkeypatch.setattr(banks, 'resolve', lambda host: [(0, 0, 0, '', ('10.0.0.5' if host.startswith('internal') else '93.184.216.34', 443))])
+    banks.dialed_ips = dialed_ips
     return module, client, other, routes, calls, banks
 
 
@@ -197,3 +203,33 @@ def test_sound_bank_filters_downloads_and_validates(banks_api):
     routes['https://cdn.freesound.org/s.ogg'] = httpx.Response(302, headers={'location': 'https://evil.test/a.ogg'})
     assert client.get(items[0]['content_url']).status_code == 502  # la redirección sale de los anfitriones permitidos
     assert not any('evil.test' in call for call in calls)
+
+
+def test_dns_rebinding_cannot_change_the_address_after_validation(banks_api, monkeypatch):
+    """El nom es resol una vegada per salt i la connexió usa eixa IP; un segon DNS maliciós no s'arriba a consultar."""
+    module, client, _, routes, calls, banks = banks_api
+    answers = iter([[(0, 0, 0, '', ('93.184.216.34', 443))], [(0, 0, 0, '', ('127.0.0.1', 443))],
+                    [(0, 0, 0, '', ('169.254.169.254', 443))]])
+    resolved = []
+
+    def rebinding(host):
+        resolved.append(host)
+        return next(answers)  # 1a resposta pública, les següents internes
+
+    monkeypatch.setattr(banks, 'resolve', rebinding)
+    routes['https://api.arasaac.org/api/pictograms/es/search/sol'] = j([])
+    assert client.get('/api/assets/v1/banks/arasaac/search?q=sol').status_code == 200
+    assert resolved == ['api.arasaac.org']  # una sola resolució; la connexió va a la IP pública validada
+    # Si la primera resposta ja és interna, ni tan sols es connecta.
+    resolved.clear()
+    answers = iter([[(0, 0, 0, '', ('127.0.0.1', 443))]])
+    calls.clear()
+    assert client.get('/api/assets/v1/banks/arasaac/search?q=sol').status_code == 502
+    assert calls == []
+
+
+def test_mixed_public_and_private_answers_are_refused(banks_api, monkeypatch):
+    module, client, _, routes, calls, banks = banks_api
+    monkeypatch.setattr(banks, 'resolve', lambda host: [(0, 0, 0, '', ('93.184.216.34', 443)), (0, 0, 0, '', ('10.0.0.8', 443))])
+    assert client.get('/api/assets/v1/banks/arasaac/search?q=sol').status_code == 502
+    assert calls == []
