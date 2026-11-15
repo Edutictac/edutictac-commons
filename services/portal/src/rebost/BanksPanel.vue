@@ -94,10 +94,10 @@ onBeforeUnmount(() => { controller?.abort(); generation++; clearThumbs(); });
 <template>
   <section id="banks" class="panel banks-panel">
     <form class="banks-search" @submit.prevent="search">
-      <label><span>{{ t('rebost.search') }}</span>
+      <label><span>{{ t('rebost.banksSearchLabel') }}</span>
         <input v-model="query" type="search" maxlength="80" :placeholder="t('rebost.banksPlaceholder')"></label>
       <label class="banks-free"><input v-model="freeOnly" type="checkbox"> {{ t('rebost.banksFreeOnly') }}</label>
-      <button type="submit" :disabled="searching || !query.trim()">{{ searching ? t('rebost.banksSearching') : t('rebost.search') }}</button>
+      <button type="submit" :disabled="searching || !query.trim()">{{ searching ? t('rebost.banksSearching') : t('rebost.banksSearchButton') }}</button>
     </form>
     <p v-if="searching" class="banks-note">{{ t('rebost.banksSlow') }}</p>
     <p v-if="loginNeeded" class="banks-login" role="alert">{{ t('rebost.banksLogin') }}

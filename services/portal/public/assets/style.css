@@ -60,8 +60,71 @@
 .rebost-page.picking #grid {grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:12px}
 .rebost-page.picking #grid article {padding:12px}
 .rebost-page.picking #grid .image {height:130px}
+.rebost-page.picking .topbar {padding:4px 12px; min-height:0}
+.rebost-page.picking .session-status {min-height:32px; padding:4px 12px; font-size:13px}
+.rebost-page.picking .collections {gap:6px}
+.rebost-page.picking .collections button {min-height:40px; padding:6px 12px; font-size:14px}
+.rebost-page.picking #collectionHint {font-size:13px; line-height:1.4}
+.rebost-page.picking .filters {grid-template-columns:minmax(0,2fr) minmax(0,1fr); gap:10px}
+.rebost-page.picking .filters label {gap:0}
+/* Les etiquetes del filtre es lligen amb lector de pantalla; visualment, el marcador i la selecció ja les expliquen. */
+.rebost-page.picking .filters label > span {position:absolute; width:1px; height:1px; margin:-1px; padding:0; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0}
+.rebost-page.picking .filters input, .rebost-page.picking .filters select {min-height:42px}
+.rebost-page.picking #mine {position:absolute; width:1px; height:1px; margin:-1px; padding:0; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0}
+.rebost-page.picking #grid h2 {font-size:15px; line-height:1.25}
+.rebost-page.picking .banks-grid {grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:10px}
+.rebost-page.picking .bank-card .image {height:100px}
+@media (max-height:520px) {
+  .rebost-page.picking #collectionHint {display:none}
+  .rebost-page.picking .rebost-layout {padding:8px 12px; gap:8px}
+  .rebost-page.picking .library-toolbar {padding:8px 10px; gap:8px; margin-bottom:8px}
+}
+/* Bancs externs (cerca a EduCrea) */
+.rebost-page .banks-panel {display:grid; gap:12px}
+.rebost-page .banks-search {display:grid; grid-template-columns:minmax(0,1fr) auto auto; gap:12px; align-items:end}
+.rebost-page .banks-search label {margin:0; min-width:0}
+.rebost-page .banks-free {display:flex; align-items:center; gap:10px; min-height:46px; color:var(--ink); font-size:14px; line-height:1.3}
+.rebost-page .banks-free input {flex:none; width:22px; height:22px; min-height:0; padding:0; accent-color:var(--accent)}
+.rebost-page .banks-note {margin:0; color:var(--muted); font-size:13px}
+.rebost-page .banks-login {display:grid; gap:10px; margin:0; line-height:1.5}
+.rebost-page .banks-login .button-link {justify-self:start}
+.rebost-page .banks-title {margin:10px 0 0; padding-bottom:6px; border-bottom:1px solid var(--line); font-size:17px; letter-spacing:-.02em}
+.rebost-page .banks-state {font-weight:400; font-size:14px; color:var(--muted)}
+.rebost-page .banks-grid {display:grid; grid-template-columns:repeat(auto-fill,minmax(170px,1fr)); gap:14px; align-items:start}
+.rebost-page .bank-card {display:flex; flex-direction:column; min-width:0; gap:8px; padding:12px; border:1px solid var(--line); border-radius:14px; background:var(--panel)}
+.rebost-page .bank-card .image {display:grid; place-items:center; height:130px; overflow:hidden; border:1px solid var(--line); border-radius:10px; background:repeating-conic-gradient(var(--line) 0% 25%,var(--panel) 0% 50%) 0/20px 20px}
+.rebost-page .bank-card img {max-width:100%; max-height:100%; object-fit:contain}
+.rebost-page .bank-card h4 {margin:0; font-size:14px; line-height:1.3; overflow-wrap:anywhere}
+.rebost-page .bank-card .actions {margin:0}
+.rebost-page .bank-card .actions button {width:100%; font-size:13px; padding:9px 12px}
+.rebost-page .nc-badge {display:inline-block; padding:0 .35rem; margin-right:.2rem; border:1px solid var(--warn-border,#b45309); border-radius:.3rem; font-size:.75rem; font-weight:700; color:var(--ink); background:var(--warn-bg,#fffbeb)}
+/* Tauletes i mòbils: objectius tàctils de 44 px com a mínim i sense retard de doble toc. */
+.rebost-page button, .rebost-page select, .rebost-page input, .rebost-page .button-link {touch-action:manipulation}
+@media (pointer:coarse) {
+  .rebost-page button, .rebost-page .button-link, .rebost-page select, .rebost-page input:not([type="checkbox"]) {min-height:48px}
+  .rebost-page #grid .actions button, .rebost-page .bank-card .actions button {min-height:44px}
+  .rebost-page .banks-free input {width:26px; height:26px}
+}
+/* Pestanyes en una sola tira desplaçable (iPad vertical, mòbil i iframes estrets) en lloc de tres files. */
+@media (max-width:700px) {
+  .rebost-page .collections {flex-wrap:nowrap; overflow-x:auto; padding-bottom:4px; scroll-snap-type:x proximity; -webkit-overflow-scrolling:touch}
+  .rebost-page .collections button {flex:none; scroll-snap-align:start; white-space:nowrap}
+}
+@media (max-width:860px) {
+  .rebost-page .banks-search {grid-template-columns:minmax(0,1fr) auto}
+  .rebost-page .banks-search label:first-child {grid-column:1 / -1}
+}
 @media (max-width:540px) {
+  .rebost-page .banks-search {grid-template-columns:1fr}
+  .rebost-page .banks-search button {width:100%}
+  .rebost-page .banks-login .button-link {justify-self:stretch}
+  .rebost-page .banks-grid {grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px}
   .rebost-page .filters {grid-template-columns:1fr}
   .rebost-page #grid {grid-template-columns:1fr}
   .rebost-page #access .button-link {width:100%}
 }
+/* L'avís d'entrada del selector, més compacte: en un iframe baix ocupava mig espai. */
+.rebost-page.picking #access {padding:10px 12px; gap:6px}
+.rebost-page.picking #access .actions {gap:8px}
+.rebost-page.picking #access .button-link {min-height:40px; padding:6px 12px}
+@media (max-height:520px) { .rebost-page.picking #accessHint {display:none} }

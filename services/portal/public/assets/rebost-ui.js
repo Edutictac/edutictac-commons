@@ -3083,7 +3083,7 @@ var eo = ["aria-label"], to = ["src", "alt"], no = ["value"], ro = {
 				class: "banks-search",
 				onSubmit: Ga(A, ["prevent"])
 			}, [
-				Z("label", null, [Z("span", null, I(U(n)("rebost.search")), 1), Tn(Z("input", {
+				Z("label", null, [Z("span", null, I(U(n)("rebost.banksSearchLabel")), 1), Tn(Z("input", {
 					"onUpdate:modelValue": t[0] ||= (e) => f.value = e,
 					type: "search",
 					maxlength: "80",
@@ -3096,7 +3096,7 @@ var eo = ["aria-label"], to = ["src", "alt"], no = ["value"], ro = {
 				Z("button", {
 					type: "submit",
 					disabled: m.value || !f.value.trim()
-				}, I(m.value ? U(n)("rebost.banksSearching") : U(n)("rebost.search")), 9, po)
+				}, I(m.value ? U(n)("rebost.banksSearching") : U(n)("rebost.banksSearchButton")), 9, po)
 			], 32),
 			m.value ? (Y(), X("p", mo, I(U(n)("rebost.banksSlow")), 1)) : Q("", !0),
 			h.value ? (Y(), X("p", ho, [gi(I(U(n)("rebost.banksLogin")) + " ", 1), Z("a", {
@@ -3360,7 +3360,7 @@ Za({
 		}), Xn(() => {
 			k = !1, A++, clearTimeout(te), P(), window.removeEventListener("edutictac:langchange", j), window.removeEventListener("focus", F), window.removeEventListener("edutictac:sessionchange", F), window.removeEventListener("pagehide", _e), document.removeEventListener("keydown", me), document.body.classList.remove("picking");
 		}), (e, t) => (Y(), X(q, null, [Z("header", Po, [U(i) ? Q("", !0) : (Y(), X("div", Fo, [...t[13] ||= [Z("img", {
-			src: "/commons-mark.svg",
+			src: "/assets/commons-mark.svg",
 			alt: "",
 			width: "46",
 			height: "46"
