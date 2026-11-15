@@ -21,6 +21,8 @@ const active = ref(false), authenticated = ref(false), busy = ref(false), capabi
 // Search of the free image banks through EduCrea. The server announces the EduCrea URL (also to the apps that embed
 // this picker, which have no configuration of their own); `deployment.js` stays as a fallback for older servers.
 const bankUrl = ref(String(window.commonsDeployment?.bankSearchUrl || ''));
+// Preferred: Commons itself searches the banks (capability `banks`): one session, no CORS, works inside Llibres/Blocs.
+const serverBanks = computed(() => capabilities.value.includes('banks')), hasBanks = computed(() => serverBanks.value || !!bankUrl.value);
 const collection = ref(['mine', 'catalog', 'scratch', 'banks'].includes(params.get('collection')) ? params.get('collection') : '');
 const search = ref(''), filter = ref(picking ? pickType : ''), uploadType = ref('sprite');
 const items = ref([]), cursor = ref(''), status = ref(''), drag = ref(false);
@@ -142,7 +144,7 @@ onMounted(async () => {
     catch (error) { if (error.status !== 401) throw error; profile = await api.catalogs(); }
     capabilities.value = profile.capabilities;
     if (typeof profile.bank_search_url === 'string' && profile.bank_search_url) bankUrl.value = profile.bank_search_url;
-    if (collection.value === 'banks' && !bankUrl.value) collection.value = '';
+    if (collection.value === 'banks' && !hasBanks.value) collection.value = '';
     if (!collection.value) collection.value = authenticated.value ? 'mine' : 'catalog';
     if ((collection.value === 'catalog' && !capabilities.value.includes('catalog')) || (collection.value === 'scratch' && !capabilities.value.includes('scratch_catalog'))) collection.value = 'mine';
     active.value = true; await refresh();
@@ -189,7 +191,7 @@ onBeforeUnmount(() => {
         <div id="collections" class="collections" role="group" :aria-label="t('rebost.collection')">
           <button id="mineTab" class="secondary" type="button" :aria-pressed="collection === 'mine'" @click="run(() => chooseCollection('mine'))">{{ t('rebost.mine') }}{{ authenticated ? '' : ' · ' + t('common.login') }}</button>
           <button id="catalogTab" class="secondary" type="button" :hidden="!capabilities.includes('catalog')" :aria-pressed="collection === 'catalog'" @click="run(() => chooseCollection('catalog'))">{{ t('rebost.catalog') }}</button>
-          <button id="banksTab" class="secondary" type="button" :hidden="!bankUrl" :aria-pressed="collection === 'banks'" @click="run(() => chooseCollection('banks'))">{{ t('rebost.banks') }}</button>
+          <button id="banksTab" class="secondary" type="button" :hidden="!hasBanks" :aria-pressed="collection === 'banks'" @click="run(() => chooseCollection('banks'))">{{ t('rebost.banks') }}</button>
           <button id="scratchTab" class="secondary" type="button" :hidden="!capabilities.includes('scratch_catalog')" :aria-pressed="collection === 'scratch'" @click="run(() => chooseCollection('scratch'))">{{ t('rebost.scratch') }}</button>
         </div>
         <p id="collectionHint">{{ collection === 'banks' ? t('rebost.banksHint') : picking ? t('rebost.pickHint') : collection === 'mine' ? t('rebost.privateHint') : collection === 'scratch' ? t('rebost.scratchHint') : t('rebost.catalogHint') }}</p>
@@ -205,7 +207,7 @@ onBeforeUnmount(() => {
           <label><span id="filterLabel">{{ t('rebost.filter') }}</span><select id="filter" v-model="filter" @change="run(() => refresh())"><option v-for="value in filterTypes" :key="value" :value="value">{{ value ? t('rebost.' + value) : t('rebost.all') }}</option></select></label>
         </div>
       </div>
-      <BanksPanel v-if="collection === 'banks' && bankUrl" :base="bankUrl" />
+      <BanksPanel v-if="collection === 'banks' && hasBanks" :base="serverBanks ? '' : bankUrl" :server="serverBanks" />
       <p id="empty" :hidden="locked || collection === 'banks' || items.length > 0 || busy">{{ t('rebost.empty') }}</p>
       <section id="grid" :aria-label="title" :hidden="locked || collection === 'banks'"><AssetCard v-for="item in items" :key="item.id" :item="item" /></section>
       <button id="more" type="button" :hidden="locked || collection === 'banks' || !cursor" @click="run(() => refresh(true))">{{ t('rebost.more') }}</button>

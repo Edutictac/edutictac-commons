@@ -126,6 +126,7 @@ Configuración en Compose:
 |---|---|
 | `REBOST_PUBLIC_ORIGIN` | Opcional en acceso directo; origen público completo, sin ruta. Tras terminación TLS/proxy, configurarlo explícitamente para validar Origin sin confiar en cabeceras arbitrarias del cliente. |
 | `REBOST_MAX_BYTES` | Límite físico lógico global en bytes; predeterminado 2147483648. |
+| `REBOST_BANKS_ENABLED` | `1` activa los bancos externos consultados por el servidor (véase «Bancos externos»). Desactivado por defecto. |
 | `REBOST_DISK_RESERVE` | Espacio libre reservado, predeterminado 268435456. |
 
 Sin origen explícito se usa el origen de la petición tal como lo ve el servidor.
@@ -303,3 +304,25 @@ intactes; [evidències i proves](rebost-scratch.md).
 ## Interfície compartida
 
 La interfície central usa Vue i continua servint el selector de Blocs i Llibres. Consulta [components, compilació i contractes](rebost-vue.md).
+
+## Bancos externos consultados por el servidor
+
+Con `REBOST_BANKS_ENABLED=1`, Commons busca él mismo en ARASAAC, Wikimedia Commons, The Met y Openverse
+(`services/id-api/assets/banks.py`). El navegador nunca contacta con el proveedor: la pestaña «Bancs» del
+selector, también dentro de Llibres y Blocs, usa la sesión de Commons y el mismo origen, sin CORS ni
+sesión de EduCrea. La capacidad `banks` aparece en `/api/assets/v1/me`; el selector prefiere el modo
+servidor y mantiene `REBOST_BANK_SEARCH_URL` (EduCrea) como alternativa para servidores antiguos.
+
+| Ruta (GET, requiere sesión) | Uso |
+|---|---|
+| `/api/assets/v1/banks` | Proveedores disponibles |
+| `/api/assets/v1/banks/{proveedor}/search?q=…&language=es\|ca\|va\|en` | Búsqueda (1–80 caracteres) |
+| `/api/assets/v1/banks/{proveedor}/{id}/thumbnail` · `/content` | Imagen (PNG, JPEG o WebP) |
+
+Garantías: sin sesión no hay ninguna petición de salida; solo se consultan los anfitriones fijos de cada
+proveedor y las URL de imagen que estos devuelven pasan por https:443, direcciones públicas y redirecciones
+revalidadas (máx. 3); firma y tamaño comprobados (2 MiB miniatura, 4 MiB contenido); licencias NC/ND fuera de
+los bancos mixtos (ARASAAC, CC BY-NC-SA, se etiqueta); 120 peticiones por minuto y principal. Los errores
+llevan un código estable (`bank_unavailable`, `bank_timeout`, `bank_too_large`, `bank_rate_limited`…). No
+activar en instalaciones de centro sin salida a Internet ni sin haber informado de la consulta externa.
+**Pendiente:** el banco «Iconos» y los bancos de sonidos siguen solo en EduCrea.

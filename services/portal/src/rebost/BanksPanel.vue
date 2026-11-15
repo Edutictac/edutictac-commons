@@ -1,16 +1,19 @@
 <script setup>
-import {computed, inject, onBeforeUnmount, reactive, ref} from 'vue';
+import {computed, inject, onBeforeUnmount, onMounted, reactive, ref} from 'vue';
 
 // Search of the free image banks through EduCrea (the banks live in its API, not in Commons). The teacher's EduCrea
 // session cookie travels with every request (same site); EduCrea only answers GET reads for this origin.
 const app = inject('rebost');
 const {api, t, locale, authenticated, picking, pickType, select, run, report} = app;
-const props = defineProps({base: {type: String, required: true}});
+const props = defineProps({base: {type: String, default: ''}, server: {type: Boolean, default: false}});
 const base = props.base.replace(/\/$/, '');
+// `server`: Commons searches the banks itself (same origin, same session). Otherwise EduCrea answers (legacy mode).
+const prefix = props.server ? '/api/assets/v1/banks' : '/api/image-banks';
 const BANKS = [
   {id: 'arasaac', name: 'ARASAAC', nc: true}, {id: 'wikimedia', name: 'Wikimedia Commons'}, {id: 'met', name: 'The Met'},
   {id: 'icons', name: 'Iconos y emojis'}, {id: 'openverse', name: 'Openverse'},
 ];
+const banks = ref(BANKS); // in server mode only the providers that Commons announces
 const PER_BANK = 6;
 const query = ref(''), freeOnly = ref(true), searching = ref(false), loginNeeded = ref(false), message = ref('');
 const groups = ref([]), expanded = ref(new Set()), thumbs = reactive({}), saved = ref(new Set()), savingId = ref('');
@@ -34,22 +37,22 @@ async function loadThumbs(items, id) {
   await Promise.all(items.map(async item => {
     if (thumbs[key(item)]) return;
     try {
-      const blob = await (await get(`/api/image-banks/${item.provider}/${encodeURIComponent(item.id)}/thumbnail`, controller?.signal)).blob();
+      const blob = await (await get(`${prefix}/${item.provider}/${encodeURIComponent(item.id)}/thumbnail`, controller?.signal)).blob();
       if (id === generation) thumbs[key(item)] = URL.createObjectURL(blob);
     } catch { /* the card still shows its title and licence */ }
   }));
 }
 async function search() {
   const term = query.value.trim();
-  if (!term || !base) return;
+  if (!term || (!props.server && !base)) return;
   controller?.abort(); controller = new AbortController();
   const id = ++generation;
   clearThumbs(); expanded.value = new Set(); saved.value = new Set(); message.value = ''; loginNeeded.value = false; searching.value = true;
-  groups.value = BANKS.map(bank => ({...bank, status: 'pending', items: []}));
+  groups.value = banks.value.map(bank => ({...bank, status: 'pending', items: []}));
   await Promise.all(groups.value.map(async (group, index) => {
     try {
       const params = new URLSearchParams({q: term, language: apiLanguage()});
-      const found = await (await get(`/api/image-banks/${group.id}/search?${params}`, controller.signal)).json();
+      const found = await (await get(`${prefix}/${group.id}/search?${params}`, controller.signal)).json();
       if (id !== generation) return;
       // NC banks (ARASAAC) are always shown, labelled; the filter only trims NC items from mixed banks.
       const items = freeOnly.value && !group.nc ? found.items.filter(item => isFree(item.license)) : found.items;
@@ -72,7 +75,7 @@ async function save(item) {
   savingId.value = key(item); message.value = '';
   await run(async () => {
     try {
-      const blob = await (await get(`/api/image-banks/${item.provider}/${encodeURIComponent(item.id)}/content`)).blob();
+      const blob = await (await get(`${prefix}/${item.provider}/${encodeURIComponent(item.id)}/content`)).blob();
       const type = blob.type.split(';')[0];
       if (!['image/png', 'image/jpeg', 'image/webp'].includes(type)) throw new Error('image_format');
       const title = (item.title || 'Imatge').slice(0, 200);
@@ -88,6 +91,13 @@ async function save(item) {
   });
   savingId.value = '';
 }
+onMounted(async () => {
+  if (!props.server) return;
+  try {
+    const ids = new Set((await (await get(prefix)).json()).providers.map(provider => provider.id));
+    banks.value = BANKS.filter(bank => ids.has(bank.id));
+  } catch { /* the search still shows the failure per bank */ }
+});
 onBeforeUnmount(() => { controller?.abort(); generation++; clearThumbs(); });
 </script>
 
@@ -101,7 +111,7 @@ onBeforeUnmount(() => { controller?.abort(); generation++; clearThumbs(); });
     </form>
     <p v-if="searching" class="banks-note">{{ t('rebost.banksSlow') }}</p>
     <p v-if="loginNeeded" class="banks-login" role="alert">{{ t('rebost.banksLogin') }}
-      <a class="button-link secondary" :href="base" target="_blank" rel="noopener noreferrer">{{ t('rebost.banksOpenEducrea') }}</a></p>
+      <a v-if="!server" class="button-link secondary" :href="base" target="_blank" rel="noopener noreferrer">{{ t('rebost.banksOpenEducrea') }}</a></p>
     <p v-if="message" role="status">{{ message }}</p>
     <template v-for="group in groups" :key="group.id">
       <h3 class="banks-title">{{ group.name }}<span v-if="group.status === 'pending'" class="banks-state"> · {{ t('rebost.banksSearching') }}</span>

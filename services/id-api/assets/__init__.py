@@ -25,6 +25,7 @@ from PIL import Image, ImageOps, UnidentifiedImageError
 from idapi.origins import origin_allowed, same_host
 from .catalogue import Catalogue
 from . import sounds as effect_sounds
+from .banks import Banks, BankError
 from starlette.concurrency import run_in_threadpool
 
 IMAGE_TYPES = {"sprite", "background", "object", "illustration"}
@@ -146,6 +147,7 @@ class Library:
                 raise ValueError("Invalid Rebost public origin configuration")
         # URL pública de l'API de bancs d'imatges (EduCrea). El selector la rep del servidor, de manera que
         # les aplicacions que l'incrusten (Llibres, Blocs) no necessiten cap configuració pròpia.
+        self.banks = Banks() if os.environ.get("REBOST_BANKS_ENABLED", "") == "1" else None
         self.bank_search_url = os.environ.get("REBOST_BANK_SEARCH_URL", "").rstrip("/")
         if self.bank_search_url:
             parsed = urlsplit(self.bank_search_url)
@@ -346,7 +348,7 @@ class Library:
             self.principal(request)
             return {
                 "capabilities": ["private_library", "catalog", "scratch_catalog", "asset_families", "derived_upload", "sounds",
-                                 *(["external_banks"] if self.bank_search_url else [])],
+                                 *(["external_banks"] if self.bank_search_url else []), *(["banks"] if self.banks else [])],
                 **({"bank_search_url": self.bank_search_url} if self.bank_search_url else {}),
                 "catalog_items": sum(item["metadata"]["collection"]=="catalog" for item in self.catalogue.items.values()),
                 "scratch_items": sum(item["metadata"]["collection"]=="scratch" for item in self.catalogue.items.values()),
@@ -570,6 +572,41 @@ class Library:
                 db.execute("DELETE FROM asset_contents WHERE id=? AND NOT EXISTS(SELECT 1 FROM assets WHERE content_id=?)",
                            (row["content_id"], row["content_id"]))
             return Response(status_code=204)
+
+        # Bancs d'imatges lliures consultats pel servidor (només amb REBOST_BANKS_ENABLED=1 i sessió de Commons).
+        def bank_guard(request: Request):
+            if not self.banks:
+                fail(404, "not_found")
+            owner = self.principal(request)
+            try:
+                self.banks.rate(owner)
+            except BankError as exc:
+                fail(exc.status, exc.code)
+
+        @router.get("/banks")
+        def bank_providers(request: Request):
+            bank_guard(request)
+            return {"providers": self.banks.providers()}
+
+        @router.get("/banks/{provider}/search")
+        def bank_search(provider: str, request: Request, q: str = "", language: str = "es"):
+            bank_guard(request)
+            try:
+                return self.banks.search(provider, q, language)
+            except BankError as exc:
+                fail(exc.status, exc.code)
+
+        @router.get("/banks/{provider}/{identifier}/thumbnail")
+        @router.get("/banks/{provider}/{identifier}/content")
+        def bank_image(provider: str, identifier: str, request: Request):
+            bank_guard(request)
+            try:
+                data, mime = self.banks.image(provider, identifier, 300 if request.url.path.endswith("/thumbnail") else 500)
+            except BankError as exc:
+                fail(exc.status, exc.code)
+            return Response(data, media_type=mime, headers={
+                "Content-Disposition": "inline", "Cache-Control": "private, max-age=3600", "X-Content-Type-Options": "nosniff",
+                "Content-Security-Policy": "default-src 'none'; sandbox"})
 
         return router
 
