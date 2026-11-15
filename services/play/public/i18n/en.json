@@ -82,7 +82,7 @@
   "deleteConfirm": "Delete this activity? This cannot be undone.",
   "deleteError": "The activity could not be deleted.",
   "demoTitle": "Public demo",
-  "demoNotice": "This is a demo: activities created without an account are deleted after 24 hours. The full version, with teacher accounts, student scores and a resource library, is part of EduTicTac Commons.",
+  "demoNotice": "This is a demo: activities created without an account are deleted automatically after a while. The full version, with teacher accounts, student scores and a resource library, is part of EduTicTac Commons.",
   "demoLink": "Discover EduTicTac Commons",
   "classify": "Sort into groups",
   "classifyHelp": "Put each item in its category",
@@ -235,6 +235,12 @@
     "returned": "Returned for changes",
     "withdrawn": "Withdrawn"
   },
-  "anonymousNotice": "Activities saved without an account are public and expire after 24 hours. Open Play from Commons to work with your class.",
-  "loginToSave": "To save in Commons, sign in as a teacher or enter through your classroom as a pupil. You can preview without signing in."
+  "anonymousNotice": "Activities saved without an account are public and expire automatically. Open Play from Commons to work with your class.",
+  "loginToSave": "To save in Commons, sign in as a teacher or enter through your classroom as a pupil. You can preview without signing in.",
+  "qr": "QR",
+  "qrTitle": "Share this activity",
+  "qrHint": "Scan the code with your phone camera.",
+  "qrNote": "Public demo: anyone with the link can open it. Do not include personal data.",
+  "qrAria": "Show QR code to share",
+  "qrClose": "Close"
 }

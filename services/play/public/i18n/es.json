@@ -82,7 +82,7 @@
   "deleteConfirm": "¿Borrar esta actividad? No se puede deshacer.",
   "deleteError": "No se ha podido borrar la actividad.",
   "demoTitle": "Demo pública",
-  "demoNotice": "Esto es una demostración: las actividades sin cuenta se borran a las 24 horas. La versión completa, con cuentas docentes, notas del alumnado y biblioteca de recursos, está en EduTicTac Commons.",
+  "demoNotice": "Esto es una demostración: las actividades sin cuenta se borran automáticamente pasado un tiempo. La versión completa, con cuentas docentes, notas del alumnado y biblioteca de recursos, está en EduTicTac Commons.",
   "demoLink": "Conoce EduTicTac Commons",
   "classify": "Clasificar",
   "classifyHelp": "Coloca cada elemento en su categoría",
@@ -235,6 +235,12 @@
     "returned": "Devuelta para corregir",
     "withdrawn": "Retirada"
   },
-  "anonymousNotice": "Las actividades guardadas sin cuenta son públicas y caducan a las 24 horas. Accede desde Commons para trabajar con tu aula.",
-  "loginToSave": "Para guardar en Commons, entra con tu sesión docente o accede desde tu aula como alumno. Puedes previsualizar sin iniciar sesión."
+  "anonymousNotice": "Las actividades guardadas sin cuenta son públicas y caducan automáticamente. Accede desde Commons para trabajar con tu aula.",
+  "loginToSave": "Para guardar en Commons, entra con tu sesión docente o accede desde tu aula como alumno. Puedes previsualizar sin iniciar sesión.",
+  "qr": "QR",
+  "qrTitle": "Comparte esta actividad",
+  "qrHint": "Escanea el código con la cámara del móvil.",
+  "qrNote": "Demo pública: cualquiera con el enlace puede abrirla. No incluyas datos personales.",
+  "qrAria": "Mostrar código QR para compartir",
+  "qrClose": "Cerrar"
 }

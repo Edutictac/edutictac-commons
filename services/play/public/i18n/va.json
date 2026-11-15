@@ -14,5 +14,11 @@
   "deleteConfirm": "Vols eliminar esta activitat? No es pot desfer.",
   "testPhaseNotice": "Qualsevol activitat que guardes serà pública automàticament durant esta fase. No inclogues dades personals.",
   "markWordsPlaceholder": "Assenyala els *adjectius* d’esta frase.",
-  "dialogCardsHelp": "Repassa conceptes amb targetes"
+  "dialogCardsHelp": "Repassa conceptes amb targetes",
+  "qr": "QR",
+  "qrTitle": "Comparteix esta activitat",
+  "qrHint": "Escaneja el codi amb la càmera del mòbil.",
+  "qrNote": "Demo pública: qualsevol persona amb l’enllaç pot obrir-la. No inclogues dades personals.",
+  "qrAria": "Mostra el codi QR per a compartir",
+  "qrClose": "Tanca"
 }

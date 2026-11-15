@@ -82,7 +82,7 @@
   "deleteConfirm": "Esborrar aquesta activitat? No es pot desfer.",
   "deleteError": "No s'ha pogut esborrar l'activitat.",
   "demoTitle": "Demo pública",
-  "demoNotice": "Açò és una demostració: les activitats sense compte s'esborren a les 24 hores. La versió completa, amb comptes docents, notes de l'alumnat i biblioteca de recursos, està en EduTicTac Commons.",
+  "demoNotice": "Açò és una demostració: les activitats sense compte s’esborren automàticament passat un temps. La versió completa, amb comptes docents, notes de l’alumnat i biblioteca de recursos, està en EduTicTac Commons.",
   "demoLink": "Coneix EduTicTac Commons",
   "classify": "Classificar",
   "classifyHelp": "Col·loca cada element en la seua categoria",
@@ -235,6 +235,12 @@
     "returned": "Tornada per a corregir",
     "withdrawn": "Retirada"
   },
-  "anonymousNotice": "Les activitats guardades sense compte són públiques i caduquen a les 24 hores. Accedix des de Commons per a treballar amb la teua aula.",
-  "loginToSave": "Per a guardar en Commons, entra amb la teua sessió docent o accedix des de la teua aula com a alumne. Pots previsualitzar sense iniciar sessió."
+  "anonymousNotice": "Les activitats guardades sense compte són públiques i caduquen automàticament. Accedix des de Commons per a treballar amb la teua aula.",
+  "loginToSave": "Per a guardar en Commons, entra amb la teua sessió docent o accedix des de la teua aula com a alumne. Pots previsualitzar sense iniciar sessió.",
+  "qr": "QR",
+  "qrTitle": "Comparteix esta activitat",
+  "qrHint": "Escaneja el codi amb la càmera del mòbil.",
+  "qrNote": "Demo pública: qualsevol persona amb l’enllaç pot obrir-la. No inclogues dades personals.",
+  "qrAria": "Mostra el codi QR per a compartir",
+  "qrClose": "Tanca"
 }

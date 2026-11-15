@@ -21,6 +21,7 @@
     "@vitejs/plugin-vue": "6.0.10"
   },
   "dependencies": {
+    "qrcode-generator": "^1.4.4",
     "vue": "3.5.44"
   }
 }

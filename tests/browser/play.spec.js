@@ -25,6 +25,40 @@ test('crear, previsualizar, guardar y reproducir un quiz', async ({ page }) => {
   await expect(page).toHaveURL(/\/play\/[A-Za-z0-9]{8}$/);
 });
 
+test('comparte una actividad con código QR desde el guardado y la biblioteca', async ({ page }) => {
+  const title = `QR ${Date.now()}`;
+  await openPlay(page);
+  await page.getByRole('button', { name: 'Quiz' }).click();
+  await page.locator('#title').fill(title);
+  await page.locator('#question').fill('¿Cuál puede volar?');
+  await page.locator('.answer-row:nth-child(1) .answer-text').fill('Águila');
+  await page.locator('.answer-row:nth-child(2) .answer-text').fill('Gato');
+  await page.getByRole('button', { name: 'Guardar' }).click();
+  await expect(page.locator('#qrShare')).toBeVisible();
+  const id = new URL(page.url()).pathname.split('/').pop();
+  await page.locator('#qrShare').click();
+  await expect(page.locator('.qr-dialog')).toBeVisible();
+  await expect(page.locator('.qr-url')).toHaveValue(new RegExp(`/play/${id}$`));
+  const size = await page.locator('.qr-canvas').evaluate((canvas) => [canvas.width, canvas.height]);
+  expect(size[0]).toBeGreaterThan(0);
+  await expect.poll(() => page.locator('.qr-canvas').evaluate((canvas) => {
+    const data = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
+    let dark = 0;
+    for (let index = 0; index < data.length; index += 4) if (data[index] < 40) dark += 1;
+    return dark;
+  })).toBeGreaterThan(100);
+  await page.getByRole('button', { name: 'Cerrar' }).click();
+  await expect(page.locator('.qr-dialog')).toHaveCount(0);
+  await openPlay(page);
+  await page.getByRole('button', { name: 'Ver biblioteca' }).click();
+  await page.locator('#librarySearch').fill(title);
+  await page.locator('#libraryFilter').click();
+  const card = page.locator('#libraryList article').filter({ hasText: title });
+  await expect(card).toHaveCount(1);
+  await card.locator('[aria-label="Mostrar código QR para compartir"]').click();
+  await expect(page.locator('.qr-url')).toHaveValue(new RegExp(`/play/${id}$`));
+});
+
 test('crear y reproducir un reto con varias actividades', async ({ page }) => {
   await openPlay(page);
   await page.getByRole('button', { name: 'Modo reto' }).click();

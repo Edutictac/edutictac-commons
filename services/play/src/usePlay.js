@@ -8,7 +8,7 @@ export function usePlay(){
  const storedLang=window.commonsLanguage.read();
  const language=ref(['es','ca','va','en'].includes(storedLang)?storedLang:'es'),dictionary=ref({});
  const t=key=>key.split('.').reduce((value,k)=>value?.[k],dictionary.value)||key;
- const view=ref('home'),ready=ref(false),busy=ref(false),form=ref(newActivity()),saved=ref(null),formError=ref(''),message=ref(''),messageError=ref(false),imageTasks=ref(0),demoUrl=ref('');
+ const view=ref('home'),ready=ref(false),busy=ref(false),form=ref(newActivity()),saved=ref(null),formError=ref(''),message=ref(''),messageError=ref(false),imageTasks=ref(0),demoUrl=ref(''),qrUrl=ref('');
  const capabilities=ref({}),submission=ref(null),integrated=ref(false);
  // URL de Commons per al xip de compte (null = Play sense Commons, sense xip).
  const commonsBase=ref(null);
@@ -118,6 +118,8 @@ export function usePlay(){
   finally{if(current===epoch)busy.value=false;}
  }
  function closeBank(){++bankSeq;bankDialog.value?.close();}
+ function showQr(id){if(!id||id.startsWith('preview-'))return;qrUrl.value=new URL(base+'/'+id,location.origin).href;}
+ function closeQr(){qrUrl.value='';}
  async function copy(){try{await navigator.clipboard.writeText(location.href);message.value='copied';messageError.value=false;}catch{message.value='copyError';messageError.value=true;}}
  async function boot(){
   const bootEpoch=epoch;
@@ -144,5 +146,5 @@ export function usePlay(){
  function online(){void bridge.flush();}
  onMounted(()=>{void boot();window.addEventListener('online',online);window.addEventListener('pagehide',hide);window.addEventListener('pageshow',show);window.addEventListener('edutictac:sessionchange',sessionChanged);});
  onBeforeUnmount(()=>{hide();window.removeEventListener('online',online);window.removeEventListener('pagehide',hide);window.removeEventListener('pageshow',show);window.removeEventListener('edutictac:sessionchange',sessionChanged);});
- return {capabilities,submission,integrated,commonsBase,submitReview,loadPublication,base,TYPES,CHILD_TYPES,TYPE_LABELS,language,t,view,ready,busy,form,saved,formError,message,messageError,imageTasks,savingDisabled,demoUrl,catalog,catalogDraft,catalogMessage,library,bank,bankDialog,adminInput,adminToken,published,editorTitle,choose,go,changeLanguage,saveActivity,loadLibrary,openLibrary,filterLibrary,applyToken,removeActivity,publication,saveCatalog,openBank,loadBank,addFromBank,closeBank,copy,onStatement:bridge.report};
+ return {capabilities,submission,integrated,commonsBase,submitReview,loadPublication,base,TYPES,CHILD_TYPES,TYPE_LABELS,language,t,view,ready,busy,form,saved,formError,message,messageError,imageTasks,savingDisabled,demoUrl,qrUrl,showQr,closeQr,catalog,catalogDraft,catalogMessage,library,bank,bankDialog,adminInput,adminToken,published,editorTitle,choose,go,changeLanguage,saveActivity,loadLibrary,openLibrary,filterLibrary,applyToken,removeActivity,publication,saveCatalog,openBank,loadBank,addFromBank,closeBank,copy,onStatement:bridge.report};
 }
