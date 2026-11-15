@@ -23,7 +23,10 @@ aislados. [Configuración, pruebas y límites del acceso compartido](rebost-comm
 - PNG, JPEG y WebP estáticos; verificación y normalización a PNG sin metadatos. No SVG ni
   imágenes animadas. No hay editor gráfico, importador de proyectos ni servicios externos.
 - API común `/api/assets/v1` en el `id-api` existente; cliente JS independiente de React,
-  Redux, Scratch y Blocs, en `services/portal/public/assets/client.js`.
+  Redux, Scratch y Blocs: `@edutictac/rebost-client` (repositorio propio, MIT, `git.edutictac.es/Edutictac/edutictac-rebost-client`),
+  copiado sin cambios en `services/portal/public/assets/client.js` y `rebost-selection.js` con
+  `scripts/sync-rebost-client.sh`. No se editan aquí. Contrato del selector: `docs/CONTRACT.md` del paquete.
+  CORS del Rebost: `REBOST_ALLOWED_ORIGINS`; si está vacío se usa la lista central `EDUTICTAC_ID_ALLOWED_ORIGINS`.
 - Almacenamiento de metadatos y bytes en la SQLite existente `EDUTICTAC_ID_DB` (`/data/id.db`
   en Compose). No se añade contenedor, puerto ni base de datos al stack.
 
@@ -97,7 +100,8 @@ Uso desde otro cliente del mismo origen:
 import {RebostClient} from '/assets/client.js';
 const library = new RebostClient();
 const {items} = await library.list({type: 'illustration'});
-const image = await library.read(items[0].id); // Blob privado, incorporable al proyecto
+const image = await library.content(items[0].id); // Blob privado, incorporable al proyecto
+// Otro origen (cookies + CORS): new RebostClient({endpoint, allowedOrigins: [origen]})
 ```
 
 El adaptador de una aplicación resolverá qué hacer con ese Blob. Este ejemplo no constituye

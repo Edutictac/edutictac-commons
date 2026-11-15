@@ -77,7 +77,7 @@ async function save(item) {
       if (!['image/png', 'image/jpeg', 'image/webp'].includes(type)) throw new Error('image_format');
       const title = (item.title || 'Imatge').slice(0, 200);
       // Inside Llibres or Blocs the image is saved and handed straight to the app that opened the picker.
-      const created = await api.add(new File([blob], 'image', {type}), title, picking && pickType === 'background' ? 'background' : 'illustration', item.credit || '', item.license || '');
+      const created = await api.add(new File([blob], 'image', {type}), {name: title, type: picking && pickType === 'background' ? 'background' : 'illustration', credit: item.credit || '', license: item.license || ''});
       saved.value = new Set(saved.value).add(key(item));
       if (picking) { select(created, title, false); return ''; }
       return t('rebost.banksSaved');

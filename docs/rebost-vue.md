@@ -7,7 +7,7 @@ La biblioteca i el selector compartixen una única interfície Vue. Blocs i Llib
 - `services/portal/src/rebost/RebostApp.vue`: sessió, col·leccions, cerca, paginació, pujada i previsualització.
 - `AssetCard.vue`: imatge, edició de metadades, còpies, crèdits i disfresses agrupades.
 - `messages.js`: castellà i valencià; usa la preferència i l'esdeveniment `edutictac:langchange` del portal.
-- `public/assets/client.js`: client HTTP independent del framework, sense canvis en la migració.
+- `public/assets/client.js`: còpia del paquet `@edutictac/rebost-client` (client HTTP sense framework) i `rebost-selection.js` (missatge del selector); no s'editen ací, vegeu `scripts/sync-rebost-client.sh`.
 - `public/assets/library.js`: entrada estable; carrega `rebost-ui.js` compilat.
 
 Es mantenen l'API `/api/assets/v1`, els identificadors, les revisions `If-Match`, els permisos del servidor i el protocol `rebost-selection` versió 1. Les famílies només s'envien quan l'editor anuncia `supports_families=1&selection=sprite`. No s'accepten destinataris externs: `postMessage` usa `location.origin`.

@@ -1,6 +1,7 @@
 <script setup>
 import {computed, onBeforeUnmount, onMounted, provide, ref} from 'vue';
-import {RebostClient} from '/assets/client.js';
+import {RebostClient, LIMITS} from '/assets/client.js';
+import {selectionMessage, cancelMessage, postToParent} from '/assets/rebost-selection.js';
 import AssetCard from './AssetCard.vue';
 import BanksPanel from './BanksPanel.vue';
 import {usePortalTranslations} from '../shared/usePortalTranslations.js';
@@ -81,7 +82,7 @@ function searchChanged() {
 async function upload(files) {
   if (picking || locked.value || collection.value !== 'mine' || !active.value) return;
   await run(async () => {
-    try { for (const file of files) await api.add(file, file.name.replace(/\.[^.]+$/, '').slice(0, 200) || 'Imatge', uploadType.value); }
+    try { for (const file of files) await api.add(file, {name: file.name.replace(/\.[^.]+$/, '').slice(0, 200) || 'Imatge', type: uploadType.value}); }
     catch (error) { await refresh().catch(() => {}); throw error; }
     try { await refresh(); } catch (error) { report(error); return 'saved_refresh_failed'; }
     return 'image_saved';
@@ -93,20 +94,19 @@ function dropped(event) { drag.value = false; upload([...event.dataTransfer.file
 function clearPreview() { URL.revokeObjectURL(previewUrl.value); previewUrl.value = ''; previewName.value = ''; }
 function closePreview() { dialog.value?.close(); clearPreview(); }
 async function preview(item, name) {
-  const blob = await api.read(item.id);
+  const blob = await api.content(item.id);
   if (!alive || (item.collection === 'mine' && !authenticated.value)) return;
   clearPreview(); previewUrl.value = URL.createObjectURL(blob); previewName.value = name; dialog.value.showModal();
 }
 function select(item, name, family) {
-  window.parent.postMessage({format: 'rebost-selection', version: 1, request: params.get('request') || '', id: item.id, name,
-    ...(family ? {family: true, familyRevision: item.family.revision} : {})}, location.origin);
+  postToParent(selectionMessage({request: params.get('request'), id: item.id, name, family: family ? item.family : null}));
 }
 function keydown(event) {
   if (picking && event.key === 'Escape' && !dialog.value?.open)
-    window.parent.postMessage({format: 'rebost-selection', version: 1, request: params.get('request') || '', cancel: true}, location.origin);
+    postToParent(cancelMessage(params.get('request')));
 }
 async function download(item, license = false) {
-  const blob = await api.source(item.id, license);
+  const blob = await api.blob(RebostClient.itemPath(item.id) + (license ? '/license' : '/source'), license ? LIMITS.license : LIMITS.source);
   const url = URL.createObjectURL(blob), link = document.createElement('a');
   link.href = url; link.download = item.id + (license ? '.license.txt' : '.source.svg');
   document.body.append(link); link.click(); link.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);

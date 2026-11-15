@@ -20,7 +20,7 @@ watch(() => props.item, async item => {
   const request = ++generation;
   URL.revokeObjectURL(thumbnail.value); thumbnail.value = '';
   try {
-    const blob = await api.read(item.id, true);
+    const blob = await api.thumbnail(item.id);
     if (alive && request === generation) thumbnail.value = URL.createObjectURL(blob);
   } catch (error) { if (alive && request === generation) report(error); }
 }, {immediate: true});
@@ -65,7 +65,7 @@ function remove() { if (confirm(t('rebost.confirm'))) run(async () => { await ap
       <button v-if="picking" type="button" @click="select(item, displayName, group && familySelection)">{{ group && familySelection ? t('rebost.addFamily') : t('rebost.choose') }}</button>
       <button v-else-if="item.readonly" type="button" @click="saveCopy">{{ authenticated ? (group ? t('rebost.saveImage') : t('rebost.saveCopy')) : t('rebost.loginToSave') }}</button>
       <template v-else>
-        <button type="button" @click="run(async () => { await api.update(item, name, type); try { await refresh(); } catch (error) { report(error); return 'saved_refresh_failed'; } return 'success'; })">{{ t('rebost.save') }}</button>
+        <button type="button" @click="run(async () => { await api.update(item, {name, type}); try { await refresh(); } catch (error) { report(error); return 'saved_refresh_failed'; } return 'success'; })">{{ t('rebost.save') }}</button>
         <button type="button" class="secondary" @click="run(async () => { await api.duplicate(item); try { await refresh(); } catch (error) { report(error); return 'saved_refresh_failed'; } return 'image_saved'; })">{{ t('rebost.duplicate') }}</button>
         <button type="button" class="danger" @click="remove">{{ t('rebost.remove') }}</button>
       </template>

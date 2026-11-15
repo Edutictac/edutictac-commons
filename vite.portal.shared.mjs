@@ -9,7 +9,7 @@ export function portalBuild(entry, fileName) {
     build: {
       outDir: 'services/portal/public/assets', emptyOutDir: false,
       lib: {entry, formats: ['es'], fileName: () => fileName},
-      rolldownOptions: {external: ['/assets/client.js']},
+      rolldownOptions: {external: ['/assets/client.js', '/assets/rebost-selection.js']},
       minify: true, sourcemap: false
     }
   });
