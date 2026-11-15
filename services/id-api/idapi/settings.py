@@ -27,6 +27,7 @@ class Settings:
     setup_token: str = ""
     authentik_bootstrap_password: str = ""
     resources_api_url: str = "http://recursos-api:8004"
+    classroom_transfer_enabled: bool = False
 
     files_dir: str = ""
     files_disk_reserve_bytes: int = 256 * 1024**2
@@ -57,6 +58,7 @@ class Settings:
             setup_token=env.get("EDUTICTAC_SETUP_TOKEN", "").strip(),
             authentik_bootstrap_password=env.get("EDUTICTAC_AUTHENTIK_BOOTSTRAP_PASSWORD", ""),
             resources_api_url=env.get("EDUTICTAC_RESOURCES_API_URL", cls.resources_api_url).rstrip("/"),
+            classroom_transfer_enabled=env.get("EDUTICTAC_CLASSROOM_TRANSFER_ENABLED", "0") == "1",
         )
 
     @property

@@ -92,6 +92,32 @@ Aquest stack no comença de zero: reutilitza l'API d'identitat pseudònima desen
 6. Registra una puntuació.
 7. Torna al tauler docent i consulta resultats.
 
+## Funcionalitat en desenvolupament: trasllat d'aules entre instal·lacions
+
+Commons prepara un trasllat manual per a centres amb servidors d'aula en VLAN
+separades. El docent podrà continuar treballant amb el mateix grup en una
+altra instal·lació sense connexió directa entre els servidors:
+
+1. En Commons A, obri l'aula i selecciona **Exportar aula**. Descarrega el
+   paquet xifrat i guarda la clau de recuperació per separat.
+2. Puja el paquet al seu OneDrive institucional amb el navegador, si el centre
+   ha autoritzat este ús. Commons no accedix a Microsoft Graph.
+3. En Commons B, descarrega el paquet, selecciona **Importar aula** i introduïx
+   la clau. Comprova que el grup, les activitats i els resultats estiguen
+   disponibles abans de continuar la classe.
+4. Per tornar a A amb els canvis nous, exporta des de B i importa en A. Si
+   les dos instal·lacions han modificat l'aula des de l'últim trasllat,
+   Commons deté la importació i cal resoldre el conflicte abans de continuar.
+
+El primer tall de l'API i dels controls docents està **desactivat per defecte**
+(`EDUTICTAC_CLASSROOM_TRANSFER_ENABLED=0`). S'ha provat amb dades fictícies
+entre `debiandesktop` i una VM LliureX al ThinkPad; encara falten la
+previsualització, la recuperació guiada, els fitxers de l'aula i la validació
+institucional. Les dades pseudònimes continuen sent dades personals; la clau
+no s'ha de pujar juntament amb el paquet. Vegeu el
+[pla de trasllat](docs/PLA-SINCRONITZACIO-AULES.md) per a l'abast i les
+condicions del pilot.
+
 ## Mòdul opcional: EduHoot
 
 EduHoot (`~/github/web/EduHoot`, imatge pròpia publicada a `registry.edutictac.es`) és la primera activitat integrada de la Fase 4. Per activar-lo:

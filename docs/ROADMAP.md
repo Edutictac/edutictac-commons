@@ -4,7 +4,7 @@
 > Repo: `edutictac-commons`  
 > Pista: **B — Stack Docker replicable**  
 > Data inicial: 2026-09-14
-> Última revisió: 2026-10-21
+> Última revisió: 2026-10-26
 
 Aquest document resumeix el treball que toca fer en aquest repositori. El
 roadmap complet de la candidatura 4D viu en el repo
@@ -25,6 +25,25 @@ Cada canvi funcional ha de deixar:
 - una comprovació reproduïble (`make test-flow`, `make release-check` o prova
   equivalent);
 - cap secret, dada real o artefacte local en el repositori.
+
+## Trasllat xifrat d'aules — pla ajornat
+
+Per a centres amb instal·lacions en VLAN separades, es proposa exportar i
+importar manualment un paquet xifrat. El docent podria guardar-lo en el seu
+OneDrive del tenant GVA mitjançant el navegador, si TIC i el DPD confirmen que
+eixe ús està permés. Commons no necessita accés a Microsoft Graph ni un servei
+de sincronització al VPS. La primera fase inclou les dades pedagògiques del
+nucli; els fitxers de l'aula vindrien després. El pilot ja genera una clau
+aleatòria per exportació i deté els conflictes de revisió; resten el flux de
+recuperació, la vinculació docent entre instal·lacions i la resolució guiada
+de conflictes abans d'usar-lo amb dades reals. Vegeu el
+[pla de trasllat entre aules](PLA-SINCRONITZACIO-AULES.md).
+
+El primer tall exporta i importa un grup entre instal·lacions amb dades
+fictícies i botons al panell docent; està desactivat per defecte. Resten la
+previsualització, la fusió de canvis divergents, la recuperació guiada i la
+validació institucional. La tornada A → B → A ja funciona quan el destí no
+ha canviat des de la revisió de partida.
 
 ## Migració gradual de les interfícies a Vue — desenvolupament local
 

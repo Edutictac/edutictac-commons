@@ -77,11 +77,12 @@ def test_beta2_schema_upgrades_additively_to_classroom_files(tmp_path, db_module
         apply_migrations(conn,db_module.NAMESPACE,db_module.MIGRATIONS[:1])
         conn.execute("INSERT INTO groups (id,created_at,updated_at) VALUES ('previous','x','x')")
     assert database.version()==1
-    assert database.migrate()==2
+    assert database.migrate()==db_module.SCHEMA_VERSION
     with database.connect() as conn:
         assert conn.execute("SELECT id FROM groups WHERE id='previous'").fetchone()['id']=='previous'
         assert conn.execute('SELECT COUNT(*) FROM classroom_files').fetchone()[0]==0
-    assert database.migrate()==2
+        assert conn.execute('SELECT COUNT(*) FROM group_transfer_state').fetchone()[0]==0
+    assert database.migrate()==db_module.SCHEMA_VERSION
 
 
 def test_classroom_migration_rolls_back_incomplete_ddl(tmp_path,db_module):
@@ -94,4 +95,4 @@ def test_classroom_migration_rolls_back_incomplete_ddl(tmp_path,db_module):
     assert database.version()==1
     assert columns(database.path,'classroom_files')==set()
     with database.connect() as conn:conn.execute('DROP TABLE classroom_file_settings')
-    assert database.migrate()==2
+    assert database.migrate()==db_module.SCHEMA_VERSION

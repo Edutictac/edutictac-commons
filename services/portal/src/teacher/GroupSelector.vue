@@ -1,8 +1,9 @@
 <script setup>
 import {onBeforeUnmount, ref, shallowRef} from 'vue';
 import {usePortalTranslations} from '../shared/usePortalTranslations.js';
+import ClassroomTransferPanel from './ClassroomTransferPanel.vue';
 
-const props = defineProps({api: Function, onSelect: Function, onDeleted: Function, onSessionExpired: Function});
+const props = defineProps({api: Function, onSelect: Function, onDeleted: Function, onImported: Function, onSessionExpired: Function});
 const t = usePortalTranslations();
 const context = shallowRef({teacher: false, group: null, groups: []});
 const pending = ref(false), feedback = ref('');
@@ -60,5 +61,6 @@ onBeforeUnmount(() => { alive = false; epoch++; });
       </table>
     </div>
     <div class="actions"><button id="deleteGroup" type="button" class="danger" :disabled="!context.teacher || !context.group || pending" @click="remove">{{ t('teacher.deleteGroup') }}</button></div>
+    <ClassroomTransferPanel :api="api" :teacher="context.teacher" :group="context.group" :on-imported="onImported" :on-session-expired="onSessionExpired" />
   </section>
 </template>
