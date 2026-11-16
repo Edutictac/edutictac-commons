@@ -4713,20 +4713,28 @@ var vo = { class: "compound-step" }, yo = { class: "section-heading" }, bo = { c
 						l.remove();
 						return;
 					}
-					i.value = !1;
-					let u = window.H5P?.externalDispatcher, d = (n) => {
+					let u = l.querySelector("iframe"), d, f = () => {
+						d?.disconnect();
+						let e = u?.contentDocument, t = () => e?.querySelectorAll(".h5p-dragquestion").forEach((e) => e.classList.add("h5p-theme"));
+						d = new MutationObserver(t), e?.body && d.observe(e.body, {
+							childList: !0,
+							subtree: !0
+						}), t();
+					};
+					u?.addEventListener("load", f), f(), i.value = !1;
+					let p = window.H5P?.externalDispatcher, m = (n) => {
 						c === a && t.onStatement?.(n.data?.statement, e);
 					};
-					u?.on("xAPI", d);
-					let f = () => {
+					p?.on("xAPI", m);
+					let h = () => {
 						if (c !== a || t.activity?.type !== "crossword") return;
 						let e = l.querySelector("iframe"), n = e?.contentDocument;
 						if (!e || !n) return;
 						let r = n.querySelector(".h5p-crossword");
 						e.style.height = `${Math.max(r?.scrollHeight || n.body?.scrollHeight || 0, 420) + 8}px`;
-					}, p = [setTimeout(f, 100), setTimeout(f, 500)];
-					window.addEventListener("resize", f, { passive: !0 }), o = () => {
-						u?.off?.("xAPI", d), p.forEach(clearTimeout), window.removeEventListener("resize", f), l.remove();
+					}, g = [setTimeout(h, 100), setTimeout(h, 500)];
+					window.addEventListener("resize", h, { passive: !0 }), o = () => {
+						u?.removeEventListener("load", f), d?.disconnect(), p?.off?.("xAPI", m), g.forEach(clearTimeout), window.removeEventListener("resize", h), l.remove();
 					};
 				} catch {
 					c === a && (i.value = !1, r.value = !0);

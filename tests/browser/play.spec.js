@@ -313,6 +313,12 @@ test('crear y reproducir una actividad de relacionar', async ({ page }) => {
   await expect(player.getByRole('button', { name: /España/ })).toBeVisible();
   await expect(player.getByRole('button', { name: 'Madrid' })).toBeVisible();
   const cards = [player.getByRole('button', { name: /España/ }), player.getByRole('button', { name: /Italia/ })];
+  const visibleOnTop = card => card.evaluate(element => {
+    const rect = element.getBoundingClientRect();
+    const top = document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2);
+    return top === element || element.contains(top);
+  });
+  await expect(player.getByText('Arrastra cada tarjeta al recuadro situado junto a su pareja.', { exact: false })).toBeVisible();
   const zones = player.locator('.h5p-dropzone');
   const first = await cards[0].boundingBox();
   const second = await cards[1].boundingBox();
@@ -324,6 +330,7 @@ test('crear y reproducir una actividad de relacionar', async ({ page }) => {
   await zones.nth(1).press('Enter');
   await cards[1].press('Enter');
   await zones.nth(0).press('Enter');
+  for (const card of cards) expect(await visibleOnTop(card)).toBe(true);
   await player.locator('.h5p-question-check-answer').click();
   await expect(player.locator('.h5p-draggable.h5p-wrong')).toHaveCount(2);
   expect(await player.evaluate(() => H5P.instances[0].getScore())).toBe(0);
@@ -340,10 +347,20 @@ test('crear y reproducir una actividad de relacionar', async ({ page }) => {
       await page.mouse.move(dest.x + dest.width / 2, dest.y + dest.height / 2, { steps: 12 });
       await page.mouse.up();
     } else {
-      await cards[i].press('Enter');
-      await zones.nth(i).press('Enter');
+      await cards[i].scrollIntoViewIfNeeded();
+      const source = await cards[i].boundingBox(), dest = await zones.nth(i).boundingBox();
+      const touch = await page.context().newCDPSession(page);
+      const from = { x: source.x + source.width / 2, y: source.y + source.height / 2 };
+      const to = { x: dest.x + dest.width / 2, y: dest.y + dest.height / 2 };
+      await touch.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [from] });
+      for (let step = 1; step <= 12; step++) {
+        await touch.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: from.x + (to.x - from.x) * step / 12, y: from.y + (to.y - from.y) * step / 12 }] });
+      }
+      await touch.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+      await touch.detach();
     }
   }
+  for (const card of cards) expect(await visibleOnTop(card)).toBe(true);
   await player.locator('.h5p-question-check-answer').click();
   await expect(player.getByText('Prueba otra vez.', { exact: true })).toHaveCount(0);
   await expect(player.locator('.h5p-draggable.h5p-wrong')).toHaveCount(0);

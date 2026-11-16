@@ -141,6 +141,7 @@ H5P_TEXT: dict[str, dict[str, str]] = {
         "retryShort": "Reintentar",
         "retryLong": "Intentarlo de nuevo",
         "showSolution": "Mostrar solución",
+        "matchingInstructions": "Arrastra cada tarjeta al recuadro situado junto a su pareja.",
         "correct": "Correcto.",
         "incorrect": "Prueba otra vez.",
         "tryHarder": "Sigue intentándolo.",
@@ -189,6 +190,7 @@ H5P_TEXT: dict[str, dict[str, str]] = {
         "retryShort": "Reintenta",
         "retryLong": "Torna-ho a provar",
         "showSolution": "Mostra la solució",
+        "matchingInstructions": "Arrossega cada targeta al requadre situat al costat de la seua parella.",
         "correct": "Correcte.",
         "incorrect": "Torna-ho a provar.",
         "tryHarder": "Segueix intentant-ho.",
@@ -237,6 +239,7 @@ H5P_TEXT: dict[str, dict[str, str]] = {
         "retryShort": "Retry",
         "retryLong": "Try again",
         "showSolution": "Show solution",
+        "matchingInstructions": "Drag each card into the box beside its matching partner.",
         "correct": "Correct.",
         "incorrect": "Try again.",
         "tryHarder": "Keep trying.",
@@ -443,13 +446,13 @@ def activity_content(activity: dict) -> dict:
         drop_zones = []
         for index, pair in enumerate(pairs):
             top = (12 + index * row_height) / board_height * 100
-            elements.append({"type": {"library": "H5P.AdvancedText 1.1", "params": {"text": f"<p>{matching_side_markup(pair, 'left')}</p>"}}, "x": 2, "y": top, "height": (row_height - 32) / 16, "width": 10.5, "dropZones": [str(zone) for zone in range(count)], "backgroundOpacity": 100, "multiple": False})
+            elements.append({"type": {"library": "H5P.AdvancedText 1.1", "params": {"text": f"<p>{matching_side_markup(pair, 'left')}</p>"}}, "x": 2, "y": top, "height": (row_height - 32) / 16, "width": 9.5, "dropZones": [str(zone) for zone in range(count)], "backgroundOpacity": 100, "multiple": False})
             drop_zones.append({"label": pair["right"], "showLabel": False, "x": 67, "y": (12 + rows[index] * row_height) / board_height * 100, "height": (row_height - 16) / 16, "width": 11.5, "correctElements": [str(index)], "single": True, "autoAlign": True, "backgroundOpacity": 100, "tipsAndFeedback": {"tip": "", "feedbackOnCorrect": t["correct"], "feedbackOnIncorrect": t["incorrect"]}})
         for index in order:
             elements.append({"type": {"library": "H5P.AdvancedText 1.1", "params": {"text": f"<p>{matching_side_markup(pairs[index], 'right')}</p>"}}, "x": 34, "y": (12 + rows[index] * row_height) / board_height * 100, "height": (row_height - 16) / 16, "width": 10.5, "dropZones": [], "backgroundOpacity": 0})
         return {
             "scoreShow": t["check"], "submit": t["submit"], "tryAgain": t["retryShort"],
-            "question": {"settings": {"questionTitle": safe_text(activity["question"]), "size": {"width": 620, "height": board_height}}, "task": {"elements": elements, "dropZones": drop_zones}},
+            "question": {"settings": {"questionTitle": safe_text(activity["question"]) + "<br>" + t["matchingInstructions"], "size": {"width": 620, "height": board_height}}, "task": {"elements": elements, "dropZones": drop_zones}},
             "behaviour": {"enableRetry": True, "enableCheckButton": True, "singlePoint": False, "applyPenalties": True, "enableScoreExplanation": True, "dropZoneHighlighting": "dragging", "enableFullScreen": False, "showTitle": True, "dragHandleVisibility": "always"},
             "overallFeedback": [{"from": 0, "to": 99, "feedback": t["tryHarder"]}, {"from": 100, "to": 100, "feedback": t["allCorrect"]}],
             "scoreBarLabel": t["scoreBar"], "a11yCheck": t["a11yCheck"], "a11yRetry": t["a11yRetry"],
