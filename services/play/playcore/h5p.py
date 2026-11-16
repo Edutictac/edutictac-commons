@@ -405,16 +405,17 @@ def activity_content(activity: dict) -> dict:
             "behaviour": {"enableRetry": True, "enableSolutionsButton": True, "enableCheckButton": True, "caseSensitive": False, "showSolutionsRequiresInput": True, "autoCheck": False, "separateLines": False},
             "a11yCheck": t["a11yCheck"], "a11yShowSolution": t["a11yShowSolution"], "a11yRetry": t["a11yRetry"], "a11yHeader": t["a11yCheck"],
         }
+    # DragQuestion compara els identificadors com a text en el feedback i xAPI.
     if activity.get("type") in {"classify", "ordering"}:
         elements = []
         drop_zones = []
         for index, item in enumerate(activity["items"]):
-            elements.append({"type": {"library": "H5P.AdvancedText 1.1", "params": {"text": f"<p>{matching_item_markup(item)}</p>"}}, "x": 5 + (index % 3) * 30, "y": 6 + (index // 3) * 12, "height": 8 if item.get("image") else 5, "width": 24, "dropZones": [int(item["category"])], "backgroundOpacity": 100, "multiple": False})
+            elements.append({"type": {"library": "H5P.AdvancedText 1.1", "params": {"text": f"<p>{matching_item_markup(item)}</p>"}}, "x": 5 + (index % 3) * 30, "y": 6 + (index // 3) * 12, "height": 8 if item.get("image") else 5, "width": 24, "dropZones": [str(item["category"])], "backgroundOpacity": 100, "multiple": False})
         for index, category in enumerate(activity["categories"]):
             top = 65 + (index % 2) * 17
             left = 5 + (index // 2) * 48
             label = f"Posición {index + 1}" if activity.get("type") == "ordering" else safe_text(category["name"])
-            drop_zones.append({"label": label, "showLabel": True, "x": left, "y": top, "height": 13, "width": 42, "correctElements": [item_index for item_index, item in enumerate(activity["items"]) if int(item["category"]) == index], "backgroundOpacity": 100, "tipsAndFeedback": {"tip": "", "feedbackOnCorrect": t["correct"], "feedbackOnIncorrect": t["incorrect"]}})
+            drop_zones.append({"label": label, "showLabel": True, "x": left, "y": top, "height": 13, "width": 42, "correctElements": [str(item_index) for item_index, item in enumerate(activity["items"]) if int(item["category"]) == index], "backgroundOpacity": 100, "tipsAndFeedback": {"tip": "", "feedbackOnCorrect": t["correct"], "feedbackOnIncorrect": t["incorrect"]}})
         return {
             "scoreShow": t["check"], "submit": t["submit"], "tryAgain": t["retryShort"],
             "question": {"settings": {"questionTitle": safe_text(activity["question"]), "size": {"width": 620, "height": 310}}, "task": {"elements": elements, "dropZones": drop_zones}},
@@ -442,8 +443,8 @@ def activity_content(activity: dict) -> dict:
         drop_zones = []
         for index, pair in enumerate(pairs):
             top = (12 + index * row_height) / board_height * 100
-            elements.append({"type": {"library": "H5P.AdvancedText 1.1", "params": {"text": f"<p>{matching_side_markup(pair, 'left')}</p>"}}, "x": 2, "y": top, "height": (row_height - 32) / 16, "width": 10.5, "dropZones": list(range(count)), "backgroundOpacity": 100, "multiple": False})
-            drop_zones.append({"label": pair["right"], "showLabel": False, "x": 67, "y": (12 + rows[index] * row_height) / board_height * 100, "height": (row_height - 16) / 16, "width": 11.5, "correctElements": [index], "single": True, "autoAlign": True, "backgroundOpacity": 100, "tipsAndFeedback": {"tip": "", "feedbackOnCorrect": t["correct"], "feedbackOnIncorrect": t["incorrect"]}})
+            elements.append({"type": {"library": "H5P.AdvancedText 1.1", "params": {"text": f"<p>{matching_side_markup(pair, 'left')}</p>"}}, "x": 2, "y": top, "height": (row_height - 32) / 16, "width": 10.5, "dropZones": [str(zone) for zone in range(count)], "backgroundOpacity": 100, "multiple": False})
+            drop_zones.append({"label": pair["right"], "showLabel": False, "x": 67, "y": (12 + rows[index] * row_height) / board_height * 100, "height": (row_height - 16) / 16, "width": 11.5, "correctElements": [str(index)], "single": True, "autoAlign": True, "backgroundOpacity": 100, "tipsAndFeedback": {"tip": "", "feedbackOnCorrect": t["correct"], "feedbackOnIncorrect": t["incorrect"]}})
         for index in order:
             elements.append({"type": {"library": "H5P.AdvancedText 1.1", "params": {"text": f"<p>{matching_side_markup(pairs[index], 'right')}</p>"}}, "x": 34, "y": (12 + rows[index] * row_height) / board_height * 100, "height": (row_height - 16) / 16, "width": 10.5, "dropZones": [], "backgroundOpacity": 0})
         return {

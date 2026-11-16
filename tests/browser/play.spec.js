@@ -325,6 +325,7 @@ test('crear y reproducir una actividad de relacionar', async ({ page }) => {
   await cards[1].press('Enter');
   await zones.nth(0).press('Enter');
   await player.locator('.h5p-question-check-answer').click();
+  await expect(player.locator('.h5p-draggable.h5p-wrong')).toHaveCount(2);
   expect(await player.evaluate(() => H5P.instances[0].getScore())).toBe(0);
   await player.locator('.h5p-question-try-again').click();
   for (let i = 0; i < 2; i++) {
@@ -343,6 +344,10 @@ test('crear y reproducir una actividad de relacionar', async ({ page }) => {
     }
   }
   await player.locator('.h5p-question-check-answer').click();
+  await expect(player.getByText('Prueba otra vez.', { exact: true })).toHaveCount(0);
+  await expect(player.locator('.h5p-draggable.h5p-wrong')).toHaveCount(0);
+  await expect(player.locator('.h5p-draggable.h5p-correct')).toHaveCount(2);
+  await expect(player.getByText('¡Todo correcto!', { exact: true })).toBeVisible();
   expect(await player.evaluate(() => H5P.instances[0].getScore())).toBe(2);
   await page.getByRole('button', { name: 'Guardar' }).click();
   await expect(page.locator('#download')).toBeVisible();

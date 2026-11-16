@@ -223,7 +223,7 @@ def test_matching_h5p_export():
             assert {"h5p.json", "content/content.json", "H5P.DragQuestion-1.15/library.json", "jQuery.ui-1.10/library.json"} <= names
             assert json.loads(archive.read("h5p.json"))["mainLibrary"] == "H5P.DragQuestion"
             content = json.loads(archive.read("content/content.json"))
-            assert content["question"]["task"]["dropZones"][0]["correctElements"] == [0]
+            assert content["question"]["task"]["dropZones"][0]["correctElements"] == ["0"]
     finally:
         process.terminate()
         process.wait(timeout=3)
@@ -248,8 +248,8 @@ def test_classify_h5p_export():
             names = set(archive.namelist())
             assert {"h5p.json", "content/content.json", "H5P.DragQuestion-1.15/library.json"} <= names
             content = json.loads(archive.read("content/content.json"))
-            assert content["question"]["task"]["dropZones"][0]["correctElements"] == [0, 2]
-            assert content["question"]["task"]["elements"][1]["dropZones"] == [1]
+            assert content["question"]["task"]["dropZones"][0]["correctElements"] == ["0", "2"]
+            assert content["question"]["task"]["elements"][1]["dropZones"] == ["1"]
     finally:
         process.terminate()
         process.wait(timeout=3)
@@ -267,7 +267,7 @@ def test_ordering_h5p_export():
         with zipfile.ZipFile(io.BytesIO(package)) as archive:
             content = json.loads(archive.read("content/content.json"))
             assert json.loads(archive.read("h5p.json"))["mainLibrary"] == "H5P.DragQuestion"
-            assert [zone["correctElements"] for zone in content["question"]["task"]["dropZones"]] == [[0], [1], [2]]
+            assert [zone["correctElements"] for zone in content["question"]["task"]["dropZones"]] == [["0"], ["1"], ["2"]]
     finally:
         process.terminate()
         process.wait(timeout=3)
@@ -778,6 +778,6 @@ def test_matching_layout_fits_board(count, with_images, monkeypatch):
         assert element["y"] + element["height"] * 16 / size["height"] * 100 <= 100
     assert [zone["y"] for zone in task["dropZones"]] != sorted(zone["y"] for zone in task["dropZones"])
     for index, element in enumerate(task["elements"][:count]):
-        assert element["dropZones"] == list(range(count))
-        assert task["dropZones"][index]["correctElements"] == [index]
+        assert element["dropZones"] == [str(zone) for zone in range(count)]
+        assert task["dropZones"][index]["correctElements"] == [str(index)]
         assert task["dropZones"][index]["single"] is True
