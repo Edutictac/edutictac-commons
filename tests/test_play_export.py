@@ -760,3 +760,24 @@ def test_csp_lets_only_commons_serve_the_account_chip(commons_base, host, expect
     finally:
         process.terminate()
         process.wait(timeout=3)
+
+
+@pytest.mark.parametrize("count", [2, 6, 8])
+@pytest.mark.parametrize("with_images", [False, True])
+def test_matching_layout_fits_board(count, with_images, monkeypatch):
+    monkeypatch.syspath_prepend(str(Path(__file__).parents[1] / "services" / "play"))
+    from playcore.h5p import activity_content
+
+    pairs = [{"left": (f"Left {i} " * 17)[:120], "right": (f"Right {i} " * 17)[:120], **({"leftImage": "data:image/webp;base64,UklGRjwAAABXRUJQVlA4IDAAAADQAQCdASoCAAIAAUAmJaACdLoB+AADsAD+8ut//NgVzXPv9//S4P0uD9Lg/9KQAAA=", "rightImage": "data:image/webp;base64,UklGRjwAAABXRUJQVlA4IDAAAADQAQCdASoCAAIAAUAmJaACdLoB+AADsAD+8ut//NgVzXPv9//S4P0uD9Lg/9KQAAA="} if with_images else {})} for i in range(count)]
+    content = activity_content({"type": "matching", "question": "Match", "pairs": pairs})
+    question = content["question"]
+    task = question["task"]
+    size = question["settings"]["size"]
+    for element in task["elements"] + task["dropZones"]:
+        assert element["x"] + element["width"] * 16 / size["width"] * 100 <= 100
+        assert element["y"] + element["height"] * 16 / size["height"] * 100 <= 100
+    assert [zone["y"] for zone in task["dropZones"]] != sorted(zone["y"] for zone in task["dropZones"])
+    for index, element in enumerate(task["elements"][:count]):
+        assert element["dropZones"] == list(range(count))
+        assert task["dropZones"][index]["correctElements"] == [index]
+        assert task["dropZones"][index]["single"] is True

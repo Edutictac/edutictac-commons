@@ -6,6 +6,8 @@ import base64
 import binascii
 import html
 import json
+import math
+import random
 import re
 import uuid
 from pathlib import Path
@@ -421,16 +423,33 @@ def activity_content(activity: dict) -> dict:
             "scoreBarLabel": t["scoreBar"], "a11yCheck": t["a11yCheck"], "a11yRetry": t["a11yRetry"],
         }
     if activity.get("type") == "matching":
+        pairs = activity["pairs"]
+        count = len(pairs)
+        # H5P usa percentatges per a x/y, però em per a amplària/altura.
+        # Reservem una columna per a cada etiqueta i una altra per a soltar.
+        row_height = max(100, max(
+            math.ceil(max(len(pair["left"]), len(pair["right"])) / 16) * 22
+            + (110 if pair.get("leftImage") or pair.get("rightImage") else 24)
+            for pair in pairs
+        ))
+        board_height = max(310, count * row_height + 24)
+        order = list(range(count))
+        random.Random(json.dumps(pairs, sort_keys=True)).shuffle(order)
+        if order == list(range(count)):
+            order = order[1:] + order[:1]
+        rows = {pair_index: row for row, pair_index in enumerate(order)}
         elements = []
         drop_zones = []
-        for index, pair in enumerate(activity["pairs"]):
-            top = 8 + index * 16
-            elements.append({"type": {"library": "H5P.AdvancedText 1.1", "params": {"text": f"<p>{matching_side_markup(pair, 'left')}</p>"}}, "x": 5, "y": top, "height": 8 if pair.get("leftImage") else 3, "width": 20, "dropZones": [index], "backgroundOpacity": 100, "multiple": False})
-            drop_zones.append({"label": matching_side_markup(pair, "right"), "showLabel": True, "x": 55, "y": top, "height": 8 if pair.get("rightImage") else 3, "width": 25, "correctElements": [index], "backgroundOpacity": 100, "tipsAndFeedback": {"tip": "", "feedbackOnCorrect": t["correct"], "feedbackOnIncorrect": t["incorrect"]}})
+        for index, pair in enumerate(pairs):
+            top = (12 + index * row_height) / board_height * 100
+            elements.append({"type": {"library": "H5P.AdvancedText 1.1", "params": {"text": f"<p>{matching_side_markup(pair, 'left')}</p>"}}, "x": 2, "y": top, "height": (row_height - 32) / 16, "width": 10.5, "dropZones": list(range(count)), "backgroundOpacity": 100, "multiple": False})
+            drop_zones.append({"label": pair["right"], "showLabel": False, "x": 67, "y": (12 + rows[index] * row_height) / board_height * 100, "height": (row_height - 16) / 16, "width": 11.5, "correctElements": [index], "single": True, "autoAlign": True, "backgroundOpacity": 100, "tipsAndFeedback": {"tip": "", "feedbackOnCorrect": t["correct"], "feedbackOnIncorrect": t["incorrect"]}})
+        for index in order:
+            elements.append({"type": {"library": "H5P.AdvancedText 1.1", "params": {"text": f"<p>{matching_side_markup(pairs[index], 'right')}</p>"}}, "x": 34, "y": (12 + rows[index] * row_height) / board_height * 100, "height": (row_height - 16) / 16, "width": 10.5, "dropZones": [], "backgroundOpacity": 0})
         return {
             "scoreShow": t["check"], "submit": t["submit"], "tryAgain": t["retryShort"],
-            "question": {"settings": {"questionTitle": safe_text(activity["question"]), "size": {"width": 620, "height": 310}}, "task": {"elements": elements, "dropZones": drop_zones}},
-            "behaviour": {"enableRetry": True, "enableCheckButton": True, "singlePoint": False, "applyPenalties": True, "enableScoreExplanation": True, "dropZoneHighlighting": "dragging", "enableFullScreen": False},
+            "question": {"settings": {"questionTitle": safe_text(activity["question"]), "size": {"width": 620, "height": board_height}}, "task": {"elements": elements, "dropZones": drop_zones}},
+            "behaviour": {"enableRetry": True, "enableCheckButton": True, "singlePoint": False, "applyPenalties": True, "enableScoreExplanation": True, "dropZoneHighlighting": "dragging", "enableFullScreen": False, "showTitle": True, "dragHandleVisibility": "always"},
             "overallFeedback": [{"from": 0, "to": 99, "feedback": t["tryHarder"]}, {"from": 100, "to": 100, "feedback": t["allCorrect"]}],
             "scoreBarLabel": t["scoreBar"], "a11yCheck": t["a11yCheck"], "a11yRetry": t["a11yRetry"],
         }

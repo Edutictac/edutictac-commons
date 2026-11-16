@@ -312,9 +312,64 @@ test('crear y reproducir una actividad de relacionar', async ({ page }) => {
   const player = page.frames().find((frame) => frame !== page.mainFrame());
   await expect(player.getByRole('button', { name: /España/ })).toBeVisible();
   await expect(player.getByRole('button', { name: 'Madrid' })).toBeVisible();
+  const cards = [player.getByRole('button', { name: /España/ }), player.getByRole('button', { name: /Italia/ })];
+  const zones = player.locator('.h5p-dropzone');
+  const first = await cards[0].boundingBox();
+  const second = await cards[1].boundingBox();
+  const target = await zones.nth(0).boundingBox();
+  expect(first.y + first.height).toBeLessThan(second.y);
+  expect(first.x + first.width).toBeLessThan(target.x);
+  // Una resposta incorrecta s'ha de poder soltar i puntuar com a incorrecta.
+  await cards[0].press('Enter');
+  await zones.nth(1).press('Enter');
+  await cards[1].press('Enter');
+  await zones.nth(0).press('Enter');
+  await player.locator('.h5p-question-check-answer').click();
+  expect(await player.evaluate(() => H5P.instances[0].getScore())).toBe(0);
+  await player.locator('.h5p-question-try-again').click();
+  for (let i = 0; i < 2; i++) {
+    if (test.info().project.name === 'desktop') {
+      await cards[i].scrollIntoViewIfNeeded();
+      await expect.poll(() => player.evaluate(() => H5P.jQuery('.h5p-draggable:animated').length)).toBe(0);
+      const source = await cards[i].boundingBox();
+      const dest = await zones.nth(i).boundingBox();
+      await page.mouse.move(source.x + source.width / 2, source.y + source.height / 2);
+      await page.mouse.down();
+      await page.mouse.move(dest.x + dest.width / 2, dest.y + dest.height / 2, { steps: 12 });
+      await page.mouse.up();
+    } else {
+      await cards[i].press('Enter');
+      await zones.nth(i).press('Enter');
+    }
+  }
+  await player.locator('.h5p-question-check-answer').click();
+  expect(await player.evaluate(() => H5P.instances[0].getScore())).toBe(2);
   await page.getByRole('button', { name: 'Guardar' }).click();
   await expect(page.locator('#download')).toBeVisible();
   await expect(page).toHaveURL(/\/play\/[A-Za-z0-9]{8}$/);
+});
+
+test('relacionar: ocho parejas largas con imágenes caben y se pueden resolver', async ({ page, request }) => {
+  const image = 'data:image/webp;base64,UklGRjwAAABXRUJQVlA4IDAAAADQAQCdASoCAAIAAUAmJaACdLoB+AADsAD+8ut//NgVzXPv9//S4P0uD9Lg/9KQAAA=';
+  const pairs = Array.from({ length: 8 }, (_, i) => ({ left: (`Material ${i} reutilizable `).repeat(6).slice(0, 120), right: (`Propiedad ${i} del material `).repeat(6).slice(0, 120), leftImage: image, rightImage: image }));
+  const response = await request.post('/play/api/activities', { data: { type: 'matching', title: 'Ocho parejas', question: 'Relaciona', pairs } });
+  expect(response.ok()).toBeTruthy();
+  await openPlay(page, '/play/' + (await response.json()).id);
+  const player = page.frameLocator('iframe');
+  await expect(player.locator('.h5p-draggable')).toHaveCount(8);
+  const overflow = await player.locator('.h5p-draggable,.h5p-dropzone').evaluateAll(elements => elements.some(e => {
+    const board = e.parentElement.getBoundingClientRect();
+    const rect = e.getBoundingClientRect();
+    return rect.right > board.right + 1 || rect.bottom > board.bottom + 1;
+  }));
+  expect(overflow).toBe(false);
+  await expect.poll(() => player.locator('img').evaluateAll(images => images.length === 16 && images.every(image => image.complete && image.naturalWidth > 0))).toBe(true);
+  for (let i = 0; i < 8; i++) {
+    await player.locator('.h5p-draggable').nth(i).press('Enter');
+    await player.locator('.h5p-dropzone').nth(i).press('Enter');
+  }
+  await player.locator('.h5p-question-check-answer').click();
+  expect(await page.frames()[1].evaluate(() => H5P.instances[0].getScore())).toBe(8);
 });
 
 test('crear y reproducir una actividad de clasificar', async ({ page }) => {

@@ -11,7 +11,7 @@ watch(()=>props.activity?.id,async id=>{
  try{
   const lib=await runtime();if(token!==sequence)return;
   const mount=document.createElement('div');mount.id='h5p-container';container.value.replaceChildren(mount);
-  await new lib.H5P(mount,{h5pJsonPath:`${props.base}/api/activities/${id}/h5p`,librariesPath:props.base+'/h5p-libraries',frameJs:props.base+'/assets/frame.bundle.js',frameCss:props.base+'/assets/h5p.css',frame:true,fullScreen:true});
+  await new lib.H5P(mount,{h5pJsonPath:`${props.base}/api/activities/${id}/h5p`,librariesPath:props.base+'/h5p-libraries',frameJs:props.base+'/assets/frame.bundle.js',frameCss:props.base+'/assets/h5p.css',frame:true,fullScreen:true,assetsRequestFetchOptions:props.activity?.type==='matching'?{cache:'no-cache'}:undefined});
   if(token!==sequence){mount.remove();return;}
   loading.value=false;
   const dispatcher=window.H5P?.externalDispatcher;

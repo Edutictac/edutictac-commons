@@ -4707,7 +4707,8 @@ var vo = { class: "compound-step" }, yo = { class: "section-heading" }, bo = { c
 						frameJs: t.base + "/assets/frame.bundle.js",
 						frameCss: t.base + "/assets/h5p.css",
 						frame: !0,
-						fullScreen: !0
+						fullScreen: !0,
+						assetsRequestFetchOptions: t.activity?.type === "matching" ? { cache: "no-cache" } : void 0
 					}), c !== a) {
 						l.remove();
 						return;
