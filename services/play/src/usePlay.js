@@ -14,6 +14,7 @@ export function usePlay(){
  const commonsBase=ref(null);
  const drafts={},catalog=ref({}),catalogDraft=reactive({subjects:'',educational_stages:'',levels:'',tags:''}),catalogMessage=ref('');
  const library=reactive({items:[],total:0,offset:0,hasMore:false,term:'',type:'',loading:false,error:false});
+ const latest=ref([]);
  const bank=reactive({items:[],term:'',loading:false,error:false}),bankDialog=ref();
  const adminInput=ref(''),adminToken=ref('');
  try{adminToken.value=localStorage.getItem('edutictac-play-admin-token')||'';localStorage.removeItem('edutictac-play-admin-token');}catch{}
@@ -45,7 +46,8 @@ export function usePlay(){
  // Si el xip veu que s'ha entrat o eixit en una altra pestanya, es revisen els permisos.
  function sessionChanged(){if(active&&ready.value)void loadPublication();}
  function choose(type){if(!TYPES.includes(type)||savingDisabled.value)return;drafts[form.value.type]=form.value;if(!drafts[type])drafts[type]={...newActivity(type),title:form.value.title,question:form.value.question};form.value=drafts[type];view.value='editor';formError.value='';++epoch;}
- function go(where){if(busy.value)return;if(where==='editor'&&saved.value&&!saved.value.id.startsWith('preview-')&&!saved.value.owned)return;++epoch;view.value=where;message.value='';formError.value='';bankDialog.value?.close();++bankSeq;}
+ function go(where){if(busy.value)return;if(where==='editor'&&saved.value&&!saved.value.id.startsWith('preview-')&&!saved.value.owned)return;++epoch;view.value=where;message.value='';formError.value='';bankDialog.value?.close();++bankSeq;if(where==='home')void loadLatest();}
+ async function loadLatest(){try{const data=await api('/activities?'+new URLSearchParams({limit:'3'}));if(active)latest.value=data.items||[];}catch{latest.value=[];}}
  async function saveActivity(preview=false){
   if(savingDisabled.value)return;const payload=serialize(form.value,language.value),errors=validate(payload,t);formError.value=errors.join(' ');if(errors.length)return;
   busy.value=true;const current=epoch;
@@ -70,7 +72,7 @@ export function usePlay(){
  async function removeActivity(id,inLibrary=false){
   if(busy.value||!window.confirm(t(inLibrary?'libraryConfirmDelete':'deleteConfirm')))return;
   busy.value=true;const current=epoch;
-  try{await api('/activities/'+id,{method:'DELETE',headers:adminToken.value?{'X-Admin-Token':adminToken.value}:{}});if(current!==epoch||!active)return;if(inLibrary)await loadLibrary();else{saved.value=null;localStorage.removeItem(DRAFT);history.replaceState({},'',base+'/');view.value='home';}}
+  try{await api('/activities/'+id,{method:'DELETE',headers:adminToken.value?{'X-Admin-Token':adminToken.value}:{}});if(current!==epoch||!active)return;if(inLibrary)await loadLibrary();else{saved.value=null;localStorage.removeItem(DRAFT);history.replaceState({},'',base+'/');view.value='home';void loadLatest();}}
   catch{if(current===epoch){message.value='deleteError';messageError.value=true;if(inLibrary)library.error=true;}}
   finally{if(current===epoch)busy.value=false;}
  }
@@ -129,7 +131,7 @@ export function usePlay(){
   const id=location.pathname.match(new RegExp('^'+base+'/([A-Za-z0-9]{8})$'))?.[1]||new URLSearchParams(location.search).get('activity');
   if(id){try{if(!/^[A-Za-z0-9]{8}$/.test(id))throw Error();const data=await api('/activities/'+id);if(bootEpoch!==epoch||!active)return;saved.value=data;await loadPublication();if(bootEpoch!==epoch||!active)return;form.value=hydrate(data);drafts[form.value.type]=form.value;view.value='previewPanel';message.value='saved';}catch{formError.value=t('libraryError');}}
   else{try{const draft=JSON.parse(localStorage.getItem(DRAFT)||'null');if(draft&&TYPES.includes(draft.type)&&(!draft._owner||draft._owner===capabilities.value.actor)){form.value=hydrate(draft);drafts[form.value.type]=form.value;}}catch{localStorage.removeItem(DRAFT);}}
-  ready.value=true;document.documentElement.dataset.playReady='true';
+  ready.value=true;document.documentElement.dataset.playReady='true';if(view.value==='home')void loadLatest();
  }
  function hide(){previousActor=capabilities.value.actor||'';document.getElementById('playApp')?.setAttribute('hidden','');active=false;++epoch;++librarySeq;++bankSeq;++catalogSeq;adminToken.value='';adminInput.value='';capabilities.value={};submission.value=null;busy.value=false;bankDialog.value?.close();}
  async function show(event){
@@ -140,11 +142,11 @@ export function usePlay(){
   if(saved.value?.visibility==='private'){
    try{saved.value=await api('/activities/'+saved.value.id);}catch{saved.value=null;form.value=newActivity();view.value='home';}
   }
-  await nextTick();document.getElementById('playApp')?.removeAttribute('hidden');void loadCatalog();if(view.value==='library')void loadLibrary();
+  await nextTick();document.getElementById('playApp')?.removeAttribute('hidden');void loadCatalog();if(view.value==='library')void loadLibrary();if(view.value==='home')void loadLatest();
  }
 
  function online(){void bridge.flush();}
  onMounted(()=>{void boot();window.addEventListener('online',online);window.addEventListener('pagehide',hide);window.addEventListener('pageshow',show);window.addEventListener('edutictac:sessionchange',sessionChanged);});
  onBeforeUnmount(()=>{hide();window.removeEventListener('online',online);window.removeEventListener('pagehide',hide);window.removeEventListener('pageshow',show);window.removeEventListener('edutictac:sessionchange',sessionChanged);});
- return {capabilities,submission,integrated,commonsBase,rebostEnabled,banksEnabled,submitReview,loadPublication,base,TYPES,CHILD_TYPES,TYPE_LABELS,language,t,view,ready,busy,form,saved,formError,message,messageError,imageTasks,savingDisabled,demoUrl,qrUrl,showQr,closeQr,catalog,catalogDraft,catalogMessage,library,bank,bankDialog,adminInput,adminToken,published,editorTitle,choose,go,changeLanguage,saveActivity,loadLibrary,openLibrary,filterLibrary,applyToken,removeActivity,publication,saveCatalog,openBank,loadBank,addFromBank,closeBank,copy,onStatement:bridge.report};
+ return {capabilities,submission,integrated,commonsBase,rebostEnabled,banksEnabled,submitReview,loadPublication,base,TYPES,CHILD_TYPES,TYPE_LABELS,language,t,view,ready,busy,form,saved,formError,message,messageError,imageTasks,savingDisabled,demoUrl,qrUrl,showQr,closeQr,latest,catalog,catalogDraft,catalogMessage,library,bank,bankDialog,adminInput,adminToken,published,editorTitle,choose,go,changeLanguage,saveActivity,loadLibrary,openLibrary,filterLibrary,applyToken,removeActivity,publication,saveCatalog,openBank,loadBank,addFromBank,closeBank,copy,onStatement:bridge.report};
 }

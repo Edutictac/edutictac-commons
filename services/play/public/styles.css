@@ -104,3 +104,11 @@ button:disabled { opacity:.6; cursor:not-allowed; }
 .rebost-provider select{min-width:180px;padding:8px;font:inherit;border:1px solid var(--field-line);border-radius:8px;background:var(--panel);color:var(--ink)}
 .rebost-bank-note{flex:1 1 240px;margin:0;color:var(--muted);font-size:12px}
 .rebost-bank-note strong{color:var(--danger)}
+
+.home-actions{justify-content:center;margin:18px 0 0}
+.latest-block{border-top:1px solid var(--line);margin-top:30px;padding-top:24px;text-align:left}
+.latest-block h2{font-size:22px;margin:2px 0 14px}
+.latest-block h3{font-size:17px;margin:0}
+.latest-block .library-card{text-align:left}
+.latest-grid{grid-template-columns:repeat(auto-fill,minmax(210px,1fr))}
+.latest-block .actions{margin-top:16px}

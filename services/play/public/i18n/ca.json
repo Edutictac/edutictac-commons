@@ -282,5 +282,8 @@
     "nonCommercial": "Ús no comercial",
     "error": "No s’ha pogut consultar el banc extern.",
     "imageError": "La imatge del banc no s’ha pogut usar."
-  }
+  },
+  "latestEyebrow": "Biblioteca",
+  "latestTitle": "Últimes incorporacions",
+  "librarySeeAll": "Veure tota la biblioteca"
 }

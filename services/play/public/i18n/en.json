@@ -282,5 +282,8 @@
     "nonCommercial": "Non-commercial use",
     "error": "Could not reach the external bank.",
     "imageError": "This bank image cannot be used."
-  }
+  },
+  "latestEyebrow": "Library",
+  "latestTitle": "Latest additions",
+  "librarySeeAll": "See the whole library"
 }

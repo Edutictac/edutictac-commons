@@ -81,6 +81,21 @@ test('solo el creador puede abrir el editor de una actividad guardada', async ({
   await other.close();
 });
 
+test('la portada muestra las últimas incorporaciones y el acceso a la biblioteca', async ({ page }) => {
+  await page.route('**/play/api/activities?limit=3', async (route) => {
+    await route.fulfill({ json: { items: [{
+      id: 'Ab12Cd34', type: 'true-false', title: 'Última incorporación',
+      createdAt: '2026-11-16T00:00:00+00:00', owned: false,
+    }], total: 1, limit: 3, offset: 0, hasMore: false } });
+  });
+  await openPlay(page);
+  const latest = page.locator('#latest');
+  await expect(latest).toContainText('Última incorporación');
+  await expect(latest.getByRole('link', { name: 'Abrir' })).toHaveAttribute('href', '/play/Ab12Cd34');
+  await expect(page.locator('#openLibrary')).toBeVisible();
+  await expect(latest.getByRole('button', { name: 'Ver toda la biblioteca' })).toBeVisible();
+});
+
 test('crear y reproducir un reto con varias actividades', async ({ page }) => {
   await openPlay(page);
   await page.getByRole('button', { name: 'Modo reto' }).click();
@@ -516,7 +531,7 @@ test('biblioteca: lista, filtra y borra actividades con token', async ({ page, r
   await page.getByRole('button', { name: 'Ver biblioteca' }).click();
   await page.locator('#librarySearch').fill(marker);
   await page.getByRole('button', { name: 'Buscar' }).click();
-  await expect(page.locator('.library-card')).toHaveCount(2);
+  await expect(page.locator('#libraryList .library-card')).toHaveCount(2);
   await expect(page.getByRole('button', { name: 'Borrar' })).toHaveCount(0);
   await page.locator('.library-admin summary').click();
   await page.locator('#libraryToken').fill('test-admin-token');
@@ -524,7 +539,7 @@ test('biblioteca: lista, filtra y borra actividades con token', async ({ page, r
   await expect(page.getByRole('button', { name: 'Borrar' })).toHaveCount(2);
   page.on('dialog', (dialog) => dialog.accept());
   await page.getByRole('button', { name: 'Borrar' }).first().click();
-  await expect(page.locator('.library-card')).toHaveCount(1);
+  await expect(page.locator('#libraryList .library-card')).toHaveCount(1);
   await page.getByRole('button', { name: 'Borrar' }).first().click();
-  await expect(page.locator('.library-card')).toHaveCount(0);
+  await expect(page.locator('#libraryList .library-card')).toHaveCount(0);
 });
