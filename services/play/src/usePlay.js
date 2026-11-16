@@ -48,6 +48,24 @@ export function usePlay(){
  function choose(type){if(!TYPES.includes(type)||savingDisabled.value)return;drafts[form.value.type]=form.value;if(!drafts[type])drafts[type]={...newActivity(type),title:form.value.title,question:form.value.question};form.value=drafts[type];view.value='editor';formError.value='';++epoch;}
  function go(where){if(busy.value)return;if(where==='editor'&&saved.value&&!saved.value.id.startsWith('preview-')&&!saved.value.owned)return;++epoch;view.value=where;message.value='';formError.value='';bankDialog.value?.close();++bankSeq;if(where==='home')void loadLatest();}
  async function loadLatest(){try{const data=await api('/activities?'+new URLSearchParams({limit:'3'}));if(active)latest.value=data.items||[];}catch{latest.value=[];}}
+ async function openActivity(id,push=true){
+  if(busy.value||!id||!/^[A-Za-z0-9]{8}$/.test(String(id)))return;
+  busy.value=true;const current=epoch;
+  try{
+   const data=await api('/activities/'+id);if(current!==epoch||!active)return;
+   saved.value=data;await loadPublication();if(current!==epoch||!active)return;
+   form.value=hydrate(data);drafts[form.value.type]=form.value;
+   view.value='previewPanel';message.value='saved';messageError.value=false;formError.value='';
+   if(push)history.pushState({play:id},'',base+'/'+id+bridge.query());
+  }catch{if(current===epoch)formError.value=t('libraryError');}
+  finally{if(current===epoch)busy.value=false;}
+ }
+ function popstate(){
+  if(!active)return;
+  const match=location.pathname.match(new RegExp('^'+base+'/([A-Za-z0-9]{8})$'));
+  if(match){if(saved.value?.id!==match[1])void openActivity(match[1],false);return;}
+  ++epoch;view.value='home';message.value='';formError.value='';void loadLatest();
+ }
  async function saveActivity(preview=false){
   if(savingDisabled.value)return;const payload=serialize(form.value,language.value),errors=validate(payload,t);formError.value=errors.join(' ');if(errors.length)return;
   busy.value=true;const current=epoch;
@@ -146,7 +164,7 @@ export function usePlay(){
  }
 
  function online(){void bridge.flush();}
- onMounted(()=>{void boot();window.addEventListener('online',online);window.addEventListener('pagehide',hide);window.addEventListener('pageshow',show);window.addEventListener('edutictac:sessionchange',sessionChanged);});
- onBeforeUnmount(()=>{hide();window.removeEventListener('online',online);window.removeEventListener('pagehide',hide);window.removeEventListener('pageshow',show);window.removeEventListener('edutictac:sessionchange',sessionChanged);});
- return {capabilities,submission,integrated,commonsBase,rebostEnabled,banksEnabled,submitReview,loadPublication,base,TYPES,CHILD_TYPES,TYPE_LABELS,language,t,view,ready,busy,form,saved,formError,message,messageError,imageTasks,savingDisabled,demoUrl,qrUrl,showQr,closeQr,latest,catalog,catalogDraft,catalogMessage,library,bank,bankDialog,adminInput,adminToken,published,editorTitle,choose,go,changeLanguage,saveActivity,loadLibrary,openLibrary,filterLibrary,applyToken,removeActivity,publication,saveCatalog,openBank,loadBank,addFromBank,closeBank,copy,onStatement:bridge.report};
+ onMounted(()=>{void boot();window.addEventListener('online',online);window.addEventListener('pagehide',hide);window.addEventListener('pageshow',show);window.addEventListener('popstate',popstate);window.addEventListener('edutictac:sessionchange',sessionChanged);});
+ onBeforeUnmount(()=>{hide();window.removeEventListener('online',online);window.removeEventListener('pagehide',hide);window.removeEventListener('pageshow',show);window.removeEventListener('popstate',popstate);window.removeEventListener('edutictac:sessionchange',sessionChanged);});
+ return {capabilities,submission,integrated,commonsBase,rebostEnabled,banksEnabled,submitReview,loadPublication,base,TYPES,CHILD_TYPES,TYPE_LABELS,language,t,view,ready,busy,form,saved,formError,message,messageError,imageTasks,savingDisabled,demoUrl,qrUrl,showQr,closeQr,latest,catalog,catalogDraft,catalogMessage,library,bank,bankDialog,adminInput,adminToken,published,editorTitle,choose,go,changeLanguage,saveActivity,openActivity,loadLibrary,openLibrary,filterLibrary,applyToken,removeActivity,publication,saveCatalog,openBank,loadBank,addFromBank,closeBank,copy,onStatement:bridge.report};
 }

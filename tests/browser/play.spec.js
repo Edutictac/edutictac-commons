@@ -81,6 +81,29 @@ test('solo el creador puede abrir el editor de una actividad guardada', async ({
   await other.close();
 });
 
+test('el token de administración permite borrar desde dentro de una actividad abierta desde la biblioteca', async ({ page, request }) => {
+  const title = `Admin dentro ${Date.now()}`;
+  const created = await request.post('/play/api/activities', { data: { type: 'true-false', title, question: 'El agua moja.', correct: true } });
+  const id = (await created.json()).id;
+  await openPlay(page);
+  await page.getByRole('button', { name: 'Ver biblioteca' }).click();
+  await page.locator('#librarySearch').fill(title);
+  await page.locator('#libraryFilter').click();
+  await page.locator('.library-admin summary').click();
+  await page.locator('#libraryToken').fill('test-admin-token');
+  await page.locator('#libraryTokenSave').click();
+  const card = page.locator('#libraryList article').filter({ hasText: title });
+  await expect(card).toBeVisible();
+  await card.getByRole('link', { name: 'Abrir' }).click();
+  await expect(page).toHaveURL(new RegExp('/play/' + id + '$'));
+  await expect(page.locator('#deleteSaved')).toBeVisible();
+  page.once('dialog', (dialog) => dialog.accept());
+  await page.locator('#deleteSaved').click();
+  await expect(page).toHaveURL(/\/play\/$/);
+  const gone = await request.get('/play/api/activities/' + id);
+  expect(gone.status()).toBe(404);
+});
+
 test('la portada muestra las últimas incorporaciones y el acceso a la biblioteca', async ({ page }) => {
   await page.route('**/play/api/activities?limit=3', async (route) => {
     await route.fulfill({ json: { items: [{
