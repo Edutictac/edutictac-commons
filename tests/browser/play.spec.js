@@ -328,6 +328,7 @@ test('crear y reproducir una actividad de relacionar', async ({ page }) => {
   await expect(player.locator('.h5p-draggable.h5p-wrong')).toHaveCount(2);
   expect(await player.evaluate(() => H5P.instances[0].getScore())).toBe(0);
   await player.locator('.h5p-question-try-again').click();
+  await expect.poll(() => player.evaluate(() => H5P.jQuery('.h5p-draggable:animated').length)).toBe(0);
   for (let i = 0; i < 2; i++) {
     if (test.info().project.name === 'desktop') {
       await cards[i].scrollIntoViewIfNeeded();
@@ -348,6 +349,7 @@ test('crear y reproducir una actividad de relacionar', async ({ page }) => {
   await expect(player.locator('.h5p-draggable.h5p-wrong')).toHaveCount(0);
   await expect(player.locator('.h5p-draggable.h5p-correct')).toHaveCount(2);
   await expect(player.getByText('¡Todo correcto!', { exact: true })).toBeVisible();
+  await expect(player.locator('.h5p-joubelui-score-numeric')).toHaveText('2/2');
   expect(await player.evaluate(() => H5P.instances[0].getScore())).toBe(2);
   await page.getByRole('button', { name: 'Guardar' }).click();
   await expect(page.locator('#download')).toBeVisible();
