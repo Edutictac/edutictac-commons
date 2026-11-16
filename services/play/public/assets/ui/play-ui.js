@@ -4645,17 +4645,25 @@ var vo = { class: "compound-step" }, yo = { class: "section-heading" }, bo = { c
 	}
 }, Ac = {
 	key: 0,
-	role: "alert"
+	class: "player-loading",
+	role: "status"
 }, jc = {
+	key: 1,
+	role: "alert"
+}, Mc = {
 	__name: "H5PPlayer",
 	props: {
 		base: String,
 		activity: Object,
-		onStatement: Function
+		onStatement: Function,
+		loadingLabel: {
+			type: String,
+			default: "Cargando actividad…"
+		}
 	},
 	setup(e) {
-		let t = e, n = /* @__PURE__ */ H(), r = /* @__PURE__ */ H(!1), i = 0, a = () => {};
-		async function o() {
+		let t = e, n = /* @__PURE__ */ H(), r = /* @__PURE__ */ H(!1), i = /* @__PURE__ */ H(!0), a = 0, o = () => {};
+		async function s() {
 			return window._h5pReady || (window._h5pReady = new Promise((e, n) => {
 				let r = document.createElement("script");
 				r.src = t.base + "/assets/main.bundle.js", r.onload = () => {
@@ -4666,75 +4674,80 @@ var vo = { class: "compound-step" }, yo = { class: "section-heading" }, bo = { c
 			})), await window._h5pReady, window._h5pCtor || window.H5PStandalone;
 		}
 		return Rn(() => t.activity?.id, async (e) => {
-			let s = ++i;
-			if (a(), r.value = !1, await bn(), e && n.value) {
+			let c = ++a;
+			if (o(), r.value = !1, i.value = !0, await bn(), e && n.value) {
 				n.value.replaceChildren();
 				try {
-					let r = await o();
-					if (s !== i) return;
-					let c = document.createElement("div");
-					if (c.id = "h5p-container", n.value.replaceChildren(c), await new r.H5P(c, {
+					let r = await s();
+					if (c !== a) return;
+					let l = document.createElement("div");
+					if (l.id = "h5p-container", n.value.replaceChildren(l), await new r.H5P(l, {
 						h5pJsonPath: `${t.base}/api/activities/${e}/h5p`,
 						librariesPath: t.base + "/h5p-libraries",
 						frameJs: t.base + "/assets/frame.bundle.js",
 						frameCss: t.base + "/assets/h5p.css",
 						frame: !0,
 						fullScreen: !0
-					}), s !== i) {
-						c.remove();
+					}), c !== a) {
+						l.remove();
 						return;
 					}
-					let l = window.H5P?.externalDispatcher, u = (n) => {
-						s === i && t.onStatement?.(n.data?.statement, e);
+					i.value = !1;
+					let u = window.H5P?.externalDispatcher, d = (n) => {
+						c === a && t.onStatement?.(n.data?.statement, e);
 					};
-					l?.on("xAPI", u);
-					let d = () => {
-						if (s !== i || t.activity?.type !== "crossword") return;
-						let e = c.querySelector("iframe"), n = e?.contentDocument;
+					u?.on("xAPI", d);
+					let f = () => {
+						if (c !== a || t.activity?.type !== "crossword") return;
+						let e = l.querySelector("iframe"), n = e?.contentDocument;
 						if (!e || !n) return;
 						let r = n.querySelector(".h5p-crossword");
 						e.style.height = `${Math.max(r?.scrollHeight || n.body?.scrollHeight || 0, 420) + 8}px`;
-					}, f = [setTimeout(d, 100), setTimeout(d, 500)];
-					window.addEventListener("resize", d, { passive: !0 }), a = () => {
-						l?.off?.("xAPI", u), f.forEach(clearTimeout), window.removeEventListener("resize", d), c.remove();
+					}, p = [setTimeout(f, 100), setTimeout(f, 500)];
+					window.addEventListener("resize", f, { passive: !0 }), o = () => {
+						u?.off?.("xAPI", d), p.forEach(clearTimeout), window.removeEventListener("resize", f), l.remove();
 					};
 				} catch {
-					s === i && (r.value = !0);
+					c === a && (i.value = !1, r.value = !0);
 				}
 			}
 		}, { immediate: !0 }), rr(() => {
-			++i, a();
-		}), (e, t) => (J(), Y(q, null, [X("div", {
-			id: "player",
-			ref_key: "container",
-			ref: n
-		}, null, 512), r.value ? (J(), Y("p", Ac, [ar(e.$slots, "default")])) : Q("", !0)], 64));
+			++a, o();
+		}), (t, a) => (J(), Y(q, null, [
+			i.value ? (J(), Y("p", Ac, L(e.loadingLabel), 1)) : Q("", !0),
+			X("div", {
+				id: "player",
+				ref_key: "container",
+				ref: n
+			}, null, 512),
+			r.value ? (J(), Y("p", jc, [ar(t.$slots, "default")])) : Q("", !0)
+		], 64));
 	}
-}, Mc = {
+}, Nc = {
 	id: "playReviews",
 	class: "panel"
-}, Nc = { class: "section-heading" }, Pc = ["disabled"], Fc = {
+}, Pc = { class: "section-heading" }, Fc = ["disabled"], Ic = {
 	key: 0,
 	role: "alert",
 	class: "error"
-}, Ic = {
+}, Lc = {
 	key: 1,
 	id: "reviewMessage",
 	role: "status"
-}, Lc = {
+}, Rc = {
 	key: 2,
 	role: "status"
-}, Rc = { key: 3 }, zc = {
+}, zc = { key: 3 }, Bc = {
 	id: "playReviewList",
 	class: "library-grid"
-}, Bc = [
+}, Vc = [
 	"data-review-id",
 	"disabled",
 	"onClick"
-], Vc = { class: "actions" }, Hc = ["disabled"], Uc = ["disabled"], Wc = {
+], Hc = { class: "actions" }, Uc = ["disabled"], Wc = ["disabled"], Gc = {
 	key: 4,
 	id: "playReviewDetail"
-}, Gc = ["disabled"], Kc = { class: "actions" }, qc = ["disabled"], Jc = ["disabled"], Yc = ["disabled"], Xc = {
+}, Kc = ["disabled"], qc = { class: "actions" }, Jc = ["disabled"], Yc = ["disabled"], Xc = ["disabled"], Zc = {
 	__name: "ReviewPanel",
 	props: {
 		base: String,
@@ -4826,18 +4839,18 @@ var vo = { class: "compound-step" }, yo = { class: "section-heading" }, bo = { c
 			p(), window.addEventListener("pagehide", g), window.addEventListener("pageshow", _);
 		}), rr(() => {
 			g(), window.removeEventListener("pagehide", g), window.removeEventListener("pageshow", _);
-		}), (t, u) => (J(), Y("section", Mc, [
-			X("div", Nc, [X("h1", null, L(e.t("reviewsTitle")), 1), X("button", {
+		}), (t, u) => (J(), Y("section", Nc, [
+			X("div", Pc, [X("h1", null, L(e.t("reviewsTitle")), 1), X("button", {
 				id: "refreshReviews",
 				class: "button secondary",
 				disabled: i.value,
 				onClick: u[0] ||= (e) => p()
-			}, L(e.t("refresh")), 9, Pc)]),
-			a.value ? (J(), Y("p", Fc, L(e.t(a.value)), 1)) : Q("", !0),
-			o.value ? (J(), Y("p", Ic, L(e.t(o.value)), 1)) : Q("", !0),
-			i.value ? (J(), Y("p", Lc, L(e.t("libraryLoading")), 1)) : Q("", !0),
-			!i.value && !n.value.length ? (J(), Y("p", Rc, L(e.t("reviewsEmpty")), 1)) : Q("", !0),
-			X("div", zc, [(J(!0), Y(q, null, K(n.value, (t) => (J(), Y("article", {
+			}, L(e.t("refresh")), 9, Fc)]),
+			a.value ? (J(), Y("p", Ic, L(e.t(a.value)), 1)) : Q("", !0),
+			o.value ? (J(), Y("p", Lc, L(e.t(o.value)), 1)) : Q("", !0),
+			i.value ? (J(), Y("p", Rc, L(e.t("libraryLoading")), 1)) : Q("", !0),
+			!i.value && !n.value.length ? (J(), Y("p", zc, L(e.t("reviewsEmpty")), 1)) : Q("", !0),
+			X("div", Bc, [(J(!0), Y(q, null, K(n.value, (t) => (J(), Y("article", {
 				key: t.id,
 				class: "library-card"
 			}, [
@@ -4848,23 +4861,23 @@ var vo = { class: "compound-step" }, yo = { class: "section-heading" }, bo = { c
 					"data-review-id": t.id,
 					disabled: i.value,
 					onClick: (e) => m(t.id)
-				}, L(e.t("reviewOpen")), 9, Bc)
+				}, L(e.t("reviewOpen")), 9, Vc)
 			]))), 128))]),
-			X("div", Vc, [X("button", {
+			X("div", Hc, [X("button", {
 				id: "reviewsPrev",
 				class: "button secondary",
 				disabled: i.value || c.value === 0,
 				onClick: u[1] ||= (e) => p(Math.max(0, c.value - 25))
-			}, L(e.t("libraryPrev")), 9, Hc), X("button", {
+			}, L(e.t("libraryPrev")), 9, Uc), X("button", {
 				id: "reviewsNext",
 				class: "button secondary",
 				disabled: i.value || !l.value,
 				onClick: u[2] ||= (e) => p(c.value + 25)
-			}, L(e.t("libraryNext")), 9, Uc)]),
-			r.value ? (J(), Y("section", Wc, [
+			}, L(e.t("libraryNext")), 9, Wc)]),
+			r.value ? (J(), Y("section", Gc, [
 				X("h2", null, L(r.value.title), 1),
 				X("p", null, L(e.t("reviewStatus." + r.value.status)), 1),
-				Z(jc, {
+				Z(Mc, {
 					base: e.base,
 					activity: r.value.activity
 				}, {
@@ -4876,34 +4889,34 @@ var vo = { class: "compound-step" }, yo = { class: "section-heading" }, bo = { c
 					"onUpdate:modelValue": u[3] ||= (e) => s.value = e,
 					maxlength: "2000",
 					disabled: i.value
-				}, null, 8, Gc), [[$, s.value]])]),
-				X("div", Kc, [
+				}, null, 8, Kc), [[$, s.value]])]),
+				X("div", qc, [
 					r.value.status === "pending" ? (J(), Y("button", {
 						key: 0,
 						id: "approvePlay",
 						class: "button",
 						disabled: i.value,
 						onClick: u[4] ||= (e) => h("approve")
-					}, L(e.t("reviewApprove")), 9, qc)) : Q("", !0),
+					}, L(e.t("reviewApprove")), 9, Jc)) : Q("", !0),
 					r.value.status === "pending" ? (J(), Y("button", {
 						key: 1,
 						id: "returnPlay",
 						class: "button secondary",
 						disabled: i.value,
 						onClick: u[5] ||= (e) => h("return")
-					}, L(e.t("reviewReturn")), 9, Jc)) : Q("", !0),
+					}, L(e.t("reviewReturn")), 9, Yc)) : Q("", !0),
 					r.value.status === "approved" ? (J(), Y("button", {
 						key: 2,
 						id: "withdrawPlay",
 						class: "button secondary",
 						disabled: i.value,
 						onClick: u[6] ||= (e) => h("withdraw")
-					}, L(e.t("unpublishRecursos")), 9, Yc)) : Q("", !0)
+					}, L(e.t("unpublishRecursos")), 9, Xc)) : Q("", !0)
 				])
 			])) : Q("", !0)
 		]));
 	}
-}, Zc = /* @__PURE__ */ c((/* @__PURE__ */ o(((e, t) => {
+}, Qc = /* @__PURE__ */ c((/* @__PURE__ */ o(((e, t) => {
 	var n = function() {
 		var e = function(e, t) {
 			var r = e, a = n[t], p = null, m = 0, h = null, g = [], v = {}, y = function(e, t) {
@@ -6950,10 +6963,10 @@ var vo = { class: "compound-step" }, yo = { class: "section-heading" }, bo = { c
 	})(function() {
 		return n;
 	});
-})))()), Qc = { class: "qr-card" }, $c = { id: "qrDialogTitle" }, el = ["aria-label"], tl = { class: "qr-note" }, nl = ["value", "aria-label"], rl = { class: "qr-actions" }, il = {
+})))()), $c = { class: "qr-card" }, el = { id: "qrDialogTitle" }, tl = ["aria-label"], nl = { class: "qr-note" }, rl = ["value", "aria-label"], il = { class: "qr-actions" }, al = {
 	class: "qr-status",
 	role: "status"
-}, al = {
+}, ol = {
 	__name: "QrShare",
 	props: {
 		url: {
@@ -6971,7 +6984,7 @@ var vo = { class: "compound-step" }, yo = { class: "section-heading" }, bo = { c
 		function c() {
 			let e = a.value;
 			if (!e) return;
-			let t = (0, Zc.default)(0, "M");
+			let t = (0, Qc.default)(0, "M");
 			t.addData(n.url), t.make();
 			let r = t.getModuleCount(), i = r + 8, o = Math.max(220, Math.min(300, Math.floor(window.innerWidth * .7))), s = window.devicePixelRatio || 1, c = Math.floor(o * s / i), l = c * i;
 			e.width = l, e.height = l, e.style.width = o + "px", e.style.height = o + "px";
@@ -7006,8 +7019,8 @@ var vo = { class: "compound-step" }, yo = { class: "section-heading" }, bo = { c
 			"aria-labelledby": "qrDialogTitle",
 			onCancel: Za(l, ["prevent"]),
 			onClick: u
-		}, [X("div", Qc, [
-			X("h2", $c, L(e.t("qrTitle")), 1),
+		}, [X("div", $c, [
+			X("h2", el, L(e.t("qrTitle")), 1),
 			X("p", null, L(e.t("qrHint")), 1),
 			X("canvas", {
 				ref_key: "canvas",
@@ -7015,8 +7028,8 @@ var vo = { class: "compound-step" }, yo = { class: "section-heading" }, bo = { c
 				class: "qr-canvas",
 				role: "img",
 				"aria-label": e.t("qrAria")
-			}, null, 8, el),
-			X("p", tl, L(e.t("qrNote")), 1),
+			}, null, 8, tl),
+			X("p", nl, L(e.t("qrNote")), 1),
 			X("input", {
 				class: "qr-url",
 				type: "text",
@@ -7024,8 +7037,8 @@ var vo = { class: "compound-step" }, yo = { class: "section-heading" }, bo = { c
 				value: e.url,
 				"aria-label": e.t("copy"),
 				onFocus: n[0] ||= (e) => e.target.select()
-			}, null, 40, nl),
-			X("div", rl, [X("button", {
+			}, null, 40, rl),
+			X("div", il, [X("button", {
 				type: "button",
 				class: "button",
 				onClick: d
@@ -7036,113 +7049,113 @@ var vo = { class: "compound-step" }, yo = { class: "section-heading" }, bo = { c
 				class: "button secondary",
 				onClick: l
 			}, L(e.t("qrClose")), 513)]),
-			X("p", il, L(s.value), 1)
+			X("p", al, L(s.value), 1)
 		])], 544));
 	}
-}, ol = { class: "topbar" }, sl = ["href"], cl = { class: "topbar-actions" }, ll = [
+}, sl = { class: "topbar" }, cl = ["href"], ll = { class: "topbar-actions" }, ul = [
 	"data-base",
 	"data-home",
 	"data-lang"
-], ul = {
+], dl = {
 	key: 1,
 	class: "language"
-}, dl = ["value", "disabled"], fl = { class: "shell" }, pl = {
+}, fl = ["value", "disabled"], pl = { class: "shell" }, ml = {
 	key: 0,
 	class: "actions"
-}, ml = ["href"], hl = {
+}, hl = ["href"], gl = {
 	key: 1,
 	role: "status"
-}, gl = {
+}, _l = {
 	id: "home",
 	class: "panel hero"
-}, _l = {
+}, vl = {
 	key: 0,
 	class: "test-phase",
 	role: "note"
-}, vl = {
+}, yl = {
 	key: 1,
 	id: "demoNotice",
 	class: "test-phase demo-notice",
 	role: "note"
-}, yl = ["href"], bl = {
+}, bl = ["href"], xl = {
 	key: 2,
 	class: "muted"
-}, xl = { class: "actions home-actions" }, Sl = ["href"], Cl = { class: "type-grid" }, wl = [
+}, Sl = { class: "actions home-actions" }, Cl = ["href"], wl = { class: "type-grid" }, Tl = [
 	"data-type",
 	"disabled",
 	"onClick"
-], Tl = { class: "type-icon" }, El = {
+], El = { class: "type-icon" }, Dl = {
 	key: 3,
 	id: "latest",
 	class: "latest-block",
 	"aria-labelledby": "latestTitle"
-}, Dl = { class: "section-heading" }, Ol = { class: "eyebrow" }, kl = { id: "latestTitle" }, Al = { class: "library-grid latest-grid" }, jl = { class: "library-meta" }, Ml = { class: "library-card-actions" }, Nl = ["href"], Pl = { class: "actions" }, Fl = {
+}, Ol = { class: "section-heading" }, kl = { class: "eyebrow" }, Al = { id: "latestTitle" }, jl = { class: "library-grid latest-grid" }, Ml = { class: "library-meta" }, Nl = { class: "library-card-actions" }, Pl = ["href"], Fl = { class: "actions" }, Il = {
 	id: "editor",
 	class: "panel",
 	"aria-labelledby": "editorTitle"
-}, Il = { class: "section-heading" }, Ll = { id: "editorTitle" }, Rl = ["disabled"], zl = ["disabled"], Bl = ["placeholder"], Vl = ["placeholder"], Hl = { id: "catalogField" }, Ul = ["id", "onUpdate:modelValue"], Wl = ["value"], Gl = ["value"], Kl = ["value"], ql = {
+}, Ll = { class: "section-heading" }, Rl = { id: "editorTitle" }, zl = ["disabled"], Bl = ["disabled"], Vl = ["placeholder"], Hl = ["placeholder"], Ul = { id: "catalogField" }, Wl = ["id", "onUpdate:modelValue"], Gl = ["value"], Kl = ["value"], ql = ["value"], Jl = {
 	id: "formError",
 	class: "error",
 	role: "alert"
-}, Jl = { class: "actions" }, Yl = ["disabled"], Xl = ["disabled"], Zl = {
+}, Yl = { class: "actions" }, Xl = ["disabled"], Zl = ["disabled"], Ql = {
 	key: 2,
 	id: "previewPanel",
 	class: "panel",
 	"aria-labelledby": "previewTitle"
-}, Ql = { class: "section-heading" }, $l = { class: "eyebrow" }, eu = { id: "previewTitle" }, tu = ["disabled"], nu = {
+}, $l = { class: "section-heading" }, eu = { class: "eyebrow" }, tu = { id: "previewTitle" }, nu = ["disabled"], ru = {
 	key: 0,
 	id: "previewActions",
 	class: "actions"
-}, ru = ["disabled"], iu = {
+}, iu = ["disabled"], au = {
 	key: 1,
 	id: "savedActions",
 	class: "actions"
-}, au = ["href"], ou = ["disabled"], su = ["disabled"], cu = ["disabled"], lu = ["disabled"], uu = {
+}, ou = ["href"], su = ["disabled"], cu = ["disabled"], lu = ["disabled"], uu = ["disabled"], du = {
 	key: 2,
 	id: "submissionStatus",
 	role: "status"
-}, du = { key: 0 }, fu = {
+}, fu = { key: 0 }, pu = {
 	key: 3,
 	class: "error",
 	role: "alert"
-}, pu = {
+}, mu = {
 	id: "library",
 	class: "panel",
 	"aria-labelledby": "libraryTitle"
-}, mu = { class: "section-heading" }, hu = { id: "libraryTitle" }, gu = ["disabled"], _u = ["placeholder", "aria-label"], vu = ["aria-label"], yu = { value: "" }, bu = ["value"], xu = ["disabled"], Su = {
+}, hu = { class: "section-heading" }, gu = { id: "libraryTitle" }, _u = ["disabled"], vu = ["placeholder", "aria-label"], yu = ["aria-label"], bu = { value: "" }, xu = ["value"], Su = ["disabled"], Cu = {
 	id: "libraryStatus",
 	class: "library-status",
 	role: "status"
-}, Cu = {
+}, wu = {
 	id: "libraryList",
 	class: "library-grid"
-}, wu = {
+}, Tu = {
 	key: 0,
 	class: "library-status"
-}, Tu = { class: "library-meta" }, Eu = { class: "library-card-actions" }, Du = ["href"], Ou = ["href"], ku = ["aria-label", "onClick"], Au = ["disabled", "onClick"], ju = { class: "actions" }, Mu = ["disabled"], Nu = ["disabled"], Pu = { class: "library-admin" }, Fu = ["disabled"], Iu = { class: "muted" }, Lu = { id: "catalogAdminEditor" }, Ru = { class: "muted" }, zu = ["id", "onUpdate:modelValue"], Bu = ["disabled"], Vu = {
+}, Eu = { class: "library-meta" }, Du = { class: "library-card-actions" }, Ou = ["href"], ku = ["href"], Au = ["aria-label", "onClick"], ju = ["disabled", "onClick"], Mu = { class: "actions" }, Nu = ["disabled"], Pu = ["disabled"], Fu = { class: "library-admin" }, Iu = ["disabled"], Lu = { class: "muted" }, Ru = { id: "catalogAdminEditor" }, zu = { class: "muted" }, Bu = ["id", "onUpdate:modelValue"], Vu = ["disabled"], Hu = {
 	id: "catalogStatus",
 	class: "muted",
 	role: "status"
-}, Hu = { class: "section-heading" }, Uu = {
+}, Uu = { class: "section-heading" }, Wu = {
 	type: "submit",
 	class: "button secondary"
-}, Wu = {
+}, Gu = {
 	id: "compoundBankList",
 	class: "bank-list"
-}, Gu = {
+}, Ku = {
 	key: 0,
 	class: "library-status"
-}, Ku = {
+}, qu = {
 	key: 1,
 	role: "alert"
-}, qu = {
+}, Ju = {
 	key: 2,
 	class: "library-status"
-}, Ju = { class: "library-meta" }, Yu = ["disabled", "onClick"], Xu = {
+}, Yu = { class: "library-meta" }, Xu = ["disabled", "onClick"], Zu = {
 	key: 4,
 	class: "error",
 	role: "alert"
-}, Zu = {
+}, Qu = {
 	__name: "PlayApp",
 	setup(e) {
 		let t = _o(), { capabilities: n, submission: r, integrated: i, commonsBase: a, rebostEnabled: o, banksEnabled: s, submitReview: c, loadPublication: l, base: u, TYPES: d, TYPE_LABELS: f, language: p, t: m, view: h, ready: g, busy: _, form: v, saved: y, formError: b, message: x, messageError: S, savingDisabled: C, demoUrl: w, qrUrl: T, showQr: E, closeQr: D, latest: ee, catalog: O, catalogDraft: k, catalogMessage: te, library: A, bank: j, bankDialog: ne, adminInput: M, adminToken: re, published: N, editorTitle: P, choose: ie, go: ae, changeLanguage: oe, saveActivity: F, openLibrary: se, filterLibrary: ce, applyToken: I, removeActivity: le, publication: ue, saveCatalog: de, openBank: fe, loadBank: pe, addFromBank: me, closeBank: he, copy: _e, onStatement: ve } = t, ye = [
@@ -7164,17 +7177,17 @@ var vo = { class: "compound-step" }, yo = { class: "section-heading" }, bo = { c
 			let t = p.value === "va" ? "ca" : p.value;
 			return O.value.labels?.[e]?.[t] || e;
 		}
-		return (e, l) => (J(), Y(q, null, [X("header", ol, [X("a", {
+		return (e, l) => (J(), Y(q, null, [X("header", sl, [X("a", {
 			class: "brand",
 			href: U(u) + "/"
-		}, "EduTicTac Play", 8, sl), X("div", cl, [U(a) === null ? Q("", !0) : (J(), Y("edutictac-account", {
+		}, "EduTicTac Play", 8, cl), X("div", ll, [U(a) === null ? Q("", !0) : (J(), Y("edutictac-account", {
 			key: 0,
 			id: "accountWidget",
 			"data-base": U(a),
 			"data-home": U(i) ? (U(a) || "") + "/" : null,
 			"data-lang": U(p),
 			"data-no-reload": ""
-		}, null, 8, ll)), U(a) === null ? (J(), Y("label", ul, [X("span", null, L(U(m)("language")), 1), X("select", {
+		}, null, 8, ul)), U(a) === null ? (J(), Y("label", dl, [X("span", null, L(U(m)("language")), 1), X("select", {
 			id: "language",
 			value: U(p),
 			disabled: U(_),
@@ -7184,26 +7197,26 @@ var vo = { class: "compound-step" }, yo = { class: "section-heading" }, bo = { c
 			X("option", { value: "ca" }, "CA", -1),
 			X("option", { value: "va" }, "VA", -1),
 			X("option", { value: "en" }, "EN", -1)
-		]], 40, dl)])) : Q("", !0)])]), X("main", fl, [
-			U(i) && !U(n).can_publish && !U(n).can_submit ? (J(), Y("p", pl, [X("a", {
+		]], 40, fl)])) : Q("", !0)])]), X("main", pl, [
+			U(i) && !U(n).can_publish && !U(n).can_submit ? (J(), Y("p", ml, [X("a", {
 				class: "button secondary",
 				href: U(u) + "/api/publication/login"
-			}, L(U(m)("teacherLogin")), 9, ml), X("span", null, L(U(m)("loginToSave")), 1)])) : Q("", !0),
-			U(g) ? Q("", !0) : (J(), Y("p", hl, L(U(m)("libraryLoading")), 1)),
-			G(X("section", gl, [
+			}, L(U(m)("teacherLogin")), 9, hl), X("span", null, L(U(m)("loginToSave")), 1)])) : Q("", !0),
+			U(g) ? Q("", !0) : (J(), Y("p", gl, L(U(m)("libraryLoading")), 1)),
+			G(X("section", _l, [
 				l[36] ||= X("p", { class: "eyebrow" }, "EduTicTac Commons", -1),
 				X("h1", null, L(U(m)("homeTitle")), 1),
 				X("p", null, L(U(m)("homeIntro")), 1),
-				U(w) ? (J(), Y("p", _l, [X("strong", null, L(U(m)("testPhaseTitle")), 1), bi(" " + L(U(m)("testPhaseNotice")), 1)])) : Q("", !0),
-				U(w) ? (J(), Y("p", vl, [
+				U(w) ? (J(), Y("p", vl, [X("strong", null, L(U(m)("testPhaseTitle")), 1), bi(" " + L(U(m)("testPhaseNotice")), 1)])) : Q("", !0),
+				U(w) ? (J(), Y("p", yl, [
 					X("strong", null, L(U(m)("demoTitle")), 1),
 					bi(" " + L(U(m)("demoNotice")) + " ", 1),
 					X("a", {
 						id: "demoLink",
 						href: U(w)
-					}, L(U(m)("demoLink")), 9, yl)
-				])) : (J(), Y("p", bl, L(U(m)(U(i) ? "productionNotice" : "anonymousNotice")), 1)),
-				X("div", xl, [
+					}, L(U(m)("demoLink")), 9, bl)
+				])) : (J(), Y("p", xl, L(U(m)(U(i) ? "productionNotice" : "anonymousNotice")), 1)),
+				X("div", Sl, [
 					X("button", {
 						id: "openLibrary",
 						type: "button",
@@ -7221,33 +7234,33 @@ var vo = { class: "compound-step" }, yo = { class: "section-heading" }, bo = { c
 						id: "playLogin",
 						class: "button secondary",
 						href: U(u) + "/api/publication/login"
-					}, L(U(m)("teacherLogin")), 9, Sl)) : Q("", !0)
+					}, L(U(m)("teacherLogin")), 9, Cl)) : Q("", !0)
 				]),
-				X("div", Cl, [(J(!0), Y(q, null, K(U(d), (e, t) => (J(), Y("button", {
+				X("div", wl, [(J(!0), Y(q, null, K(U(d), (e, t) => (J(), Y("button", {
 					key: e,
 					class: "type-card",
 					"data-type": e,
 					disabled: U(_),
 					onClick: (t) => U(ie)(e)
 				}, [
-					X("span", Tl, L(ye[t]), 1),
+					X("span", El, L(ye[t]), 1),
 					X("strong", null, L(U(m)(U(f)[e])), 1),
 					X("small", null, L(U(m)(e === "compound" ? "compound.help" : U(f)[e] + "Help")), 1)
-				], 8, wl))), 128))]),
-				U(ee).length ? (J(), Y("section", El, [
-					X("div", Dl, [X("div", null, [X("p", Ol, L(U(m)("latestEyebrow")), 1), X("h2", kl, L(U(m)("latestTitle")), 1)])]),
-					X("div", Al, [(J(!0), Y(q, null, K(U(ee), (e) => (J(), Y("article", {
+				], 8, Tl))), 128))]),
+				U(ee).length ? (J(), Y("section", Dl, [
+					X("div", Ol, [X("div", null, [X("p", kl, L(U(m)("latestEyebrow")), 1), X("h2", Al, L(U(m)("latestTitle")), 1)])]),
+					X("div", jl, [(J(!0), Y(q, null, K(U(ee), (e) => (J(), Y("article", {
 						key: e.id,
 						class: "library-card"
 					}, [
 						X("h3", null, L(e.title), 1),
-						X("p", jl, L(U(m)(U(f)[e.type] || e.type)) + " · " + L((e.createdAt || "").slice(0, 10)), 1),
-						X("div", Ml, [X("a", {
+						X("p", Ml, L(U(m)(U(f)[e.type] || e.type)) + " · " + L((e.createdAt || "").slice(0, 10)), 1),
+						X("div", Nl, [X("a", {
 							class: "button secondary",
 							href: U(u) + "/" + e.id
-						}, L(U(m)("libraryOpenActivity")), 9, Nl)])
+						}, L(U(m)("libraryOpenActivity")), 9, Pl)])
 					]))), 128))]),
-					X("div", Pl, [X("button", {
+					X("div", Fl, [X("button", {
 						id: "openLibraryAll",
 						type: "button",
 						class: "button",
@@ -7255,12 +7268,12 @@ var vo = { class: "compound-step" }, yo = { class: "section-heading" }, bo = { c
 					}, L(U(m)("librarySeeAll")), 1)])
 				])) : Q("", !0)
 			], 512), [[oa, U(h) === "home" && U(g)]]),
-			G(X("section", Fl, [X("div", Il, [X("div", null, [l[37] ||= X("p", { class: "eyebrow" }, "EduTicTac Play", -1), X("h1", Ll, L(U(P)), 1)]), X("button", {
+			G(X("section", Il, [X("div", Ll, [X("div", null, [l[37] ||= X("p", { class: "eyebrow" }, "EduTicTac Play", -1), X("h1", Rl, L(U(P)), 1)]), X("button", {
 				id: "backHome",
 				class: "button secondary",
 				disabled: U(_),
 				onClick: l[4] ||= (e) => U(ae)("home")
-			}, L(U(m)("back")), 9, Rl)]), X("form", {
+			}, L(U(m)("back")), 9, zl)]), X("form", {
 				id: "activityForm",
 				novalidate: "",
 				onSubmit: l[11] ||= Za((e) => U(F)(!0), ["prevent"])
@@ -7275,14 +7288,14 @@ var vo = { class: "compound-step" }, yo = { class: "section-heading" }, bo = { c
 						maxlength: "200",
 						required: "",
 						placeholder: U(m)("titlePlaceholder")
-					}, null, 8, Bl), [[$, U(v).title]])]),
+					}, null, 8, Vl), [[$, U(v).title]])]),
 					X("label", null, [X("span", null, L(U(m)("question")), 1), G(X("textarea", {
 						id: "question",
 						"onUpdate:modelValue": l[6] ||= (e) => U(v).question = e,
 						maxlength: "2000",
 						required: "",
 						placeholder: U(m)("questionPlaceholder")
-					}, null, 8, Vl), [[$, U(v).question]])]),
+					}, null, 8, Hl), [[$, U(v).question]])]),
 					(J(), fi(kc, {
 						key: U(v),
 						form: U(v),
@@ -7305,7 +7318,7 @@ var vo = { class: "compound-step" }, yo = { class: "section-heading" }, bo = { c
 						"banks",
 						"onBank"
 					])),
-					X("fieldset", Hl, [
+					X("fieldset", Ul, [
 						X("legend", null, L(U(m)("catalog.legend")), 1),
 						(J(), Y(q, null, K([
 							{
@@ -7334,12 +7347,12 @@ var vo = { class: "compound-step" }, yo = { class: "section-heading" }, bo = { c
 							U(v)[e.key] && !(U(O)[e.list] || []).includes(U(v)[e.key]) ? (J(), Y("option", {
 								key: 0,
 								value: U(v)[e.key]
-							}, L(be(U(v)[e.key])), 9, Wl)) : Q("", !0),
+							}, L(be(U(v)[e.key])), 9, Gl)) : Q("", !0),
 							(J(!0), Y(q, null, K(U(O)[e.list] || [], (e) => (J(), Y("option", {
 								key: e,
 								value: e
-							}, L(be(e)), 9, Gl))), 128))
-						], 8, Ul), [[Wa, U(v)[e.key]]])])), 64)),
+							}, L(be(e)), 9, Kl))), 128))
+						], 8, Wl), [[Wa, U(v)[e.key]]])])), 64)),
 						X("label", null, [X("span", null, L(U(m)("catalog.tags")), 1), G(X("select", {
 							id: "activityTags",
 							"onUpdate:modelValue": l[9] ||= (e) => U(v).tags = e,
@@ -7348,74 +7361,76 @@ var vo = { class: "compound-step" }, yo = { class: "section-heading" }, bo = { c
 						}, [(J(!0), Y(q, null, K([.../* @__PURE__ */ new Set([...U(O).tags || [], ...U(v).tags || []])], (e) => (J(), Y("option", {
 							key: e,
 							value: e
-						}, L(be(e)), 9, Kl))), 128))], 512), [[Wa, U(v).tags]])])
+						}, L(be(e)), 9, ql))), 128))], 512), [[Wa, U(v).tags]])])
 					])
-				], 8, zl),
-				X("p", ql, L(U(b)), 1),
-				X("div", Jl, [X("button", {
+				], 8, Bl),
+				X("p", Jl, L(U(b)), 1),
+				X("div", Yl, [X("button", {
 					id: "preview",
 					type: "submit",
 					class: "button",
 					disabled: U(C)
-				}, L(U(m)("preview")), 9, Yl), X("button", {
+				}, L(U(m)("preview")), 9, Xl), X("button", {
 					id: "save",
 					type: "button",
 					class: "button secondary",
 					disabled: U(C),
 					onClick: l[10] ||= (e) => U(F)(!1)
-				}, L(U(m)("save")), 9, Xl)])
+				}, L(U(m)("save")), 9, Zl)])
 			], 32)], 512), [[oa, U(h) === "editor" && U(g)]]),
-			U(h) === "previewPanel" && U(y) ? (J(), Y("section", Zl, [
-				X("div", Ql, [X("div", null, [X("p", $l, L(U(m)("previewEyebrow")), 1), X("h1", eu, L(U(y).title), 1)]), U(y).id.startsWith("preview-") || U(y).owned ? (J(), Y("button", {
+			U(h) === "previewPanel" && U(y) ? (J(), Y("section", Ql, [
+				X("div", $l, [X("div", null, [X("p", eu, L(U(m)("previewEyebrow")), 1), X("h1", tu, L(U(y).title), 1)]), U(y).id.startsWith("preview-") || U(y).owned ? (J(), Y("button", {
 					key: 0,
 					id: "edit",
 					class: "button secondary",
 					disabled: U(_),
 					onClick: l[12] ||= (e) => U(ae)("editor")
-				}, L(U(m)("edit")), 9, tu)) : Q("", !0)]),
-				Z(jc, {
+				}, L(U(m)("edit")), 9, nu)) : Q("", !0)]),
+				Z(Mc, {
 					base: U(u),
 					activity: U(y),
-					"on-statement": U(ve)
+					"on-statement": U(ve),
+					"loading-label": U(m)("playerLoading")
 				}, {
 					default: Nn(() => [bi(L(U(m)("playerError")), 1)]),
 					_: 1
 				}, 8, [
 					"base",
 					"activity",
-					"on-statement"
+					"on-statement",
+					"loading-label"
 				]),
-				U(y).id.startsWith("preview-") ? (J(), Y("div", nu, [X("button", {
+				U(y).id.startsWith("preview-") ? (J(), Y("div", ru, [X("button", {
 					id: "savePreview",
 					class: "button",
 					disabled: U(C),
 					onClick: l[13] ||= (e) => U(F)(!1)
-				}, L(U(m)("save")), 9, ru), X("span", null, L(U(m)("previewOnly")), 1)])) : (J(), Y("div", iu, [
+				}, L(U(m)("save")), 9, iu), X("span", null, L(U(m)("previewOnly")), 1)])) : (J(), Y("div", au, [
 					X("a", {
 						id: "download",
 						class: "button",
 						href: U(u) + "/api/activities/" + U(y).id + "/download"
-					}, L(U(m)("download")), 9, au),
+					}, L(U(m)("download")), 9, ou),
 					!U(N) && U(n).can_publish ? (J(), Y("button", {
 						key: 0,
 						id: "publishRecursos",
 						class: "button",
 						disabled: U(_),
 						onClick: l[14] ||= (e) => U(ue)(!1)
-					}, L(U(m)("publishRecursos")), 9, ou)) : U(N) && U(n).can_publish ? (J(), Y("button", {
+					}, L(U(m)("publishRecursos")), 9, su)) : U(N) && U(n).can_publish ? (J(), Y("button", {
 						key: 1,
 						id: "unpublishRecursos",
 						class: "button secondary",
 						disabled: U(_),
 						onClick: l[15] ||= (e) => U(ue)(!0)
-					}, L(U(m)("unpublishRecursos")), 9, su)) : Q("", !0),
+					}, L(U(m)("unpublishRecursos")), 9, cu)) : Q("", !0),
 					U(n).can_submit ? (J(), Y("button", {
 						key: 2,
 						id: "submitPlayReview",
 						class: "button",
 						disabled: U(_) || ["pending", "approved"].includes(U(r)?.status),
 						onClick: l[16] ||= (...e) => U(c) && U(c)(...e)
-					}, L(U(m)("reviewSubmit")), 9, cu)) : Q("", !0),
+					}, L(U(m)("reviewSubmit")), 9, lu)) : Q("", !0),
 					X("button", {
 						id: "copy",
 						class: "button secondary",
@@ -7433,23 +7448,23 @@ var vo = { class: "compound-step" }, yo = { class: "section-heading" }, bo = { c
 						class: "button secondary",
 						disabled: U(_),
 						onClick: l[19] ||= (e) => U(le)(U(y).id)
-					}, L(U(m)("deleteActivity")), 9, lu)) : Q("", !0)
+					}, L(U(m)("deleteActivity")), 9, uu)) : Q("", !0)
 				])),
-				U(r) ? (J(), Y("p", uu, [bi(L(U(m)("reviewStatus." + U(r).status)), 1), U(r).feedback ? (J(), Y("span", du, " · " + L(U(r).feedback), 1)) : Q("", !0)])) : Q("", !0),
+				U(r) ? (J(), Y("p", du, [bi(L(U(m)("reviewStatus." + U(r).status)), 1), U(r).feedback ? (J(), Y("span", fu, " · " + L(U(r).feedback), 1)) : Q("", !0)])) : Q("", !0),
 				X("p", {
 					id: "savedMessage",
 					class: ge({ error: U(S) }),
 					role: "status"
 				}, L(U(x) ? U(m)(U(x)) : ""), 3),
-				U(b) ? (J(), Y("p", fu, L(U(b)), 1)) : Q("", !0)
+				U(b) ? (J(), Y("p", pu, L(U(b)), 1)) : Q("", !0)
 			])) : Q("", !0),
-			G(X("section", pu, [
-				X("div", mu, [X("div", null, [l[39] ||= X("p", { class: "eyebrow" }, "EduTicTac Play", -1), X("h1", hu, L(U(m)("libraryTitle")), 1)]), X("button", {
+			G(X("section", mu, [
+				X("div", hu, [X("div", null, [l[39] ||= X("p", { class: "eyebrow" }, "EduTicTac Play", -1), X("h1", gu, L(U(m)("libraryTitle")), 1)]), X("button", {
 					id: "libraryBack",
 					class: "button secondary",
 					disabled: U(_),
 					onClick: l[20] ||= (e) => U(ae)("home")
-				}, L(U(m)("back")), 9, gu)]),
+				}, L(U(m)("back")), 9, _u)]),
 				X("form", {
 					class: "library-filters",
 					onSubmit: l[24] ||= Za((e) => U(ce)(), ["prevent"])
@@ -7460,68 +7475,68 @@ var vo = { class: "compound-step" }, yo = { class: "section-heading" }, bo = { c
 						type: "search",
 						placeholder: U(m)("librarySearchPlaceholder"),
 						"aria-label": U(m)("libraryFilter")
-					}, null, 8, _u), [[$, U(A).term]]),
+					}, null, 8, vu), [[$, U(A).term]]),
 					G(X("select", {
 						id: "libraryType",
 						"onUpdate:modelValue": l[22] ||= (e) => U(A).type = e,
 						"aria-label": U(m)("compound.type"),
 						onChange: l[23] ||= (e) => U(ce)()
-					}, [X("option", yu, L(U(m)("libraryAllTypes")), 1), (J(!0), Y(q, null, K(U(d), (e) => (J(), Y("option", {
+					}, [X("option", bu, L(U(m)("libraryAllTypes")), 1), (J(!0), Y(q, null, K(U(d), (e) => (J(), Y("option", {
 						key: e,
 						value: e
-					}, L(U(m)(U(f)[e])), 9, bu))), 128))], 40, vu), [[Wa, U(A).type]]),
+					}, L(U(m)(U(f)[e])), 9, xu))), 128))], 40, yu), [[Wa, U(A).type]]),
 					X("button", {
 						id: "libraryFilter",
 						type: "submit",
 						class: "button secondary",
 						disabled: U(_)
-					}, L(U(m)("libraryFilter")), 9, xu)
+					}, L(U(m)("libraryFilter")), 9, Su)
 				], 32),
-				X("p", Su, L(U(A).loading ? U(m)("libraryLoading") : U(A).error ? U(m)("libraryError") : U(m)("libraryStatus").replace(":from", U(A).total ? U(A).offset + 1 : 0).replace(":to", U(A).offset + U(A).items.length).replace(":total", U(A).total)), 1),
-				X("div", Cu, [!U(A).loading && !U(A).error && !U(A).items.length ? (J(), Y("p", wu, L(U(m)("libraryEmpty")), 1)) : Q("", !0), (J(!0), Y(q, null, K(U(A).items, (e) => (J(), Y("article", {
+				X("p", Cu, L(U(A).loading ? U(m)("libraryLoading") : U(A).error ? U(m)("libraryError") : U(m)("libraryStatus").replace(":from", U(A).total ? U(A).offset + 1 : 0).replace(":to", U(A).offset + U(A).items.length).replace(":total", U(A).total)), 1),
+				X("div", wu, [!U(A).loading && !U(A).error && !U(A).items.length ? (J(), Y("p", Tu, L(U(m)("libraryEmpty")), 1)) : Q("", !0), (J(!0), Y(q, null, K(U(A).items, (e) => (J(), Y("article", {
 					key: e.id,
 					class: "library-card"
 				}, [
 					X("h2", null, L(e.title), 1),
-					X("p", Tu, L(U(m)(U(f)[e.type] || e.type)) + " · " + L((e.createdAt || "").slice(0, 10)) + L(e.owned ? " · " + U(m)("libraryYours") : ""), 1),
-					X("div", Eu, [
+					X("p", Eu, L(U(m)(U(f)[e.type] || e.type)) + " · " + L((e.createdAt || "").slice(0, 10)) + L(e.owned ? " · " + U(m)("libraryYours") : ""), 1),
+					X("div", Du, [
 						X("a", {
 							class: "button",
 							href: U(u) + "/" + e.id
-						}, L(U(m)("libraryOpenActivity")), 9, Du),
+						}, L(U(m)("libraryOpenActivity")), 9, Ou),
 						X("a", {
 							class: "button secondary",
 							href: U(u) + "/api/activities/" + e.id + "/download"
-						}, L(U(m)("download")), 9, Ou),
+						}, L(U(m)("download")), 9, ku),
 						X("button", {
 							type: "button",
 							class: "button secondary",
 							"aria-label": U(m)("qrAria"),
 							onClick: (t) => U(E)(e.id)
-						}, L(U(m)("qr")), 9, ku),
+						}, L(U(m)("qr")), 9, Au),
 						e.owned || U(re) ? (J(), Y("button", {
 							key: 0,
 							type: "button",
 							class: "button secondary",
 							disabled: U(_),
 							onClick: (t) => U(le)(e.id, !0)
-						}, L(U(m)("libraryDelete")), 9, Au)) : Q("", !0)
+						}, L(U(m)("libraryDelete")), 9, ju)) : Q("", !0)
 					])
 				]))), 128))]),
-				X("div", ju, [X("button", {
+				X("div", Mu, [X("button", {
 					id: "libraryPrev",
 					type: "button",
 					class: "button secondary",
 					disabled: U(A).loading || U(_) || U(A).offset <= 0,
 					onClick: l[25] ||= (e) => U(ce)(Math.max(0, U(A).offset - 12))
-				}, L(U(m)("libraryPrev")), 9, Mu), X("button", {
+				}, L(U(m)("libraryPrev")), 9, Nu), X("button", {
 					id: "libraryNext",
 					type: "button",
 					class: "button secondary",
 					disabled: U(A).loading || U(_) || !U(A).hasMore,
 					onClick: l[26] ||= (e) => U(ce)(U(A).offset + 12)
-				}, L(U(m)("libraryNext")), 9, Nu)]),
-				X("details", Pu, [
+				}, L(U(m)("libraryNext")), 9, Pu)]),
+				X("details", Fu, [
 					X("summary", null, L(U(m)("libraryAdmin")), 1),
 					X("label", null, [X("span", null, L(U(m)("libraryAdminToken")), 1), G(X("input", {
 						id: "libraryToken",
@@ -7535,11 +7550,11 @@ var vo = { class: "compound-step" }, yo = { class: "section-heading" }, bo = { c
 						class: "button secondary",
 						disabled: U(_),
 						onClick: l[28] ||= (...e) => U(I) && U(I)(...e)
-					}, L(U(m)("libraryTokenSave")), 9, Fu),
-					X("p", Iu, L(U(m)("libraryAdminHelp")), 1),
-					X("div", Lu, [X("fieldset", null, [
+					}, L(U(m)("libraryTokenSave")), 9, Iu),
+					X("p", Lu, L(U(m)("libraryAdminHelp")), 1),
+					X("div", Ru, [X("fieldset", null, [
 						X("legend", null, L(U(m)("catalogAdmin")), 1),
-						X("p", Ru, L(U(m)("catalogAdminHelp")), 1),
+						X("p", zu, L(U(m)("catalogAdminHelp")), 1),
 						(J(), Y(q, null, K([
 							"subjects",
 							"educational_stages",
@@ -7559,15 +7574,15 @@ var vo = { class: "compound-step" }, yo = { class: "section-heading" }, bo = { c
 							][t],
 							"onUpdate:modelValue": (t) => U(k)[e] = t,
 							rows: "3"
-						}, null, 8, zu), [[$, U(k)[e]]])])), 64)),
+						}, null, 8, Bu), [[$, U(k)[e]]])])), 64)),
 						X("button", {
 							id: "catalogSave",
 							type: "button",
 							class: "button secondary",
 							disabled: U(_),
 							onClick: l[29] ||= (...e) => U(de) && U(de)(...e)
-						}, L(U(m)("catalogSave")), 9, Bu),
-						X("p", Vu, L(U(te) ? U(m)(U(te)) : ""), 1)
+						}, L(U(m)("catalogSave")), 9, Vu),
+						X("p", Hu, L(U(te) ? U(m)(U(te)) : ""), 1)
 					])])
 				])
 			], 512), [[oa, U(h) === "library" && U(g)]]),
@@ -7575,7 +7590,7 @@ var vo = { class: "compound-step" }, yo = { class: "section-heading" }, bo = { c
 				id: "reviewsBack",
 				class: "button secondary",
 				onClick: l[30] ||= (e) => U(ae)("home")
-			}, L(U(m)("back")), 1), Z(Xc, {
+			}, L(U(m)("back")), 1), Z(Zc, {
 				base: U(u),
 				t: U(m)
 			}, null, 8, ["base", "t"])], 64)) : Q("", !0),
@@ -7589,25 +7604,25 @@ var vo = { class: "compound-step" }, yo = { class: "section-heading" }, bo = { c
 				class: "bank-dialog",
 				onSubmit: l[33] ||= Za((...e) => U(he) && U(he)(...e), ["prevent"])
 			}, [
-				X("div", Hu, [X("h2", null, L(U(m)("bank.title")), 1), X("button", Uu, L(U(m)("bank.close")), 1)]),
+				X("div", Uu, [X("h2", null, L(U(m)("bank.title")), 1), X("button", Wu, L(U(m)("bank.close")), 1)]),
 				X("label", null, [X("span", null, L(U(m)("bank.search")), 1), G(X("input", {
 					id: "compoundBankSearch",
 					"onUpdate:modelValue": l[31] ||= (e) => U(j).term = e,
 					type: "search",
 					onInput: l[32] ||= (...e) => U(pe) && U(pe)(...e)
 				}, null, 544), [[$, U(j).term]])]),
-				X("div", Wu, [U(j).loading ? (J(), Y("p", Gu, L(U(m)("bank.loading")), 1)) : U(j).error ? (J(), Y("p", Ku, L(U(m)("libraryError")), 1)) : U(j).items.length ? Q("", !0) : (J(), Y("p", qu, L(U(m)("bank.empty")), 1)), (J(!0), Y(q, null, K(U(j).items, (e) => (J(), Y("article", {
+				X("div", Gu, [U(j).loading ? (J(), Y("p", Ku, L(U(m)("bank.loading")), 1)) : U(j).error ? (J(), Y("p", qu, L(U(m)("libraryError")), 1)) : U(j).items.length ? Q("", !0) : (J(), Y("p", Ju, L(U(m)("bank.empty")), 1)), (J(!0), Y(q, null, K(U(j).items, (e) => (J(), Y("article", {
 					key: e.id,
 					class: "library-card"
-				}, [X("div", null, [X("h3", null, L(e.title), 1), X("p", Ju, L(U(m)(U(f)[e.type])), 1)]), X("button", {
+				}, [X("div", null, [X("h3", null, L(e.title), 1), X("p", Yu, L(U(m)(U(f)[e.type])), 1)]), X("button", {
 					type: "button",
 					class: "button",
 					disabled: U(_),
 					onClick: (t) => U(me)(e.id)
-				}, L(U(m)("bank.addOne")), 9, Yu)]))), 128))])
+				}, L(U(m)("bank.addOne")), 9, Xu)]))), 128))])
 			], 32)], 544),
-			U(h) === "home" && U(b) ? (J(), Y("p", Xu, L(U(b)), 1)) : Q("", !0),
-			U(T) ? (J(), fi(al, {
+			U(h) === "home" && U(b) ? (J(), Y("p", Zu, L(U(b)), 1)) : Q("", !0),
+			U(T) ? (J(), fi(ol, {
 				key: 5,
 				url: U(T),
 				t: U(m),
@@ -7621,7 +7636,7 @@ var vo = { class: "compound-step" }, yo = { class: "section-heading" }, bo = { c
 	}
 };
 // services/play/src/main.js
-function Qu(e) {
-	return to(Zu).mount(e);
+function $u(e) {
+	return to(Qu).mount(e);
 }
-export { Qu as mountPlay };
+export { $u as mountPlay };

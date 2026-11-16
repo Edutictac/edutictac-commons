@@ -112,3 +112,5 @@ button:disabled { opacity:.6; cursor:not-allowed; }
 .latest-block .library-card{text-align:left}
 .latest-grid{grid-template-columns:repeat(auto-fill,minmax(210px,1fr))}
 .latest-block .actions{margin-top:16px}
+
+.player-loading{padding:34px 16px;text-align:center;color:var(--muted)}

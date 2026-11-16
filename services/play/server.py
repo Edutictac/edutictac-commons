@@ -10,6 +10,8 @@ import tempfile
 import threading
 import time
 import zipfile
+from datetime import timezone
+from email.utils import formatdate, parsedate_to_datetime
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -330,6 +332,7 @@ class Handler(BaseHTTPRequestHandler):
             self.send_response(HTTPStatus.OK)
             self.send_header("Content-Type", content_type_for(Path(match.group(2))))
             self.send_header("Content-Length", str(len(body)))
+            self.send_header("Cache-Control", "private, max-age=86400")
             self.end_headers()
             self.wfile.write(body)
             return
@@ -339,12 +342,7 @@ class Handler(BaseHTTPRequestHandler):
             if LIBRARIES_DIR not in candidate.parents or not candidate.is_file():
                 self.send_error(HTTPStatus.NOT_FOUND)
                 return
-            body = candidate.read_bytes()
-            self.send_response(HTTPStatus.OK)
-            self.send_header("Content-Type", content_type_for(candidate))
-            self.send_header("Content-Length", str(len(body)))
-            self.end_headers()
-            self.wfile.write(body)
+            self.send_cached_file(candidate, "private, max-age=31536000, immutable")
             return
         self.serve_static(path)
 
@@ -691,6 +689,52 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    @staticmethod
+    def etag_matches(header: str, etag: str) -> bool:
+        plain = etag.strip('"')
+        for value in (part.strip() for part in header.split(",")):
+            if value == "*":
+                return True
+            if value.startswith("W/"):
+                value = value[2:]
+            if value == etag or value.strip('"') == plain:
+                return True
+        return False
+
+    def send_cached_file(self, path: Path, cache_control: str) -> None:
+        stat = path.stat()
+        etag = f'"{stat.st_mtime_ns:x}-{stat.st_size:x}"'
+        if self.etag_matches(self.headers.get("If-None-Match", ""), etag):
+            self.send_response(HTTPStatus.NOT_MODIFIED)
+            self.send_header("ETag", etag)
+            self.send_header("Cache-Control", cache_control)
+            self.end_headers()
+            return
+        if not self.headers.get("If-None-Match"):
+            modified_since = self.headers.get("If-Modified-Since", "")
+            if modified_since:
+                try:
+                    since = parsedate_to_datetime(modified_since)
+                    if since.tzinfo is None:
+                        since = since.replace(tzinfo=timezone.utc)
+                    if int(stat.st_mtime) <= int(since.timestamp()):
+                        self.send_response(HTTPStatus.NOT_MODIFIED)
+                        self.send_header("ETag", etag)
+                        self.send_header("Cache-Control", cache_control)
+                        self.end_headers()
+                        return
+                except (TypeError, ValueError, OverflowError):
+                    pass
+        body = path.read_bytes()
+        self.send_response(HTTPStatus.OK)
+        self.send_header("Content-Type", content_type_for(path))
+        self.send_header("Content-Length", str(len(body)))
+        self.send_header("Last-Modified", formatdate(stat.st_mtime, usegmt=True))
+        self.send_header("ETag", etag)
+        self.send_header("Cache-Control", cache_control)
+        self.end_headers()
+        self.wfile.write(body)
+
     def serve_static(self, path: str) -> None:
         activity_match = re.fullmatch(rf"/({ACTIVITY_ID_PATTERN})", path)
         if activity_match and read_activity(activity_match.group(1)):
@@ -701,14 +745,7 @@ class Handler(BaseHTTPRequestHandler):
         if PUBLIC_DIR not in candidate.parents or not candidate.is_file():
             self.send_error(HTTPStatus.NOT_FOUND)
             return
-        content_type = {".html": "text/html; charset=utf-8", ".js": "text/javascript", ".css": "text/css", ".json": "application/json"}.get(candidate.suffix, "application/octet-stream")
-        body = candidate.read_bytes()
-        self.send_response(HTTPStatus.OK)
-        self.send_header("Content-Type", content_type)
-        self.send_header("Content-Length", str(len(body)))
-        self.send_header("Cache-Control", "no-store")
-        self.end_headers()
-        self.wfile.write(body)
+        self.send_cached_file(candidate, "no-cache")
 
     def commons_source(self) -> str:
         """Origen de Commons per a la CSP: d'allí ve el xip de compte i la sessió."""

@@ -285,5 +285,6 @@
   },
   "latestEyebrow": "Library",
   "latestTitle": "Latest additions",
-  "librarySeeAll": "See the whole library"
+  "librarySeeAll": "See the whole library",
+  "playerLoading": "Loading activity…"
 }

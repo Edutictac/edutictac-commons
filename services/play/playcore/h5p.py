@@ -699,11 +699,22 @@ def package_files(activity: dict) -> dict[str, bytes]:
 
 def content_type_for(path: Path) -> str:
     return {
+        ".html": "text/html; charset=utf-8",
+        ".txt": "text/plain; charset=utf-8",
         ".css": "text/css; charset=utf-8",
         ".js": "text/javascript; charset=utf-8",
         ".json": "application/json; charset=utf-8",
+        ".webmanifest": "application/manifest+json; charset=utf-8",
+        ".xml": "application/xml; charset=utf-8",
         ".svg": "image/svg+xml",
+        ".png": "image/png",
+        ".jpg": "image/jpeg",
+        ".jpeg": "image/jpeg",
+        ".gif": "image/gif",
+        ".ico": "image/x-icon",
         ".webp": "image/webp",
+        ".mp4": "video/mp4",
+        ".webm": "video/webm",
         ".woff": "font/woff",
         ".woff2": "font/woff2",
         ".ttf": "font/ttf",
