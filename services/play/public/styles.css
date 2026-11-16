@@ -96,3 +96,11 @@ button:disabled { opacity:.6; cursor:not-allowed; }
 .rebost-sound{display:flex;align-items:center;gap:8px;min-height:100px;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--soft);color:var(--ink);font:inherit;text-align:left;cursor:pointer}
 .rebost-meta,.rebost-credit{color:var(--muted);font-size:11px;margin:0;overflow-wrap:anywhere}
 @media (max-width:560px){.rebost-head{display:grid}.rebost-grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr));max-height:50vh}}
+
+.rebost-sources{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 0}
+.rebost-sources button[aria-pressed="true"]{outline:2px solid var(--accent);outline-offset:1px}
+.rebost-bank-head{display:flex;align-items:end;flex-wrap:wrap;gap:12px;margin:10px 0}
+.rebost-provider{display:flex;flex-direction:column;gap:4px;color:var(--muted);font-size:13px}
+.rebost-provider select{min-width:180px;padding:8px;font:inherit;border:1px solid var(--field-line);border-radius:8px;background:var(--panel);color:var(--ink)}
+.rebost-bank-note{flex:1 1 240px;margin:0;color:var(--muted);font-size:12px}
+.rebost-bank-note strong{color:var(--danger)}

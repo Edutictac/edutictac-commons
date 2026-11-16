@@ -9,7 +9,7 @@ export function usePlay(){
  const language=ref(['es','ca','va','en'].includes(storedLang)?storedLang:'es'),dictionary=ref({});
  const t=key=>key.split('.').reduce((value,k)=>value?.[k],dictionary.value)||key;
  const view=ref('home'),ready=ref(false),busy=ref(false),form=ref(newActivity()),saved=ref(null),formError=ref(''),message=ref(''),messageError=ref(false),imageTasks=ref(0),demoUrl=ref(''),qrUrl=ref('');
- const capabilities=ref({}),submission=ref(null),integrated=ref(false),rebostEnabled=ref(false);
+ const capabilities=ref({}),submission=ref(null),integrated=ref(false),rebostEnabled=ref(false),banksEnabled=ref(false);
  // URL de Commons per al xip de compte (null = Play sense Commons, sense xip).
  const commonsBase=ref(null);
  const drafts={},catalog=ref({}),catalogDraft=reactive({subjects:'',educational_stages:'',levels:'',tags:''}),catalogMessage=ref('');
@@ -125,7 +125,7 @@ export function usePlay(){
   const bootEpoch=epoch;
   await changeLanguage(language.value);try{await bridge.launch();}catch{formError.value=t('launchError');return;}
   if(bootEpoch!==epoch||!active)return;void bridge.flush();void loadCatalog();await loadPublication();if(bootEpoch!==epoch||!active)return;
-  api('/config').then(data=>{integrated.value=Boolean(data.integrated);rebostEnabled.value=Boolean(data.rebost);mountAccount(data.commonsBase);try{const url=new URL(data.commonsUrl);if(data.demo&&['http:','https:'].includes(url.protocol)&&!url.username&&!url.password)demoUrl.value=url.href;}catch{}}).catch(()=>{});
+  api('/config').then(data=>{integrated.value=Boolean(data.integrated);rebostEnabled.value=Boolean(data.rebost);banksEnabled.value=Boolean(data.banks);mountAccount(data.commonsBase);try{const url=new URL(data.commonsUrl);if(data.demo&&['http:','https:'].includes(url.protocol)&&!url.username&&!url.password)demoUrl.value=url.href;}catch{}}).catch(()=>{});
   const id=location.pathname.match(new RegExp('^'+base+'/([A-Za-z0-9]{8})$'))?.[1]||new URLSearchParams(location.search).get('activity');
   if(id){try{if(!/^[A-Za-z0-9]{8}$/.test(id))throw Error();const data=await api('/activities/'+id);if(bootEpoch!==epoch||!active)return;saved.value=data;await loadPublication();if(bootEpoch!==epoch||!active)return;form.value=hydrate(data);drafts[form.value.type]=form.value;view.value='previewPanel';message.value='saved';}catch{formError.value=t('libraryError');}}
   else{try{const draft=JSON.parse(localStorage.getItem(DRAFT)||'null');if(draft&&TYPES.includes(draft.type)&&(!draft._owner||draft._owner===capabilities.value.actor)){form.value=hydrate(draft);drafts[form.value.type]=form.value;}}catch{localStorage.removeItem(DRAFT);}}
@@ -146,5 +146,5 @@ export function usePlay(){
  function online(){void bridge.flush();}
  onMounted(()=>{void boot();window.addEventListener('online',online);window.addEventListener('pagehide',hide);window.addEventListener('pageshow',show);window.addEventListener('edutictac:sessionchange',sessionChanged);});
  onBeforeUnmount(()=>{hide();window.removeEventListener('online',online);window.removeEventListener('pagehide',hide);window.removeEventListener('pageshow',show);window.removeEventListener('edutictac:sessionchange',sessionChanged);});
- return {capabilities,submission,integrated,commonsBase,rebostEnabled,submitReview,loadPublication,base,TYPES,CHILD_TYPES,TYPE_LABELS,language,t,view,ready,busy,form,saved,formError,message,messageError,imageTasks,savingDisabled,demoUrl,qrUrl,showQr,closeQr,catalog,catalogDraft,catalogMessage,library,bank,bankDialog,adminInput,adminToken,published,editorTitle,choose,go,changeLanguage,saveActivity,loadLibrary,openLibrary,filterLibrary,applyToken,removeActivity,publication,saveCatalog,openBank,loadBank,addFromBank,closeBank,copy,onStatement:bridge.report};
+ return {capabilities,submission,integrated,commonsBase,rebostEnabled,banksEnabled,submitReview,loadPublication,base,TYPES,CHILD_TYPES,TYPE_LABELS,language,t,view,ready,busy,form,saved,formError,message,messageError,imageTasks,savingDisabled,demoUrl,qrUrl,showQr,closeQr,catalog,catalogDraft,catalogMessage,library,bank,bankDialog,adminInput,adminToken,published,editorTitle,choose,go,changeLanguage,saveActivity,loadLibrary,openLibrary,filterLibrary,applyToken,removeActivity,publication,saveCatalog,openBank,loadBank,addFromBank,closeBank,copy,onStatement:bridge.report};
 }

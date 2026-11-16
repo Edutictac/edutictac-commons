@@ -1,17 +1,20 @@
 <script setup>
 import {ref,onMounted,onBeforeUnmount} from 'vue';
 import {optimizeImage} from './model.js';
-const props=defineProps({base:{type:String,required:true},t:{type:Function,required:true},language:{type:String,default:'es'},mode:{type:String,default:'image'}});
+const props=defineProps({base:{type:String,required:true},t:{type:Function,required:true},language:{type:String,default:'es'},mode:{type:String,default:'image'},banks:{type:Boolean,default:false}});
 const emit=defineEmits(['close','select']);
 const dialog=ref(),closeButton=ref();
 const sound=props.mode==='sound';
+const source=ref('rebost');
 const collection=ref(sound?'effects':'catalog');
+const providers=ref([]),provider=ref(''),bankEnvelope=ref(null),bankReady=ref(false);
 const term=ref(''),items=ref([]),cursor=ref(''),loading=ref(false),error=ref(''),busyId=ref('');
 const player=ref(),playingId=ref('');
 const LIMIT=24;
 function contentUrl(id){return props.base+'/api/rebost/items/'+id+'/content';}
 function credit(item){return [item.attribution,item.license].filter(Boolean).join(' · ');}
 function duration(value){return value?Math.max(1,Math.round(Number(value)/1000))+' s':'';}
+function providerInfo(){return providers.value.find((entry)=>entry.id===provider.value)||{};}
 async function load(more=false){
   if(loading.value)return;
   loading.value=true;error.value='';
@@ -28,8 +31,41 @@ async function load(more=false){
   }catch{error.value=props.t('rebost.error');}
   finally{loading.value=false;}
 }
-function changeCollection(value){if(collection.value===value)return;collection.value=value;cursor.value='';items.value=[];void load();}
-function search(){cursor.value='';items.value=[];void load();}
+async function ensureProviders(){
+  if(bankReady.value)return true;
+  try{
+    const response=await fetch(props.base+'/api/banks',{cache:'no-store'});
+    const data=await response.json();
+    if(!response.ok)throw new Error(data.error||'banks');
+    providers.value=data.providers||[];
+    if(!provider.value)provider.value=providers.value[0]?.id||'';
+    bankReady.value=true;
+    return true;
+  }catch{error.value=props.t('banks.error');return false;}
+}
+async function loadBanks(){
+  if(loading.value||!provider.value)return;
+  if(!term.value.trim()){items.value=[];bankEnvelope.value=null;return;}
+  loading.value=true;error.value='';
+  const params=new URLSearchParams({q:term.value.trim(),language:props.language||'es'});
+  try{
+    const response=await fetch(props.base+'/api/banks/'+provider.value+'/search?'+params,{cache:'no-store'});
+    const data=await response.json();
+    if(!response.ok)throw new Error(data.error||'banks');
+    items.value=data.items||[];
+    bankEnvelope.value=data;
+  }catch{error.value=props.t('banks.error');}
+  finally{loading.value=false;}
+}
+async function changeSource(next){
+  if(source.value===next)return;
+  source.value=next;cursor.value='';items.value=[];error.value='';bankEnvelope.value=null;
+  if(next==='banks'){if(await ensureProviders())await loadBanks();}
+  else await load();
+}
+function search(){cursor.value='';items.value=[];if(source.value==='banks')void loadBanks();else void load();}
+function changeCollection(value){if(collection.value===value)return;collection.value=value;search();}
+function changeProvider(){search();}
 function playSound(item){
   if(!player.value)return;
   if(playingId.value===item.id){player.value.pause();playingId.value='';return;}
@@ -44,14 +80,15 @@ async function choose(item){
   if(busyId.value)return;
   busyId.value=item.id;
   try{
-    const response=await fetch(contentUrl(item.id));
+    const address=source.value==='banks'?item.content_url:contentUrl(item.id);
+    const response=await fetch(address);
     if(!response.ok)throw new Error('content');
     const blob=await response.blob();
     let data;
     if(sound)data=await readAudio(blob);
-    else data=await optimizeImage(new File([blob],item.name||'rebost',{type:blob.type}));
-    emit('select',{data,credit:credit(item),name:item.name||'',id:item.id});
-  }catch{error.value=props.t(sound?'rebost.audioError':'rebost.imageError');}
+    else data=await optimizeImage(new File([blob],item.name||item.title||'rebost',{type:blob.type}));
+    emit('select',{data,credit:source.value==='banks'?item.credit:credit(item),name:item.title||item.name||'',id:item.id});
+  }catch{error.value=props.t(sound?'rebost.audioError':(source.value==='banks'?'banks.imageError':'rebost.imageError'));}
   finally{busyId.value='';}
 }
 function close(){if(dialog.value?.open)dialog.value.close();emit('close');}
@@ -64,16 +101,20 @@ onBeforeUnmount(()=>{if(dialog.value?.open)dialog.value.close();if(player.value)
   <div class="rebost-head">
    <div>
     <p class="eyebrow">{{t('rebost.eyebrow')}}</p>
-    <h2 id="rebostTitle">{{t(sound?'rebost.titleSounds':'rebost.titleImages')}}</h2>
-    <p class="muted">{{t(sound?'rebost.helpSounds':'rebost.helpImages')}}</p>
+    <h2 id="rebostTitle">{{t(sound?'rebost.titleSounds':(source==='banks'?'banks.title':'rebost.titleImages'))}}</h2>
+    <p class="muted">{{t(sound?'rebost.helpSounds':(source==='banks'?'banks.help':'rebost.helpImages'))}}</p>
    </div>
    <button ref="closeButton" type="button" class="button secondary" @click="close">{{t('rebost.close')}}</button>
+  </div>
+  <div v-if="!sound" class="rebost-sources">
+   <button type="button" class="button secondary" :aria-pressed="source==='rebost'" @click="changeSource('rebost')">{{t('rebost.sourceRebost')}}</button>
+   <button v-if="banks" type="button" class="button secondary" :aria-pressed="source==='banks'" @click="changeSource('banks')">{{t('banks.source')}}</button>
   </div>
   <form class="rebost-filters" @submit.prevent="search">
    <input v-model="term" type="search" :placeholder="t('rebost.searchPlaceholder')" :aria-label="t('rebost.search')">
    <button class="button secondary" type="submit" :disabled="loading">{{t('rebost.search')}}</button>
   </form>
-  <div class="rebost-tabs" role="group" :aria-label="t('rebost.collection')">
+  <div v-if="source==='rebost'" class="rebost-tabs" role="group" :aria-label="t('rebost.collection')">
    <template v-if="sound">
     <button type="button" class="button secondary" :aria-pressed="collection==='effects'" @click="changeCollection('effects')">{{t('rebost.effects')}}</button>
    </template>
@@ -81,6 +122,10 @@ onBeforeUnmount(()=>{if(dialog.value?.open)dialog.value.close();if(player.value)
     <button type="button" class="button secondary" :aria-pressed="collection==='catalog'" @click="changeCollection('catalog')">{{t('rebost.catalog')}}</button>
     <button type="button" class="button secondary" :aria-pressed="collection==='scratch'" @click="changeCollection('scratch')">{{t('rebost.scratch')}}</button>
    </template>
+  </div>
+  <div v-else class="rebost-bank-head">
+   <label class="rebost-provider"><span>{{t('banks.provider')}}</span><select v-model="provider" @change="changeProvider"><option v-for="entry in providers" :key="entry.id" :value="entry.id">{{entry.name}}</option></select></label>
+   <p class="rebost-bank-note">{{t('banks.note')}} <strong v-if="bankEnvelope&&!bankEnvelope.commercial_use">{{t('banks.nonCommercial')}}</strong><span v-if="providerInfo().license"> · {{providerInfo().license}}</span></p>
   </div>
   <p v-if="error" class="error" role="alert">{{error}}</p>
   <p v-if="loading&&!items.length" class="library-status">{{t('rebost.loading')}}</p>
@@ -91,14 +136,14 @@ onBeforeUnmount(()=>{if(dialog.value?.open)dialog.value.close();if(player.value)
      <span aria-hidden="true">{{playingId===item.id?'❚❚':'▶'}}</span>
      <span>{{item.name}}</span>
     </button>
-    <img v-else :src="contentUrl(item.id)" :alt="item.name" loading="lazy">
-    <p class="rebost-meta">{{sound?duration(item.duration_ms):item.name}}</p>
-    <p v-if="credit(item)" class="rebost-credit">{{credit(item)}}</p>
+    <img v-else :src="source==='banks'?item.thumbnail_url:contentUrl(item.id)" :alt="item.title||item.name" loading="lazy">
+    <p class="rebost-meta">{{sound?duration(item.duration_ms):(source==='banks'?item.title:item.name)}}</p>
+    <p v-if="source==='banks'?item.credit:credit(item)" class="rebost-credit">{{source==='banks'?item.credit:credit(item)}}</p>
     <button type="button" class="button" :disabled="!!busyId" @click="choose(item)">{{busyId===item.id?t('rebost.loading'):t('rebost.pick')}}</button>
    </article>
   </div>
   <div class="actions">
-   <button v-if="cursor" type="button" class="button secondary" :disabled="loading" @click="load(true)">{{t('rebost.more')}}</button>
+   <button v-if="source==='rebost'&&cursor" type="button" class="button secondary" :disabled="loading" @click="load(true)">{{t('rebost.more')}}</button>
   </div>
   <audio ref="player" hidden @ended="playingId=''"></audio>
  </dialog>

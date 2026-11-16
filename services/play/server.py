@@ -18,7 +18,7 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import parse_qs, unquote, urlparse, urlsplit
 from urllib.request import Request as UpstreamRequest, urlopen
 
-from playcore import rebost, reviews
+from playcore import banks, rebost, reviews
 from playcore.catalog import read_catalog, read_catalog_labels, save_catalog
 from playcore.config import (
     ACTIVITIES_DIR,
@@ -211,10 +211,41 @@ class Handler(BaseHTTPRequestHandler):
                 "integrated": bool(COMMONS_AUTH_ME_URL),
                 "commonsBase": self.commons_base(),
                 "rebost": rebost.available(),
+                "banks": banks.available(),
             })
             return
         if path == "/api/catalog":
             self.send_json(HTTPStatus.OK, {**read_catalog(), "labels": read_catalog_labels()})
+            return
+        if path == "/api/banks":
+            if not banks.available():
+                self.send_json(HTTPStatus.SERVICE_UNAVAILABLE, {"error": "banks_unavailable"})
+                return
+            self.send_json(HTTPStatus.OK, {"providers": banks.providers()})
+            return
+        match = re.fullmatch(r"/api/banks/([a-z-]+)/search", path)
+        if match:
+            query = parse_qs(urlparse(self.path).query)
+            try:
+                data = banks.search(match.group(1), query.get("q", [""])[0], query.get("language", ["es"])[0], self.bank_owner())
+            except banks.BankError as exc:
+                self.send_json(exc.status, {"error": exc.code})
+                return
+            self.send_json(HTTPStatus.OK, data)
+            return
+        match = re.fullmatch(r"/api/banks/([a-z-]+)/([A-Za-z0-9-]{1,80})/(thumbnail|content)", path)
+        if match:
+            try:
+                body, content_type = banks.image(match.group(1), match.group(2), 300 if match.group(3) == "thumbnail" else 500, self.bank_owner())
+            except banks.BankError as exc:
+                self.send_json(exc.status, {"error": exc.code})
+                return
+            self.send_response(HTTPStatus.OK)
+            self.send_header("Content-Type", content_type)
+            self.send_header("Content-Length", str(len(body)))
+            self.send_header("Cache-Control", "private, max-age=3600")
+            self.end_headers()
+            self.wfile.write(body)
             return
         if path == "/api/rebost/items":
             query = parse_qs(urlparse(self.path).query)
@@ -316,6 +347,13 @@ class Handler(BaseHTTPRequestHandler):
             self.wfile.write(body)
             return
         self.serve_static(path)
+
+    def bank_owner(self) -> str:
+        real = self.headers.get("X-Real-IP", "").strip()
+        if real:
+            return real
+        forwarded = self.headers.get("X-Forwarded-For", "").split(",")[-1].strip()
+        return forwarded or (self.client_address[0] if self.client_address else "anonymous")
 
     def admin_authorized(self) -> bool:
         if not PLAY_ADMIN_TOKEN:

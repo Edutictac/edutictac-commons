@@ -169,6 +169,53 @@ test('Memory: elige imagen y sonido del Rebost y sube un audio propio', async ({
   await expect(page.locator('#download')).toBeVisible();
 });
 
+test('Memory: elige una imagen de ARASAAC desde bancos externos sin cuenta', async ({ page }) => {
+  const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAIAAAAmkwkpAAAAFElEQVR4nGM8ISfHAANMDEgANwcANHYBDK9qubUAAAAASUVORK5CYII=', 'base64');
+  await page.route('**/play/api/banks', async (route) => {
+    await route.fulfill({ json: { providers: [
+      { id: 'arasaac', name: 'ARASAAC', license: 'CC BY-NC-SA 4.0', license_url: 'https://creativecommons.org/licenses/by-nc-sa/4.0/', commercial_use: false },
+      { id: 'openverse', name: 'Openverse', license: 'CC0, CC BY y CC BY-SA', license_url: 'https://openverse.org', commercial_use: true },
+    ] } });
+  });
+  await page.route('**/play/api/banks/arasaac/search?*', async (route) => {
+    await route.fulfill({ json: {
+      provider: 'arasaac', kind: 'image', license: 'CC BY-NC-SA 4.0',
+      license_url: 'https://creativecommons.org/licenses/by-nc-sa/4.0/', commercial_use: false,
+      items: [{
+        provider: 'arasaac', id: 6964, title: 'Casa', keywords: ['casa'],
+        thumbnail_url: '/play/api/banks/arasaac/6964/thumbnail',
+        content_url: '/play/api/banks/arasaac/6964/content',
+        license: 'CC BY-NC-SA 4.0', license_url: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
+        source_url: 'https://arasaac.org/pictograms/6964',
+        credit: 'Sergio Palao / ARASAAC / CC BY-NC-SA 4.0 · https://arasaac.org/pictograms/6964',
+        media_type: 'image/png',
+      }],
+    } });
+  });
+  await page.route('**/play/api/banks/arasaac/6964/content', async (route) => {
+    await route.fulfill({ status: 200, contentType: 'image/png', body: png });
+  });
+  await openPlay(page);
+  await page.getByRole('button', { name: 'Memory' }).click();
+  await page.locator('#title').fill('ARASAAC');
+  await page.locator('#question').fill('Pictograma');
+  await page.locator('.card-text').nth(0).fill('Casa');
+  await page.locator('.card-text').nth(1).fill('Hogar');
+  const card = page.locator('.memory-row').nth(0);
+  await card.locator('.media-field').nth(0).getByRole('button', { name: 'Rebost' }).click();
+  await page.getByRole('button', { name: 'Bancos externos' }).click();
+  await expect(page.locator('#rebostTitle')).toContainText('banco externo');
+  await page.locator('.rebost-dialog input[type=search]').fill('casa');
+  await page.locator('.rebost-dialog').getByRole('button', { name: 'Buscar' }).click();
+  await page.locator('.rebost-card').first().waitFor({ state: 'visible' });
+  await expect(page.locator('.rebost-card').first()).toContainText('ARASAAC');
+  await page.locator('.rebost-card').first().getByRole('button', { name: 'Elegir' }).click();
+  await expect(card.locator('.editor-thumbnail')).toBeVisible();
+  await expect(card.locator('.media-credit').first()).toContainText('ARASAAC');
+  await page.getByRole('button', { name: 'Guardar' }).click();
+  await expect(page.locator('#download')).toBeVisible();
+});
+
 test('crear y reproducir un Memory', async ({ page }) => {
   await openPlay(page);
   await page.getByRole('button', { name: 'Memory' }).click();

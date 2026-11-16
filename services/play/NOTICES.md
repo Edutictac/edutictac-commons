@@ -57,3 +57,12 @@ La interfície pròpia de Play usa Vue 3.5.44 (MIT), compilat localment amb les
 dependències compartides de Commons. La llicència del runtime es distribuïx en
 `public/assets/ui/licenses/vue-MIT.txt`. No substituïx el reproductor H5P ni
 canvia les llicències de les activitats o biblioteques anteriors.
+
+`qrcode-generator` 1.4.4 (MIT, Kazuhiko Arase) genera los códigos QR de
+compartición en el navegador; se instala con npm y no contacta con servicios
+externos.
+
+`playcore/edutictac_banks/` es el paquete compartido `edutictac-banks` 0.2.0
+(MIT), copiado con `scripts/sync-banks.sh` desde su repositorio. No se edita
+aquí: los motores de ARASAAC, Wikimedia Commons, The Met y Openverse, sus
+licencias y las defensas de red viven en ese paquete.

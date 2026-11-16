@@ -270,6 +270,17 @@
     "play": "Play sound",
     "audioError": "This sound cannot be used (OGG, MP3 or WAV, max. 256 KB).",
     "imageError": "This image cannot be used.",
-    "open": "Rebost"
+    "open": "Rebost",
+    "sourceRebost": "Rebost"
+  },
+  "banks": {
+    "source": "External banks",
+    "title": "Choose an image from an external bank",
+    "help": "Free image banks (ARASAAC, Openverse, Wikimedia Commons and The Met). Attribution and licence are shown.",
+    "provider": "Bank",
+    "note": "The licence and attribution are saved with the image.",
+    "nonCommercial": "Non-commercial use",
+    "error": "Could not reach the external bank.",
+    "imageError": "This bank image cannot be used."
   }
 }

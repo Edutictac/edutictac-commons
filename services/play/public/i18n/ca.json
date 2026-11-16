@@ -270,6 +270,17 @@
     "play": "Reproduïx el so",
     "audioError": "El so no s’ha pogut usar (OGG, MP3 o WAV, màx. 256 KB).",
     "imageError": "La imatge no s’ha pogut usar.",
-    "open": "Rebost"
+    "open": "Rebost",
+    "sourceRebost": "Rebost"
+  },
+  "banks": {
+    "source": "Bancs externs",
+    "title": "Tria una imatge d’un banc extern",
+    "help": "Bancs d’imatges lliures (ARASAAC, Openverse, Wikimedia Commons i The Met). Mostrem autoria i llicència.",
+    "provider": "Banc",
+    "note": "La llicència i l’autoria es guarden amb la imatge.",
+    "nonCommercial": "Ús no comercial",
+    "error": "No s’ha pogut consultar el banc extern.",
+    "imageError": "La imatge del banc no s’ha pogut usar."
   }
 }

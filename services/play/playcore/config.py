@@ -38,6 +38,8 @@ RECURSOS_INGEST_TOKEN = os.environ.get("PLAY_INGEST_TOKEN", "").strip()
 PLAY_PUBLIC_URL = os.environ.get("PLAY_PUBLIC_URL", "").rstrip("/")
 # Catàlegs públics del Rebost per al selector de mitjans (només lectura).
 REBOST_API_URL = os.environ.get("PLAY_REBOST_API_URL", "").rstrip("/")
+# Bancs externs (ARASAAC, Openverse, Wikimedia, The Met) sense compte.
+PLAY_BANKS_ENABLED = os.environ.get("PLAY_BANKS_ENABLED", "0").strip().lower() in {"1", "true", "yes"}
 PLAY_DEFAULT_VISIBILITY = os.environ.get("PLAY_DEFAULT_VISIBILITY", "public").strip().lower()
 # Solo debe configurarse detrás de un proxy que elimine y vuelva a establecer
 # esta cabecera a partir de una identidad OIDC validada.

@@ -2,6 +2,8 @@ FROM python:3.12-alpine
 WORKDIR /app
 COPY server.py .
 COPY recursos.py .
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 COPY playcore playcore
 COPY public public
 COPY h5p-libraries h5p-libraries
