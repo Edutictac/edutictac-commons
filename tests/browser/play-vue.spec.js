@@ -95,7 +95,7 @@ test('les imatges esquerra i dreta s’optimitzen sense perdre una càrrega conc
  for(let i=0;i<2;i++){await page.locator('.match-left').nth(i).fill('Left '+i);await page.locator('.match-right').nth(i).fill('Right '+i);}
  const pixels=await page.evaluate(()=>{const canvas=document.createElement('canvas');canvas.width=8;canvas.height=8;const ctx=canvas.getContext('2d');ctx.fillStyle='green';ctx.fillRect(0,0,8,8);return canvas.toDataURL('image/png').split(',')[1];});
  const file={name:'pixel.png',mimeType:'image/png',buffer:Buffer.from(pixels,'base64')};
- await Promise.all([page.locator('.matching-row').first().locator('[data-side=left]').setInputFiles(file),page.locator('.matching-row').first().locator('[data-side=right]').setInputFiles(file)]);
+ await Promise.all([page.locator('.matching-row').first().locator('.media-field input[type=file]').nth(0).setInputFiles(file),page.locator('.matching-row').first().locator('.media-field input[type=file]').nth(1).setInputFiles(file)]);
  await expect(page.locator('.matching-row').first().locator('.editor-thumbnail')).toHaveCount(2);await expect(page.locator('#save')).toBeEnabled();await page.locator('#save').click();await expect(page.locator('#download')).toBeVisible();
  const sent=model.calls.find(call=>call.path==='/activities').body;expect(sent.pairs[0].leftImage).toMatch(/^data:image\/webp;base64,/);expect(sent.pairs[0].rightImage).toMatch(/^data:image\/webp;base64,/);
 });

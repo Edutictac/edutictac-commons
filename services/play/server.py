@@ -18,7 +18,7 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import parse_qs, unquote, urlparse, urlsplit
 from urllib.request import Request as UpstreamRequest, urlopen
 
-from playcore import reviews
+from playcore import rebost, reviews
 from playcore.catalog import read_catalog, read_catalog_labels, save_catalog
 from playcore.config import (
     ACTIVITIES_DIR,
@@ -210,10 +210,34 @@ class Handler(BaseHTTPRequestHandler):
                 "commonsUrl": PLAY_DEMO_COMMONS_URL or None,
                 "integrated": bool(COMMONS_AUTH_ME_URL),
                 "commonsBase": self.commons_base(),
+                "rebost": rebost.available(),
             })
             return
         if path == "/api/catalog":
             self.send_json(HTTPStatus.OK, {**read_catalog(), "labels": read_catalog_labels()})
+            return
+        if path == "/api/rebost/items":
+            query = parse_qs(urlparse(self.path).query)
+            try:
+                data = rebost.list_items({key: values[0] for key, values in query.items()})
+            except rebost.RebostError as exc:
+                self.send_json(exc.status, {"error": exc.code})
+                return
+            self.send_json(HTTPStatus.OK, data)
+            return
+        match = re.fullmatch(r"/api/rebost/items/(img-[0-9a-f]{64})/content", path)
+        if match:
+            try:
+                body, content_type = rebost.fetch_content(match.group(1))
+            except rebost.RebostError as exc:
+                self.send_json(exc.status, {"error": exc.code})
+                return
+            self.send_response(HTTPStatus.OK)
+            self.send_header("Content-Type", content_type)
+            self.send_header("Content-Length", str(len(body)))
+            self.send_header("Cache-Control", "private, max-age=86400")
+            self.end_headers()
+            self.wfile.write(body)
             return
         if path == "/api/activities":
             query = parse_qs(urlparse(self.path).query)
@@ -664,7 +688,7 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header(
             "Content-Security-Policy",
             f"default-src 'self'; style-src 'self' 'unsafe-inline'{commons}; script-src 'self' 'unsafe-inline'{commons}; "
-            f"img-src 'self' data:; font-src 'self' data:; frame-src 'self'; connect-src 'self'{commons}; "
+            f"img-src 'self' data:; media-src 'self' data:; font-src 'self' data:; frame-src 'self'; connect-src 'self'{commons}; "
             "object-src 'none'; base-uri 'none'; frame-ancestors 'self'",
         )
         self.send_header("X-Content-Type-Options", "nosniff")

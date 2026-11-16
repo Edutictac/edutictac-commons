@@ -6,7 +6,7 @@ import re
 
 from .catalog import read_catalog
 from .config import PLAY_CONTROLLED_CATALOG
-from .h5p import COMPOUND_CHILD_TYPES, activity_language, valid_matching_image
+from .h5p import COMPOUND_CHILD_TYPES, activity_language, audio_media, clean_credit, valid_matching_image
 from .store import ID_RE
 
 VISIBILITIES = {"private", "class", "public"}
@@ -87,6 +87,14 @@ def validate_activity(payload: dict) -> tuple[dict | None, list[str]]:
                     errors.append("Las imágenes deben estar optimizadas en formato WebP y pesar menos de 400 KB.")
                 else:
                     item["image"] = image
+                    item["imageCredit"] = clean_credit(card.get("imageCredit", ""))
+            audio = str(card.get("audio", "") or "").strip()
+            if audio:
+                if not audio_media(audio):
+                    errors.append("Los audios deben ser OGG, MP3 o WAV y pesar menos de 256 KB.")
+                else:
+                    item["audio"] = audio
+                    item["audioCredit"] = clean_credit(card.get("audioCredit", ""))
             cleaned.append(item)
         if len(cleaned) != len(cards):
             errors.append("Cada pareja debe tener texto.")
@@ -114,6 +122,7 @@ def validate_activity(payload: dict) -> tuple[dict | None, list[str]]:
                         errors.append("Las imágenes deben estar optimizadas en formato WebP y pesar menos de 400 KB.")
                     else:
                         item[f"{side}Image"] = image
+                        item[f"{side}ImageCredit"] = clean_credit(pair.get(f"{side}ImageCredit", ""))
             cleaned.append(item)
         if len(cleaned) != len(pairs):
             errors.append("Cada relación debe tener dos textos.")
@@ -152,6 +161,7 @@ def validate_activity(payload: dict) -> tuple[dict | None, list[str]]:
                     errors.append("Las imágenes deben estar optimizadas en formato WebP y pesar menos de 400 KB.")
                 else:
                     cleaned_item["image"] = image
+                    cleaned_item["imageCredit"] = clean_credit(item.get("imageCredit", ""))
             cleaned_items.append(cleaned_item)
         if len(cleaned_items) != len(items) or any(item["category"] < 0 or item["category"] >= len(cleaned_categories) for item in cleaned_items):
             errors.append("Cada elemento debe tener texto y una categoría válida.")
@@ -221,7 +231,19 @@ def validate_activity(payload: dict) -> tuple[dict | None, list[str]]:
         if not isinstance(cards, list) or not 3 <= len(cards) <= 15:
             errors.append("Añade entre 3 y 15 tarjetas.")
             cards = []
-        cleaned_cards = [{"front": str(card.get("front", "")).strip()[:500], "back": str(card.get("back", "")).strip()[:500]} for card in cards if isinstance(card, dict) and str(card.get("front", "")).strip() and str(card.get("back", "")).strip()]
+        cleaned_cards = []
+        for card in cards:
+            if not isinstance(card, dict) or not str(card.get("front", "")).strip() or not str(card.get("back", "")).strip():
+                continue
+            entry = {"front": str(card.get("front", "")).strip()[:500], "back": str(card.get("back", "")).strip()[:500]}
+            audio = str(card.get("audio", "") or "").strip()
+            if audio:
+                if not audio_media(audio):
+                    errors.append("Los audios deben ser OGG, MP3 o WAV y pesar menos de 256 KB.")
+                else:
+                    entry["audio"] = audio
+                    entry["audioCredit"] = clean_credit(card.get("audioCredit", ""))
+            cleaned_cards.append(entry)
         if len(cleaned_cards) != len(cards):
             errors.append("Cada tarjeta debe tener anverso y reverso.")
         if errors:

@@ -242,5 +242,34 @@
   "qrHint": "Escanea el código con la cámara del móvil.",
   "qrNote": "Demo pública: cualquiera con el enlace puede abrirla. No incluyas datos personales.",
   "qrAria": "Mostrar código QR para compartir",
-  "qrClose": "Cerrar"
+  "qrClose": "Cerrar",
+  "media": {
+    "upload": "Subir archivo",
+    "change": "Cambiar archivo",
+    "remove": "Quitar",
+    "audio": "Audio"
+  },
+  "rebost": {
+    "eyebrow": "EduTicTac Rebost",
+    "titleImages": "Elegir una imagen del Rebost",
+    "titleSounds": "Elegir un sonido del Rebost",
+    "helpImages": "Catálogos públicos de imágenes. Puedes buscar y elegir; también puedes subir tu propio archivo.",
+    "helpSounds": "Efectos de sonido CC0 del Rebost. También puedes subir tu propio audio (OGG, MP3 o WAV, máx. 256 KB).",
+    "close": "Cerrar",
+    "search": "Buscar",
+    "searchPlaceholder": "Buscar por nombre…",
+    "collection": "Colección",
+    "effects": "Efectos de sonido",
+    "catalog": "Catálogo",
+    "scratch": "Scratch",
+    "loading": "Cargando…",
+    "empty": "No hay resultados.",
+    "error": "No se pudo conectar con el Rebost.",
+    "pick": "Elegir",
+    "more": "Más resultados",
+    "play": "Reproducir sonido",
+    "audioError": "El sonido no se pudo usar (OGG, MP3 o WAV, máx. 256 KB).",
+    "imageError": "La imagen no se pudo usar.",
+    "open": "Rebost"
+  }
 }

@@ -119,6 +119,56 @@ test('crear, previsualizar, guardar y reproducir un verdadero/falso', async ({ p
   await expect(page).toHaveURL(/\/play\/[A-Za-z0-9]{8}$/);
 });
 
+test('Memory: elige imagen y sonido del Rebost y sube un audio propio', async ({ page }) => {
+  const soundId = 'img-' + 'a'.repeat(64);
+  const imageId = 'img-' + 'b'.repeat(64);
+  const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAIAAAAmkwkpAAAAFElEQVR4nGM8ISfHAANMDEgANwcANHYBDK9qubUAAAAASUVORK5CYII=', 'base64');
+  await page.route('**/play/api/rebost/items?*', async (route) => {
+    const url = new URL(route.request().url());
+    const sound = url.searchParams.get('collection') === 'effects';
+    await route.fulfill({ json: { items: [{
+      id: sound ? soundId : imageId,
+      name: sound ? 'Click' : 'Sobre',
+      type: sound ? 'sound' : 'object',
+      width: sound ? 0 : 100,
+      height: sound ? 0 : 70,
+      license: sound ? 'CC0-1.0' : 'GPL-3.0-only',
+      attribution: sound ? 'Kenney' : 'EduTicTac',
+      duration_ms: sound ? 117 : 0,
+    }], next_cursor: null } });
+  });
+  await page.route('**/api/rebost/items/*/content', async (route) => {
+    const sound = route.request().url().includes(soundId);
+    await route.fulfill({ status: 200, contentType: sound ? 'audio/ogg' : 'image/png', body: sound ? Buffer.from('OggS') : png });
+  });
+  await openPlay(page);
+  await page.getByRole('button', { name: 'Memory' }).click();
+  await page.locator('#title').fill('Rebost');
+  await page.locator('#question').fill('Elige imagen y sonido');
+  await page.locator('.card-text').nth(0).fill('Sobre');
+  await page.locator('.card-text').nth(1).fill('Click');
+
+  const card = page.locator('.memory-row').nth(0);
+  await card.locator('.media-field').nth(0).getByRole('button', { name: 'Rebost' }).click();
+  await expect(page.locator('#rebostTitle')).toContainText('imagen');
+  await page.locator('.rebost-card').first().getByRole('button', { name: 'Elegir' }).click();
+  await expect(card.locator('.editor-thumbnail')).toBeVisible();
+  await expect(card.locator('.media-credit').first()).toContainText('GPL-3.0-only');
+
+  await card.locator('.media-field').nth(1).getByRole('button', { name: 'Rebost' }).click();
+  await expect(page.locator('#rebostTitle')).toContainText('sonido');
+  await page.locator('.rebost-card').first().getByRole('button', { name: 'Elegir' }).click();
+  await expect(card.locator('audio')).toHaveCount(1);
+  await expect(card.locator('.media-credit').last()).toContainText('CC0-1.0');
+
+  const second = page.locator('.memory-row').nth(1);
+  await second.locator('.media-field').nth(1).locator('input[type=file]').setInputFiles({ name: 'click.ogg', mimeType: 'audio/ogg', buffer: Buffer.from('OggS') });
+  await expect(second.locator('audio')).toHaveCount(1);
+
+  await page.getByRole('button', { name: 'Guardar' }).click();
+  await expect(page.locator('#download')).toBeVisible();
+});
+
 test('crear y reproducir un Memory', async ({ page }) => {
   await openPlay(page);
   await page.getByRole('button', { name: 'Memory' }).click();

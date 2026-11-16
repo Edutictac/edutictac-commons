@@ -242,5 +242,34 @@
   "qrHint": "Escaneja el codi amb la càmera del mòbil.",
   "qrNote": "Demo pública: qualsevol persona amb l’enllaç pot obrir-la. No inclogues dades personals.",
   "qrAria": "Mostra el codi QR per a compartir",
-  "qrClose": "Tanca"
+  "qrClose": "Tanca",
+  "media": {
+    "upload": "Puja un fitxer",
+    "change": "Canvia el fitxer",
+    "remove": "Trau",
+    "audio": "Àudio"
+  },
+  "rebost": {
+    "eyebrow": "EduTicTac Rebost",
+    "titleImages": "Tria una imatge del Rebost",
+    "titleSounds": "Tria un so del Rebost",
+    "helpImages": "Catàlegs públics d’imatges. Pots buscar i triar; també pots pujar el teu propi fitxer.",
+    "helpSounds": "Efectes de so CC0 del Rebost. També pots pujar el teu àudio (OGG, MP3 o WAV, màx. 256 KB).",
+    "close": "Tanca",
+    "search": "Busca",
+    "searchPlaceholder": "Busca pel nom…",
+    "collection": "Col·lecció",
+    "effects": "Efectes de so",
+    "catalog": "Catàleg",
+    "scratch": "Scratch",
+    "loading": "Carregant…",
+    "empty": "No hi ha resultats.",
+    "error": "No s’ha pogut connectar amb el Rebost.",
+    "pick": "Tria",
+    "more": "Més resultats",
+    "play": "Reproduïx el so",
+    "audioError": "El so no s’ha pogut usar (OGG, MP3 o WAV, màx. 256 KB).",
+    "imageError": "La imatge no s’ha pogut usar.",
+    "open": "Rebost"
+  }
 }

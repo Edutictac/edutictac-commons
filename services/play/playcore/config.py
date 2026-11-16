@@ -11,8 +11,9 @@ DATA_DIR = Path(os.environ.get("PLAY_DATA_DIR", ROOT / "data"))
 ACTIVITIES_DIR = DATA_DIR / "activities"
 LIBRARIES_DIR = ROOT / "h5p-libraries"
 PUBLIC_DIR = ROOT / "public"
-MAX_BODY = 4 * 1024 * 1024
+MAX_BODY = 8 * 1024 * 1024
 MAX_MATCHING_IMAGE_BYTES = 400 * 1024
+MAX_AUDIO_BYTES = 256 * 1024
 HOST = os.environ.get("HOST", "0.0.0.0")
 URL_PREFIX = os.environ.get("URL_PREFIX", "").rstrip("/")
 COMMONS_API_URL = os.environ.get("EDUTICTAC_ID_API_URL", "").rstrip("/")
@@ -35,6 +36,8 @@ PLAY_ADMIN_TOKEN = os.environ.get("EDUTICTAC_PLAY_ADMIN_TOKEN", "").strip()
 RECURSOS_API_URL = os.environ.get("RECURSOS_API_URL", "").rstrip("/")
 RECURSOS_INGEST_TOKEN = os.environ.get("PLAY_INGEST_TOKEN", "").strip()
 PLAY_PUBLIC_URL = os.environ.get("PLAY_PUBLIC_URL", "").rstrip("/")
+# Catàlegs públics del Rebost per al selector de mitjans (només lectura).
+REBOST_API_URL = os.environ.get("PLAY_REBOST_API_URL", "").rstrip("/")
 PLAY_DEFAULT_VISIBILITY = os.environ.get("PLAY_DEFAULT_VISIBILITY", "public").strip().lower()
 # Solo debe configurarse detrás de un proxy que elimine y vuelva a establecer
 # esta cabecera a partir de una identidad OIDC validada.

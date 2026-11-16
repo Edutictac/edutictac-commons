@@ -709,7 +709,7 @@ def test_config_exposes_demo_mode(commons_url, demo, commons_base):
         time.sleep(0.25)
         config = json.loads(urllib.request.urlopen("http://127.0.0.1:18113/api/config").read())
         assert config == {"demo": demo, "commonsUrl": commons_url or None, "integrated": False,
-                          "commonsBase": commons_base or None}
+                          "commonsBase": commons_base or None, "rebost": False}
     finally:
         process.terminate()
         process.wait(timeout=3)

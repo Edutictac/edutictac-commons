@@ -6,12 +6,12 @@ export function newActivity(type='multiple-choice'){
  const a={type,title:'',question:'',subject:'',educational_stage:'',educational_level:'',tags:[]};
  if(type==='multiple-choice')a.answers=[{text:'',correct:true},{text:'',correct:false}];
  if(type==='true-false')a.correct=true;
- if(type==='memory')a.cards=[{text:'',image:''},{text:'',image:''}];
- if(type==='matching')a.pairs=[{left:'',right:'',leftImage:'',rightImage:''},{left:'',right:'',leftImage:'',rightImage:''}];
- if(['classify','ordering'].includes(type)){a.categories=(type==='ordering'?['1','2','3']:['','']).map(name=>({name}));a.items=Array.from({length:3},()=>({text:'',category:0,image:''}));}
+ if(type==='memory')a.cards=[{text:'',image:'',imageCredit:'',audio:'',audioCredit:''},{text:'',image:'',imageCredit:'',audio:'',audioCredit:''}];
+ if(type==='matching')a.pairs=[{left:'',right:'',leftImage:'',leftImageCredit:'',rightImage:'',rightImageCredit:''},{left:'',right:'',leftImage:'',leftImageCredit:'',rightImage:'',rightImageCredit:''}];
+ if(['classify','ordering'].includes(type)){a.categories=(type==='ordering'?['1','2','3']:['','']).map(name=>({name}));a.items=Array.from({length:3},()=>({text:'',category:0,image:'',imageCredit:''}));}
  if(['fill-blanks','drag-text','mark-words'].includes(type))a.text='';
  if(type==='find-words')a.words=['agua','tierra','planta','animal'];
- if(type==='dialog-cards')a.cards=[{front:'Capital de Francia',back:'París'},{front:'Planeta rojo',back:'Marte'},{front:'2 + 2',back:'4'}];
+ if(type==='dialog-cards')a.cards=[{front:'Capital de Francia',back:'París',audio:'',audioCredit:''},{front:'Planeta rojo',back:'Marte',audio:'',audioCredit:''},{front:'2 + 2',back:'4',audio:'',audioCredit:''}];
  if(type==='crossword')a.words=[{answer:'planeta',clue:'Cuerpo que gira alrededor de una estrella'},{answer:'océano',clue:'Gran extensión de agua salada'},{answer:'montaña',clue:'Elevación natural del terreno'},{answer:'bosque',clue:'Lugar poblado de árboles'}];
  if(type==='compound'){a.activities=[newActivity(),newActivity()];a.passPercentage=60;a.randomQuestions=false;}
  return a;
@@ -54,4 +54,11 @@ export async function optimizeImage(file){
   if(!blob||blob.type!=='image/webp'||blob.size>400*1024)throw new Error('image');
   return await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(blob);});
  }finally{bitmap.close();}
+}
+
+export const AUDIO_LIMIT=256*1024;
+export const AUDIO_TYPES={'audio/ogg':'data:audio/ogg','audio/mpeg':'data:audio/mpeg','audio/wav':'data:audio/wav'};
+export async function readAudio(file){
+ if(!file||!AUDIO_TYPES[file.type]||file.size>AUDIO_LIMIT)throw new Error('audio');
+ return await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(file);});
 }

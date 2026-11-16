@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
+import base64
+import binascii
 import html
 import json
+import re
 import uuid
 from pathlib import Path
 
-from .config import LIBRARIES_DIR, MAX_MATCHING_IMAGE_BYTES
+from .config import LIBRARIES_DIR, MAX_AUDIO_BYTES, MAX_MATCHING_IMAGE_BYTES
 
 COMPOUND_CHILD_TYPES = {
     "multiple-choice",
@@ -57,6 +60,56 @@ def h5p_library_for_activity(activity: dict) -> str:
 
 def safe_text(value: object, limit: int = 5000) -> str:
     return html.escape(str(value or "").strip()[:limit], quote=True)
+
+
+AUDIO_PREFIXES = {
+    "data:audio/ogg;base64,": ("audio/ogg", "ogg"),
+    "data:audio/mpeg;base64,": ("audio/mpeg", "mp3"),
+    "data:audio/wav;base64,": ("audio/wav", "wav"),
+}
+
+
+def audio_media(value: object) -> dict | None:
+    """Validate a small audio data URL and return its MIME, extension and bytes."""
+
+    text = str(value or "").strip()
+    for prefix, (mime, extension) in AUDIO_PREFIXES.items():
+        if not text.startswith(prefix):
+            continue
+        encoded = text[len(prefix):]
+        if len(encoded) > ((MAX_AUDIO_BYTES + 2) * 4 // 3 + 8):
+            return None
+        try:
+            raw = base64.b64decode(encoded, validate=True)
+        except (ValueError, binascii.Error):
+            return None
+        if not raw or len(raw) > MAX_AUDIO_BYTES:
+            return None
+        return {"mime": mime, "ext": extension, "raw": raw}
+    return None
+
+
+def clean_credit(value: object) -> str:
+    return re.sub(r"\s+", " ", str(value or "")).strip()[:200]
+
+
+def activity_credits(activity: dict) -> list[str]:
+    lines = []
+    for card in activity.get("cards", []) if isinstance(activity.get("cards"), list) else []:
+        for field in ("imageCredit", "audioCredit"):
+            credit = clean_credit(card.get(field, ""))
+            if credit:
+                lines.append(f"{card.get('text') or card.get('front') or ''}: {credit}".strip(": "))
+    for pair in activity.get("pairs", []) if isinstance(activity.get("pairs"), list) else []:
+        for side in ("left", "right"):
+            credit = clean_credit(pair.get(f"{side}ImageCredit", ""))
+            if credit:
+                lines.append(f"{pair.get(side) or side}: {credit}")
+    for item in activity.get("items", []) if isinstance(activity.get("items"), list) else []:
+        credit = clean_credit(item.get("imageCredit", ""))
+        if credit:
+            lines.append(f"{item.get('text') or ''}: {credit}".strip(": "))
+    return list(dict.fromkeys(line for line in lines if line))
 
 
 def valid_matching_image(value: str) -> bool:
@@ -316,9 +369,16 @@ def activity_content(activity: dict) -> dict:
             "displaySolutionDescription": t.get("displaySolution", "La actividad muestra la solución."),
         }
     if activity.get("type") == "dialog-cards":
+        dialogs = []
+        for index, card in enumerate(activity["cards"]):
+            entry = {"text": safe_text(card["front"]), "answer": safe_text(card["back"])}
+            media = audio_media(card.get("audio"))
+            if media:
+                entry["audio"] = [{"path": f"audio-{index}.{media['ext']}", "mime": media["mime"]}]
+            dialogs.append(entry)
         return {
             "title": safe_text(activity["title"]), "description": safe_text(activity["question"]), "mode": "normal",
-            "dialogs": [{"text": safe_text(card["front"]), "answer": safe_text(card["back"])} for card in activity["cards"]],
+            "dialogs": dialogs,
             "behaviour": {"enableRetry": True, "disableBackwardsNavigation": False, "scaleTextNotCard": False, "randomCards": False, "maxProficiency": 5, "quickProgression": False},
         }
     if activity.get("type") == "crossword":
@@ -375,11 +435,15 @@ def activity_content(activity: dict) -> dict:
             "scoreBarLabel": t["scoreBar"], "a11yCheck": t["a11yCheck"], "a11yRetry": t["a11yRetry"],
         }
     if activity.get("type") == "memory":
+        cards = []
+        for index, card in enumerate(activity["cards"]):
+            entry = {"image": {"path": f"card-{index}.{'webp' if card.get('image') else 'svg'}", "mime": "image/webp" if card.get("image") else "image/svg+xml", "width": 320, "height": 180}, "imageAlt": safe_text(card["text"])}
+            media = audio_media(card.get("audio"))
+            if media:
+                entry["audio"] = [{"path": f"audio-{index}.{media['ext']}", "mime": media["mime"]}]
+            cards.append(entry)
         return {
-            "cards": [
-                {"image": {"path": f"card-{index}.{'webp' if card.get('image') else 'svg'}", "mime": "image/webp" if card.get("image") else "image/svg+xml", "width": 320, "height": 180}, "imageAlt": safe_text(card["text"])}
-                for index, card in enumerate(activity["cards"])
-            ],
+            "cards": cards,
             "behaviour": {"useGrid": True, "allowRetry": True},
             "l10n": {
                 "cardTurns": t["memCardTurns"], "timeSpent": t["memTimeSpent"], "feedback": t["memFeedback"],
@@ -610,19 +674,24 @@ def package_files(activity: dict) -> dict[str, bytes]:
         "h5p.json": json.dumps(h5p, ensure_ascii=False, indent=2).encode(),
         "content/content.json": json.dumps(activity_content(activity), ensure_ascii=False, indent=2).encode(),
     }
-    if activity.get("type") == "memory":
+    if activity.get("type") in {"memory", "dialog-cards"}:
         for index, card in enumerate(activity["cards"]):
-            if card.get("image"):
-                import base64
-
-                files[f"content/card-{index}.webp"] = base64.b64decode(card["image"].split(",", 1)[1])
-                continue
-            text = safe_text(card["text"], 120)
-            files[f"content/card-{index}.svg"] = (
-                f'<svg xmlns="http://www.w3.org/2000/svg" width="320" height="180">'
-                f'<rect width="320" height="180" rx="18" fill="#176b5c"/>'
-                f'<text x="160" y="100" fill="white" font-family="sans-serif" font-size="24" text-anchor="middle">{text}</text></svg>'
-            ).encode()
+            if activity["type"] == "memory":
+                if card.get("image"):
+                    files[f"content/card-{index}.webp"] = base64.b64decode(card["image"].split(",", 1)[1])
+                else:
+                    text = safe_text(card["text"], 120)
+                    files[f"content/card-{index}.svg"] = (
+                        f'<svg xmlns="http://www.w3.org/2000/svg" width="320" height="180">'
+                        f'<rect width="320" height="180" rx="18" fill="#176b5c"/>'
+                        f'<text x="160" y="100" fill="white" font-family="sans-serif" font-size="24" text-anchor="middle">{text}</text></svg>'
+                    ).encode()
+            media = audio_media(card.get("audio"))
+            if media:
+                files[f"content/audio-{index}.{media['ext']}"] = media["raw"]
+    credits = activity_credits(activity)
+    if credits:
+        files["content/CREDITS.txt"] = ("Créditos de los medios / Crèdits dels mitjans\n\n" + "\n".join(credits) + "\n").encode()
     for path in LIBRARIES_DIR.rglob("*"):
         if path.is_file():
             files[str(path.relative_to(LIBRARIES_DIR))] = path.read_bytes()
@@ -639,4 +708,7 @@ def content_type_for(path: Path) -> str:
         ".woff2": "font/woff2",
         ".ttf": "font/ttf",
         ".eot": "application/vnd.ms-fontobject",
+        ".ogg": "audio/ogg",
+        ".mp3": "audio/mpeg",
+        ".wav": "audio/wav",
     }.get(path.suffix, "application/octet-stream")
