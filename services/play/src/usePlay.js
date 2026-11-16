@@ -45,7 +45,7 @@ export function usePlay(){
  // Si el xip veu que s'ha entrat o eixit en una altra pestanya, es revisen els permisos.
  function sessionChanged(){if(active&&ready.value)void loadPublication();}
  function choose(type){if(!TYPES.includes(type)||savingDisabled.value)return;drafts[form.value.type]=form.value;if(!drafts[type])drafts[type]={...newActivity(type),title:form.value.title,question:form.value.question};form.value=drafts[type];view.value='editor';formError.value='';++epoch;}
- function go(where){if(busy.value)return;++epoch;view.value=where;message.value='';formError.value='';bankDialog.value?.close();++bankSeq;}
+ function go(where){if(busy.value)return;if(where==='editor'&&saved.value&&!saved.value.id.startsWith('preview-')&&!saved.value.owned)return;++epoch;view.value=where;message.value='';formError.value='';bankDialog.value?.close();++bankSeq;}
  async function saveActivity(preview=false){
   if(savingDisabled.value)return;const payload=serialize(form.value,language.value),errors=validate(payload,t);formError.value=errors.join(' ');if(errors.length)return;
   busy.value=true;const current=epoch;

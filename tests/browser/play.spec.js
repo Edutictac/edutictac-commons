@@ -59,6 +59,28 @@ test('comparte una actividad con código QR desde el guardado y la biblioteca', 
   await expect(page.locator('.qr-url')).toHaveValue(new RegExp(`/play/${id}$`));
 });
 
+test('solo el creador puede abrir el editor de una actividad guardada', async ({ page, browser }) => {
+  await openPlay(page);
+  await page.getByRole('button', { name: 'Verdadero/Falso' }).click();
+  await page.locator('#title').fill('Privada para editar');
+  await page.locator('#question').fill('El agua moja.');
+  await page.getByRole('button', { name: 'Previsualizar' }).click();
+  await expect(page.locator('#edit')).toBeVisible();
+  await page.getByRole('button', { name: 'Guardar' }).click();
+  await page.waitForURL(/\/play\/[A-Za-z0-9]{8}$/);
+  await expect(page.locator('#edit')).toBeVisible();
+  const id = new URL(page.url()).pathname.split('/').pop();
+  const origin = new URL(page.url()).origin;
+  const other = await browser.newContext({ serviceWorkers: 'block' });
+  const stranger = await other.newPage();
+  await stranger.goto(origin + '/play/' + id);
+  await stranger.locator('html[data-play-ready="true"]').waitFor({ state: 'attached' });
+  await expect(stranger.locator('#edit')).toHaveCount(0);
+  await expect(stranger.locator('#deleteSaved')).toHaveCount(0);
+  await expect(stranger.locator('#download')).toBeVisible();
+  await other.close();
+});
+
 test('crear y reproducir un reto con varias actividades', async ({ page }) => {
   await openPlay(page);
   await page.getByRole('button', { name: 'Modo reto' }).click();

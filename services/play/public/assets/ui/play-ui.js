@@ -3267,7 +3267,7 @@ function _o() {
 		}), l.value = C[e], o.value = "editor", d.value = "", ++M);
 	}
 	function fe(e) {
-		c.value || (++M, o.value = e, f.value = "", d.value = "", k.value?.close(), ++N);
+		c.value || (e !== "editor" || !u.value || u.value.id.startsWith("preview-") || u.value.owned) && (++M, o.value = e, f.value = "", d.value = "", k.value?.close(), ++N);
 	}
 	async function pe(n = !1) {
 		if (ie.value) return;
@@ -7329,12 +7329,13 @@ var vo = { class: "compound-step" }, yo = { class: "section-heading" }, bo = { c
 				}, R(W(m)("save")), 9, Hl)])
 			], 32)], 512), [[oa, W(h) === "editor" && W(g)]]),
 			W(h) === "previewPanel" && W(y) ? (J(), Y("section", Ul, [
-				X("div", Wl, [X("div", null, [X("p", Gl, R(W(m)("previewEyebrow")), 1), X("h1", Kl, R(W(y).title), 1)]), X("button", {
+				X("div", Wl, [X("div", null, [X("p", Gl, R(W(m)("previewEyebrow")), 1), X("h1", Kl, R(W(y).title), 1)]), W(y).id.startsWith("preview-") || W(y).owned ? (J(), Y("button", {
+					key: 0,
 					id: "edit",
 					class: "button secondary",
 					disabled: W(_),
 					onClick: l[11] ||= (e) => W(F)("editor")
-				}, R(W(m)("edit")), 9, ql)]),
+				}, R(W(m)("edit")), 9, ql)) : Q("", !0)]),
 				Z(jc, {
 					base: W(u),
 					activity: W(y),
